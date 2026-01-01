@@ -1,0 +1,71 @@
+name: GameCI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test and Coverage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: ci_checkout
+          lfs: true
+
+      - name: Prepare project
+        run: |
+          mv ci_checkout/.github/unity/unity-2022.3.22f1/* . && \
+          mkdir -p Packages/dev.limitex.avatar-compressor && \
+          mv ci_checkout/* Packages/dev.limitex.avatar-compressor/ && \
+          rm -rf ci_checkout
+
+      - name: Setup vrc-get
+        uses: anatawa12/sh-actions/setup-vrc-get@master
+
+      - name: Resolve VPM packages
+        uses: anatawa12/sh-actions/resolve-vpm-packages@master
+        with:
+          repos: |
+            https://vpm.limitex.dev/
+            https://vpm.nadena.dev/vpm.json
+      
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Packages/**') }}
+          restore-keys: Library-
+            
+      - name: Run tests
+        uses: game-ci/unity-test-runner@v4
+        id: gameci
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          testMode: editmode
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+dev.limitex.*
+          customParameters: -assemblyNames dev.limitex.avatar-compressor.editor.tests
+          checkName: Test Results
+        
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Test results
+          path: ${{ steps.gameci.outputs.artifactsPath }}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Coverage results
+          path: ${{ steps.gameci.outputs.coveragePath }}
