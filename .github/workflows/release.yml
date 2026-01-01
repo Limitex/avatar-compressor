@@ -41,7 +41,12 @@ jobs:
      
       - name: Create ZIP archive
         run: |
-          zip -r ${{ steps.archive.outputs.archive_name }} . -x "*.git*" -x ".github/*"
+          zip -r ${{ steps.archive.outputs.archive_name }} . \
+            -x "*.git*" \
+            -x ".github/*" \
+            -x "Tests/*" \
+            -x "Tests.meta" \
+            -x "*~/*"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
