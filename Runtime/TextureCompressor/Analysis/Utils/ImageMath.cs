@@ -13,6 +13,22 @@ namespace dev.limitex.avatar.compressor.texture
         private const int GlcmLevels = 16;
         private const int HistogramBins = 256;
 
+        // Cached DCT cosine table (thread-safe static initialization)
+        private static readonly float[,] DctCosTable = InitializeDctCosTable();
+
+        private static float[,] InitializeDctCosTable()
+        {
+            var table = new float[DctBlockSize, DctBlockSize];
+            for (int i = 0; i < DctBlockSize; i++)
+            {
+                for (int j = 0; j < DctBlockSize; j++)
+                {
+                    table[i, j] = Mathf.Cos((2f * i + 1f) * j * Mathf.PI / (2f * DctBlockSize));
+                }
+            }
+            return table;
+        }
+
         #region Gradient Analysis
 
         /// <summary>
@@ -192,15 +208,6 @@ namespace dev.limitex.avatar.compressor.texture
             float totalEnergy = 0f;
             int totalPixels = width * height;
 
-            float[,] cosTable = new float[DctBlockSize, DctBlockSize];
-            for (int i = 0; i < DctBlockSize; i++)
-            {
-                for (int j = 0; j < DctBlockSize; j++)
-                {
-                    cosTable[i, j] = Mathf.Cos((2f * i + 1f) * j * Mathf.PI / (2f * DctBlockSize));
-                }
-            }
-
             int blockStep = Mathf.Max(1, blocksX / 16);
             float[,] block = new float[DctBlockSize, DctBlockSize];
             float[,] dct = new float[DctBlockSize, DctBlockSize];
@@ -238,7 +245,7 @@ namespace dev.limitex.avatar.compressor.texture
                             {
                                 for (int x = 0; x < DctBlockSize; x++)
                                 {
-                                    sum += block[y, x] * cosTable[x, u] * cosTable[y, v];
+                                    sum += block[y, x] * DctCosTable[x, u] * DctCosTable[y, v];
                                 }
                             }
 

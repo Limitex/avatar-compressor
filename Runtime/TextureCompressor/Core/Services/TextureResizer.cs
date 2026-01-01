@@ -4,9 +4,13 @@ namespace dev.limitex.avatar.compressor.texture
 {
     /// <summary>
     /// Service for resizing textures.
+    /// Uses lock to ensure thread safety for RenderTexture operations.
     /// </summary>
     public class TextureResizer
     {
+        // Lock object for thread-safe RenderTexture operations
+        private static readonly object RenderTextureLock = new object();
+
         private readonly int _minResolution;
         private readonly int _maxResolution;
         private readonly bool _forcePowerOfTwo;
@@ -71,23 +75,28 @@ namespace dev.limitex.avatar.compressor.texture
 
         /// <summary>
         /// Resizes a texture to the specified dimensions.
+        /// Thread-safe: uses lock to protect RenderTexture.active.
         /// </summary>
         public Texture2D ResizeTo(Texture2D source, int newWidth, int newHeight)
         {
-            RenderTexture rt = RenderTexture.GetTemporary(newWidth, newHeight, 0, RenderTextureFormat.ARGB32);
-            rt.filterMode = FilterMode.Bilinear;
+            lock (RenderTextureLock)
+            {
+                RenderTexture rt = RenderTexture.GetTemporary(newWidth, newHeight, 0, RenderTextureFormat.ARGB32);
+                rt.filterMode = FilterMode.Bilinear;
 
-            RenderTexture.active = rt;
-            Graphics.Blit(source, rt);
+                RenderTexture previous = RenderTexture.active;
+                RenderTexture.active = rt;
+                Graphics.Blit(source, rt);
 
-            Texture2D result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, false);
-            result.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
-            result.Apply();
+                Texture2D result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, false);
+                result.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
+                result.Apply();
 
-            RenderTexture.active = null;
-            RenderTexture.ReleaseTemporary(rt);
+                RenderTexture.active = previous;
+                RenderTexture.ReleaseTemporary(rt);
 
-            return result;
+                return result;
+            }
         }
 
         /// <summary>
@@ -100,6 +109,7 @@ namespace dev.limitex.avatar.compressor.texture
 
         /// <summary>
         /// Gets readable pixels from a texture.
+        /// Thread-safe: uses lock to protect RenderTexture.active when needed.
         /// </summary>
         public Color[] GetReadablePixels(Texture2D texture)
         {
@@ -122,47 +132,51 @@ namespace dev.limitex.avatar.compressor.texture
                 }
             }
 
-            RenderTexture rt = null;
-            RenderTexture previous = RenderTexture.active;
-            Texture2D readable = null;
-
-            try
+            // Non-readable texture requires RenderTexture operations
+            lock (RenderTextureLock)
             {
-                rt = RenderTexture.GetTemporary(
-                    texture.width, texture.height, 0, RenderTextureFormat.ARGB32);
+                RenderTexture rt = null;
+                RenderTexture previous = RenderTexture.active;
+                Texture2D readable = null;
 
-                if (rt == null)
+                try
                 {
-                    Debug.LogWarning("[TextureCompressor] Failed to create temporary RenderTexture");
+                    rt = RenderTexture.GetTemporary(
+                        texture.width, texture.height, 0, RenderTextureFormat.ARGB32);
+
+                    if (rt == null)
+                    {
+                        Debug.LogWarning("[TextureCompressor] Failed to create temporary RenderTexture");
+                        return new Color[0];
+                    }
+
+                    Graphics.Blit(texture, rt);
+                    RenderTexture.active = rt;
+
+                    readable = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
+                    readable.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+                    readable.Apply();
+
+                    return readable.GetPixels();
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"[TextureCompressor] Failed to read pixels from texture '{texture.name}': {e.Message}");
                     return new Color[0];
                 }
-
-                Graphics.Blit(texture, rt);
-                RenderTexture.active = rt;
-
-                readable = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
-                readable.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
-                readable.Apply();
-
-                return readable.GetPixels();
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogWarning($"[TextureCompressor] Failed to read pixels from texture '{texture.name}': {e.Message}");
-                return new Color[0];
-            }
-            finally
-            {
-                RenderTexture.active = previous;
-
-                if (rt != null)
+                finally
                 {
-                    RenderTexture.ReleaseTemporary(rt);
-                }
+                    RenderTexture.active = previous;
 
-                if (readable != null)
-                {
-                    Object.DestroyImmediate(readable);
+                    if (rt != null)
+                    {
+                        RenderTexture.ReleaseTemporary(rt);
+                    }
+
+                    if (readable != null)
+                    {
+                        Object.DestroyImmediate(readable);
+                    }
                 }
             }
         }
