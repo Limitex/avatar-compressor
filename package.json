@@ -15,6 +15,7 @@
   "license": "MIT",
   "vpmDependencies" : {
     "com.vrchat.base" : ">=3.10.0",
-    "com.vrchat.avatar" : ">=3.10.0"
+    "com.vrchat.avatar" : ">=3.10.0",
+    "nadena.dev.ndmf": ">=1.10.0"
   }
 }
