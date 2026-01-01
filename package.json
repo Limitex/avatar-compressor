@@ -1,0 +1,16 @@
+{
+  "name": "dev.limitex.avatar-compressor",
+  "version": "0.1.0",
+  "displayName": "Avatar Compressor",
+  "description": "Avatar Compressor: Non-Destructive Avatar Compression Utilities",
+  "unity": "2022.3",
+  "unityRelease": "22f1",
+  "dependencies": {},
+  "keywords": [],
+  "author": {
+    "name": "Limitex",
+    "email": "76650151+Limitex@users.noreply.github.com",
+    "url": "https://github.com/Limitex/avatar-compressor"
+  },
+  "license": "MIT"
+}
