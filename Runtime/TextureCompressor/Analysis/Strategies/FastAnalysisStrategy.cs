@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.texture
     /// </summary>
     public class FastAnalysisStrategy : ITextureComplexityAnalyzer
     {
-        public float Analyze(ProcessedPixelData data)
+        public TextureComplexityResult Analyze(ProcessedPixelData data)
         {
             float gradient = ImageMath.CalculateSobelGradient(
                 data.Grayscale, data.Width, data.Height, data.OpaqueCount);
@@ -23,11 +23,13 @@ namespace dev.limitex.avatar.compressor.texture
             float normalizedSpatialFreq = MathUtils.NormalizeWithPercentile(spatialFreq, 0.01f, 0.15f);
             float normalizedColorVar = MathUtils.NormalizeWithPercentile(colorVar, 0.005f, 0.08f);
 
-            return Mathf.Clamp01(
+            float score = Mathf.Clamp01(
                 0.4f * normalizedGradient +
                 0.35f * normalizedSpatialFreq +
                 0.25f * normalizedColorVar
             );
+
+            return new TextureComplexityResult(score);
         }
     }
 }

@@ -8,9 +8,10 @@ namespace dev.limitex.avatar.compressor.texture
     /// </summary>
     public class NormalMapAnalyzer : ITextureComplexityAnalyzer
     {
-        public float Analyze(ProcessedPixelData data)
+        public TextureComplexityResult Analyze(ProcessedPixelData data)
         {
-            return CalculateNormalMapComplexity(data.OpaquePixels, data.Width, data.Height);
+            float score = CalculateNormalMapComplexity(data.OpaquePixels, data.Width, data.Height);
+            return new TextureComplexityResult(score, "Normal map complexity based on vector variation");
         }
 
         private float CalculateNormalMapComplexity(Color[] pixels, int width, int height)

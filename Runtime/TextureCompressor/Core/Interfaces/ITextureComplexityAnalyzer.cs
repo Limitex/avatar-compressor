@@ -1,15 +1,12 @@
+using dev.limitex.avatar.compressor.common;
+
 namespace dev.limitex.avatar.compressor.texture
 {
     /// <summary>
     /// Interface for texture complexity analysis strategies.
+    /// Inherits from IAnalyzer for consistency with the common interface pattern.
     /// </summary>
-    public interface ITextureComplexityAnalyzer
+    public interface ITextureComplexityAnalyzer : IAnalyzer<ProcessedPixelData, TextureComplexityResult>
     {
-        /// <summary>
-        /// Analyzes the complexity of processed pixel data.
-        /// </summary>
-        /// <param name="data">Processed pixel data to analyze</param>
-        /// <returns>Normalized complexity value (0-1)</returns>
-        float Analyze(ProcessedPixelData data);
     }
 }

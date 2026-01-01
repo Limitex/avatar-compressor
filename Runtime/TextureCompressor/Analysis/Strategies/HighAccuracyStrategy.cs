@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.texture
     /// </summary>
     public class HighAccuracyStrategy : ITextureComplexityAnalyzer
     {
-        public float Analyze(ProcessedPixelData data)
+        public TextureComplexityResult Analyze(ProcessedPixelData data)
         {
             float dctRatio = ImageMath.CalculateDctHighFrequencyRatio(
                 data.Grayscale, data.Width, data.Height, data.OpaqueCount);
@@ -22,13 +22,15 @@ namespace dev.limitex.avatar.compressor.texture
             float normalizedEntropy = MathUtils.NormalizeWithPercentile(entropy, 2f, 7f);
             float normalizedContrast = MathUtils.NormalizeWithPercentile(glcm.contrast, 5f, 80f);
 
-            return Mathf.Clamp01(
+            float score = Mathf.Clamp01(
                 0.35f * dctRatio +
                 0.25f * normalizedContrast +
                 0.20f * (1f - glcm.homogeneity) +
                 0.10f * (1f - Mathf.Sqrt(glcm.energy)) +
                 0.10f * normalizedEntropy
             );
+
+            return new TextureComplexityResult(score);
         }
     }
 }

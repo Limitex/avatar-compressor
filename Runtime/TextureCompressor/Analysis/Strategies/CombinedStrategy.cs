@@ -26,18 +26,18 @@ namespace dev.limitex.avatar.compressor.texture
             _perceptualWeight = perceptualWeight;
         }
 
-        public float Analyze(ProcessedPixelData data)
+        public TextureComplexityResult Analyze(ProcessedPixelData data)
         {
-            float fast = _fastStrategy.Analyze(data);
-            float highAcc = _highAccuracyStrategy.Analyze(data);
-            float perceptual = _perceptualStrategy.Analyze(data);
+            float fast = _fastStrategy.Analyze(data).Score;
+            float highAcc = _highAccuracyStrategy.Analyze(data).Score;
+            float perceptual = _perceptualStrategy.Analyze(data).Score;
 
             float totalWeight = _fastWeight + _highAccuracyWeight + _perceptualWeight;
 
             // Avoid division by zero - use equal weights if all are zero
             if (totalWeight < 0.0001f)
             {
-                return Mathf.Clamp01((fast + highAcc + perceptual) / 3f);
+                return new TextureComplexityResult(Mathf.Clamp01((fast + highAcc + perceptual) / 3f));
             }
 
             float combined = (
@@ -46,7 +46,7 @@ namespace dev.limitex.avatar.compressor.texture
                 perceptual * _perceptualWeight
             ) / totalWeight;
 
-            return Mathf.Clamp01(combined);
+            return new TextureComplexityResult(Mathf.Clamp01(combined));
         }
     }
 }

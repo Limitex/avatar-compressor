@@ -86,7 +86,7 @@ namespace dev.limitex.avatar.compressor.texture
             PixelSampler.SampleIfNeeded(data.Pixels, data.Width, data.Height,
                 out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
 
-            float complexity;
+            TextureComplexityResult complexityResult;
             int totalSampledPixels = sampledWidth * sampledHeight;
 
             if (data.IsNormalMap)
@@ -102,7 +102,7 @@ namespace dev.limitex.avatar.compressor.texture
                     IsNormalMap = true,
                     IsEmission = false
                 };
-                complexity = analyzer.Analyze(processedData);
+                complexityResult = analyzer.Analyze(processedData);
             }
             else
             {
@@ -113,7 +113,7 @@ namespace dev.limitex.avatar.compressor.texture
                 if (opaqueCount < 100)
                 {
                     // Too few opaque pixels for meaningful analysis
-                    complexity = 0.1f;
+                    complexityResult = new TextureComplexityResult(0.1f, "Too few opaque pixels for analysis");
                 }
                 else
                 {
@@ -127,16 +127,19 @@ namespace dev.limitex.avatar.compressor.texture
                         IsNormalMap = false,
                         IsEmission = data.IsEmission
                     };
-                    complexity = analyzer.Analyze(processedData);
+                    complexityResult = analyzer.Analyze(processedData);
 
                     if (data.IsEmission)
                     {
-                        complexity *= 0.9f;
+                        // Emission maps get a 10% quality boost
+                        complexityResult = new TextureComplexityResult(
+                            complexityResult.Score * 0.9f,
+                            complexityResult.Summary + " (emission boost applied)");
                     }
                 }
             }
 
-            complexity = Mathf.Clamp01(complexity);
+            float complexity = Mathf.Clamp01(complexityResult.Score);
             int divisor = _complexityCalc.CalculateRecommendedDivisor(complexity);
             Vector2Int resolution = _resizer.CalculateNewDimensions(data.Width, data.Height, divisor);
 
