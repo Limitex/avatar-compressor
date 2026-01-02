@@ -34,6 +34,9 @@ namespace dev.limitex.avatar.compressor.texture.editor
         private int _processedCount;
         private int _skippedCount;
 
+        // Hash of settings when preview was generated (for outdated detection)
+        private int _previewSettingsHash;
+
         private static readonly Color HighQualityColor = new Color(0.1f, 0.9f, 0.6f);
         private static readonly Color QualityColor = new Color(0.2f, 0.8f, 0.4f);
         private static readonly Color BalancedColor = new Color(0.3f, 0.6f, 0.9f);
@@ -311,6 +314,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
         private void DrawPreviewSection(TextureCompressor compressor)
         {
+            bool isOutdated = IsPreviewOutdated(compressor);
+
             if (GUILayout.Button("Preview Compression Results", GUILayout.Height(35)))
             {
                 GeneratePreview(compressor);
@@ -319,6 +324,10 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             if (_showPreview && _previewData != null && _previewData.Length > 0)
             {
+                if (isOutdated)
+                {
+                    DrawHelpBox("Preview is outdated. Settings or target object have changed since the preview was generated. Click 'Preview Compression Results' to refresh.", MessageType.Warning);
+                }
                 DrawPreview();
             }
             else if (_showPreview && (_previewData == null || _previewData.Length == 0))
@@ -332,8 +341,45 @@ namespace dev.limitex.avatar.compressor.texture.editor
             }
         }
 
+        private int ComputeSettingsHash(TextureCompressor config)
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 31 + config.Preset.GetHashCode();
+                hash = hash * 31 + config.Strategy.GetHashCode();
+                hash = hash * 31 + config.FastWeight.GetHashCode();
+                hash = hash * 31 + config.HighAccuracyWeight.GetHashCode();
+                hash = hash * 31 + config.PerceptualWeight.GetHashCode();
+                hash = hash * 31 + config.HighComplexityThreshold.GetHashCode();
+                hash = hash * 31 + config.LowComplexityThreshold.GetHashCode();
+                hash = hash * 31 + config.MinDivisor;
+                hash = hash * 31 + config.MaxDivisor;
+                hash = hash * 31 + config.MaxResolution;
+                hash = hash * 31 + config.MinResolution;
+                hash = hash * 31 + config.ForcePowerOfTwo.GetHashCode();
+                hash = hash * 31 + config.ProcessMainTextures.GetHashCode();
+                hash = hash * 31 + config.ProcessNormalMaps.GetHashCode();
+                hash = hash * 31 + config.ProcessEmissionMaps.GetHashCode();
+                hash = hash * 31 + config.ProcessOtherTextures.GetHashCode();
+                hash = hash * 31 + config.MinSourceSize;
+                hash = hash * 31 + config.SkipIfSmallerThan;
+                hash = hash * 31 + config.gameObject.GetInstanceID();
+                return hash;
+            }
+        }
+
+        private bool IsPreviewOutdated(TextureCompressor config)
+        {
+            if (!_showPreview || _previewData == null)
+                return false;
+
+            return ComputeSettingsHash(config) != _previewSettingsHash;
+        }
+
         private void GeneratePreview(TextureCompressor config)
         {
+            _previewSettingsHash = ComputeSettingsHash(config);
             var collector = new TextureCollector(
                 config.MinSourceSize,
                 config.SkipIfSmallerThan,
