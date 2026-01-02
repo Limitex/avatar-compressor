@@ -23,6 +23,16 @@ export const metadata: Metadata = {
     template: '%s | Avatar Compressor',
   },
   description: 'VRChat avatar compression toolkit - Reduce file size and VRAM usage while preserving quality',
+  openGraph: {
+    type: 'website',
+    siteName: 'Avatar Compressor',
+    locale: 'en_US',
+    images: '/og/home',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: '/og/home',
+  },
 };
 
 export default function Layout({ children }: LayoutProps<'/'>) {
