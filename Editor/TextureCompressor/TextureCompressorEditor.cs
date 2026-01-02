@@ -31,6 +31,11 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
         private bool _showPreview;
         private TexturePreviewData[] _previewData;
+        private int _processedCount;
+        private int _skippedCount;
+
+        // Hash of settings when preview was generated (for outdated detection)
+        private int _previewSettingsHash;
 
         private static readonly Color HighQualityColor = new Color(0.1f, 0.9f, 0.6f);
         private static readonly Color QualityColor = new Color(0.2f, 0.8f, 0.4f);
@@ -48,6 +53,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
             public Vector2Int OriginalSize;
             public Vector2Int RecommendedSize;
             public string TextureType;
+            public bool IsProcessed;
+            public SkipReason SkipReason;
         }
 
         private void OnEnable()
@@ -307,6 +314,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
         private void DrawPreviewSection(TextureCompressor compressor)
         {
+            bool isOutdated = IsPreviewOutdated(compressor);
+
             if (GUILayout.Button("Preview Compression Results", GUILayout.Height(35)))
             {
                 GeneratePreview(compressor);
@@ -315,6 +324,10 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             if (_showPreview && _previewData != null && _previewData.Length > 0)
             {
+                if (isOutdated)
+                {
+                    DrawHelpBox("Preview is outdated. Settings or target object have changed since the preview was generated. Click 'Preview Compression Results' to refresh.", MessageType.Warning);
+                }
                 DrawPreview();
             }
             else if (_showPreview && (_previewData == null || _previewData.Length == 0))
@@ -328,8 +341,45 @@ namespace dev.limitex.avatar.compressor.texture.editor
             }
         }
 
+        private int ComputeSettingsHash(TextureCompressor config)
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 31 + config.Preset.GetHashCode();
+                hash = hash * 31 + config.Strategy.GetHashCode();
+                hash = hash * 31 + config.FastWeight.GetHashCode();
+                hash = hash * 31 + config.HighAccuracyWeight.GetHashCode();
+                hash = hash * 31 + config.PerceptualWeight.GetHashCode();
+                hash = hash * 31 + config.HighComplexityThreshold.GetHashCode();
+                hash = hash * 31 + config.LowComplexityThreshold.GetHashCode();
+                hash = hash * 31 + config.MinDivisor;
+                hash = hash * 31 + config.MaxDivisor;
+                hash = hash * 31 + config.MaxResolution;
+                hash = hash * 31 + config.MinResolution;
+                hash = hash * 31 + config.ForcePowerOfTwo.GetHashCode();
+                hash = hash * 31 + config.ProcessMainTextures.GetHashCode();
+                hash = hash * 31 + config.ProcessNormalMaps.GetHashCode();
+                hash = hash * 31 + config.ProcessEmissionMaps.GetHashCode();
+                hash = hash * 31 + config.ProcessOtherTextures.GetHashCode();
+                hash = hash * 31 + config.MinSourceSize;
+                hash = hash * 31 + config.SkipIfSmallerThan;
+                hash = hash * 31 + config.gameObject.GetInstanceID();
+                return hash;
+            }
+        }
+
+        private bool IsPreviewOutdated(TextureCompressor config)
+        {
+            if (!_showPreview || _previewData == null)
+                return false;
+
+            return ComputeSettingsHash(config) != _previewSettingsHash;
+        }
+
         private void GeneratePreview(TextureCompressor config)
         {
+            _previewSettingsHash = ComputeSettingsHash(config);
             var collector = new TextureCollector(
                 config.MinSourceSize,
                 config.SkipIfSmallerThan,
@@ -352,12 +402,21 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 config.MaxDivisor
             );
 
-            var textures = collector.Collect(config.gameObject);
+            var allTextures = collector.CollectAll(config.gameObject);
 
-            if (textures.Count == 0)
+            if (allTextures.Count == 0)
             {
                 _previewData = new TexturePreviewData[0];
                 return;
+            }
+
+            var processedTextures = new Dictionary<Texture2D, TextureInfo>();
+            foreach (var kvp in allTextures)
+            {
+                if (kvp.Value.IsProcessed)
+                {
+                    processedTextures[kvp.Key] = kvp.Value;
+                }
             }
 
             var analyzer = new TextureAnalyzer(
@@ -369,68 +428,97 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 complexityCalc
             );
 
-            var analysisResults = analyzer.AnalyzeBatch(textures);
+            var analysisResults = processedTextures.Count > 0
+                ? analyzer.AnalyzeBatch(processedTextures)
+                : new Dictionary<Texture2D, TextureAnalysisResult>();
 
-            var previewList = new List<TexturePreviewData>();
+            var processedList = new List<TexturePreviewData>();
+            var skippedList = new List<TexturePreviewData>();
 
-            foreach (var kvp in textures)
+            foreach (var kvp in allTextures)
             {
                 var tex = kvp.Key;
                 var info = kvp.Value;
 
-                if (!analysisResults.TryGetValue(tex, out var analysis))
+                if (info.IsProcessed && analysisResults.TryGetValue(tex, out var analysis))
                 {
-                    continue;
+                    processedList.Add(new TexturePreviewData
+                    {
+                        Texture = tex,
+                        Path = AssetDatabase.GetAssetPath(tex),
+                        Complexity = analysis.NormalizedComplexity,
+                        RecommendedDivisor = analysis.RecommendedDivisor,
+                        OriginalSize = new Vector2Int(tex.width, tex.height),
+                        RecommendedSize = analysis.RecommendedResolution,
+                        TextureType = info.TextureType,
+                        IsProcessed = true,
+                        SkipReason = SkipReason.None
+                    });
                 }
-
-                previewList.Add(new TexturePreviewData
+                else
                 {
-                    Texture = tex,
-                    Path = AssetDatabase.GetAssetPath(tex),
-                    Complexity = analysis.NormalizedComplexity,
-                    RecommendedDivisor = analysis.RecommendedDivisor,
-                    OriginalSize = new Vector2Int(tex.width, tex.height),
-                    RecommendedSize = analysis.RecommendedResolution,
-                    TextureType = info.TextureType
-                });
+                    skippedList.Add(new TexturePreviewData
+                    {
+                        Texture = tex,
+                        Path = AssetDatabase.GetAssetPath(tex),
+                        Complexity = 0f,
+                        RecommendedDivisor = 1,
+                        OriginalSize = new Vector2Int(tex.width, tex.height),
+                        RecommendedSize = new Vector2Int(tex.width, tex.height),
+                        TextureType = info.TextureType,
+                        IsProcessed = false,
+                        SkipReason = info.SkipReason
+                    });
+                }
             }
 
-            _previewData = previewList.ToArray();
+            _processedCount = processedList.Count;
+            _skippedCount = skippedList.Count;
+
+            // Combine and sort: processed textures first (sorted by path), then skipped (sorted by path)
+            var allPreviewData = new List<TexturePreviewData>(processedList.Count + skippedList.Count);
+            processedList.Sort((a, b) => string.Compare(a.Path, b.Path, System.StringComparison.Ordinal));
+            skippedList.Sort((a, b) => string.Compare(a.Path, b.Path, System.StringComparison.Ordinal));
+            allPreviewData.AddRange(processedList);
+            allPreviewData.AddRange(skippedList);
+            _previewData = allPreviewData.ToArray();
         }
 
         private void DrawPreview()
         {
             EditorGUILayout.Space(10);
-            DrawSectionHeader($"Preview ({_previewData.Length} textures)");
 
-            long originalTotal = 0;
-            long compressedTotal = 0;
+            DrawSectionHeader($"Preview ({_processedCount} to compress, {_skippedCount} skipped)");
+
+            long totalOriginal = 0;
+            long totalAfter = 0;
 
             foreach (var data in _previewData)
             {
-                originalTotal += (long)data.OriginalSize.x * data.OriginalSize.y * 4;
-                compressedTotal += (long)data.RecommendedSize.x * data.RecommendedSize.y * 4;
+                totalOriginal += (long)data.OriginalSize.x * data.OriginalSize.y * 4;
+                totalAfter += (long)data.RecommendedSize.x * data.RecommendedSize.y * 4;
             }
 
-            float savings = originalTotal > 0 ? 1f - (float)compressedTotal / originalTotal : 0f;
+            float savings = totalOriginal > 0 ? 1f - (float)totalAfter / totalOriginal : 0f;
 
             BeginBox();
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Original:", GUILayout.Width(60));
-            EditorGUILayout.LabelField(FormatBytes(originalTotal), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(FormatBytes(totalOriginal), EditorStyles.boldLabel);
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("After:", GUILayout.Width(60));
-            EditorGUILayout.LabelField(FormatBytes(compressedTotal), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(FormatBytes(totalAfter), EditorStyles.boldLabel);
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Savings:", GUILayout.Width(60));
             Color originalColor = GUI.color;
             GUI.color = Color.green;
-            EditorGUILayout.LabelField($"{savings:P0}", EditorStyles.boldLabel);
+            long savedBytes = totalOriginal - totalAfter;
+            EditorGUILayout.LabelField($"{savings:P0} (-{FormatBytes(savedBytes)})", EditorStyles.boldLabel);
             GUI.color = originalColor;
             EditorGUILayout.EndHorizontal();
 
@@ -440,8 +528,30 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUILayout.MaxHeight(300));
 
+            bool hasDrawnProcessedHeader = false;
+            bool hasDrawnSkippedHeader = false;
+
             foreach (var data in _previewData)
             {
+                if (data.IsProcessed && !hasDrawnProcessedHeader)
+                {
+                    EditorGUILayout.LabelField("Textures to Compress", EditorStyles.boldLabel);
+                    hasDrawnProcessedHeader = true;
+                }
+
+                if (!data.IsProcessed && !hasDrawnSkippedHeader)
+                {
+                    EditorGUILayout.Space(10);
+                    EditorGUILayout.LabelField("Skipped Textures", EditorStyles.boldLabel);
+                    hasDrawnSkippedHeader = true;
+                }
+
+                bool isSkipped = !data.IsProcessed;
+                if (isSkipped)
+                {
+                    EditorGUI.BeginDisabledGroup(true);
+                }
+
                 EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
                 var preview = AssetPreview.GetAssetPreview(data.Texture);
@@ -454,32 +564,58 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 EditorGUILayout.LabelField($"[{data.TextureType}]", GUILayout.Width(60));
                 EditorGUILayout.EndHorizontal();
 
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Complexity:", GUILayout.Width(70));
-
-                Color complexityColor = Color.Lerp(Color.green, Color.red, data.Complexity);
-                DrawProgressBar(data.Complexity, 100, 16, complexityColor);
-
-                EditorGUILayout.LabelField($"{data.Complexity:P0}", GUILayout.Width(45));
-                EditorGUILayout.EndHorizontal();
-
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Size:", GUILayout.Width(70));
-
-                string sizeText;
-                if (data.RecommendedDivisor > 1)
+                if (data.IsProcessed)
                 {
-                    sizeText = $"{data.OriginalSize.x}x{data.OriginalSize.y} → {data.RecommendedSize.x}x{data.RecommendedSize.y} (÷{data.RecommendedDivisor})";
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Complexity:", GUILayout.Width(70));
+
+                    Color complexityColor = Color.Lerp(Color.green, Color.red, data.Complexity);
+                    DrawProgressBar(data.Complexity, 100, 16, complexityColor);
+
+                    EditorGUILayout.LabelField($"{data.Complexity:P0}", GUILayout.Width(45));
+                    EditorGUILayout.EndHorizontal();
+
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Size:", GUILayout.Width(70));
+
+                    string sizeText;
+                    if (data.RecommendedDivisor > 1)
+                    {
+                        sizeText = $"{data.OriginalSize.x}x{data.OriginalSize.y} → {data.RecommendedSize.x}x{data.RecommendedSize.y} (÷{data.RecommendedDivisor})";
+                    }
+                    else
+                    {
+                        sizeText = $"{data.OriginalSize.x}x{data.OriginalSize.y} (unchanged)";
+                    }
+                    EditorGUILayout.LabelField(sizeText);
+                    EditorGUILayout.EndHorizontal();
                 }
                 else
                 {
-                    sizeText = $"{data.OriginalSize.x}x{data.OriginalSize.y} (unchanged)";
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Size:", GUILayout.Width(70));
+                    EditorGUILayout.LabelField($"{data.OriginalSize.x}x{data.OriginalSize.y}");
+                    EditorGUILayout.EndHorizontal();
+
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Reason:", GUILayout.Width(70));
+                    string reasonText = data.SkipReason switch
+                    {
+                        SkipReason.TooSmall => "Too small",
+                        SkipReason.FilteredByType => "Filtered by type",
+                        _ => "Skipped"
+                    };
+                    EditorGUILayout.LabelField(reasonText, EditorStyles.miniLabel);
+                    EditorGUILayout.EndHorizontal();
                 }
-                EditorGUILayout.LabelField(sizeText);
-                EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndHorizontal();
+
+                if (isSkipped)
+                {
+                    EditorGUI.EndDisabledGroup();
+                }
             }
 
             EditorGUILayout.EndScrollView();

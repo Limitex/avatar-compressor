@@ -49,9 +49,23 @@ namespace dev.limitex.avatar.compressor.texture
         }
 
         /// <summary>
-        /// Collects all textures from the avatar hierarchy.
+        /// Collects textures that should be processed from the avatar hierarchy.
         /// </summary>
         public Dictionary<Texture2D, TextureInfo> Collect(GameObject root)
+        {
+            return CollectInternal(root, collectAll: false);
+        }
+
+        /// <summary>
+        /// Collects all textures from the avatar hierarchy, including skipped ones.
+        /// Skipped textures will have IsProcessed=false and SkipReason set.
+        /// </summary>
+        public Dictionary<Texture2D, TextureInfo> CollectAll(GameObject root)
+        {
+            return CollectInternal(root, collectAll: true);
+        }
+
+        private Dictionary<Texture2D, TextureInfo> CollectInternal(GameObject root, bool collectAll)
         {
             var textures = new Dictionary<Texture2D, TextureInfo>();
             var renderers = root.GetComponentsInChildren<Renderer>(true);
@@ -62,7 +76,7 @@ namespace dev.limitex.avatar.compressor.texture
                 foreach (var material in materials)
                 {
                     if (material == null) continue;
-                    CollectFromMaterial(material, renderer, textures);
+                    CollectFromMaterial(material, renderer, textures, collectAll);
                 }
             }
 
@@ -72,7 +86,8 @@ namespace dev.limitex.avatar.compressor.texture
         private void CollectFromMaterial(
             Material material,
             Renderer renderer,
-            Dictionary<Texture2D, TextureInfo> textures)
+            Dictionary<Texture2D, TextureInfo> textures,
+            bool collectAll = false)
         {
             var shader = material.shader;
             int propertyCount = ShaderUtil.GetPropertyCount(shader);
@@ -86,11 +101,14 @@ namespace dev.limitex.avatar.compressor.texture
                 var texture = material.GetTexture(propertyName) as Texture2D;
 
                 if (texture == null) continue;
-                if (!ShouldProcess(texture, propertyName)) continue;
 
                 string textureType = GetTextureType(propertyName);
                 bool isNormalMap = NormalMapProperties.Contains(propertyName);
                 bool isEmission = EmissionProperties.Contains(propertyName);
+
+                var processResult = GetProcessResult(texture, propertyName);
+
+                if (!collectAll && !processResult.shouldProcess) continue;
 
                 if (!textures.TryGetValue(texture, out var info))
                 {
@@ -99,7 +117,9 @@ namespace dev.limitex.avatar.compressor.texture
                         TextureType = textureType,
                         PropertyName = propertyName,
                         IsNormalMap = isNormalMap,
-                        IsEmission = isEmission
+                        IsEmission = isEmission,
+                        IsProcessed = processResult.shouldProcess,
+                        SkipReason = processResult.skipReason
                     };
                     textures[texture] = info;
                 }
@@ -117,6 +137,14 @@ namespace dev.limitex.avatar.compressor.texture
                     {
                         info.IsEmission = true;
                     }
+                    // Update process status if this reference would be processed.
+                    // If the same texture is referenced by multiple properties and any of them
+                    // should be processed, the texture is marked as processed (order-independent).
+                    if (processResult.shouldProcess && !info.IsProcessed)
+                    {
+                        info.IsProcessed = true;
+                        info.SkipReason = SkipReason.None;
+                    }
                 }
 
                 info.References.Add(new MaterialTextureReference
@@ -128,22 +156,23 @@ namespace dev.limitex.avatar.compressor.texture
             }
         }
 
-        private bool ShouldProcess(Texture2D texture, string propertyName)
+        private (bool shouldProcess, SkipReason skipReason) GetProcessResult(Texture2D texture, string propertyName)
         {
             int maxDim = Mathf.Max(texture.width, texture.height);
-            if (maxDim < _minSourceSize) return false;
-            if (maxDim <= _skipIfSmallerThan) return false;
+            if (maxDim < _minSourceSize) return (false, SkipReason.TooSmall);
+            if (maxDim <= _skipIfSmallerThan) return (false, SkipReason.TooSmall);
 
+            bool shouldProcess;
             if (MainTextureProperties.Contains(propertyName))
-                return _processMainTextures;
+                shouldProcess = _processMainTextures;
+            else if (NormalMapProperties.Contains(propertyName))
+                shouldProcess = _processNormalMaps;
+            else if (EmissionProperties.Contains(propertyName))
+                shouldProcess = _processEmissionMaps;
+            else
+                shouldProcess = _processOtherTextures;
 
-            if (NormalMapProperties.Contains(propertyName))
-                return _processNormalMaps;
-
-            if (EmissionProperties.Contains(propertyName))
-                return _processEmissionMaps;
-
-            return _processOtherTextures;
+            return shouldProcess ? (true, SkipReason.None) : (false, SkipReason.FilteredByType);
         }
 
         private string GetTextureType(string propertyName)

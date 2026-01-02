@@ -4,6 +4,16 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.texture
 {
     /// <summary>
+    /// Reason why a texture is skipped from compression.
+    /// </summary>
+    public enum SkipReason
+    {
+        None,
+        TooSmall,
+        FilteredByType
+    }
+
+    /// <summary>
     /// Information about a texture and its usage context.
     /// </summary>
     public class TextureInfo
@@ -12,6 +22,8 @@ namespace dev.limitex.avatar.compressor.texture
         public string PropertyName { get; set; }
         public bool IsNormalMap { get; set; }
         public bool IsEmission { get; set; }
+        public bool IsProcessed { get; set; } = true;
+        public SkipReason SkipReason { get; set; } = SkipReason.None;
         public List<MaterialTextureReference> References { get; } = new List<MaterialTextureReference>();
     }
 
