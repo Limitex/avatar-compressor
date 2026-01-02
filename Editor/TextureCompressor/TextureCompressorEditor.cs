@@ -438,28 +438,27 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             DrawSectionHeader($"Preview ({_processedCount} to compress, {_skippedCount} skipped)");
 
-            long originalTotal = 0;
-            long compressedTotal = 0;
+            long totalOriginal = 0;
+            long totalAfter = 0;
 
             foreach (var data in _previewData)
             {
-                if (!data.IsProcessed) continue;
-                originalTotal += (long)data.OriginalSize.x * data.OriginalSize.y * 4;
-                compressedTotal += (long)data.RecommendedSize.x * data.RecommendedSize.y * 4;
+                totalOriginal += (long)data.OriginalSize.x * data.OriginalSize.y * 4;
+                totalAfter += (long)data.RecommendedSize.x * data.RecommendedSize.y * 4;
             }
 
-            float savings = originalTotal > 0 ? 1f - (float)compressedTotal / originalTotal : 0f;
+            float savings = totalOriginal > 0 ? 1f - (float)totalAfter / totalOriginal : 0f;
 
             BeginBox();
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Original:", GUILayout.Width(60));
-            EditorGUILayout.LabelField(FormatBytes(originalTotal), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(FormatBytes(totalOriginal), EditorStyles.boldLabel);
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("After:", GUILayout.Width(60));
-            EditorGUILayout.LabelField(FormatBytes(compressedTotal), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(FormatBytes(totalAfter), EditorStyles.boldLabel);
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
