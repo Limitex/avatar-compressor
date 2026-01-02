@@ -2,7 +2,11 @@ name: GameCI
 
 on:
   push:
+    paths-ignore:
+      - "*~/**"
   pull_request:
+    paths-ignore:
+      - "*~/**"
   workflow_dispatch:
 
 jobs:
