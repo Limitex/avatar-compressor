@@ -474,8 +474,14 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             _processedCount = processedList.Count;
             _skippedCount = skippedList.Count;
-            processedList.AddRange(skippedList);
-            _previewData = processedList.ToArray();
+
+            // Combine and sort: processed textures first (sorted by path), then skipped (sorted by path)
+            var allPreviewData = new List<TexturePreviewData>(processedList.Count + skippedList.Count);
+            processedList.Sort((a, b) => string.Compare(a.Path, b.Path, System.StringComparison.Ordinal));
+            skippedList.Sort((a, b) => string.Compare(a.Path, b.Path, System.StringComparison.Ordinal));
+            allPreviewData.AddRange(processedList);
+            allPreviewData.AddRange(skippedList);
+            _previewData = allPreviewData.ToArray();
         }
 
         private void DrawPreview()
