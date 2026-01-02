@@ -12,6 +12,7 @@ on:
 
 jobs:
   ci:
+    name: Docs CI
     runs-on: ubuntu-latest
     defaults:
       run:
