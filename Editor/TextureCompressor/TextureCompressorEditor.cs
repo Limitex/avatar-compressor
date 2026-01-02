@@ -465,7 +465,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
             EditorGUILayout.LabelField("Savings:", GUILayout.Width(60));
             Color originalColor = GUI.color;
             GUI.color = Color.green;
-            EditorGUILayout.LabelField($"{savings:P0}", EditorStyles.boldLabel);
+            long savedBytes = totalOriginal - totalAfter;
+            EditorGUILayout.LabelField($"{savings:P0} (-{FormatBytes(savedBytes)})", EditorStyles.boldLabel);
             GUI.color = originalColor;
             EditorGUILayout.EndHorizontal();
 
