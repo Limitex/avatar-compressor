@@ -1,0 +1,142 @@
+---
+title: Installation
+description: How to install Avatar Compressor
+---
+
+<Tabs items={['ALCOM (Recommended)', 'VCC', 'vrc-get', 'Manually']}>
+<Tab value="ALCOM (Recommended)">
+## ALCOM
+
+[ALCOM](https://vrc-get.anatawa12.com/) is the recommended package manager for VRChat avatar development.
+
+<Steps>
+<Step>
+### Add the Repository
+
+Click the button below to add the Limitex VPM repository:
+
+<VPMRepositoryLink
+  repoUrl="https://vpm.limitex.dev/index.json"
+  label="Add to ALCOM"
+/>
+
+Or manually add the repository:
+
+1. Open ALCOM and go to **Settings**
+2. Select the **Packages** tab
+3. Click **Add Repository**
+4. Enter the URL: `https://vpm.limitex.dev/index.json`
+5. Click **Add**
+
+</Step>
+<Step>
+
+### Install the Package
+
+1. Open ALCOM and select your project
+2. Find **Avatar Compressor** in the package list
+3. Click **Add** to install
+
+</Step>
+</Steps>
+</Tab>
+<Tab value="VCC">
+
+## VCC (VRChat Creator Companion)
+
+<Steps>
+<Step>
+### Add the Repository
+
+Click the button below to add the Limitex VPM repository:
+
+<VPMRepositoryLink
+  repoUrl="https://vpm.limitex.dev/index.json"
+  label="Add to VCC"
+/>
+
+Or manually add the repository:
+
+1. Open VCC and go to **Settings**
+2. Select the **Packages** tab
+3. Click **Add Repository**
+4. Enter the URL: `https://vpm.limitex.dev/index.json`
+5. Click **Add**
+
+</Step>
+<Step>
+
+### Install the Package
+
+1. Open VCC and select your project
+2. Go to **Manage Project**
+3. Find **Avatar Compressor** in the package list
+4. Click **Add** to install
+
+</Step>
+</Steps>
+</Tab>
+<Tab value="vrc-get">
+
+## vrc-get
+
+[vrc-get](https://github.com/vrc-get/vrc-get) is a command-line client for VRChat Package Manager.
+
+<Steps>
+<Step>
+### Add the Repository
+
+```bash
+vrc-get repo add https://vpm.limitex.dev/index.json
+```
+
+</Step>
+<Step>
+### Install the Package
+
+Navigate to your Unity project directory, then run:
+
+```bash
+vrc-get install dev.limitex.avatar.compressor
+```
+
+</Step>
+</Steps>
+</Tab>
+<Tab value="Manually">
+## Manual Installation
+
+<Callout type="warn">
+  Manual installation is not recommended. Use a package manager for easier
+  updates.
+</Callout>
+
+<Steps>
+<Step>
+### Download the Package
+
+Download the latest `.unitypackage` from the [GitHub Releases](https://github.com/Limitex/avatar-compressor/releases) page.
+
+</Step>
+<Step>
+### Import to Unity
+
+1. Open your Unity project
+2. Drag the `.unitypackage` file into the Unity window, or use **Assets > Import Package > Custom Package**
+3. Click **Import** in the dialog
+
+</Step>
+</Steps>
+</Tab>
+</Tabs>
+
+## Dependencies
+
+<Callout type="info">
+  The following packages will be installed automatically as dependencies.
+</Callout>
+
+| Package              | Minimum Version |
+| -------------------- | --------------- |
+| VRChat SDK - Avatars | 3.10.0          |
+| NDMF                 | 1.10.0          |

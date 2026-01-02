@@ -1,0 +1,241 @@
+---
+title: Texture Compressor
+description: Intelligent texture compression component
+---
+
+Texture Compressor analyzes avatar textures and compresses them based on their complexity. Complex textures (detailed patterns, text) receive less compression, while simple textures (solid colors, gradients) receive more compression.
+
+## Usage
+
+<Steps>
+<Step>
+### Add the Component
+
+1. Select your avatar's root GameObject (the one with the VRC Avatar Descriptor)
+2. In the Inspector, click **Add Component**
+3. Navigate to **Avatar Compressor > LAC Texture Compressor**, or search for "Texture Compressor"
+
+</Step>
+<Step>
+
+### Select a Preset
+
+Choose a preset that matches your needs.
+
+<Callout type="info">
+**Balanced** is recommended for most avatars.
+</Callout>
+</Step>
+<Step>
+### Build Your Avatar
+
+Build your avatar normally through VRChat SDK. The component automatically:
+
+1. Analyzes all textures in your avatar
+2. Calculates compression level for each texture based on complexity
+3. Creates compressed copies (originals remain untouched)
+4. Updates materials to use compressed textures
+
+</Step>
+</Steps>
+
+## Presets
+
+<Tabs items={['HighQuality', 'Quality', 'Balanced', 'Aggressive', 'Maximum', 'Custom']}>
+<Tab value="HighQuality">
+**Minimal compression for showcase avatars.**
+
+| Setting          | Value          |
+| ---------------- | -------------- |
+| Divisor Range    | 1x - 2x        |
+| Resolution Range | 256px - 2048px |
+
+Best for avatars where visual quality is the top priority.
+
+</Tab>
+<Tab value="Quality">
+**Prioritizes visual quality while allowing moderate compression.**
+
+| Setting          | Value          |
+| ---------------- | -------------- |
+| Divisor Range    | 1x - 4x        |
+| Resolution Range | 128px - 2048px |
+
+Good for PC avatars where you want to maintain quality but reduce some file size.
+
+</Tab>
+<Tab value="Balanced">
+**Good balance between quality and file size. (Recommended)**
+
+| Setting          | Value         |
+| ---------------- | ------------- |
+| Divisor Range    | 1x - 8x       |
+| Resolution Range | 64px - 2048px |
+
+Recommended for most avatars. Provides significant file size reduction while maintaining good visual quality.
+
+</Tab>
+<Tab value="Aggressive">
+**Strong compression for Quest avatars or limited VRAM.**
+
+| Setting          | Value         |
+| ---------------- | ------------- |
+| Divisor Range    | 2x - 8x       |
+| Resolution Range | 32px - 2048px |
+
+Use this for Quest avatars or when you need to significantly reduce VRAM usage.
+
+</Tab>
+<Tab value="Maximum">
+**Maximum file size reduction.**
+
+| Setting          | Value         |
+| ---------------- | ------------- |
+| Divisor Range    | 2x - 16x      |
+| Resolution Range | 32px - 2048px |
+
+<Callout type="warn">This preset may noticeably affect visual quality.</Callout>
+
+Use this when file size is critical.
+
+</Tab>
+<Tab value="Custom">
+**Full control over all settings.**
+
+When you select Custom, all settings become editable. See [Advanced Settings](#advanced-settings) below.
+
+</Tab>
+</Tabs>
+
+## Texture Filters
+
+Control which texture types are processed:
+
+| Filter                     | Description                                          |
+| -------------------------- | ---------------------------------------------------- |
+| **Process Main Textures**  | Color/albedo textures (`_MainTex`, `_BaseMap`, etc.) |
+| **Process Normal Maps**    | Normal/bump maps (`_BumpMap`, `_NormalMap`, etc.)    |
+| **Process Emission Maps**  | Emission textures (`_EmissionMap`, etc.)             |
+| **Process Other Textures** | Metallic, roughness, and other textures              |
+
+### Size Filters
+
+| Filter                   | Description                                                  |
+| ------------------------ | ------------------------------------------------------------ |
+| **Min Source Size**      | Only process textures larger than this size (in pixels)      |
+| **Skip If Smaller Than** | Skip textures smaller than or equal to this size (in pixels) |
+
+<Callout type="info">
+  These two filters work together. For example, with Min Source Size = 256 and
+  Skip If Smaller Than = 128, textures smaller than 256px are excluded from
+  processing, and textures at or below 128px are completely skipped.
+</Callout>
+
+## Preview
+
+Click **Preview Compression Results** in the Inspector to see compression analysis before building.
+
+### Summary
+
+The preview shows total size statistics:
+
+| Metric       | Description                             |
+| ------------ | --------------------------------------- |
+| **Original** | Total uncompressed size of all textures |
+| **After**    | Estimated size after compression        |
+| **Savings**  | Percentage and bytes saved              |
+
+### Texture List
+
+For each texture, the preview displays:
+
+- **Texture name and type** (Main, Normal, Emission, Other)
+- **Complexity score** (0.0 - 1.0) with visual progress bar
+- **Size change** - Original resolution → Recommended resolution (with divisor)
+
+### Complexity Score Interpretation
+
+| Score     | Level     | Compression               |
+| --------- | --------- | ------------------------- |
+| < 0.2     | Very Low  | Heavy compression applied |
+| 0.2 - 0.4 | Low       | Suitable for compression  |
+| 0.4 - 0.6 | Medium    | Moderate compression      |
+| 0.6 - 0.8 | High      | Light compression only    |
+| ≥ 0.8     | Very High | Minimal compression       |
+
+### Skipped Textures
+
+Textures that won't be processed are shown separately with skip reasons:
+
+- **Too small**: Texture is smaller than the minimum size threshold
+- **Filtered by type**: Texture type is disabled in filters
+
+<Callout type="info">
+  The preview does not update automatically. If settings change after generating
+  a preview, a warning will appear prompting you to click the button again to
+  refresh.
+</Callout>
+
+## Advanced Settings
+
+<Callout>
+  These settings are available when using the **Custom** preset.
+</Callout>
+
+<Accordions>
+<Accordion title="Analysis Strategy">
+The analysis strategy determines how texture complexity is calculated.
+
+| Strategy         | Description                                                                  | Best For            |
+| ---------------- | ---------------------------------------------------------------------------- | ------------------- |
+| **Fast**         | Quick analysis using gradient, spatial frequency, and color variance         | Quick builds, Quest |
+| **HighAccuracy** | Detailed analysis using DCT and GLCM                                         | Quality-focused     |
+| **Perceptual**   | Analysis aligned with human perception using block variance and edge density | General use         |
+| **Combined**     | Weighted combination of all strategies                                       | Most accurate       |
+
+When using the **Combined** strategy, you can adjust the weight of each sub-strategy:
+
+| Weight                   | Default | Description                            |
+| ------------------------ | ------- | -------------------------------------- |
+| **Fast Weight**          | 0.3     | Contribution of Fast strategy          |
+| **High Accuracy Weight** | 0.5     | Contribution of High Accuracy strategy |
+| **Perceptual Weight**    | 0.2     | Contribution of Perceptual strategy    |
+
+</Accordion>
+<Accordion title="Complexity Thresholds">
+| Setting | Description |
+| ------- | ----------- |
+| **High Complexity Threshold** | Textures above this receive minimal compression |
+| **Low Complexity Threshold** | Textures below this receive maximum compression |
+
+Textures between these thresholds receive interpolated compression.
+
+</Accordion>
+<Accordion title="Resolution Settings">
+| Setting | Description |
+| ------- | ----------- |
+| **Min Divisor** | Minimum scale factor (1 = no reduction) |
+| **Max Divisor** | Maximum scale factor (8 = 1/8 size) |
+| **Min Resolution** | Textures won't be scaled below this |
+| **Max Resolution** | Textures won't exceed this |
+</Accordion>
+<Accordion title="Special Texture Handling">
+- **Normal Maps**: Analyzed using normal vector variation instead of color complexity
+- **Emission Maps**: Complexity score is adjusted by 10% for emission-specific handling
+- **Sparse Textures**: Textures with many transparent pixels (fewer than 100 opaque pixels) receive a low complexity score for efficient processing
+</Accordion>
+<Accordion title="Power of Two">
+- **Force Power of Two**: When enabled (default), output dimensions are forced to powers of 2 (e.g., 256, 512, 1024). This is recommended for optimal GPU memory usage.
+</Accordion>
+<Accordion title="Debug">
+- **Enable Logging**: When enabled (default), compression details are logged to the Unity console during build. Useful for debugging or verifying compression results.
+</Accordion>
+</Accordions>
+
+## Compatibility
+
+<Callout type="info">
+  Texture Compressor runs during the NDMF Transforming phase, before Modular
+  Avatar and Avatar Optimizer. This ensures textures are compressed before other
+  tools process the avatar.
+</Callout>

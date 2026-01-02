@@ -1,20 +1,50 @@
 ---
 title: Avatar Compressor
-description: Unity package for compressing VRChat avatars
+description: VRChat avatar compression toolkit
 ---
 
-Avatar Compressor is a Unity package that helps you compress and optimize your VRChat avatars for better performance.
+Avatar Compressor is a toolkit for reducing VRChat avatar file size and VRAM usage. It analyzes your avatar's assets and applies intelligent compression at build time, keeping your original files untouched.
 
 ## Features
 
-- Texture compression and optimization
-- Mesh optimization
-- Material consolidation
-- Easy-to-use Unity Editor interface
+<Cards>
+  <Card title="Non-Destructive (NDMF)">
+    Powered by NDMF, compression is applied only during the build process. Your
+    original assets are never modified, so you can freely adjust settings
+    anytime.
+  </Card>
+  <Card title="Intelligent Analysis">
+    Automatically determines optimal compression for each texture based on
+    complexity analysis. Detailed textures are preserved while simple ones are
+    compressed.
+  </Card>
+  <Card title="Tool Compatibility">
+    Works with Modular Avatar and Avatar Optimizer. Runs before these tools in
+    the build pipeline to ensure compatibility.
+  </Card>
+</Cards>
+
+## Requirements
+
+| Requirement          | Version                   |
+| -------------------- | ------------------------- |
+| Unity                | VRChat designated version |
+| VRChat SDK - Avatars | 3.10.0 or later           |
+| NDMF                 | 1.10.0 or later           |
 
 ## Getting Started
 
 <Cards>
-  <Card title="Installation" href="/docs/installation" />
-  <Card title="Usage Guide" href="/docs/usage" />
+  <Card title="Installation" href="/docs/installation">
+    Add Avatar Compressor to your project via VCC.
+  </Card>
+</Cards>
+
+## Components
+
+<Cards>
+  <Card title="Texture Compressor" href="/docs/components/texture-compressor">
+    Compress avatar textures based on complexity analysis. Reduce VRAM usage
+    while preserving visual quality.
+  </Card>
 </Cards>
