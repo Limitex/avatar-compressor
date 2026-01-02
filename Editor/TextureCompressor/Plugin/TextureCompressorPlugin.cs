@@ -17,6 +17,7 @@ namespace dev.limitex.avatar.compressor.texture
         {
             InPhase(BuildPhase.Transforming)
                 .BeforePlugin("nadena.dev.modular-avatar")
+                .BeforePlugin("com.anatawa12.avatar-optimizer")
                 .Run("Avatar Compressor: Compress Avatar Textures", ctx =>
                 {
                     var components = ctx.AvatarRootObject.GetComponentsInChildren<TextureCompressor>(true);
