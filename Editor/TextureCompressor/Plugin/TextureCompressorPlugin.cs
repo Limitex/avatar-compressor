@@ -10,14 +10,14 @@ namespace dev.limitex.avatar.compressor.texture
     /// </summary>
     public class TextureCompressorPlugin : Plugin<TextureCompressorPlugin>
     {
-        public override string DisplayName => "Texture Compressor";
+        public override string DisplayName => "LAC Texture Compressor";
         public override string QualifiedName => "dev.limitex.avatar-compressor.texture";
 
         protected override void Configure()
         {
             InPhase(BuildPhase.Transforming)
                 .BeforePlugin("nadena.dev.modular-avatar")
-                .Run("Compress Avatar Textures", ctx =>
+                .Run("Avatar Compressor: Compress Avatar Textures", ctx =>
                 {
                     var components = ctx.AvatarRootObject.GetComponentsInChildren<TextureCompressor>(true);
 

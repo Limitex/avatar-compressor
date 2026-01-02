@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.texture
 {
     [DisallowMultipleComponent]
     [ExecuteAlways]
-    [AddComponentMenu("Avatar Compressor/Texture Compressor")]
+    [AddComponentMenu("Avatar Compressor/LAC Texture Compressor")]
     public class TextureCompressor : MonoBehaviour, IEditorOnly
     {
         [Header("Preset")]
