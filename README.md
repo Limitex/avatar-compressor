@@ -48,6 +48,10 @@ Download the latest release from [GitHub Releases](https://github.com/limitex/av
 
 Add optimization components to your avatar's root GameObject, configure settings, and build your avatar. All optimizations are applied automatically at build time via NDMF.
 
+## Recommended
+
+For best results, we recommend using this tool together with [Avatar Optimizer (AAO)](https://vpm.anatawa12.com/avatar-optimizer/). Avatar Optimizer provides additional optimization features such as mesh merging, bone reduction, and more. LAC runs before Avatar Optimizer in the build pipeline, ensuring optimal texture compression before other optimizations are applied.
+
 ## License
 
 [MIT License](LICENSE)
