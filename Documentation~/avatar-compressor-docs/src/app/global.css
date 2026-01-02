@@ -1,3 +1,203 @@
 @import 'tailwindcss';
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
+
+/* Custom Properties - Light Mode (scoped to home page) */
+.home-page {
+  --accent-cyan: #0891b2;
+  --accent-cyan-dim: #0e7490;
+  --accent-cyan-soft: #06b6d4;
+  --accent-magenta: #db2777;
+  --accent-purple: #7c3aed;
+  --background: #f8fafc;
+  --background-alt: #f1f5f9;
+  --foreground: #0f172a;
+  --foreground-muted: #475569;
+  --foreground-subtle: #64748b;
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --card-bg-hover: rgba(255, 255, 255, 0.95);
+  --card-border: rgba(148, 163, 184, 0.3);
+  --card-border-hover: rgba(8, 145, 178, 0.5);
+  --shadow-color: 199 89% 48%;
+}
+
+/* Custom Properties - Dark Mode (scoped to home page) */
+.dark .home-page {
+  --accent-cyan: #00d4ff;
+  --accent-cyan-dim: #00a8cc;
+  --accent-cyan-soft: #22d3ee;
+  --accent-magenta: #ff00aa;
+  --accent-purple: #8b5cf6;
+  --background: #0a0a0a;
+  --background-alt: #171717;
+  --foreground: #fafafa;
+  --foreground-muted: #a3a3a3;
+  --foreground-subtle: #737373;
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --card-bg-hover: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.06);
+  --card-border-hover: rgba(0, 212, 255, 0.3);
+  --shadow-color: 199 100% 50%;
+}
+
+/* Hero Background - Complex patterns that can't be done with Tailwind */
+.hero-grid-bg {
+  background-image:
+    linear-gradient(rgba(8, 145, 178, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(8, 145, 178, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-color: var(--background);
+}
+
+.dark .hero-grid-bg {
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.hero-gradient {
+  background:
+    radial-gradient(ellipse 100% 80% at 50% 0%, rgba(8, 145, 178, 0.15), transparent 60%),
+    radial-gradient(ellipse 80% 60% at 100% 50%, rgba(124, 58, 237, 0.1), transparent 50%),
+    radial-gradient(ellipse 60% 50% at 0% 70%, rgba(219, 39, 119, 0.08), transparent 50%);
+}
+
+.dark .hero-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 212, 255, 0.15), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 60%, rgba(139, 92, 246, 0.1), transparent),
+    radial-gradient(ellipse 50% 30% at 20% 80%, rgba(255, 0, 170, 0.08), transparent);
+}
+
+/* Text Shadow - Not available in Tailwind */
+.glow-text {
+  text-shadow: 0 0 30px rgba(8, 145, 178, 0.3);
+}
+
+.dark .glow-text {
+  text-shadow: 0 0 40px rgba(0, 212, 255, 0.4), 0 0 80px rgba(0, 212, 255, 0.2);
+}
+
+/* Gradient Border with Mask - Too complex for Tailwind */
+.gradient-border {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.95));
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 10px 20px -5px rgba(8, 145, 178, 0.08);
+}
+
+.dark .gradient-border {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(139, 92, 246, 0.1));
+  box-shadow: none;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple), var(--accent-magenta));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+
+.dark .gradient-border::before {
+  opacity: 0.5;
+}
+
+.gradient-border:hover::before {
+  opacity: 0.8;
+}
+
+.dark .gradient-border:hover::before {
+  opacity: 1;
+}
+
+/* Keyframe Animations */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pixel-float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+  50% { transform: translateY(-20px) scale(0.8); opacity: 1; }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+/* Pixel Animation - nth-child selectors can't be done in Tailwind */
+.compression-pixel {
+  animation: pixel-float 2s ease-in-out infinite;
+  background: var(--accent-cyan);
+}
+
+.compression-pixel:nth-child(odd) {
+  animation-delay: 0.5s;
+  background: var(--accent-purple);
+}
+
+.compression-pixel:nth-child(3n) {
+  animation-delay: 1s;
+  background: var(--accent-magenta);
+}
+
+/* Feature Card Hover with Icon Effect - Complex group hover */
+.feature-card:hover .feature-icon {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 12px rgba(8, 145, 178, 0.4));
+}
+
+.dark .feature-card:hover .feature-icon {
+  filter: drop-shadow(0 0 20px var(--accent-cyan));
+}
+
+/* Light mode feature card shadow */
+.feature-card {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  box-shadow:
+    0 4px 12px rgba(8, 145, 178, 0.1),
+    0 8px 24px rgba(8, 145, 178, 0.08);
+}
+
+.dark .feature-card {
+  box-shadow: none;
+}
+
+.dark .feature-card:hover {
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.1);
+}
+
+/* CTA Button Pseudo-element - Can't be done with Tailwind */
+.cta-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #fff, transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cta-button:hover::before {
+  opacity: 0.2;
+}
+
+/* Noise Overlay - SVG background can't be done with Tailwind */
+.noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
