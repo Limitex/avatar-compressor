@@ -137,7 +137,9 @@ namespace dev.limitex.avatar.compressor.texture
                     {
                         info.IsEmission = true;
                     }
-                    // Update process status if this reference would be processed
+                    // Update process status if this reference would be processed.
+                    // If the same texture is referenced by multiple properties and any of them
+                    // should be processed, the texture is marked as processed (order-independent).
                     if (processResult.shouldProcess && !info.IsProcessed)
                     {
                         info.IsProcessed = true;
