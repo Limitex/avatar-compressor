@@ -2,7 +2,7 @@ name: Deploy Docs
 
 on:
   push:
-    branches: [main]
+    branches: ["main"]
     paths:
       - 'Documentation~/avatar-compressor-docs/**'
   workflow_dispatch:
@@ -13,8 +13,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -22,9 +22,12 @@ jobs:
     defaults:
       run:
         working-directory: Documentation~/avatar-compressor-docs
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -34,9 +37,18 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
+          node-version: "22"
+          cache: "pnpm"
           cache-dependency-path: Documentation~/avatar-compressor-docs/pnpm-lock.yaml
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            Documentation~/avatar-compressor-docs/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('Documentation~/avatar-compressor-docs/pnpm-lock.yaml') }}-${{ hashFiles('Documentation~/avatar-compressor-docs/**.[jt]s', 'Documentation~/avatar-compressor-docs/**.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('Documentation~/avatar-compressor-docs/pnpm-lock.yaml') }}-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
