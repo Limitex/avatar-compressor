@@ -100,6 +100,7 @@
   padding: 1px;
   border-radius: inherit;
   background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple), var(--accent-magenta));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
