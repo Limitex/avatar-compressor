@@ -6,15 +6,15 @@
 [![GitHub Downloads (total)](https://img.shields.io/github/downloads/limitex/avatar-compressor/total?label=downloads%40total)](https://github.com/limitex/avatar-compressor/releases)
 [![GitHub Actions](https://img.shields.io/github/actions/workflow/status/limitex/avatar-compressor/gameci.yml?label=tests)](https://github.com/limitex/avatar-compressor/actions)
 
-A non-destructive avatar optimization toolkit for VRChat. This VPM package provides various tools to reduce avatar size.
+A non-destructive avatar optimization utility for VRChat. Create lightweight avatars that more players can see.
 
 ## Features
 
 ### Texture Compressor
 
-Intelligently analyzes and compresses avatar textures based on complexity analysis.
+Analyzes and compresses avatar textures based on their complexity.
 
-- **Intelligent complexity analysis** - Textures are analyzed to determine optimal compression levels
+- **Complexity-based analysis** - Textures are analyzed to determine optimal compression levels
 - **Multiple analysis strategies** - Fast, HighAccuracy, Perceptual, and Combined modes
 - **Preset configurations** - Quick setup with 5 built-in presets
 - **Texture type awareness** - Specialized handling for normal maps, emission maps, and more

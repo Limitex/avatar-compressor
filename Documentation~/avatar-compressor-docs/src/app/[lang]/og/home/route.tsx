@@ -5,8 +5,8 @@ import { i18n, getLocale, type Locale } from '@/lib/i18n';
 export const revalidate = false;
 
 const descriptions: Record<Locale, string> = {
-  en: 'VRChat avatar compression toolkit - Reduce file size and VRAM usage while preserving quality',
-  ja: 'VRChatアバター圧縮ツールキット - 品質を維持しながらファイルサイズとVRAM使用量を削減',
+  en: 'VRChat avatar utility - Lightweight avatars that more players can see',
+  ja: 'VRChatアバターユーティリティ - より多くのプレイヤーに見てもらえる軽量アバターへ',
 };
 
 export async function GET(_req: Request, { params }: { params: Promise<{ lang: string }> }) {

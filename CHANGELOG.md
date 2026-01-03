@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Initial release of Avatar Compressor (LAC - Limitex Avatar Compressor)
-- **Texture Compressor** with intelligent complexity-based compression
+- **Texture Compressor** with complexity-based compression
   - Multiple analysis strategies: Fast, HighAccuracy, Perceptual, and Combined
   - 5 built-in presets: HighQuality, Quality, Balanced, Aggressive, Maximum
   - Custom configuration mode for fine-tuned control

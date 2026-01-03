@@ -34,7 +34,7 @@ type Translations = {
 const translations: Record<Locale, Translations> = {
   en: {
     badge: 'NDMF Plugin for VRChat',
-    heroDescription: 'Reduce VRAM usage and file size while preserving visual quality.',
+    heroDescription: 'Lightweight avatars that more players can see.',
     heroDescriptionSub: 'Non-destructive compression powered by NDMF.',
     getStarted: 'Get Started',
     viewOnGitHub: 'View on GitHub',
@@ -42,7 +42,7 @@ const translations: Record<Locale, Translations> = {
     originalFiles: 'Original Files Modified',
     setup: 'Setup',
     whyTitle: 'Why Avatar Compressor?',
-    whyDescription: 'Smart compression that respects your workflow',
+    whyDescription: 'Compression that respects your workflow',
     features: [
       {
         title: 'Non-Destructive',
@@ -50,7 +50,7 @@ const translations: Record<Locale, Translations> = {
           'Your original assets are never modified. Compression is applied only at build time through NDMF, so you can freely adjust settings anytime.',
       },
       {
-        title: 'Intelligent Analysis',
+        title: 'Complexity-based Analysis',
         description:
           'Automatically determines optimal compression for each texture based on complexity. Detailed textures stay sharp while simple ones get compressed.',
       },
@@ -67,8 +67,8 @@ const translations: Record<Locale, Translations> = {
         description: 'Smaller textures mean faster avatar loading for you and others',
       },
       {
-        label: 'Lower VRAM Usage',
-        description: 'Reduce memory footprint without sacrificing visual quality',
+        label: 'More Visibility',
+        description: 'More players can see and load your avatar',
       },
       {
         label: 'Better Performance',
@@ -83,7 +83,7 @@ const translations: Record<Locale, Translations> = {
   },
   ja: {
     badge: 'VRChat用NDMFプラグイン',
-    heroDescription: '視覚的な品質を維持しながら、VRAMの使用量とファイルサイズを削減します。',
+    heroDescription: 'より多くのプレイヤーに見てもらえる軽量アバターへ。',
     heroDescriptionSub: 'NDMFによる非破壊圧縮。',
     getStarted: 'はじめる',
     viewOnGitHub: 'GitHubで見る',
@@ -91,7 +91,7 @@ const translations: Record<Locale, Translations> = {
     originalFiles: '元ファイル変更なし',
     setup: 'セットアップ',
     whyTitle: 'なぜAvatar Compressor？',
-    whyDescription: 'ワークフローを尊重するスマートな圧縮',
+    whyDescription: 'ワークフローを尊重した圧縮',
     features: [
       {
         title: '非破壊',
@@ -99,7 +99,7 @@ const translations: Record<Locale, Translations> = {
           'オリジナルのアセットは一切変更されません。圧縮はNDMFを通じてビルド時にのみ適用されるため、いつでも自由に設定を調整できます。',
       },
       {
-        title: 'インテリジェント分析',
+        title: '複雑さに応じた分析',
         description:
           '複雑さに基づいて各テクスチャに最適な圧縮を自動的に判断します。詳細なテクスチャはシャープに保たれ、シンプルなものは圧縮されます。',
       },
@@ -116,8 +116,8 @@ const translations: Record<Locale, Translations> = {
         description: '小さなテクスチャにより、あなたと他のユーザーのアバターのロードが高速化されます',
       },
       {
-        label: 'VRAM使用量の削減',
-        description: '視覚的な品質を犠牲にすることなく、メモリ使用量を削減します',
+        label: 'より多くの人に表示',
+        description: 'より多くのプレイヤーにアバターを見てもらえます',
       },
       {
         label: 'パフォーマンスの向上',
