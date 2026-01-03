@@ -15,12 +15,17 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly int _minResolution;
         private readonly int _maxResolution;
         private readonly bool _forcePowerOfTwo;
+        private readonly bool _useBC7ForHighComplexity;
+        private readonly float _bc7ComplexityThreshold;
 
-        public TextureResizer(int minResolution, int maxResolution, bool forcePowerOfTwo)
+        public TextureResizer(int minResolution, int maxResolution, bool forcePowerOfTwo,
+            bool useBC7ForHighComplexity = true, float bc7ComplexityThreshold = 0.7f)
         {
             _minResolution = minResolution;
             _maxResolution = maxResolution;
             _forcePowerOfTwo = forcePowerOfTwo;
+            _useBC7ForHighComplexity = useBC7ForHighComplexity;
+            _bc7ComplexityThreshold = bc7ComplexityThreshold;
         }
 
         /// <summary>
@@ -41,7 +46,7 @@ namespace dev.limitex.avatar.compressor.texture
             }
 
             // Apply compression to reduce memory usage
-            CompressTexture(result, source.format, isNormalMap);
+            CompressTexture(result, source.format, isNormalMap, analysis.NormalizedComplexity);
 
             if (enableLogging)
             {
@@ -58,9 +63,9 @@ namespace dev.limitex.avatar.compressor.texture
 
         /// <summary>
         /// Compresses a texture, preserving the original format if already compressed,
-        /// or converting to DXT if uncompressed.
+        /// or converting to DXT/BC7 based on complexity if uncompressed.
         /// </summary>
-        private void CompressTexture(Texture2D texture, TextureFormat sourceFormat, bool isNormalMap)
+        private void CompressTexture(Texture2D texture, TextureFormat sourceFormat, bool isNormalMap, float complexity)
         {
             TextureFormat targetFormat;
 
@@ -71,11 +76,16 @@ namespace dev.limitex.avatar.compressor.texture
             }
             else
             {
-                // Uncompressed format (RGBA32, ARGB32, RGB24, etc.) - convert to DXT
+                // Uncompressed format (RGBA32, ARGB32, RGB24, etc.) - convert to compressed format
                 if (isNormalMap)
                 {
                     // BC5 is optimal for normal maps (2 channels, high quality)
                     targetFormat = TextureFormat.BC5;
+                }
+                else if (_useBC7ForHighComplexity && complexity >= _bc7ComplexityThreshold)
+                {
+                    // BC7 for high complexity textures (highest quality, 8 bpp)
+                    targetFormat = TextureFormat.BC7;
                 }
                 else if (HasSignificantAlpha(texture))
                 {

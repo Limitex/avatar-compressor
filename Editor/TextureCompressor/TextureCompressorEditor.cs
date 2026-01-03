@@ -392,7 +392,9 @@ namespace dev.limitex.avatar.compressor.texture.editor
             var resizer = new TextureResizer(
                 config.MinResolution,
                 config.MaxResolution,
-                config.ForcePowerOfTwo
+                config.ForcePowerOfTwo,
+                config.UseBC7ForHighComplexity,
+                config.BC7ComplexityThreshold
             );
 
             var complexityCalc = new ComplexityCalculator(

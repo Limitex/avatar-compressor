@@ -35,7 +35,9 @@ namespace dev.limitex.avatar.compressor.texture
             _resizer = new TextureResizer(
                 config.MinResolution,
                 config.MaxResolution,
-                config.ForcePowerOfTwo
+                config.ForcePowerOfTwo,
+                config.UseBC7ForHighComplexity,
+                config.BC7ComplexityThreshold
             );
 
             _complexityCalc = new ComplexityCalculator(
