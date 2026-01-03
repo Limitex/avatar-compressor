@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using dev.limitex.avatar.compressor.common;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace dev.limitex.avatar.compressor.texture
 {
@@ -90,7 +91,7 @@ namespace dev.limitex.avatar.compressor.texture
                     continue;
                 }
 
-                var compressedTexture = _resizer.Resize(originalTexture, analysis, enableLogging);
+                var compressedTexture = _resizer.Resize(originalTexture, analysis, enableLogging, textureInfo.IsNormalMap);
                 compressedTexture.name = originalTexture.name + "_compressed";
 
                 processedTextures[originalTexture] = compressedTexture;
@@ -117,11 +118,11 @@ namespace dev.limitex.avatar.compressor.texture
             foreach (var kvp in original)
             {
                 var origTex = kvp.Key;
-                originalSize += (long)origTex.width * origTex.height * 4;
+                originalSize += Profiler.GetRuntimeMemorySizeLong(origTex);
 
                 if (processed.TryGetValue(origTex, out var compTex))
                 {
-                    compressedSize += (long)compTex.width * compTex.height * 4;
+                    compressedSize += Profiler.GetRuntimeMemorySizeLong(compTex);
                 }
             }
 

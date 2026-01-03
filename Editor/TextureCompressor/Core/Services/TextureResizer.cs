@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEditor;
 
 namespace dev.limitex.avatar.compressor.texture
 {
@@ -25,27 +26,131 @@ namespace dev.limitex.avatar.compressor.texture
         /// <summary>
         /// Resizes a texture using pre-computed analysis result.
         /// </summary>
-        public Texture2D Resize(Texture2D source, TextureAnalysisResult analysis, bool enableLogging)
+        public Texture2D Resize(Texture2D source, TextureAnalysisResult analysis, bool enableLogging, bool isNormalMap = false)
         {
+            Texture2D result;
             if (analysis.RecommendedDivisor <= 1 &&
                 source.width <= _maxResolution &&
                 source.height <= _maxResolution)
             {
-                return Copy(source);
+                result = Copy(source);
+            }
+            else
+            {
+                result = ResizeTo(source, analysis.RecommendedResolution.x, analysis.RecommendedResolution.y);
             }
 
-            var result = ResizeTo(source, analysis.RecommendedResolution.x, analysis.RecommendedResolution.y);
+            // Apply compression to reduce memory usage
+            CompressTexture(result, source.format, isNormalMap);
 
             if (enableLogging)
             {
+                var format = result.format;
                 Debug.Log($"[TextureCompressor] {source.name}: " +
                           $"{source.width}x{source.height} → " +
-                          $"{result.width}x{result.height} " +
+                          $"{result.width}x{result.height} ({format}) " +
                           $"(Complexity: {analysis.NormalizedComplexity:P0}, " +
                           $"Divisor: {analysis.RecommendedDivisor}x)");
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Compresses a texture, preserving the original format if already compressed,
+        /// or converting to DXT if uncompressed.
+        /// </summary>
+        private void CompressTexture(Texture2D texture, TextureFormat sourceFormat, bool isNormalMap)
+        {
+            TextureFormat targetFormat;
+
+            // Check if source is already a compressed format - preserve it
+            if (IsCompressedFormat(sourceFormat))
+            {
+                targetFormat = sourceFormat;
+            }
+            else
+            {
+                // Uncompressed format (RGBA32, ARGB32, RGB24, etc.) - convert to DXT
+                if (isNormalMap)
+                {
+                    // BC5 is optimal for normal maps (2 channels, high quality)
+                    targetFormat = TextureFormat.BC5;
+                }
+                else if (HasSignificantAlpha(texture))
+                {
+                    // DXT5 for textures with alpha channel (8 bpp)
+                    targetFormat = TextureFormat.DXT5;
+                }
+                else
+                {
+                    // DXT1 for opaque textures (4 bpp, most efficient)
+                    targetFormat = TextureFormat.DXT1;
+                }
+            }
+
+            try
+            {
+                EditorUtility.CompressTexture(texture, targetFormat, TextureCompressionQuality.Best);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[TextureCompressor] Failed to compress texture to {targetFormat}: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Checks if the texture format is a compressed format.
+        /// </summary>
+        private bool IsCompressedFormat(TextureFormat format)
+        {
+            switch (format)
+            {
+                case TextureFormat.DXT1:
+                case TextureFormat.DXT1Crunched:
+                case TextureFormat.DXT5:
+                case TextureFormat.DXT5Crunched:
+                case TextureFormat.BC4:
+                case TextureFormat.BC5:
+                case TextureFormat.BC6H:
+                case TextureFormat.BC7:
+                case TextureFormat.ASTC_4x4:
+                case TextureFormat.ASTC_5x5:
+                case TextureFormat.ASTC_6x6:
+                case TextureFormat.ASTC_8x8:
+                case TextureFormat.ASTC_10x10:
+                case TextureFormat.ASTC_12x12:
+                case TextureFormat.ETC_RGB4:
+                case TextureFormat.ETC2_RGB:
+                case TextureFormat.ETC2_RGBA1:
+                case TextureFormat.ETC2_RGBA8:
+                case TextureFormat.PVRTC_RGB2:
+                case TextureFormat.PVRTC_RGB4:
+                case TextureFormat.PVRTC_RGBA2:
+                case TextureFormat.PVRTC_RGBA4:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks if the texture has significant alpha (non-fully-opaque pixels).
+        /// </summary>
+        private bool HasSignificantAlpha(Texture2D texture)
+        {
+            var pixels = texture.GetPixels32();
+            int sampleCount = Mathf.Min(pixels.Length, 10000);
+            int step = Mathf.Max(1, pixels.Length / sampleCount);
+
+            for (int i = 0; i < pixels.Length; i += step)
+            {
+                if (pixels[i].a < 250)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
