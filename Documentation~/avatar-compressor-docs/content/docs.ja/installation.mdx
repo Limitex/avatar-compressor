@@ -1,0 +1,142 @@
+---
+title: インストール
+description: Avatar Compressorのインストール方法
+---
+
+<Tabs items={['ALCOM（推奨）', 'VCC', 'vrc-get', '手動']}>
+<Tab value="ALCOM（推奨）">
+## ALCOM
+
+[ALCOM](https://vrc-get.anatawa12.com/)は、VRChat アバター開発に推奨されるパッケージマネージャーです。
+
+<Steps>
+<Step>
+### リポジトリを追加
+
+下のボタンをクリックして Limitex VPM リポジトリを追加します：
+
+<VPMRepositoryLink
+  repoUrl="https://vpm.limitex.dev/index.json"
+  label="ALCOMに追加"
+  method="alcom"
+/>
+
+または手動でリポジトリを追加：
+
+1. ALCOM を開き、**設定**に移動
+2. **パッケージ**タブを選択
+3. **リポジトリを追加**をクリック
+4. URL `https://vpm.limitex.dev/index.json` を入力
+5. **追加**をクリック
+
+</Step>
+<Step>
+
+### パッケージをインストール
+
+1. ALCOM を開き、プロジェクトを選択
+2. パッケージリストから**Avatar Compressor**を見つける
+3. **追加**をクリックしてインストール
+
+</Step>
+</Steps>
+</Tab>
+<Tab value="VCC">
+
+## VCC（VRChat Creator Companion）
+
+<Steps>
+<Step>
+### リポジトリを追加
+
+下のボタンをクリックして Limitex VPM リポジトリを追加します：
+
+<VPMRepositoryLink
+  repoUrl="https://vpm.limitex.dev/index.json"
+  label="VCCに追加"
+/>
+
+または手動でリポジトリを追加：
+
+1. VCC を開き、**Settings**に移動
+2. **Packages**タブを選択
+3. **Add Repository**をクリック
+4. URL `https://vpm.limitex.dev/index.json` を入力
+5. **Add**をクリック
+
+</Step>
+<Step>
+
+### パッケージをインストール
+
+1. VCC を開き、プロジェクトを選択
+2. **Manage Project**に移動
+3. パッケージリストから**Avatar Compressor**を見つける
+4. **Add**をクリックしてインストール
+
+</Step>
+</Steps>
+</Tab>
+<Tab value="vrc-get">
+
+## vrc-get
+
+[vrc-get](https://github.com/vrc-get/vrc-get)は、VRChat Package Manager 用のコマンドラインクライアントです。
+
+<Steps>
+<Step>
+### リポジトリを追加
+
+```bash
+vrc-get repo add https://vpm.limitex.dev/index.json
+```
+
+</Step>
+<Step>
+### パッケージをインストール
+
+Unity プロジェクトディレクトリに移動し、以下を実行：
+
+```bash
+vrc-get install dev.limitex.avatar.compressor
+```
+
+</Step>
+</Steps>
+</Tab>
+<Tab value="手動">
+## 手動インストール
+
+<Callout type="warn">
+  手動インストールは推奨されません。更新を容易にするためパッケージマネージャーを使用してください。
+</Callout>
+
+<Steps>
+<Step>
+### パッケージをダウンロード
+
+[GitHub Releases](https://github.com/Limitex/avatar-compressor/releases)ページから最新の`.unitypackage`をダウンロードします。
+
+</Step>
+<Step>
+### Unityにインポート
+
+1. Unity プロジェクトを開く
+2. `.unitypackage`ファイルを Unity ウィンドウにドラッグ、または**Assets > Import Package > Custom Package**を使用
+3. ダイアログで**Import**をクリック
+
+</Step>
+</Steps>
+</Tab>
+</Tabs>
+
+## 依存関係
+
+<Callout type="info">
+  以下のパッケージは依存関係として自動的にインストールされます。
+</Callout>
+
+| パッケージ           | 最小バージョン |
+| -------------------- | -------------- |
+| VRChat SDK - Avatars | 3.10.0         |
+| NDMF                 | 1.10.0         |

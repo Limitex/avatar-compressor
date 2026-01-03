@@ -1,0 +1,48 @@
+---
+title: Avatar Compressor
+description: VRChatアバター圧縮ツールキット
+---
+
+Avatar Compressor は、VRChat アバターのファイルサイズと VRAM 使用量を削減するためのツールキットです。アバターのアセットを分析し、ビルド時にインテリジェントな圧縮を適用します。元のファイルは変更されません。
+
+## 特徴
+
+<Cards>
+  <Card title="非破壊（NDMF）">
+    NDMFを使用し、圧縮はビルドプロセス中にのみ適用されます。元のアセットは一切変更されないため、いつでも自由に設定を調整できます。
+  </Card>
+  <Card title="インテリジェント分析">
+    複雑さの分析に基づいて、各テクスチャの最適な圧縮を自動的に判断します。詳細なテクスチャは保持され、シンプルなものは圧縮されます。
+  </Card>
+  <Card title="ツール互換性">
+    Modular AvatarやAvatar
+    Optimizerと連携します。互換性を確保するため、ビルドパイプラインでこれらのツールの前に実行されます。
+  </Card>
+</Cards>
+
+## 要件
+
+| 要件                 | バージョン            |
+| -------------------- | --------------------- |
+| Unity                | VRChat 指定バージョン |
+| VRChat SDK - Avatars | 3.10.0 以降           |
+| NDMF                 | 1.10.0 以降           |
+
+## はじめに
+
+<Cards>
+  <Card title="インストール" href="./installation">
+    VCCを使用してAvatar Compressorをプロジェクトに追加します。
+  </Card>
+</Cards>
+
+## コンポーネント
+
+<Cards>
+  <Card
+    title="Texture Compressor"
+    href="./components/texture-compressor"
+  >
+    複雑さの分析に基づいてアバターのテクスチャを圧縮します。視覚的な品質を維持しながらVRAM使用量を削減します。
+  </Card>
+</Cards>
