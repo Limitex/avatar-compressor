@@ -5,8 +5,8 @@ import { i18n, getLocale, type Locale } from '@/lib/i18n';
 export const revalidate = false;
 
 const descriptions: Record<Locale, string> = {
-  en: 'VRChat avatar utility - Lightweight avatars that more players can see',
-  ja: 'VRChatアバターユーティリティ - より多くのプレイヤーに見てもらえる軽量アバターへ',
+  en: 'VRChat non-destructive avatar modification: Become a lightweight avatar that more players can see',
+  ja: 'VRChatアバター非破壊改変 より多くのプレイヤーに見てもらえる軽量アバターになろう',
 };
 
 export async function GET(_req: Request, { params }: { params: Promise<{ lang: string }> }) {

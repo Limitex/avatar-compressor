@@ -19,8 +19,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 const descriptions: Record<Locale, string> = {
-  en: 'VRChat avatar utility - Lightweight avatars that more players can see',
-  ja: 'VRChatアバターユーティリティ - より多くのプレイヤーに見てもらえる軽量アバターへ',
+  en: 'VRChat non-destructive avatar modification: Become a lightweight avatar that more players can see',
+  ja: 'VRChatアバター非破壊改変 より多くのプレイヤーに見てもらえる軽量アバターになろう',
 };
 
 export async function generateMetadata({

@@ -34,7 +34,7 @@ type Translations = {
 const translations: Record<Locale, Translations> = {
   en: {
     badge: 'NDMF Plugin for VRChat',
-    heroDescription: 'Lightweight avatars that more players can see.',
+    heroDescription: 'Become a lightweight avatar that more players can see.',
     heroDescriptionSub: 'Non-destructive compression powered by NDMF.',
     getStarted: 'Get Started',
     viewOnGitHub: 'View on GitHub',
@@ -83,7 +83,7 @@ const translations: Record<Locale, Translations> = {
   },
   ja: {
     badge: 'VRChat用NDMFプラグイン',
-    heroDescription: 'より多くのプレイヤーに見てもらえる軽量アバターへ。',
+    heroDescription: 'より多くのプレイヤーに見てもらえる軽量アバターになろう。',
     heroDescriptionSub: 'NDMFによる非破壊圧縮。',
     getStarted: 'はじめる',
     viewOnGitHub: 'GitHubで見る',
