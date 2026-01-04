@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ASTC format** alpha support clarified in mobile format selection
 - **Unnecessary compression** now skipped for already formatted textures
 - **Pixel reading failures** now logged for better debugging
+- **ExecuteAlways attribute removed** from TextureCompressor to prevent unintended execution in edit mode
+- **Auto-referencing disabled** in asmdef files to avoid unnecessary dependencies
 
 ## [0.1.0] - 2026-01-03
 
