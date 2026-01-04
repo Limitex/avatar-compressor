@@ -254,9 +254,10 @@ namespace dev.limitex.avatar.compressor.texture
                 }
                 return false;
             }
-            catch
+            catch (System.Exception e)
             {
-                // If we can't read pixels, assume no alpha for safety
+                // Log warning for debugging, assume no alpha as fallback
+                Debug.LogWarning($"[TextureCompressor] Failed to read pixels from texture '{texture?.name}': {e.Message}. Assuming no alpha.");
                 return false;
             }
         }
