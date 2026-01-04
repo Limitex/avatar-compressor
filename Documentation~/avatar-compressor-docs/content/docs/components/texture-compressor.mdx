@@ -162,6 +162,7 @@ For each texture, the preview displays:
 - **Complexity score** (0.0 - 1.0) with visual progress bar
 - **Size change** - Original resolution → Recommended resolution (with divisor)
 - **Predicted format** - Expected compression format (e.g., BC7, DXT5, ASTC_4x4)
+- **Freeze button** - Click to freeze the texture with manual override settings (see [Frozen Textures](#frozen-textures))
 
 ### Complexity Score Interpretation
 
@@ -179,11 +180,71 @@ Textures that won't be processed are shown separately with skip reasons:
 
 - **Too small**: Texture is smaller than the minimum size threshold
 - **Filtered by type**: Texture type is disabled in filters
+- **User frozen (skipped)**: Texture is frozen with "Skip compression" enabled
 
 <Callout type="info">
   The preview does not update automatically. If settings change after generating
   a preview, a warning will appear prompting you to click the button again to
   refresh.
+</Callout>
+
+## Frozen Textures
+
+Frozen textures allow you to manually override compression settings for specific textures. This is useful when:
+
+- Automatic compression is too aggressive for an important texture
+- You want to preserve a specific texture at full quality
+- You need to use a specific compression format for certain textures
+
+### Freezing a Texture
+
+1. Click **Preview Compression Results** to analyze your textures
+2. Find the texture you want to freeze in the list
+3. Click the **Freeze** button next to the texture
+
+The texture will be moved to the "Frozen Textures" section with manual controls.
+
+### Frozen Texture Settings
+
+For each frozen texture, you can configure:
+
+| Setting              | Description                                                       |
+| -------------------- | ----------------------------------------------------------------- |
+| **Skip compression** | When enabled, the texture is completely excluded from compression |
+| **Divisor**          | Manual resolution divisor (1, 2, 4, 8, or 16)                     |
+| **Format**           | Compression format override (Auto, DXT1, DXT5, BC5, BC7, ASTC)    |
+
+<Callout type="info">
+  When **Skip compression** is enabled, the Divisor and Format settings are
+  disabled since the texture won't be processed.
+</Callout>
+
+### Available Formats
+
+| Format       | Description                   | Platform |
+| ------------ | ----------------------------- | -------- |
+| **Auto**     | Automatic format selection    | All      |
+| **DXT1**     | RGB only, 4 bpp (efficient)   | Desktop  |
+| **DXT5**     | RGBA, 8 bpp (with alpha)      | Desktop  |
+| **BC5**      | Normal maps, 8 bpp            | Desktop  |
+| **BC7**      | Highest quality, 8 bpp        | Desktop  |
+| **ASTC_4x4** | Mobile highest quality, 8 bpp | Mobile   |
+| **ASTC_6x6** | Mobile balanced, 3.56 bpp     | Mobile   |
+| **ASTC_8x8** | Mobile efficient, 2 bpp       | Mobile   |
+
+### Unfreezing a Texture
+
+To remove manual override and return to automatic compression:
+
+1. Find the texture in the **Frozen Textures** section
+2. Click the **Unfreeze** button
+
+The texture will return to normal automatic processing.
+
+<Callout type="warn">
+  If a frozen texture's asset file is moved or deleted, a warning will appear in
+  the Frozen Textures section. You should unfreeze such textures to clean up the
+  list.
 </Callout>
 
 ## Advanced Settings
