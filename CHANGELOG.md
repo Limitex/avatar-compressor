@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Component placement warning** - Displays warning when TextureCompressor is not on avatar root
+  - Editor: HelpBox warning in Inspector
+  - Build: Warning logged to Unity console (does not fail build)
 - **Platform-specific compression formats** - Automatic format selection based on build target
   - Desktop (PC): DXT1, DXT5, BC5 (normal maps), BC7 (high complexity)
   - Mobile (Quest/Android): ASTC 4x4, 6x6, 8x8 based on complexity and alpha
