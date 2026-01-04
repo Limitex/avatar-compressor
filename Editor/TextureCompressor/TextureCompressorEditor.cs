@@ -61,6 +61,9 @@ namespace dev.limitex.avatar.compressor.texture.editor
             public SkipReason SkipReason;
             public long OriginalMemory;
             public long EstimatedMemory;
+            public bool IsNormalMap;
+            public TextureFormat? PredictedFormat;
+            public bool HasAlpha;
         }
 
         private void OnEnable()
@@ -490,7 +493,10 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         IsProcessed = true,
                         SkipReason = SkipReason.None,
                         OriginalMemory = originalMemory,
-                        EstimatedMemory = estimatedMemory
+                        EstimatedMemory = estimatedMemory,
+                        IsNormalMap = isNormalMap,
+                        PredictedFormat = targetFormat,
+                        HasAlpha = hasAlpha
                     });
                 }
                 else
@@ -509,7 +515,10 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         IsProcessed = false,
                         SkipReason = info.SkipReason,
                         OriginalMemory = originalMemory,
-                        EstimatedMemory = originalMemory
+                        EstimatedMemory = originalMemory,
+                        IsNormalMap = info.TextureType == "Normal",
+                        PredictedFormat = null,
+                        HasAlpha = false
                     });
                 }
             }
@@ -630,6 +639,27 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         sizeText = $"{data.OriginalSize.x}x{data.OriginalSize.y} (unchanged)";
                     }
                     EditorGUILayout.LabelField(sizeText);
+                    EditorGUILayout.EndHorizontal();
+
+                    // Display predicted compression format
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Format:", GUILayout.Width(70));
+                    if (data.PredictedFormat.HasValue)
+                    {
+                        string formatName = GetFormatDisplayName(data.PredictedFormat.Value);
+                        string formatInfo = GetFormatInfo(data.PredictedFormat.Value);
+                        var formatColor = GetFormatColor(data.PredictedFormat.Value);
+
+                        var savedGuiColor = GUI.color;
+                        GUI.color = formatColor;
+                        EditorGUILayout.LabelField(formatName, EditorStyles.boldLabel, GUILayout.Width(70));
+                        GUI.color = savedGuiColor;
+                        EditorGUILayout.LabelField(formatInfo, EditorStyles.miniLabel);
+                    }
+                    else
+                    {
+                        EditorGUILayout.LabelField("N/A", EditorStyles.miniLabel);
+                    }
                     EditorGUILayout.EndHorizontal();
                 }
                 else
@@ -804,6 +834,68 @@ namespace dev.limitex.avatar.compressor.texture.editor
             {
                 return true; // Assume alpha on error
             }
+        }
+
+        /// <summary>
+        /// Gets a user-friendly display name for a texture format.
+        /// </summary>
+        private static string GetFormatDisplayName(TextureFormat format)
+        {
+            return format switch
+            {
+                TextureFormat.DXT1 => "DXT1",
+                TextureFormat.DXT5 => "DXT5",
+                TextureFormat.BC5 => "BC5",
+                TextureFormat.BC7 => "BC7",
+                TextureFormat.ASTC_4x4 => "ASTC 4x4",
+                TextureFormat.ASTC_6x6 => "ASTC 6x6",
+                TextureFormat.ASTC_8x8 => "ASTC 8x8",
+                _ => format.ToString()
+            };
+        }
+
+        /// <summary>
+        /// Gets additional info about a texture format (bpp, quality, use case).
+        /// </summary>
+        private static string GetFormatInfo(TextureFormat format)
+        {
+            return format switch
+            {
+                TextureFormat.DXT1 => "4 bpp, RGB only, fastest",
+                TextureFormat.DXT5 => "8 bpp, RGBA, good quality",
+                TextureFormat.BC5 => "8 bpp, normal maps",
+                TextureFormat.BC7 => "8 bpp, highest quality",
+                TextureFormat.ASTC_4x4 => "8 bpp, highest quality",
+                TextureFormat.ASTC_6x6 => "3.56 bpp, balanced",
+                TextureFormat.ASTC_8x8 => "2 bpp, most efficient",
+                _ => ""
+            };
+        }
+
+        /// <summary>
+        /// Gets a color to represent the format quality/efficiency.
+        /// </summary>
+        private static Color GetFormatColor(TextureFormat format)
+        {
+            return format switch
+            {
+                // High quality formats - green
+                TextureFormat.BC7 => new Color(0.2f, 0.8f, 0.4f),
+                TextureFormat.ASTC_4x4 => new Color(0.2f, 0.8f, 0.4f),
+
+                // Normal map formats - cyan
+                TextureFormat.BC5 => new Color(0.2f, 0.7f, 0.9f),
+
+                // Balanced formats - yellow
+                TextureFormat.DXT5 => new Color(0.9f, 0.8f, 0.2f),
+                TextureFormat.ASTC_6x6 => new Color(0.9f, 0.8f, 0.2f),
+
+                // Efficient formats - orange
+                TextureFormat.DXT1 => new Color(0.9f, 0.6f, 0.2f),
+                TextureFormat.ASTC_8x8 => new Color(0.9f, 0.6f, 0.2f),
+
+                _ => Color.white
+            };
         }
     }
 }
