@@ -465,10 +465,11 @@ namespace dev.limitex.avatar.compressor.tests
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
             var pixels = new Color32[width * height];
 
+            // Alpha value above threshold (SignificantAlphaThreshold = 250)
+            byte opaqueAlpha = (byte)(AnalysisConstants.SignificantAlphaThreshold + 2);
             for (int i = 0; i < pixels.Length; i++)
             {
-                // All pixels have alpha >= 250 (threshold in HasSignificantAlpha)
-                pixels[i] = new Color32(128, 128, 128, 252);
+                pixels[i] = new Color32(128, 128, 128, opaqueAlpha);
             }
 
             texture.SetPixels32(pixels);
@@ -481,10 +482,11 @@ namespace dev.limitex.avatar.compressor.tests
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
             var pixels = new Color32[width * height];
 
+            // Alpha value below threshold (SignificantAlphaThreshold = 250)
+            byte transparentAlpha = (byte)(AnalysisConstants.SignificantAlphaThreshold - 50);
             for (int i = 0; i < pixels.Length; i++)
             {
-                // Some pixels below threshold (250)
-                pixels[i] = new Color32(128, 128, 128, 200);
+                pixels[i] = new Color32(128, 128, 128, transparentAlpha);
             }
 
             texture.SetPixels32(pixels);

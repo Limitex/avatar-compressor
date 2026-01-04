@@ -217,5 +217,16 @@ namespace dev.limitex.avatar.compressor.texture
         public const float DefaultComplexityScore = 0.5f;
 
         #endregion
+
+        #region Alpha Detection
+
+        /// <summary>
+        /// Threshold for considering a pixel as having significant alpha.
+        /// Pixels with alpha below this value (0-255) are considered transparent.
+        /// 250 allows for near-opaque pixels while detecting meaningful transparency.
+        /// </summary>
+        public const byte SignificantAlphaThreshold = 250;
+
+        #endregion
     }
 }

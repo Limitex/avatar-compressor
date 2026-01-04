@@ -245,6 +245,9 @@ namespace dev.limitex.avatar.compressor.texture
         /// </summary>
         public static bool HasSignificantAlpha(Texture2D texture)
         {
+            // Assume alpha exists for null or non-readable textures to preserve quality.
+            // This is a conservative approach that may result in slightly larger file sizes
+            // but ensures transparency is not incorrectly discarded.
             if (texture == null || !texture.isReadable)
                 return true;
 
@@ -256,7 +259,7 @@ namespace dev.limitex.avatar.compressor.texture
 
                 for (int i = 0; i < pixels.Length; i += step)
                 {
-                    if (pixels[i].a < 250)
+                    if (pixels[i].a < AnalysisConstants.SignificantAlphaThreshold)
                     {
                         return true;
                     }
@@ -265,6 +268,7 @@ namespace dev.limitex.avatar.compressor.texture
             }
             catch
             {
+                // Assume alpha exists on error to preserve quality
                 return true;
             }
         }
