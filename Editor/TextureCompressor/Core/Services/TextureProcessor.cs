@@ -108,6 +108,13 @@ namespace dev.limitex.avatar.compressor.texture
                 result.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
                 result.Apply();
 
+                // Copy texture settings from source
+                result.wrapModeU = source.wrapModeU;
+                result.wrapModeV = source.wrapModeV;
+                result.wrapModeW = source.wrapModeW;
+                result.filterMode = source.filterMode;
+                result.anisoLevel = source.anisoLevel;
+
                 RenderTexture.active = previous;
                 RenderTexture.ReleaseTemporary(rt);
 

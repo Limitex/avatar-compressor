@@ -17,8 +17,7 @@ namespace dev.limitex.avatar.compressor.texture
 
         protected override void Configure()
         {
-            InPhase(BuildPhase.Transforming)
-                .BeforePlugin("nadena.dev.modular-avatar")
+            InPhase(BuildPhase.Optimizing)
                 .BeforePlugin("com.anatawa12.avatar-optimizer")
                 .Run("Avatar Compressor: Compress Avatar Textures", ctx =>
                 {

@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Texture settings preservation** during resizing - wrapMode, filterMode, and anisoLevel are now copied from source texture
+- **Build phase** changed from Transforming to Optimizing for proper NDMF pipeline integration
 - **Mobile format selection** now properly incorporates alpha channel support
 - **ASTC format** alpha support clarified in mobile format selection
 - **Unnecessary compression** now skipped for already formatted textures
