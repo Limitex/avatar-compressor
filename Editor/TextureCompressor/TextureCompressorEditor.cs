@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.texture;
+using nadena.dev.ndmf.runtime;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEditor;
@@ -95,6 +96,16 @@ namespace dev.limitex.avatar.compressor.texture.editor
             serializedObject.Update();
 
             var compressor = (TextureCompressor)target;
+
+            // Check if component is on avatar root
+            if (!RuntimeUtil.IsAvatarRoot(compressor.transform))
+            {
+                DrawHelpBox(
+                    "This component should be placed on the avatar root GameObject. " +
+                    "While it will still work, placing it on the avatar root is recommended.",
+                    MessageType.Warning);
+                EditorGUILayout.Space(5);
+            }
 
             EditorGUILayout.Space(5);
 
