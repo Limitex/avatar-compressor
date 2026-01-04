@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using dev.limitex.avatar.compressor.common;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace dev.limitex.avatar.compressor.texture
 {
@@ -14,7 +15,7 @@ namespace dev.limitex.avatar.compressor.texture
 
         private readonly TextureCompressor _config;
         private readonly TextureCollector _collector;
-        private readonly TextureResizer _resizer;
+        private readonly TextureProcessor _processor;
         private readonly ComplexityCalculator _complexityCalc;
         private readonly TextureAnalyzer _analyzer;
 
@@ -31,10 +32,13 @@ namespace dev.limitex.avatar.compressor.texture
                 config.ProcessOtherTextures
             );
 
-            _resizer = new TextureResizer(
+            _processor = new TextureProcessor(
                 config.MinResolution,
                 config.MaxResolution,
-                config.ForcePowerOfTwo
+                config.ForcePowerOfTwo,
+                config.TargetPlatform,
+                config.UseHighQualityFormatForHighComplexity,
+                config.HighComplexityThreshold
             );
 
             _complexityCalc = new ComplexityCalculator(
@@ -49,7 +53,7 @@ namespace dev.limitex.avatar.compressor.texture
                 config.FastWeight,
                 config.HighAccuracyWeight,
                 config.PerceptualWeight,
-                _resizer,
+                _processor,
                 _complexityCalc
             );
         }
@@ -90,7 +94,7 @@ namespace dev.limitex.avatar.compressor.texture
                     continue;
                 }
 
-                var compressedTexture = _resizer.Resize(originalTexture, analysis, enableLogging);
+                var compressedTexture = _processor.Resize(originalTexture, analysis, enableLogging, textureInfo.IsNormalMap);
                 compressedTexture.name = originalTexture.name + "_compressed";
 
                 processedTextures[originalTexture] = compressedTexture;
@@ -117,11 +121,11 @@ namespace dev.limitex.avatar.compressor.texture
             foreach (var kvp in original)
             {
                 var origTex = kvp.Key;
-                originalSize += (long)origTex.width * origTex.height * 4;
+                originalSize += Profiler.GetRuntimeMemorySizeLong(origTex);
 
                 if (processed.TryGetValue(origTex, out var compTex))
                 {
-                    compressedSize += (long)compTex.width * compTex.height * 4;
+                    compressedSize += Profiler.GetRuntimeMemorySizeLong(compTex);
                 }
             }
 

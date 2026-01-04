@@ -3,10 +3,10 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.texture
 {
     /// <summary>
-    /// Service for resizing textures.
+    /// Service for processing textures (resizing and compression).
     /// Uses lock to ensure thread safety for RenderTexture operations.
     /// </summary>
-    public class TextureResizer
+    public class TextureProcessor
     {
         // Lock object for thread-safe RenderTexture operations
         private static readonly object RenderTextureLock = new object();
@@ -14,33 +14,49 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly int _minResolution;
         private readonly int _maxResolution;
         private readonly bool _forcePowerOfTwo;
+        private readonly TextureFormatSelector _formatSelector;
 
-        public TextureResizer(int minResolution, int maxResolution, bool forcePowerOfTwo)
+        public TextureProcessor(int minResolution, int maxResolution, bool forcePowerOfTwo,
+            CompressionPlatform targetPlatform = CompressionPlatform.Auto,
+            bool useHighQualityFormatForHighComplexity = true,
+            float highQualityComplexityThreshold = 0.7f)
         {
             _minResolution = minResolution;
             _maxResolution = maxResolution;
             _forcePowerOfTwo = forcePowerOfTwo;
+            _formatSelector = new TextureFormatSelector(
+                targetPlatform,
+                useHighQualityFormatForHighComplexity,
+                highQualityComplexityThreshold
+            );
         }
 
         /// <summary>
         /// Resizes a texture using pre-computed analysis result.
         /// </summary>
-        public Texture2D Resize(Texture2D source, TextureAnalysisResult analysis, bool enableLogging)
+        public Texture2D Resize(Texture2D source, TextureAnalysisResult analysis, bool enableLogging, bool isNormalMap = false)
         {
+            Texture2D result;
             if (analysis.RecommendedDivisor <= 1 &&
                 source.width <= _maxResolution &&
                 source.height <= _maxResolution)
             {
-                return Copy(source);
+                result = Copy(source);
+            }
+            else
+            {
+                result = ResizeTo(source, analysis.RecommendedResolution.x, analysis.RecommendedResolution.y);
             }
 
-            var result = ResizeTo(source, analysis.RecommendedResolution.x, analysis.RecommendedResolution.y);
+            // Apply compression to reduce memory usage
+            _formatSelector.CompressTexture(result, source.format, isNormalMap, analysis.NormalizedComplexity);
 
             if (enableLogging)
             {
+                var format = result.format;
                 Debug.Log($"[TextureCompressor] {source.name}: " +
                           $"{source.width}x{source.height} → " +
-                          $"{result.width}x{result.height} " +
+                          $"{result.width}x{result.height} ({format}) " +
                           $"(Complexity: {analysis.NormalizedComplexity:P0}, " +
                           $"Divisor: {analysis.RecommendedDivisor}x)");
             }

@@ -217,5 +217,27 @@ namespace dev.limitex.avatar.compressor.texture
         public const float DefaultComplexityScore = 0.5f;
 
         #endregion
+
+        #region Alpha Detection
+
+        /// <summary>
+        /// Threshold for considering a pixel as having significant alpha.
+        /// Pixels with alpha below this value (0-255) are considered transparent.
+        /// 250 allows for near-opaque pixels while detecting meaningful transparency.
+        /// </summary>
+        public const byte SignificantAlphaThreshold = 250;
+
+        #endregion
+
+        #region Mobile Format Selection
+
+        /// <summary>
+        /// Ratio of high complexity threshold used to determine medium complexity.
+        /// Medium complexity = complexity >= HighComplexityThreshold * MediumComplexityRatio.
+        /// 0.5 means textures with complexity at half the high threshold are considered medium.
+        /// </summary>
+        public const float MediumComplexityRatio = 0.5f;
+
+        #endregion
     }
 }

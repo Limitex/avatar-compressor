@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.texture;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEditor;
 
 namespace dev.limitex.avatar.compressor.texture.editor
@@ -27,6 +28,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
         private SerializedProperty _processOtherTextures;
         private SerializedProperty _minSourceSize;
         private SerializedProperty _skipIfSmallerThan;
+        private SerializedProperty _targetPlatform;
+        private SerializedProperty _useHighQualityFormatForHighComplexity;
         private SerializedProperty _enableLogging;
 
         private bool _showPreview;
@@ -55,6 +58,11 @@ namespace dev.limitex.avatar.compressor.texture.editor
             public string TextureType;
             public bool IsProcessed;
             public SkipReason SkipReason;
+            public long OriginalMemory;
+            public long EstimatedMemory;
+            public bool IsNormalMap;
+            public TextureFormat? PredictedFormat;
+            public bool HasAlpha;
         }
 
         private void OnEnable()
@@ -77,6 +85,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
             _processOtherTextures = serializedObject.FindProperty("ProcessOtherTextures");
             _minSourceSize = serializedObject.FindProperty("MinSourceSize");
             _skipIfSmallerThan = serializedObject.FindProperty("SkipIfSmallerThan");
+            _targetPlatform = serializedObject.FindProperty("TargetPlatform");
+            _useHighQualityFormatForHighComplexity = serializedObject.FindProperty("UseHighQualityFormatForHighComplexity");
             _enableLogging = serializedObject.FindProperty("EnableLogging");
         }
 
@@ -256,6 +266,13 @@ namespace dev.limitex.avatar.compressor.texture.editor
             DrawSectionHeader("Size Filters");
             EditorGUILayout.PropertyField(_minSourceSize, new GUIContent("Min Source Size"));
             EditorGUILayout.PropertyField(_skipIfSmallerThan, new GUIContent("Skip If Smaller Than"));
+
+            EditorGUILayout.Space(10);
+
+            DrawSectionHeader("Compression Format");
+            EditorGUILayout.PropertyField(_targetPlatform, new GUIContent("Target Platform"));
+            EditorGUILayout.PropertyField(_useHighQualityFormatForHighComplexity,
+                new GUIContent("High Quality for Complex", "Use BC7/ASTC_4x4 for high complexity textures (uses Complexity Threshold)"));
         }
 
         private void DrawAllSettings(TextureCompressor compressor)
@@ -280,6 +297,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
             EditorGUILayout.PropertyField(_forcePowerOfTwo);
             EditorGUILayout.PropertyField(_minSourceSize);
             EditorGUILayout.PropertyField(_skipIfSmallerThan);
+            EditorGUILayout.PropertyField(_targetPlatform);
+            EditorGUILayout.PropertyField(_useHighQualityFormatForHighComplexity);
 
             EditorGUI.indentLevel--;
         }
@@ -364,6 +383,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 hash = hash * 31 + config.ProcessOtherTextures.GetHashCode();
                 hash = hash * 31 + config.MinSourceSize;
                 hash = hash * 31 + config.SkipIfSmallerThan;
+                hash = hash * 31 + config.TargetPlatform.GetHashCode();
+                hash = hash * 31 + config.UseHighQualityFormatForHighComplexity.GetHashCode();
                 hash = hash * 31 + config.gameObject.GetInstanceID();
                 return hash;
             }
@@ -389,10 +410,13 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 config.ProcessOtherTextures
             );
 
-            var resizer = new TextureResizer(
+            var processor = new TextureProcessor(
                 config.MinResolution,
                 config.MaxResolution,
-                config.ForcePowerOfTwo
+                config.ForcePowerOfTwo,
+                config.TargetPlatform,
+                config.UseHighQualityFormatForHighComplexity,
+                config.HighComplexityThreshold
             );
 
             var complexityCalc = new ComplexityCalculator(
@@ -400,6 +424,12 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 config.LowComplexityThreshold,
                 config.MinDivisor,
                 config.MaxDivisor
+            );
+
+            var formatSelector = new TextureFormatSelector(
+                config.TargetPlatform,
+                config.UseHighQualityFormatForHighComplexity,
+                config.HighComplexityThreshold
             );
 
             var allTextures = collector.CollectAll(config.gameObject);
@@ -424,7 +454,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 config.FastWeight,
                 config.HighAccuracyWeight,
                 config.PerceptualWeight,
-                resizer,
+                processor,
                 complexityCalc
             );
 
@@ -442,6 +472,15 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
                 if (info.IsProcessed && analysisResults.TryGetValue(tex, out var analysis))
                 {
+                    long originalMemory = Profiler.GetRuntimeMemorySizeLong(tex);
+                    bool isNormalMap = info.TextureType == "Normal";
+                    bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
+                    var targetFormat = formatSelector.PredictFormat(isNormalMap, analysis.NormalizedComplexity, hasAlpha);
+                    long estimatedMemory = EstimateCompressedMemory(
+                        analysis.RecommendedResolution.x,
+                        analysis.RecommendedResolution.y,
+                        targetFormat);
+
                     processedList.Add(new TexturePreviewData
                     {
                         Texture = tex,
@@ -452,11 +491,18 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         RecommendedSize = analysis.RecommendedResolution,
                         TextureType = info.TextureType,
                         IsProcessed = true,
-                        SkipReason = SkipReason.None
+                        SkipReason = SkipReason.None,
+                        OriginalMemory = originalMemory,
+                        EstimatedMemory = estimatedMemory,
+                        IsNormalMap = isNormalMap,
+                        PredictedFormat = targetFormat,
+                        HasAlpha = hasAlpha
                     });
                 }
                 else
                 {
+                    long originalMemory = Profiler.GetRuntimeMemorySizeLong(tex);
+
                     skippedList.Add(new TexturePreviewData
                     {
                         Texture = tex,
@@ -467,7 +513,12 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         RecommendedSize = new Vector2Int(tex.width, tex.height),
                         TextureType = info.TextureType,
                         IsProcessed = false,
-                        SkipReason = info.SkipReason
+                        SkipReason = info.SkipReason,
+                        OriginalMemory = originalMemory,
+                        EstimatedMemory = originalMemory,
+                        IsNormalMap = info.TextureType == "Normal",
+                        PredictedFormat = null,
+                        HasAlpha = false
                     });
                 }
             }
@@ -495,8 +546,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             foreach (var data in _previewData)
             {
-                totalOriginal += (long)data.OriginalSize.x * data.OriginalSize.y * 4;
-                totalAfter += (long)data.RecommendedSize.x * data.RecommendedSize.y * 4;
+                totalOriginal += data.OriginalMemory;
+                totalAfter += data.EstimatedMemory;
             }
 
             float savings = totalOriginal > 0 ? 1f - (float)totalAfter / totalOriginal : 0f;
@@ -589,6 +640,27 @@ namespace dev.limitex.avatar.compressor.texture.editor
                     }
                     EditorGUILayout.LabelField(sizeText);
                     EditorGUILayout.EndHorizontal();
+
+                    // Display predicted compression format
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Format:", GUILayout.Width(70));
+                    if (data.PredictedFormat.HasValue)
+                    {
+                        string formatName = GetFormatDisplayName(data.PredictedFormat.Value);
+                        string formatInfo = GetFormatInfo(data.PredictedFormat.Value);
+                        var formatColor = GetFormatColor(data.PredictedFormat.Value);
+
+                        var savedGuiColor = GUI.color;
+                        GUI.color = formatColor;
+                        EditorGUILayout.LabelField(formatName, EditorStyles.boldLabel, GUILayout.Width(70));
+                        GUI.color = savedGuiColor;
+                        EditorGUILayout.LabelField(formatInfo, EditorStyles.miniLabel);
+                    }
+                    else
+                    {
+                        EditorGUILayout.LabelField("N/A", EditorStyles.miniLabel);
+                    }
+                    EditorGUILayout.EndHorizontal();
                 }
                 else
                 {
@@ -627,6 +699,129 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 _showPreview = false;
                 _previewData = null;
             }
+        }
+
+        /// <summary>
+        /// Estimates compressed memory size based on target format.
+        /// </summary>
+        private long EstimateCompressedMemory(int width, int height, TextureFormat format)
+        {
+            float bitsPerPixel = GetBitsPerPixel(format);
+            return (long)(width * height * bitsPerPixel / 8f);
+        }
+
+        /// <summary>
+        /// Returns bits per pixel for the given texture format.
+        /// </summary>
+        private float GetBitsPerPixel(TextureFormat format)
+        {
+            switch (format)
+            {
+                // DXT/BC formats (Desktop)
+                case TextureFormat.DXT1:
+                case TextureFormat.DXT1Crunched:
+                    return 4f;
+                case TextureFormat.DXT5:
+                case TextureFormat.DXT5Crunched:
+                case TextureFormat.BC5:
+                case TextureFormat.BC7:
+                    return 8f;
+                case TextureFormat.BC4:
+                    return 4f;
+                case TextureFormat.BC6H:
+                    return 8f;
+
+                // ASTC formats (Mobile)
+                case TextureFormat.ASTC_4x4:
+                    return 8f;
+                case TextureFormat.ASTC_5x5:
+                    return 5.12f;
+                case TextureFormat.ASTC_6x6:
+                    return 3.56f;
+                case TextureFormat.ASTC_8x8:
+                    return 2f;
+                case TextureFormat.ASTC_10x10:
+                    return 1.28f;
+                case TextureFormat.ASTC_12x12:
+                    return 0.89f;
+
+                // Uncompressed formats
+                case TextureFormat.RGBA32:
+                case TextureFormat.ARGB32:
+                case TextureFormat.BGRA32:
+                    return 32f;
+                case TextureFormat.RGB24:
+                    return 24f;
+                case TextureFormat.RGB565:
+                case TextureFormat.RGBA4444:
+                case TextureFormat.ARGB4444:
+                    return 16f;
+
+                default:
+                    return 32f; // Assume uncompressed RGBA
+            }
+        }
+
+        /// <summary>
+        /// Gets a user-friendly display name for a texture format.
+        /// </summary>
+        private static string GetFormatDisplayName(TextureFormat format)
+        {
+            return format switch
+            {
+                TextureFormat.DXT1 => "DXT1",
+                TextureFormat.DXT5 => "DXT5",
+                TextureFormat.BC5 => "BC5",
+                TextureFormat.BC7 => "BC7",
+                TextureFormat.ASTC_4x4 => "ASTC 4x4",
+                TextureFormat.ASTC_6x6 => "ASTC 6x6",
+                TextureFormat.ASTC_8x8 => "ASTC 8x8",
+                _ => format.ToString()
+            };
+        }
+
+        /// <summary>
+        /// Gets additional info about a texture format (bpp, quality, use case).
+        /// </summary>
+        private static string GetFormatInfo(TextureFormat format)
+        {
+            return format switch
+            {
+                TextureFormat.DXT1 => "4 bpp, RGB only, fastest",
+                TextureFormat.DXT5 => "8 bpp, RGBA, good quality",
+                TextureFormat.BC5 => "8 bpp, normal maps",
+                TextureFormat.BC7 => "8 bpp, highest quality",
+                TextureFormat.ASTC_4x4 => "8 bpp, highest quality",
+                TextureFormat.ASTC_6x6 => "3.56 bpp, balanced",
+                TextureFormat.ASTC_8x8 => "2 bpp, most efficient",
+                _ => ""
+            };
+        }
+
+        /// <summary>
+        /// Gets a color to represent the format quality/efficiency.
+        /// </summary>
+        private static Color GetFormatColor(TextureFormat format)
+        {
+            return format switch
+            {
+                // High quality formats - green
+                TextureFormat.BC7 => new Color(0.2f, 0.8f, 0.4f),
+                TextureFormat.ASTC_4x4 => new Color(0.2f, 0.8f, 0.4f),
+
+                // Normal map formats - cyan
+                TextureFormat.BC5 => new Color(0.2f, 0.7f, 0.9f),
+
+                // Balanced formats - yellow
+                TextureFormat.DXT5 => new Color(0.9f, 0.8f, 0.2f),
+                TextureFormat.ASTC_6x6 => new Color(0.9f, 0.8f, 0.2f),
+
+                // Efficient formats - orange
+                TextureFormat.DXT1 => new Color(0.9f, 0.6f, 0.2f),
+                TextureFormat.ASTC_8x8 => new Color(0.9f, 0.6f, 0.2f),
+
+                _ => Color.white
+            };
         }
     }
 }

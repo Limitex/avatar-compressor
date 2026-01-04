@@ -55,6 +55,12 @@ namespace dev.limitex.avatar.compressor.texture
         [Tooltip("Skip textures smaller than or equal to this size")]
         public int SkipIfSmallerThan = 128;
 
+        [Header("Compression Format")]
+        [Tooltip("Target platform for compression format selection (Auto detects from build target)")]
+        public CompressionPlatform TargetPlatform = CompressionPlatform.Auto;
+        [Tooltip("Use BC7/ASTC_4x4 format for high complexity textures (highest quality)")]
+        public bool UseHighQualityFormatForHighComplexity = true;
+
         [Header("Debug")]
         public bool EnableLogging = true;
 
@@ -106,6 +112,8 @@ namespace dev.limitex.avatar.compressor.texture
             ProcessOtherTextures = true;
             MinSourceSize = 1024;
             SkipIfSmallerThan = 512;
+            TargetPlatform = CompressionPlatform.Auto;
+            UseHighQualityFormatForHighComplexity = true;
         }
 
         private void ApplyQualityPreset()
@@ -127,6 +135,8 @@ namespace dev.limitex.avatar.compressor.texture
             ProcessOtherTextures = true;
             MinSourceSize = 512;
             SkipIfSmallerThan = 256;
+            TargetPlatform = CompressionPlatform.Auto;
+            UseHighQualityFormatForHighComplexity = true;
         }
 
         private void ApplyBalancedPreset()
@@ -148,6 +158,8 @@ namespace dev.limitex.avatar.compressor.texture
             ProcessOtherTextures = true;
             MinSourceSize = 256;
             SkipIfSmallerThan = 128;
+            TargetPlatform = CompressionPlatform.Auto;
+            UseHighQualityFormatForHighComplexity = true;
         }
 
         private void ApplyAggressivePreset()
@@ -169,6 +181,8 @@ namespace dev.limitex.avatar.compressor.texture
             ProcessOtherTextures = true;
             MinSourceSize = 128;
             SkipIfSmallerThan = 64;
+            TargetPlatform = CompressionPlatform.Auto;
+            UseHighQualityFormatForHighComplexity = false;
         }
 
         private void ApplyMaximumPreset()
@@ -190,6 +204,8 @@ namespace dev.limitex.avatar.compressor.texture
             ProcessOtherTextures = true;
             MinSourceSize = 64;
             SkipIfSmallerThan = 32;
+            TargetPlatform = CompressionPlatform.Auto;
+            UseHighQualityFormatForHighComplexity = false;
         }
     }
 
@@ -212,5 +228,15 @@ namespace dev.limitex.avatar.compressor.texture
         HighAccuracy,
         Perceptual,
         Combined
+    }
+
+    /// <summary>
+    /// Target platform for texture compression format selection.
+    /// </summary>
+    public enum CompressionPlatform
+    {
+        Auto,       // Detect from build target
+        Desktop,    // DXT/BC formats (PC VRChat)
+        Mobile      // ASTC formats (Quest/Android)
     }
 }

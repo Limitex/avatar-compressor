@@ -13,7 +13,7 @@ namespace dev.limitex.avatar.compressor.texture
     {
         private readonly ITextureComplexityAnalyzer _standardAnalyzer;
         private readonly ITextureComplexityAnalyzer _normalMapAnalyzer;
-        private readonly TextureResizer _resizer;
+        private readonly TextureProcessor _processor;
         private readonly ComplexityCalculator _complexityCalc;
 
         public TextureAnalyzer(
@@ -21,12 +21,12 @@ namespace dev.limitex.avatar.compressor.texture
             float fastWeight,
             float highAccuracyWeight,
             float perceptualWeight,
-            TextureResizer resizer,
+            TextureProcessor processor,
             ComplexityCalculator complexityCalc)
         {
             _standardAnalyzer = AnalyzerFactory.Create(strategy, fastWeight, highAccuracyWeight, perceptualWeight);
             _normalMapAnalyzer = AnalyzerFactory.CreateNormalMapAnalyzer();
-            _resizer = resizer;
+            _processor = processor;
             _complexityCalc = complexityCalc;
         }
 
@@ -42,7 +42,7 @@ namespace dev.limitex.avatar.compressor.texture
             {
                 var texture = kvp.Key;
                 var info = kvp.Value;
-                var pixels = _resizer.GetReadablePixels(texture);
+                var pixels = _processor.GetReadablePixels(texture);
 
                 if (pixels.Length == 0) continue;
 
@@ -143,7 +143,7 @@ namespace dev.limitex.avatar.compressor.texture
 
             float complexity = Mathf.Clamp01(complexityResult.Score);
             int divisor = _complexityCalc.CalculateRecommendedDivisor(complexity);
-            Vector2Int resolution = _resizer.CalculateNewDimensions(data.Width, data.Height, divisor);
+            Vector2Int resolution = _processor.CalculateNewDimensions(data.Width, data.Height, divisor);
 
             return new TextureAnalysisResult(complexity, divisor, resolution);
         }
