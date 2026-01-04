@@ -37,7 +37,7 @@ namespace dev.limitex.avatar.compressor.texture
 
             if (platform == CompressionPlatform.Mobile)
             {
-                return SelectMobileFormat(isNormalMap, complexity);
+                return SelectMobileFormat(isNormalMap, complexity, hasAlpha);
             }
             else
             {
@@ -155,9 +155,9 @@ namespace dev.limitex.avatar.compressor.texture
 
         /// <summary>
         /// Selects compression format for Mobile (Quest/Android) - ASTC formats.
-        /// Uses complexity-based block size selection.
+        /// Uses complexity and alpha-based block size selection.
         /// </summary>
-        private TextureFormat SelectMobileFormat(bool isNormalMap, float complexity)
+        private TextureFormat SelectMobileFormat(bool isNormalMap, float complexity, bool hasAlpha)
         {
             if (isNormalMap)
             {
@@ -165,7 +165,22 @@ namespace dev.limitex.avatar.compressor.texture
                 return TextureFormat.ASTC_4x4;
             }
 
-            // Complexity-based ASTC block size selection
+            // Alpha textures need higher quality to preserve transparency edges
+            if (hasAlpha)
+            {
+                if (_useHighQualityFormatForHighComplexity && complexity >= _highQualityComplexityThreshold)
+                {
+                    // High complexity with alpha: ASTC 4x4 (8 bpp, highest quality)
+                    return TextureFormat.ASTC_4x4;
+                }
+                else
+                {
+                    // Alpha textures: ASTC 6x6 minimum to preserve alpha edges
+                    return TextureFormat.ASTC_6x6;
+                }
+            }
+
+            // Opaque textures: complexity-based ASTC block size selection
             if (_useHighQualityFormatForHighComplexity && complexity >= _highQualityComplexityThreshold)
             {
                 // High complexity: ASTC 4x4 (8 bpp, highest quality)
@@ -178,7 +193,7 @@ namespace dev.limitex.avatar.compressor.texture
             }
             else
             {
-                // Low complexity: ASTC 8x8 (2 bpp, efficient)
+                // Low complexity opaque: ASTC 8x8 (2 bpp, most efficient)
                 return TextureFormat.ASTC_8x8;
             }
         }
