@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.texture;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEditor;
 
 namespace dev.limitex.avatar.compressor.texture.editor
@@ -58,6 +59,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
             public string TextureType;
             public bool IsProcessed;
             public SkipReason SkipReason;
+            public long OriginalMemory;
+            public long EstimatedMemory;
         }
 
         private void OnEnable()
@@ -466,6 +469,15 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
                 if (info.IsProcessed && analysisResults.TryGetValue(tex, out var analysis))
                 {
+                    long originalMemory = Profiler.GetRuntimeMemorySizeLong(tex);
+                    bool isNormalMap = info.TextureType == "Normal";
+                    bool hasAlpha = HasSignificantAlpha(tex);
+                    var targetFormat = EstimateTargetFormat(config, isNormalMap, analysis.NormalizedComplexity, hasAlpha);
+                    long estimatedMemory = EstimateCompressedMemory(
+                        analysis.RecommendedResolution.x,
+                        analysis.RecommendedResolution.y,
+                        targetFormat);
+
                     processedList.Add(new TexturePreviewData
                     {
                         Texture = tex,
@@ -476,11 +488,15 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         RecommendedSize = analysis.RecommendedResolution,
                         TextureType = info.TextureType,
                         IsProcessed = true,
-                        SkipReason = SkipReason.None
+                        SkipReason = SkipReason.None,
+                        OriginalMemory = originalMemory,
+                        EstimatedMemory = estimatedMemory
                     });
                 }
                 else
                 {
+                    long originalMemory = Profiler.GetRuntimeMemorySizeLong(tex);
+
                     skippedList.Add(new TexturePreviewData
                     {
                         Texture = tex,
@@ -491,7 +507,9 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         RecommendedSize = new Vector2Int(tex.width, tex.height),
                         TextureType = info.TextureType,
                         IsProcessed = false,
-                        SkipReason = info.SkipReason
+                        SkipReason = info.SkipReason,
+                        OriginalMemory = originalMemory,
+                        EstimatedMemory = originalMemory
                     });
                 }
             }
@@ -519,8 +537,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             foreach (var data in _previewData)
             {
-                totalOriginal += (long)data.OriginalSize.x * data.OriginalSize.y * 4;
-                totalAfter += (long)data.RecommendedSize.x * data.RecommendedSize.y * 4;
+                totalOriginal += data.OriginalMemory;
+                totalAfter += data.EstimatedMemory;
             }
 
             float savings = totalOriginal > 0 ? 1f - (float)totalAfter / totalOriginal : 0f;
@@ -650,6 +668,141 @@ namespace dev.limitex.avatar.compressor.texture.editor
             {
                 _showPreview = false;
                 _previewData = null;
+            }
+        }
+
+        /// <summary>
+        /// Estimates compressed memory size based on target format.
+        /// </summary>
+        private long EstimateCompressedMemory(int width, int height, TextureFormat format)
+        {
+            float bitsPerPixel = GetBitsPerPixel(format);
+            return (long)(width * height * bitsPerPixel / 8f);
+        }
+
+        /// <summary>
+        /// Returns bits per pixel for the given texture format.
+        /// </summary>
+        private float GetBitsPerPixel(TextureFormat format)
+        {
+            switch (format)
+            {
+                // DXT/BC formats (Desktop)
+                case TextureFormat.DXT1:
+                case TextureFormat.DXT1Crunched:
+                    return 4f;
+                case TextureFormat.DXT5:
+                case TextureFormat.DXT5Crunched:
+                case TextureFormat.BC5:
+                case TextureFormat.BC7:
+                    return 8f;
+                case TextureFormat.BC4:
+                    return 4f;
+                case TextureFormat.BC6H:
+                    return 8f;
+
+                // ASTC formats (Mobile)
+                case TextureFormat.ASTC_4x4:
+                    return 8f;
+                case TextureFormat.ASTC_5x5:
+                    return 5.12f;
+                case TextureFormat.ASTC_6x6:
+                    return 3.56f;
+                case TextureFormat.ASTC_8x8:
+                    return 2f;
+                case TextureFormat.ASTC_10x10:
+                    return 1.28f;
+                case TextureFormat.ASTC_12x12:
+                    return 0.89f;
+
+                // Uncompressed formats
+                case TextureFormat.RGBA32:
+                case TextureFormat.ARGB32:
+                case TextureFormat.BGRA32:
+                    return 32f;
+                case TextureFormat.RGB24:
+                    return 24f;
+                case TextureFormat.RGB565:
+                case TextureFormat.RGBA4444:
+                case TextureFormat.ARGB4444:
+                    return 16f;
+
+                default:
+                    return 32f; // Assume uncompressed RGBA
+            }
+        }
+
+        /// <summary>
+        /// Estimates the target compression format based on settings and texture properties.
+        /// </summary>
+        private TextureFormat EstimateTargetFormat(TextureCompressor config, bool isNormalMap, float complexity, bool hasAlpha)
+        {
+            var platform = ResolvePlatform(config.TargetPlatform);
+
+            if (platform == CompressionPlatform.Mobile)
+            {
+                if (isNormalMap)
+                    return TextureFormat.ASTC_4x4;
+
+                if (config.UseHighQualityFormatForHighComplexity && complexity >= config.HighQualityComplexityThreshold)
+                    return TextureFormat.ASTC_4x4;
+                else if (complexity >= config.HighQualityComplexityThreshold * 0.5f)
+                    return TextureFormat.ASTC_6x6;
+                else
+                    return TextureFormat.ASTC_8x8;
+            }
+            else
+            {
+                if (isNormalMap)
+                    return TextureFormat.BC5;
+
+                if (config.UseHighQualityFormatForHighComplexity && complexity >= config.HighQualityComplexityThreshold)
+                    return TextureFormat.BC7;
+                else if (hasAlpha)
+                    return TextureFormat.DXT5;
+                else
+                    return TextureFormat.DXT1;
+            }
+        }
+
+        /// <summary>
+        /// Resolves the target platform from settings or auto-detects from build target.
+        /// </summary>
+        private CompressionPlatform ResolvePlatform(CompressionPlatform setting)
+        {
+            if (setting != CompressionPlatform.Auto)
+                return setting;
+
+            var target = EditorUserBuildSettings.activeBuildTarget;
+            return target == BuildTarget.Android
+                ? CompressionPlatform.Mobile
+                : CompressionPlatform.Desktop;
+        }
+
+        /// <summary>
+        /// Checks if the texture has significant alpha (samples a subset of pixels).
+        /// </summary>
+        private bool HasSignificantAlpha(Texture2D texture)
+        {
+            if (!texture.isReadable)
+                return true; // Assume alpha if we can't check
+
+            try
+            {
+                var pixels = texture.GetPixels32();
+                int sampleCount = Mathf.Min(pixels.Length, 5000);
+                int step = Mathf.Max(1, pixels.Length / sampleCount);
+
+                for (int i = 0; i < pixels.Length; i += step)
+                {
+                    if (pixels[i].a < 250)
+                        return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return true; // Assume alpha on error
             }
         }
     }
