@@ -151,7 +151,7 @@ namespace dev.limitex.avatar.compressor.tests
                 useHighQualityFormatForHighComplexity: true,
                 highQualityComplexityThreshold: 0.7f);
 
-            // Medium complexity: >= threshold * 0.5 && < threshold
+            // Medium complexity: >= threshold * MediumComplexityRatio && < threshold
             // 0.7 * 0.5 = 0.35, so 0.5 is medium
             var format = selector.PredictFormat(isNormalMap: false, complexity: 0.5f, hasAlpha: false);
 
@@ -166,7 +166,7 @@ namespace dev.limitex.avatar.compressor.tests
                 useHighQualityFormatForHighComplexity: true,
                 highQualityComplexityThreshold: 0.7f);
 
-            // Low complexity: < threshold * 0.5 = 0.35
+            // Low complexity: < threshold * MediumComplexityRatio = 0.35
             var format = selector.PredictFormat(isNormalMap: false, complexity: 0.2f, hasAlpha: false);
 
             Assert.AreEqual(TextureFormat.ASTC_8x8, format);

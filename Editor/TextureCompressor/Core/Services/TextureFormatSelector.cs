@@ -192,7 +192,7 @@ namespace dev.limitex.avatar.compressor.texture
                 // High complexity: ASTC 4x4 (8 bpp, highest quality)
                 return TextureFormat.ASTC_4x4;
             }
-            else if (complexity >= _highQualityComplexityThreshold * 0.5f)
+            else if (complexity >= _highQualityComplexityThreshold * AnalysisConstants.MediumComplexityRatio)
             {
                 // Medium complexity: ASTC 6x6 (3.56 bpp, balanced)
                 return TextureFormat.ASTC_6x6;

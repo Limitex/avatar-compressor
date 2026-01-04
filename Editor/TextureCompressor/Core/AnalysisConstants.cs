@@ -228,5 +228,16 @@ namespace dev.limitex.avatar.compressor.texture
         public const byte SignificantAlphaThreshold = 250;
 
         #endregion
+
+        #region Mobile Format Selection
+
+        /// <summary>
+        /// Ratio of high complexity threshold used to determine medium complexity.
+        /// Medium complexity = complexity >= HighComplexityThreshold * MediumComplexityRatio.
+        /// 0.5 means textures with complexity at half the high threshold are considered medium.
+        /// </summary>
+        public const float MediumComplexityRatio = 0.5f;
+
+        #endregion
     }
 }
