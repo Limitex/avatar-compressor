@@ -416,7 +416,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 config.ProcessOtherTextures
             );
 
-            var resizer = new TextureResizer(
+            var processor = new TextureProcessor(
                 config.MinResolution,
                 config.MaxResolution,
                 config.ForcePowerOfTwo,
@@ -460,7 +460,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 config.FastWeight,
                 config.HighAccuracyWeight,
                 config.PerceptualWeight,
-                resizer,
+                processor,
                 complexityCalc
             );
 

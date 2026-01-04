@@ -8,13 +8,13 @@ namespace dev.limitex.avatar.compressor.tests
     [TestFixture]
     public class TextureAnalyzerTests
     {
-        private TextureResizer _resizer;
+        private TextureProcessor _processor;
         private ComplexityCalculator _complexityCalc;
 
         [SetUp]
         public void SetUp()
         {
-            _resizer = new TextureResizer(32, 2048, true);
+            _processor = new TextureProcessor(32, 2048, true);
             _complexityCalc = new ComplexityCalculator(0.7f, 0.3f, 1, 8);
         }
 
@@ -26,7 +26,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             Assert.IsNotNull(analyzer);
@@ -38,7 +38,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.HighAccuracy,
                 0f, 1f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             Assert.IsNotNull(analyzer);
@@ -50,7 +50,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Perceptual,
                 0f, 0f, 1f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             Assert.IsNotNull(analyzer);
@@ -62,7 +62,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Combined,
                 1f, 1f, 1f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             Assert.IsNotNull(analyzer);
@@ -74,7 +74,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Combined,
                 0f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             Assert.IsNotNull(analyzer);
@@ -90,7 +90,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var textures = new Dictionary<Texture2D, TextureInfo>();
@@ -106,7 +106,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var texture = CreateTestTexture(64, 64);
@@ -129,7 +129,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var texture1 = CreateTestTexture(64, 64);
@@ -161,7 +161,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var texture = CreateFlatNormalMapTexture(64, 64);
@@ -186,7 +186,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var textureNormal = CreateTestTexture(64, 64);
@@ -218,7 +218,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var mainTex = CreateTestTexture(64, 64);
@@ -251,7 +251,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var texture = CreateNoiseTexture(64, 64, 42);
@@ -273,7 +273,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var texture = CreateNoiseTexture(64, 64, 42);
@@ -296,7 +296,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var texture = CreateNoiseTexture(128, 128, 42);
@@ -321,7 +321,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var texture = CreateUniformTexture(64, 64, Color.gray);
@@ -343,7 +343,7 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var texture = CreateNoiseTexture(64, 64, 42);
@@ -369,13 +369,13 @@ namespace dev.limitex.avatar.compressor.tests
             var analyzerFast = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
                 1f, 0f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var analyzerHighAccuracy = new TextureAnalyzer(
                 AnalysisStrategyType.HighAccuracy,
                 0f, 1f, 0f,
-                _resizer,
+                _processor,
                 _complexityCalc);
 
             var texture = CreateNoiseTexture(64, 64, 42);

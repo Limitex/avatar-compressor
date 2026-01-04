@@ -3,10 +3,10 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.texture
 {
     /// <summary>
-    /// Service for resizing textures.
+    /// Service for processing textures (resizing and compression).
     /// Uses lock to ensure thread safety for RenderTexture operations.
     /// </summary>
-    public class TextureResizer
+    public class TextureProcessor
     {
         // Lock object for thread-safe RenderTexture operations
         private static readonly object RenderTextureLock = new object();
@@ -16,7 +16,7 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly bool _forcePowerOfTwo;
         private readonly TextureFormatSelector _formatSelector;
 
-        public TextureResizer(int minResolution, int maxResolution, bool forcePowerOfTwo,
+        public TextureProcessor(int minResolution, int maxResolution, bool forcePowerOfTwo,
             CompressionPlatform targetPlatform = CompressionPlatform.Auto,
             bool useHighQualityFormatForHighComplexity = true,
             float highQualityComplexityThreshold = 0.7f)

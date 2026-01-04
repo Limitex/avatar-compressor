@@ -15,7 +15,7 @@ namespace dev.limitex.avatar.compressor.texture
 
         private readonly TextureCompressor _config;
         private readonly TextureCollector _collector;
-        private readonly TextureResizer _resizer;
+        private readonly TextureProcessor _processor;
         private readonly ComplexityCalculator _complexityCalc;
         private readonly TextureAnalyzer _analyzer;
 
@@ -32,7 +32,7 @@ namespace dev.limitex.avatar.compressor.texture
                 config.ProcessOtherTextures
             );
 
-            _resizer = new TextureResizer(
+            _processor = new TextureProcessor(
                 config.MinResolution,
                 config.MaxResolution,
                 config.ForcePowerOfTwo,
@@ -53,7 +53,7 @@ namespace dev.limitex.avatar.compressor.texture
                 config.FastWeight,
                 config.HighAccuracyWeight,
                 config.PerceptualWeight,
-                _resizer,
+                _processor,
                 _complexityCalc
             );
         }
@@ -94,7 +94,7 @@ namespace dev.limitex.avatar.compressor.texture
                     continue;
                 }
 
-                var compressedTexture = _resizer.Resize(originalTexture, analysis, enableLogging, textureInfo.IsNormalMap);
+                var compressedTexture = _processor.Resize(originalTexture, analysis, enableLogging, textureInfo.IsNormalMap);
                 compressedTexture.name = originalTexture.name + "_compressed";
 
                 processedTextures[originalTexture] = compressedTexture;
