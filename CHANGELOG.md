@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Build phase** changed from Transforming to Optimizing for proper NDMF pipeline integration
 - **Mobile format selection** now properly incorporates alpha channel support
 - **ASTC format** alpha support clarified in mobile format selection
 - **Unnecessary compression** now skipped for already formatted textures
