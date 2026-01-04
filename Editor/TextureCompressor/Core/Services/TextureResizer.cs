@@ -150,9 +150,14 @@ namespace dev.limitex.avatar.compressor.texture
         /// <summary>
         /// Selects compression format for Mobile (Quest/Android) - ASTC formats.
         /// Uses complexity-based block size selection.
+        /// Note: hasAlpha parameter is kept for API consistency with SelectDesktopFormat,
+        /// but ASTC formats inherently support alpha channels.
         /// </summary>
         private TextureFormat SelectMobileFormat(bool isNormalMap, float complexity, bool hasAlpha)
         {
+            // ASTC formats support alpha inherently, so hasAlpha doesn't affect format selection
+            _ = hasAlpha;
+
             if (isNormalMap)
             {
                 // ASTC 4x4 for normal maps (highest quality)
