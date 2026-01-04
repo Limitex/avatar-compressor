@@ -426,6 +426,187 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region CompressTexture Actual Compression Tests
+
+        [Test]
+        public void CompressTexture_UncompressedOpaqueTexture_Desktop_CompressesToDXT1()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateOpaqueTexture(64, 64);
+            var originalFormat = texture.format;
+
+            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: false, complexity: 0.3f);
+
+            Assert.IsTrue(result, "Compression should return true when format changes");
+            Assert.AreEqual(TextureFormat.DXT1, texture.format, "Opaque low complexity texture should compress to DXT1");
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_UncompressedTextureWithAlpha_Desktop_CompressesToDXT5()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateTextureWithAlpha(64, 64);
+            var originalFormat = texture.format;
+
+            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: false, complexity: 0.3f);
+
+            Assert.IsTrue(result, "Compression should return true when format changes");
+            Assert.AreEqual(TextureFormat.DXT5, texture.format, "Texture with alpha should compress to DXT5");
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_UncompressedHighComplexity_Desktop_CompressesToBC7()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateOpaqueTexture(64, 64);
+            var originalFormat = texture.format;
+
+            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: false, complexity: 0.8f);
+
+            Assert.IsTrue(result, "Compression should return true when format changes");
+            Assert.AreEqual(TextureFormat.BC7, texture.format, "High complexity texture should compress to BC7");
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_NormalMap_Desktop_CompressesToBC5()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateOpaqueTexture(64, 64);
+            var originalFormat = texture.format;
+
+            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: true, complexity: 0.5f);
+
+            Assert.IsTrue(result, "Compression should return true when format changes");
+            Assert.AreEqual(TextureFormat.BC5, texture.format, "Normal map should compress to BC5");
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_AlreadyInTargetFormat_ReturnsFalse()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            // First compress to get a DXT1 texture
+            var texture = CreateOpaqueTexture(64, 64);
+            selector.CompressTexture(texture, TextureFormat.RGBA32, isNormalMap: false, complexity: 0.3f);
+            Assert.AreEqual(TextureFormat.DXT1, texture.format);
+
+            // Try to compress again - should return false since already in target format
+            bool result = selector.CompressTexture(texture, TextureFormat.RGBA32, isNormalMap: false, complexity: 0.3f);
+
+            Assert.IsFalse(result, "Compression should return false when texture is already in target format");
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_SourceAlreadyCompressed_PreservesSourceFormat()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            // Create and compress to BC7
+            var texture = CreateOpaqueTexture(64, 64);
+            selector.CompressTexture(texture, TextureFormat.RGBA32, isNormalMap: false, complexity: 0.9f);
+            Assert.AreEqual(TextureFormat.BC7, texture.format);
+
+            // Now call CompressTexture with sourceFormat as BC7 (already compressed)
+            // It should try to preserve BC7, and since texture is already BC7, return false
+            bool result = selector.CompressTexture(texture, TextureFormat.BC7, isNormalMap: false, complexity: 0.3f);
+
+            Assert.IsFalse(result, "Should return false when source is compressed and texture already matches");
+            Assert.AreEqual(TextureFormat.BC7, texture.format, "Format should remain BC7");
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_Mobile_LowComplexity_CompressesToASTC8x8()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Mobile,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateOpaqueTexture(64, 64);
+            var originalFormat = texture.format;
+
+            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: false, complexity: 0.2f);
+
+            Assert.IsTrue(result, "Compression should return true when format changes");
+            Assert.AreEqual(TextureFormat.ASTC_8x8, texture.format, "Low complexity mobile texture should compress to ASTC_8x8");
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_Mobile_HighComplexity_CompressesToASTC4x4()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Mobile,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateOpaqueTexture(64, 64);
+            var originalFormat = texture.format;
+
+            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: false, complexity: 0.8f);
+
+            Assert.IsTrue(result, "Compression should return true when format changes");
+            Assert.AreEqual(TextureFormat.ASTC_4x4, texture.format, "High complexity mobile texture should compress to ASTC_4x4");
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_Mobile_NormalMap_CompressesToASTC4x4()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Mobile,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateOpaqueTexture(64, 64);
+            var originalFormat = texture.format;
+
+            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: true, complexity: 0.5f);
+
+            Assert.IsTrue(result, "Compression should return true when format changes");
+            Assert.AreEqual(TextureFormat.ASTC_4x4, texture.format, "Mobile normal map should compress to ASTC_4x4");
+
+            Object.DestroyImmediate(texture);
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private static Texture2D CreateOpaqueTexture(int width, int height)
