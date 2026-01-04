@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using VRC.SDKBase;
 
@@ -62,6 +63,46 @@ namespace dev.limitex.avatar.compressor.texture
 
         [Header("Debug")]
         public bool EnableLogging = true;
+
+        [Header("Frozen Textures")]
+        [Tooltip("Textures with manually specified compression settings")]
+        public List<FrozenTextureSettings> FrozenTextures = new List<FrozenTextureSettings>();
+
+        /// <summary>
+        /// Gets frozen settings for a texture by its asset path.
+        /// </summary>
+        public FrozenTextureSettings GetFrozenSettings(string assetPath)
+        {
+            return FrozenTextures.Find(f => f.TexturePath == assetPath);
+        }
+
+        /// <summary>
+        /// Checks if a texture is frozen.
+        /// </summary>
+        public bool IsFrozen(string assetPath)
+        {
+            return FrozenTextures.Exists(f => f.TexturePath == assetPath);
+        }
+
+        /// <summary>
+        /// Adds or updates frozen settings for a texture.
+        /// </summary>
+        public void SetFrozenSettings(string assetPath, FrozenTextureSettings settings)
+        {
+            var existingIndex = FrozenTextures.FindIndex(f => f.TexturePath == assetPath);
+            if (existingIndex >= 0)
+                FrozenTextures[existingIndex] = settings;
+            else
+                FrozenTextures.Add(settings);
+        }
+
+        /// <summary>
+        /// Removes frozen settings for a texture.
+        /// </summary>
+        public void UnfreezeTexture(string assetPath)
+        {
+            FrozenTextures.RemoveAll(f => f.TexturePath == assetPath);
+        }
 
         /// <summary>
         /// Applies preset settings to this component.

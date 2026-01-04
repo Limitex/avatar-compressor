@@ -52,13 +52,19 @@ namespace dev.limitex.avatar.compressor.texture
         /// <param name="sourceFormat">The original format of the source texture</param>
         /// <param name="isNormalMap">Whether this texture is a normal map</param>
         /// <param name="complexity">Normalized complexity value (0-1)</param>
+        /// <param name="formatOverride">Optional format override from frozen settings</param>
         /// <returns>True if compression was applied, false if skipped or failed</returns>
-        public bool CompressTexture(Texture2D texture, TextureFormat sourceFormat, bool isNormalMap, float complexity)
+        public bool CompressTexture(Texture2D texture, TextureFormat sourceFormat, bool isNormalMap, float complexity, FrozenTextureFormat? formatOverride = null)
         {
             TextureFormat targetFormat;
 
+            // Check for frozen format override (highest priority)
+            if (formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto)
+            {
+                targetFormat = ConvertFrozenFormat(formatOverride.Value);
+            }
             // If source was already compressed, preserve the same format
-            if (IsCompressedFormat(sourceFormat))
+            else if (IsCompressedFormat(sourceFormat))
             {
                 targetFormat = sourceFormat;
             }
@@ -72,6 +78,24 @@ namespace dev.limitex.avatar.compressor.texture
             }
 
             return ApplyCompression(texture, targetFormat);
+        }
+
+        /// <summary>
+        /// Converts FrozenTextureFormat enum to Unity TextureFormat.
+        /// </summary>
+        public static TextureFormat ConvertFrozenFormat(FrozenTextureFormat format)
+        {
+            return format switch
+            {
+                FrozenTextureFormat.DXT1 => TextureFormat.DXT1,
+                FrozenTextureFormat.DXT5 => TextureFormat.DXT5,
+                FrozenTextureFormat.BC5 => TextureFormat.BC5,
+                FrozenTextureFormat.BC7 => TextureFormat.BC7,
+                FrozenTextureFormat.ASTC_4x4 => TextureFormat.ASTC_4x4,
+                FrozenTextureFormat.ASTC_6x6 => TextureFormat.ASTC_6x6,
+                FrozenTextureFormat.ASTC_8x8 => TextureFormat.ASTC_8x8,
+                _ => throw new System.ArgumentException($"Unsupported frozen format: {format}")
+            };
         }
 
         /// <summary>

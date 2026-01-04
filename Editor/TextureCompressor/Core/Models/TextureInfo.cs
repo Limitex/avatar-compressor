@@ -10,7 +10,8 @@ namespace dev.limitex.avatar.compressor.texture
     {
         None,
         TooSmall,
-        FilteredByType
+        FilteredByType,
+        FrozenSkip
     }
 
     /// <summary>

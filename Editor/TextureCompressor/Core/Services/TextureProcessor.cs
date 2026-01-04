@@ -34,7 +34,12 @@ namespace dev.limitex.avatar.compressor.texture
         /// <summary>
         /// Resizes a texture using pre-computed analysis result.
         /// </summary>
-        public Texture2D Resize(Texture2D source, TextureAnalysisResult analysis, bool enableLogging, bool isNormalMap = false)
+        /// <param name="source">Source texture to resize</param>
+        /// <param name="analysis">Pre-computed analysis result with recommended settings</param>
+        /// <param name="enableLogging">Whether to log the operation</param>
+        /// <param name="isNormalMap">Whether this is a normal map texture</param>
+        /// <param name="formatOverride">Optional format override from frozen settings</param>
+        public Texture2D Resize(Texture2D source, TextureAnalysisResult analysis, bool enableLogging, bool isNormalMap = false, FrozenTextureFormat? formatOverride = null)
         {
             Texture2D result;
             if (analysis.RecommendedDivisor <= 1 &&
@@ -49,14 +54,17 @@ namespace dev.limitex.avatar.compressor.texture
             }
 
             // Apply compression to reduce memory usage
-            _formatSelector.CompressTexture(result, source.format, isNormalMap, analysis.NormalizedComplexity);
+            _formatSelector.CompressTexture(result, source.format, isNormalMap, analysis.NormalizedComplexity, formatOverride);
 
             if (enableLogging)
             {
                 var format = result.format;
+                var frozenInfo = formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto
+                    ? " [FROZEN]"
+                    : "";
                 Debug.Log($"[TextureCompressor] {source.name}: " +
                           $"{source.width}x{source.height} → " +
-                          $"{result.width}x{result.height} ({format}) " +
+                          $"{result.width}x{result.height} ({format}){frozenInfo} " +
                           $"(Complexity: {analysis.NormalizedComplexity:P0}, " +
                           $"Divisor: {analysis.RecommendedDivisor}x)");
             }

@@ -31,6 +31,7 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly bool _processNormalMaps;
         private readonly bool _processEmissionMaps;
         private readonly bool _processOtherTextures;
+        private readonly HashSet<string> _frozenSkipPaths;
 
         public TextureCollector(
             int minSourceSize,
@@ -38,7 +39,8 @@ namespace dev.limitex.avatar.compressor.texture
             bool processMainTextures,
             bool processNormalMaps,
             bool processEmissionMaps,
-            bool processOtherTextures)
+            bool processOtherTextures,
+            IEnumerable<string> frozenSkipPaths = null)
         {
             _minSourceSize = minSourceSize;
             _skipIfSmallerThan = skipIfSmallerThan;
@@ -46,6 +48,9 @@ namespace dev.limitex.avatar.compressor.texture
             _processNormalMaps = processNormalMaps;
             _processEmissionMaps = processEmissionMaps;
             _processOtherTextures = processOtherTextures;
+            _frozenSkipPaths = frozenSkipPaths != null
+                ? new HashSet<string>(frozenSkipPaths)
+                : new HashSet<string>();
         }
 
         /// <summary>
@@ -158,6 +163,11 @@ namespace dev.limitex.avatar.compressor.texture
 
         private (bool shouldProcess, SkipReason skipReason) GetProcessResult(Texture2D texture, string propertyName)
         {
+            // Check frozen skip first (highest priority)
+            string assetPath = AssetDatabase.GetAssetPath(texture);
+            if (_frozenSkipPaths.Contains(assetPath))
+                return (false, SkipReason.FrozenSkip);
+
             int maxDim = Mathf.Max(texture.width, texture.height);
             if (maxDim < _minSourceSize) return (false, SkipReason.TooSmall);
             if (maxDim <= _skipIfSmallerThan) return (false, SkipReason.TooSmall);

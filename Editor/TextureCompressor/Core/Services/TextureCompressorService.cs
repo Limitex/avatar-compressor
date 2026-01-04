@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using dev.limitex.avatar.compressor.common;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -18,10 +20,24 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly TextureProcessor _processor;
         private readonly ComplexityCalculator _complexityCalc;
         private readonly TextureAnalyzer _analyzer;
+        private readonly Dictionary<string, FrozenTextureSettings> _frozenLookup;
 
         public TextureCompressorService(TextureCompressor config)
         {
             _config = config;
+
+            // Build frozen texture lookup
+            _frozenLookup = new Dictionary<string, FrozenTextureSettings>();
+            foreach (var frozen in config.FrozenTextures)
+            {
+                if (!string.IsNullOrEmpty(frozen.TexturePath))
+                    _frozenLookup[frozen.TexturePath] = frozen;
+            }
+
+            // Get frozen skip paths (textures with Skip=true should be excluded from collection)
+            var frozenSkipPaths = config.FrozenTextures
+                .Where(f => f.Skip && !string.IsNullOrEmpty(f.TexturePath))
+                .Select(f => f.TexturePath);
 
             _collector = new TextureCollector(
                 config.MinSourceSize,
@@ -29,7 +45,8 @@ namespace dev.limitex.avatar.compressor.texture
                 config.ProcessMainTextures,
                 config.ProcessNormalMaps,
                 config.ProcessEmissionMaps,
-                config.ProcessOtherTextures
+                config.ProcessOtherTextures,
+                frozenSkipPaths
             );
 
             _processor = new TextureProcessor(
@@ -88,13 +105,41 @@ namespace dev.limitex.avatar.compressor.texture
 
                 if (processedTextures.ContainsKey(originalTexture)) continue;
 
-                if (!analysisResults.TryGetValue(originalTexture, out var analysis))
+                string assetPath = AssetDatabase.GetAssetPath(originalTexture);
+                TextureAnalysisResult analysis;
+                FrozenTextureSettings frozenSettings = null;
+                FrozenTextureFormat? formatOverride = null;
+
+                // Check if texture is frozen (non-skipped frozen textures are still in collection)
+                if (_frozenLookup.TryGetValue(assetPath, out frozenSettings) && !frozenSettings.Skip)
                 {
-                    Debug.LogWarning($"[{Name}] Skipping texture '{originalTexture.name}': analysis failed");
-                    continue;
+                    // Use frozen settings instead of analysis
+                    int divisor = frozenSettings.Divisor;
+                    Vector2Int resolution = _processor.CalculateNewDimensions(
+                        originalTexture.width, originalTexture.height, divisor);
+
+                    // Create analysis result with frozen values
+                    // Complexity is set to 0.5 as a neutral value for format selection when format is Auto
+                    analysis = new TextureAnalysisResult(0.5f, divisor, resolution);
+                    formatOverride = frozenSettings.Format;
+
+                    if (enableLogging)
+                    {
+                        Debug.Log($"[{Name}] Using frozen settings for '{originalTexture.name}': " +
+                                  $"Divisor={divisor}, Format={frozenSettings.Format}");
+                    }
+                }
+                else
+                {
+                    // Normal analysis path
+                    if (!analysisResults.TryGetValue(originalTexture, out analysis))
+                    {
+                        Debug.LogWarning($"[{Name}] Skipping texture '{originalTexture.name}': analysis failed");
+                        continue;
+                    }
                 }
 
-                var compressedTexture = _processor.Resize(originalTexture, analysis, enableLogging, textureInfo.IsNormalMap);
+                var compressedTexture = _processor.Resize(originalTexture, analysis, enableLogging, textureInfo.IsNormalMap, formatOverride);
                 compressedTexture.name = originalTexture.name + "_compressed";
 
                 processedTextures[originalTexture] = compressedTexture;
