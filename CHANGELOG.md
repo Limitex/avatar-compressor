@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Platform-specific compression formats** - Automatic format selection based on build target
+  - Desktop (PC): DXT1, DXT5, BC5 (normal maps), BC7 (high complexity)
+  - Mobile (Quest/Android): ASTC 4x4, 6x6, 8x8 based on complexity and alpha
+- **High-quality format option** for high complexity textures (BC7/ASTC_4x4)
+- **Memory estimation display** in compression preview showing estimated VRAM usage
+- **Predicted compression format display** in texture list preview
+- **Unit tests** for TextureProcessor and TextureFormatSelector
+
+### Changed
+
+- **Renamed** `TextureResizer` to `TextureProcessor` for better clarity
+- **Renamed** `HighQualityComplexityThreshold` to `HighComplexityThreshold` for consistency
+- **Refactored** texture format selection into dedicated `TextureFormatSelector` class
+
+### Fixed
+
+- **Mobile format selection** now properly incorporates alpha channel support
+- **ASTC format** alpha support clarified in mobile format selection
+- **Unnecessary compression** now skipped for already formatted textures
+- **Pixel reading failures** now logged for better debugging
+
 ## [0.1.0] - 2026-01-03
 
 ### Added

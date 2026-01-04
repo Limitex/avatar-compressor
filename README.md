@@ -18,6 +18,9 @@ Analyzes and compresses avatar textures based on their complexity.
 - **Multiple analysis strategies** - Fast, HighAccuracy, Perceptual, and Combined modes
 - **Preset configurations** - Quick setup with 5 built-in presets
 - **Texture type awareness** - Specialized handling for normal maps, emission maps, and more
+- **Platform-specific formats** - Automatic format selection for PC (DXT/BC) and Quest (ASTC)
+- **High-quality compression** - BC7/ASTC_4x4 for high complexity textures
+- **Memory estimation** - Preview estimated VRAM usage before building
 - **Shared texture optimization** - Shared textures are processed once and reused
 
 ## Requirements
