@@ -303,6 +303,265 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Frozen Texture Management Tests
+
+        [Test]
+        public void IsFrozen_EmptyList_ReturnsFalse()
+        {
+            Assert.IsFalse(_config.IsFrozen("Assets/Textures/test.png"));
+        }
+
+        [Test]
+        public void IsFrozen_AfterAddingFrozen_ReturnsTrue()
+        {
+            var path = "Assets/Textures/test.png";
+            _config.SetFrozenSettings(path, new FrozenTextureSettings(path));
+
+            Assert.IsTrue(_config.IsFrozen(path));
+        }
+
+        [Test]
+        public void IsFrozen_DifferentPath_ReturnsFalse()
+        {
+            _config.SetFrozenSettings("Assets/Textures/one.png",
+                new FrozenTextureSettings("Assets/Textures/one.png"));
+
+            Assert.IsFalse(_config.IsFrozen("Assets/Textures/two.png"));
+        }
+
+        [Test]
+        public void GetFrozenSettings_EmptyList_ReturnsNull()
+        {
+            var result = _config.GetFrozenSettings("Assets/Textures/test.png");
+
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void GetFrozenSettings_ExistingPath_ReturnsSettings()
+        {
+            var path = "Assets/Textures/test.png";
+            var settings = new FrozenTextureSettings(path, 4, FrozenTextureFormat.BC7, false);
+            _config.SetFrozenSettings(path, settings);
+
+            var result = _config.GetFrozenSettings(path);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(4, result.Divisor);
+            Assert.AreEqual(FrozenTextureFormat.BC7, result.Format);
+        }
+
+        [Test]
+        public void SetFrozenSettings_NewPath_AddToList()
+        {
+            var path = "Assets/Textures/test.png";
+            var settings = new FrozenTextureSettings(path, 2, FrozenTextureFormat.DXT5, false);
+
+            _config.SetFrozenSettings(path, settings);
+
+            Assert.AreEqual(1, _config.FrozenTextures.Count);
+            Assert.AreEqual(path, _config.FrozenTextures[0].TexturePath);
+        }
+
+        [Test]
+        public void SetFrozenSettings_ExistingPath_UpdatesSettings()
+        {
+            var path = "Assets/Textures/test.png";
+            _config.SetFrozenSettings(path, new FrozenTextureSettings(path, 2, FrozenTextureFormat.DXT1, false));
+            _config.SetFrozenSettings(path, new FrozenTextureSettings(path, 8, FrozenTextureFormat.BC7, true));
+
+            Assert.AreEqual(1, _config.FrozenTextures.Count);
+            Assert.AreEqual(8, _config.FrozenTextures[0].Divisor);
+            Assert.AreEqual(FrozenTextureFormat.BC7, _config.FrozenTextures[0].Format);
+            Assert.IsTrue(_config.FrozenTextures[0].Skip);
+        }
+
+        [Test]
+        public void UnfreezeTexture_ExistingPath_RemovesFromList()
+        {
+            var path = "Assets/Textures/test.png";
+            _config.SetFrozenSettings(path, new FrozenTextureSettings(path));
+
+            _config.UnfreezeTexture(path);
+
+            Assert.AreEqual(0, _config.FrozenTextures.Count);
+            Assert.IsFalse(_config.IsFrozen(path));
+        }
+
+        [Test]
+        public void UnfreezeTexture_NonExistingPath_DoesNothing()
+        {
+            _config.SetFrozenSettings("Assets/Textures/one.png",
+                new FrozenTextureSettings("Assets/Textures/one.png"));
+
+            _config.UnfreezeTexture("Assets/Textures/two.png");
+
+            Assert.AreEqual(1, _config.FrozenTextures.Count);
+        }
+
+        [Test]
+        public void FrozenTextures_DefaultIsEmptyList()
+        {
+            Assert.IsNotNull(_config.FrozenTextures);
+            Assert.AreEqual(0, _config.FrozenTextures.Count);
+        }
+
+        #endregion
+
+        #region Divisor Validation Tests
+
+        [Test]
+        public void IsValidDivisor_1_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureCompressor.IsValidDivisor(1));
+        }
+
+        [Test]
+        public void IsValidDivisor_2_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureCompressor.IsValidDivisor(2));
+        }
+
+        [Test]
+        public void IsValidDivisor_4_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureCompressor.IsValidDivisor(4));
+        }
+
+        [Test]
+        public void IsValidDivisor_8_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureCompressor.IsValidDivisor(8));
+        }
+
+        [Test]
+        public void IsValidDivisor_16_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureCompressor.IsValidDivisor(16));
+        }
+
+        [Test]
+        public void IsValidDivisor_0_ReturnsFalse()
+        {
+            Assert.IsFalse(TextureCompressor.IsValidDivisor(0));
+        }
+
+        [Test]
+        public void IsValidDivisor_3_ReturnsFalse()
+        {
+            Assert.IsFalse(TextureCompressor.IsValidDivisor(3));
+        }
+
+        [Test]
+        public void IsValidDivisor_5_ReturnsFalse()
+        {
+            Assert.IsFalse(TextureCompressor.IsValidDivisor(5));
+        }
+
+        [Test]
+        public void IsValidDivisor_32_ReturnsFalse()
+        {
+            Assert.IsFalse(TextureCompressor.IsValidDivisor(32));
+        }
+
+        [Test]
+        public void IsValidDivisor_Negative_ReturnsFalse()
+        {
+            Assert.IsFalse(TextureCompressor.IsValidDivisor(-1));
+            Assert.IsFalse(TextureCompressor.IsValidDivisor(-4));
+        }
+
+        [Test]
+        public void GetClosestValidDivisor_0_Returns1()
+        {
+            Assert.AreEqual(1, TextureCompressor.GetClosestValidDivisor(0));
+        }
+
+        [Test]
+        public void GetClosestValidDivisor_1_Returns1()
+        {
+            Assert.AreEqual(1, TextureCompressor.GetClosestValidDivisor(1));
+        }
+
+        [Test]
+        public void GetClosestValidDivisor_3_Returns2Or4()
+        {
+            // 3 is equidistant from 2 and 4, implementation returns 2
+            var result = TextureCompressor.GetClosestValidDivisor(3);
+            Assert.That(result, Is.EqualTo(2).Or.EqualTo(4));
+        }
+
+        [Test]
+        public void GetClosestValidDivisor_5_Returns4()
+        {
+            Assert.AreEqual(4, TextureCompressor.GetClosestValidDivisor(5));
+        }
+
+        [Test]
+        public void GetClosestValidDivisor_6_Returns4Or8()
+        {
+            // 6 is equidistant from 4 and 8
+            var result = TextureCompressor.GetClosestValidDivisor(6);
+            Assert.That(result, Is.EqualTo(4).Or.EqualTo(8));
+        }
+
+        [Test]
+        public void GetClosestValidDivisor_7_Returns8()
+        {
+            Assert.AreEqual(8, TextureCompressor.GetClosestValidDivisor(7));
+        }
+
+        [Test]
+        public void GetClosestValidDivisor_10_Returns8()
+        {
+            Assert.AreEqual(8, TextureCompressor.GetClosestValidDivisor(10));
+        }
+
+        [Test]
+        public void GetClosestValidDivisor_15_Returns16()
+        {
+            Assert.AreEqual(16, TextureCompressor.GetClosestValidDivisor(15));
+        }
+
+        [Test]
+        public void GetClosestValidDivisor_100_Returns16()
+        {
+            // Values far beyond 16 should clamp to 16
+            Assert.AreEqual(16, TextureCompressor.GetClosestValidDivisor(100));
+        }
+
+        [Test]
+        public void GetClosestValidDivisor_Negative_Returns1()
+        {
+            Assert.AreEqual(1, TextureCompressor.GetClosestValidDivisor(-5));
+        }
+
+        [Test]
+        public void SetFrozenSettings_InvalidDivisor_AdjustsToClosestValid()
+        {
+            var path = "Assets/Textures/test.png";
+            var settings = new FrozenTextureSettings(path, 3, FrozenTextureFormat.Auto, false);
+
+            _config.SetFrozenSettings(path, settings);
+
+            var result = _config.GetFrozenSettings(path);
+            Assert.That(result.Divisor, Is.EqualTo(2).Or.EqualTo(4));
+        }
+
+        [Test]
+        public void SetFrozenSettings_ValidDivisor_PreservesDivisor()
+        {
+            var path = "Assets/Textures/test.png";
+            var settings = new FrozenTextureSettings(path, 8, FrozenTextureFormat.Auto, false);
+
+            _config.SetFrozenSettings(path, settings);
+
+            var result = _config.GetFrozenSettings(path);
+            Assert.AreEqual(8, result.Divisor);
+        }
+
+        #endregion
+
         #region Preset Switching Tests
 
         [Test]

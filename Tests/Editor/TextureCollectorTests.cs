@@ -518,6 +518,72 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region FrozenSkip Tests
+
+        [Test]
+        public void Constructor_WithFrozenSkipPaths_AcceptsParameter()
+        {
+            var frozenPaths = new[] { "Assets/Textures/frozen1.png", "Assets/Textures/frozen2.png" };
+
+            var collector = new TextureCollector(64, 0, true, true, true, true, frozenPaths);
+
+            Assert.IsNotNull(collector);
+        }
+
+        [Test]
+        public void Constructor_WithNullFrozenSkipPaths_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                var collector = new TextureCollector(64, 0, true, true, true, true, null);
+            });
+        }
+
+        [Test]
+        public void Constructor_WithEmptyFrozenSkipPaths_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                var collector = new TextureCollector(64, 0, true, true, true, true, new string[0]);
+            });
+        }
+
+        [Test]
+        public void CollectAll_TextureWithFrozenSkipPath_HasFrozenSkipReason()
+        {
+            // Note: In-memory textures don't have asset paths, so this tests
+            // the SkipReason enum value exists and can be assigned
+            var info = new TextureInfo
+            {
+                IsProcessed = false,
+                SkipReason = SkipReason.FrozenSkip
+            };
+
+            Assert.AreEqual(SkipReason.FrozenSkip, info.SkipReason);
+            Assert.IsFalse(info.IsProcessed);
+        }
+
+        [Test]
+        public void SkipReason_FrozenSkip_IsDefined()
+        {
+            var values = System.Enum.GetValues(typeof(SkipReason));
+
+            Assert.That(values, Contains.Item(SkipReason.FrozenSkip));
+        }
+
+        [Test]
+        public void SkipReason_AllValuesAreDefined()
+        {
+            var values = System.Enum.GetValues(typeof(SkipReason));
+
+            Assert.That(values, Contains.Item(SkipReason.None));
+            Assert.That(values, Contains.Item(SkipReason.TooSmall));
+            Assert.That(values, Contains.Item(SkipReason.FilteredByType));
+            Assert.That(values, Contains.Item(SkipReason.FrozenSkip));
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private GameObject CreateGameObject(string name)

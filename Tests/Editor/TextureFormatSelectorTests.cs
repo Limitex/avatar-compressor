@@ -607,6 +607,210 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region ConvertFrozenFormat Tests
+
+        [Test]
+        public void ConvertFrozenFormat_DXT1_ReturnsDXT1()
+        {
+            var result = TextureFormatSelector.ConvertFrozenFormat(FrozenTextureFormat.DXT1);
+
+            Assert.AreEqual(TextureFormat.DXT1, result);
+        }
+
+        [Test]
+        public void ConvertFrozenFormat_DXT5_ReturnsDXT5()
+        {
+            var result = TextureFormatSelector.ConvertFrozenFormat(FrozenTextureFormat.DXT5);
+
+            Assert.AreEqual(TextureFormat.DXT5, result);
+        }
+
+        [Test]
+        public void ConvertFrozenFormat_BC5_ReturnsBC5()
+        {
+            var result = TextureFormatSelector.ConvertFrozenFormat(FrozenTextureFormat.BC5);
+
+            Assert.AreEqual(TextureFormat.BC5, result);
+        }
+
+        [Test]
+        public void ConvertFrozenFormat_BC7_ReturnsBC7()
+        {
+            var result = TextureFormatSelector.ConvertFrozenFormat(FrozenTextureFormat.BC7);
+
+            Assert.AreEqual(TextureFormat.BC7, result);
+        }
+
+        [Test]
+        public void ConvertFrozenFormat_ASTC4x4_ReturnsASTC4x4()
+        {
+            var result = TextureFormatSelector.ConvertFrozenFormat(FrozenTextureFormat.ASTC_4x4);
+
+            Assert.AreEqual(TextureFormat.ASTC_4x4, result);
+        }
+
+        [Test]
+        public void ConvertFrozenFormat_ASTC6x6_ReturnsASTC6x6()
+        {
+            var result = TextureFormatSelector.ConvertFrozenFormat(FrozenTextureFormat.ASTC_6x6);
+
+            Assert.AreEqual(TextureFormat.ASTC_6x6, result);
+        }
+
+        [Test]
+        public void ConvertFrozenFormat_ASTC8x8_ReturnsASTC8x8()
+        {
+            var result = TextureFormatSelector.ConvertFrozenFormat(FrozenTextureFormat.ASTC_8x8);
+
+            Assert.AreEqual(TextureFormat.ASTC_8x8, result);
+        }
+
+        [Test]
+        public void ConvertFrozenFormat_Auto_ThrowsArgumentException()
+        {
+            Assert.Throws<System.ArgumentException>(() =>
+            {
+                TextureFormatSelector.ConvertFrozenFormat(FrozenTextureFormat.Auto);
+            });
+        }
+
+        #endregion
+
+        #region CompressTexture with FrozenFormat Override Tests
+
+        [Test]
+        public void CompressTexture_WithFrozenFormatOverride_UsesOverrideFormat()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateOpaqueTexture(64, 64);
+            var originalFormat = texture.format;
+
+            // Low complexity would normally result in DXT1, but we override to BC7
+            bool result = selector.CompressTexture(
+                texture, originalFormat, isNormalMap: false, complexity: 0.3f,
+                formatOverride: FrozenTextureFormat.BC7);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(TextureFormat.BC7, texture.format);
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_WithFrozenFormatDXT5_UsesDXT5()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateOpaqueTexture(64, 64);
+            var originalFormat = texture.format;
+
+            // Opaque texture would normally use DXT1, but we override to DXT5
+            bool result = selector.CompressTexture(
+                texture, originalFormat, isNormalMap: false, complexity: 0.3f,
+                formatOverride: FrozenTextureFormat.DXT5);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(TextureFormat.DXT5, texture.format);
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_WithFrozenFormatAuto_UsesNormalSelection()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateOpaqueTexture(64, 64);
+            var originalFormat = texture.format;
+
+            // Auto should fall through to normal format selection
+            bool result = selector.CompressTexture(
+                texture, originalFormat, isNormalMap: false, complexity: 0.3f,
+                formatOverride: FrozenTextureFormat.Auto);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(TextureFormat.DXT1, texture.format);
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_WithNullFormatOverride_UsesNormalSelection()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateOpaqueTexture(64, 64);
+            var originalFormat = texture.format;
+
+            bool result = selector.CompressTexture(
+                texture, originalFormat, isNormalMap: false, complexity: 0.3f,
+                formatOverride: null);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(TextureFormat.DXT1, texture.format);
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_FrozenOverrideOnNormalMap_OverridesBC5()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateOpaqueTexture(64, 64);
+            var originalFormat = texture.format;
+
+            // Normal map would normally use BC5, but we override to DXT1
+            bool result = selector.CompressTexture(
+                texture, originalFormat, isNormalMap: true, complexity: 0.5f,
+                formatOverride: FrozenTextureFormat.DXT1);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(TextureFormat.DXT1, texture.format);
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_FrozenMobileFormat_OnDesktop_UsesSpecifiedFormat()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateOpaqueTexture(64, 64);
+            var originalFormat = texture.format;
+
+            // Force ASTC format even on Desktop platform
+            bool result = selector.CompressTexture(
+                texture, originalFormat, isNormalMap: false, complexity: 0.5f,
+                formatOverride: FrozenTextureFormat.ASTC_4x4);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(TextureFormat.ASTC_4x4, texture.format);
+
+            Object.DestroyImmediate(texture);
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private static Texture2D CreateOpaqueTexture(int width, int height)
