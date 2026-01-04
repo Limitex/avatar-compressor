@@ -109,7 +109,6 @@ namespace dev.limitex.avatar.compressor.texture
                 result.Apply();
 
                 // Copy texture settings from source
-                result.wrapMode = source.wrapMode;
                 result.wrapModeU = source.wrapModeU;
                 result.wrapModeV = source.wrapModeV;
                 result.wrapModeW = source.wrapModeW;
