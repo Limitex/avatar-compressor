@@ -86,14 +86,52 @@ namespace dev.limitex.avatar.compressor.texture
 
         /// <summary>
         /// Adds or updates frozen settings for a texture.
+        /// Validates that divisor is a valid power of 2 (1, 2, 4, 8, or 16).
         /// </summary>
         public void SetFrozenSettings(string assetPath, FrozenTextureSettings settings)
         {
+            // Validate divisor is a valid power of 2
+            if (!IsValidDivisor(settings.Divisor))
+            {
+                Debug.LogWarning($"[TextureCompressor] Invalid divisor {settings.Divisor} for frozen texture. Using closest valid value.");
+                settings.Divisor = GetClosestValidDivisor(settings.Divisor);
+            }
+
             var existingIndex = FrozenTextures.FindIndex(f => f.TexturePath == assetPath);
             if (existingIndex >= 0)
                 FrozenTextures[existingIndex] = settings;
             else
                 FrozenTextures.Add(settings);
+        }
+
+        /// <summary>
+        /// Checks if a divisor value is valid (1, 2, 4, 8, or 16).
+        /// </summary>
+        public static bool IsValidDivisor(int divisor)
+        {
+            return divisor == 1 || divisor == 2 || divisor == 4 || divisor == 8 || divisor == 16;
+        }
+
+        /// <summary>
+        /// Gets the closest valid divisor for an invalid value.
+        /// </summary>
+        public static int GetClosestValidDivisor(int divisor)
+        {
+            int[] validDivisors = { 1, 2, 4, 8, 16 };
+            int closest = 1;
+            int minDiff = int.MaxValue;
+
+            foreach (int valid in validDivisors)
+            {
+                int diff = System.Math.Abs(divisor - valid);
+                if (diff < minDiff)
+                {
+                    minDiff = diff;
+                    closest = valid;
+                }
+            }
+
+            return closest;
         }
 
         /// <summary>
