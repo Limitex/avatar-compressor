@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Frozen Textures** - Manual override for individual texture compression settings
+  - Freeze specific textures to control their compression independently
+  - Configurable divisor (1, 2, 4, 8, 16) per frozen texture
+  - Format override (Auto, DXT1, DXT5, BC5, BC7, ASTC_4x4, ASTC_6x6, ASTC_8x8)
+  - Skip compression option to exclude textures entirely
+  - Validation for divisor values with automatic correction to nearest valid value
+  - Warning display for missing texture assets in frozen list
+  - Freeze/Unfreeze buttons in preview and dedicated Frozen Textures section
+- **Unit tests** for FrozenTextureSettings, TextureCollector, and TextureCompressor config management
+
+### Changed
+
+- **Runtime directory restructured** - Organized into `Components/` and `Models/` subdirectories
+
 ## [v0.2.0] 2026-01-04
 
 ### Added
