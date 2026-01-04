@@ -56,10 +56,12 @@ namespace dev.limitex.avatar.compressor.texture
         public int SkipIfSmallerThan = 128;
 
         [Header("Compression Format")]
-        [Tooltip("Use BC7 format for high complexity textures (highest quality, 8 bpp)")]
-        public bool UseBC7ForHighComplexity = true;
-        [Tooltip("Complexity threshold above which BC7 format is used")]
-        [Range(0f, 1f)] public float BC7ComplexityThreshold = 0.7f;
+        [Tooltip("Target platform for compression format selection (Auto detects from build target)")]
+        public CompressionPlatform TargetPlatform = CompressionPlatform.Auto;
+        [Tooltip("Use BC7/ASTC_4x4 format for high complexity textures (highest quality)")]
+        public bool UseHighQualityFormatForHighComplexity = true;
+        [Tooltip("Complexity threshold above which high quality format is used")]
+        [Range(0f, 1f)] public float HighQualityComplexityThreshold = 0.7f;
 
         [Header("Debug")]
         public bool EnableLogging = true;
@@ -112,8 +114,9 @@ namespace dev.limitex.avatar.compressor.texture
             ProcessOtherTextures = true;
             MinSourceSize = 1024;
             SkipIfSmallerThan = 512;
-            UseBC7ForHighComplexity = true;
-            BC7ComplexityThreshold = 0.5f;
+            TargetPlatform = CompressionPlatform.Auto;
+            UseHighQualityFormatForHighComplexity = true;
+            HighQualityComplexityThreshold = 0.5f;
         }
 
         private void ApplyQualityPreset()
@@ -135,8 +138,9 @@ namespace dev.limitex.avatar.compressor.texture
             ProcessOtherTextures = true;
             MinSourceSize = 512;
             SkipIfSmallerThan = 256;
-            UseBC7ForHighComplexity = true;
-            BC7ComplexityThreshold = 0.6f;
+            TargetPlatform = CompressionPlatform.Auto;
+            UseHighQualityFormatForHighComplexity = true;
+            HighQualityComplexityThreshold = 0.6f;
         }
 
         private void ApplyBalancedPreset()
@@ -158,8 +162,9 @@ namespace dev.limitex.avatar.compressor.texture
             ProcessOtherTextures = true;
             MinSourceSize = 256;
             SkipIfSmallerThan = 128;
-            UseBC7ForHighComplexity = true;
-            BC7ComplexityThreshold = 0.7f;
+            TargetPlatform = CompressionPlatform.Auto;
+            UseHighQualityFormatForHighComplexity = true;
+            HighQualityComplexityThreshold = 0.7f;
         }
 
         private void ApplyAggressivePreset()
@@ -181,8 +186,9 @@ namespace dev.limitex.avatar.compressor.texture
             ProcessOtherTextures = true;
             MinSourceSize = 128;
             SkipIfSmallerThan = 64;
-            UseBC7ForHighComplexity = false;
-            BC7ComplexityThreshold = 0.7f;
+            TargetPlatform = CompressionPlatform.Auto;
+            UseHighQualityFormatForHighComplexity = false;
+            HighQualityComplexityThreshold = 0.7f;
         }
 
         private void ApplyMaximumPreset()
@@ -204,8 +210,9 @@ namespace dev.limitex.avatar.compressor.texture
             ProcessOtherTextures = true;
             MinSourceSize = 64;
             SkipIfSmallerThan = 32;
-            UseBC7ForHighComplexity = false;
-            BC7ComplexityThreshold = 0.7f;
+            TargetPlatform = CompressionPlatform.Auto;
+            UseHighQualityFormatForHighComplexity = false;
+            HighQualityComplexityThreshold = 0.7f;
         }
     }
 
@@ -228,5 +235,15 @@ namespace dev.limitex.avatar.compressor.texture
         HighAccuracy,
         Perceptual,
         Combined
+    }
+
+    /// <summary>
+    /// Target platform for texture compression format selection.
+    /// </summary>
+    public enum CompressionPlatform
+    {
+        Auto,       // Detect from build target
+        Desktop,    // DXT/BC formats (PC VRChat)
+        Mobile      // ASTC formats (Quest/Android)
     }
 }

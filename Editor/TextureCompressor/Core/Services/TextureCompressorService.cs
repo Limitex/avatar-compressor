@@ -36,8 +36,9 @@ namespace dev.limitex.avatar.compressor.texture
                 config.MinResolution,
                 config.MaxResolution,
                 config.ForcePowerOfTwo,
-                config.UseBC7ForHighComplexity,
-                config.BC7ComplexityThreshold
+                config.TargetPlatform,
+                config.UseHighQualityFormatForHighComplexity,
+                config.HighQualityComplexityThreshold
             );
 
             _complexityCalc = new ComplexityCalculator(

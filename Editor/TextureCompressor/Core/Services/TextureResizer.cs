@@ -15,17 +15,21 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly int _minResolution;
         private readonly int _maxResolution;
         private readonly bool _forcePowerOfTwo;
-        private readonly bool _useBC7ForHighComplexity;
-        private readonly float _bc7ComplexityThreshold;
+        private readonly CompressionPlatform _targetPlatform;
+        private readonly bool _useHighQualityFormatForHighComplexity;
+        private readonly float _highQualityComplexityThreshold;
 
         public TextureResizer(int minResolution, int maxResolution, bool forcePowerOfTwo,
-            bool useBC7ForHighComplexity = true, float bc7ComplexityThreshold = 0.7f)
+            CompressionPlatform targetPlatform = CompressionPlatform.Auto,
+            bool useHighQualityFormatForHighComplexity = true,
+            float highQualityComplexityThreshold = 0.7f)
         {
             _minResolution = minResolution;
             _maxResolution = maxResolution;
             _forcePowerOfTwo = forcePowerOfTwo;
-            _useBC7ForHighComplexity = useBC7ForHighComplexity;
-            _bc7ComplexityThreshold = bc7ComplexityThreshold;
+            _targetPlatform = targetPlatform;
+            _useHighQualityFormatForHighComplexity = useHighQualityFormatForHighComplexity;
+            _highQualityComplexityThreshold = highQualityComplexityThreshold;
         }
 
         /// <summary>
@@ -63,7 +67,7 @@ namespace dev.limitex.avatar.compressor.texture
 
         /// <summary>
         /// Compresses a texture, preserving the original format if already compressed,
-        /// or converting to DXT/BC7 based on complexity if uncompressed.
+        /// or converting to platform-appropriate format based on complexity if uncompressed.
         /// </summary>
         private void CompressTexture(Texture2D texture, TextureFormat sourceFormat, bool isNormalMap, float complexity)
         {
@@ -76,26 +80,17 @@ namespace dev.limitex.avatar.compressor.texture
             }
             else
             {
-                // Uncompressed format (RGBA32, ARGB32, RGB24, etc.) - convert to compressed format
-                if (isNormalMap)
+                // Resolve platform and select appropriate format
+                var platform = ResolvePlatform(_targetPlatform);
+                bool hasAlpha = HasSignificantAlpha(texture);
+
+                if (platform == CompressionPlatform.Mobile)
                 {
-                    // BC5 is optimal for normal maps (2 channels, high quality)
-                    targetFormat = TextureFormat.BC5;
-                }
-                else if (_useBC7ForHighComplexity && complexity >= _bc7ComplexityThreshold)
-                {
-                    // BC7 for high complexity textures (highest quality, 8 bpp)
-                    targetFormat = TextureFormat.BC7;
-                }
-                else if (HasSignificantAlpha(texture))
-                {
-                    // DXT5 for textures with alpha channel (8 bpp)
-                    targetFormat = TextureFormat.DXT5;
+                    targetFormat = SelectMobileFormat(isNormalMap, complexity, hasAlpha);
                 }
                 else
                 {
-                    // DXT1 for opaque textures (4 bpp, most efficient)
-                    targetFormat = TextureFormat.DXT1;
+                    targetFormat = SelectDesktopFormat(isNormalMap, complexity, hasAlpha);
                 }
             }
 
@@ -106,6 +101,79 @@ namespace dev.limitex.avatar.compressor.texture
             catch (System.Exception e)
             {
                 Debug.LogWarning($"[TextureCompressor] Failed to compress texture to {targetFormat}: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Resolves the target platform from settings or auto-detects from build target.
+        /// </summary>
+        private CompressionPlatform ResolvePlatform(CompressionPlatform setting)
+        {
+            if (setting != CompressionPlatform.Auto)
+            {
+                return setting;
+            }
+
+            var target = EditorUserBuildSettings.activeBuildTarget;
+            return target == BuildTarget.Android
+                ? CompressionPlatform.Mobile
+                : CompressionPlatform.Desktop;
+        }
+
+        /// <summary>
+        /// Selects compression format for Desktop (PC VRChat) - DXT/BC formats.
+        /// </summary>
+        private TextureFormat SelectDesktopFormat(bool isNormalMap, float complexity, bool hasAlpha)
+        {
+            if (isNormalMap)
+            {
+                // BC5 is optimal for normal maps (2 channels, high quality)
+                return TextureFormat.BC5;
+            }
+            else if (_useHighQualityFormatForHighComplexity && complexity >= _highQualityComplexityThreshold)
+            {
+                // BC7 for high complexity textures (highest quality, 8 bpp)
+                return TextureFormat.BC7;
+            }
+            else if (hasAlpha)
+            {
+                // DXT5 for textures with alpha channel (8 bpp)
+                return TextureFormat.DXT5;
+            }
+            else
+            {
+                // DXT1 for opaque textures (4 bpp, most efficient)
+                return TextureFormat.DXT1;
+            }
+        }
+
+        /// <summary>
+        /// Selects compression format for Mobile (Quest/Android) - ASTC formats.
+        /// Uses complexity-based block size selection.
+        /// </summary>
+        private TextureFormat SelectMobileFormat(bool isNormalMap, float complexity, bool hasAlpha)
+        {
+            if (isNormalMap)
+            {
+                // ASTC 4x4 for normal maps (highest quality)
+                return TextureFormat.ASTC_4x4;
+            }
+
+            // Complexity-based ASTC block size selection
+            if (_useHighQualityFormatForHighComplexity && complexity >= _highQualityComplexityThreshold)
+            {
+                // High complexity: ASTC 4x4 (8 bpp, highest quality)
+                return TextureFormat.ASTC_4x4;
+            }
+            else if (complexity >= _highQualityComplexityThreshold * 0.5f)
+            {
+                // Medium complexity: ASTC 6x6 (3.56 bpp, balanced)
+                return TextureFormat.ASTC_6x6;
+            }
+            else
+            {
+                // Low complexity: ASTC 8x8 (2 bpp, efficient)
+                return TextureFormat.ASTC_8x8;
             }
         }
 
