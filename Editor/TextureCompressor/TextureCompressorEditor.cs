@@ -415,6 +415,15 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             EditorGUILayout.EndHorizontal();
 
+            // Warning if texture asset is missing
+            if (texture == null)
+            {
+                var savedColor = GUI.color;
+                GUI.color = new Color(1f, 0.7f, 0.3f);
+                EditorGUILayout.LabelField("Texture not found", EditorStyles.miniLabel);
+                GUI.color = savedColor;
+            }
+
             // Skip checkbox
             EditorGUI.BeginChangeCheck();
             bool skip = EditorGUILayout.Toggle("Skip compression", frozen.Skip);
