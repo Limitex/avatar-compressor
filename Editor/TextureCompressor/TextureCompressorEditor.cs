@@ -836,7 +836,9 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 }
 
                 bool isSkipped = !data.IsProcessed;
-                if (isSkipped)
+                // Check if texture was frozen after preview was generated (real-time check)
+                bool isFrozenNow = !data.IsFrozen && compressor.IsFrozen(data.Path);
+                if (isSkipped || isFrozenNow)
                 {
                     EditorGUI.BeginDisabledGroup(true);
                 }
@@ -875,7 +877,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         {
                             Undo.RecordObject(compressor, "Freeze Texture");
                             var frozenSettings = new FrozenTextureSettings(data.Path, data.RecommendedDivisor, FrozenTextureFormat.Auto, false);
-                            compressor.FrozenTextures.Add(frozenSettings);
+                            compressor.SetFrozenSettings(data.Path, frozenSettings);
                             EditorUtility.SetDirty(compressor);
                         }
                     }
@@ -958,7 +960,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndHorizontal();
 
-                if (isSkipped)
+                if (isSkipped || isFrozenNow)
                 {
                     EditorGUI.EndDisabledGroup();
                 }
