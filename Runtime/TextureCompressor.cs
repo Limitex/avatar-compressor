@@ -4,7 +4,6 @@ using VRC.SDKBase;
 namespace dev.limitex.avatar.compressor.texture
 {
     [DisallowMultipleComponent]
-    [ExecuteAlways]
     [AddComponentMenu("Avatar Compressor/LAC Texture Compressor")]
     public class TextureCompressor : MonoBehaviour, IEditorOnly
     {
