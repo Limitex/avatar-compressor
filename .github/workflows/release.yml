@@ -70,6 +70,7 @@ jobs:
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ needs.build.outputs.tag_name }}
           files: |
             ${{ needs.build.outputs.archive_name }}
             package.json
