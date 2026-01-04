@@ -432,6 +432,12 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 config.MaxDivisor
             );
 
+            var formatSelector = new TextureFormatSelector(
+                config.TargetPlatform,
+                config.UseHighQualityFormatForHighComplexity,
+                config.HighQualityComplexityThreshold
+            );
+
             var allTextures = collector.CollectAll(config.gameObject);
 
             if (allTextures.Count == 0)
@@ -474,8 +480,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 {
                     long originalMemory = Profiler.GetRuntimeMemorySizeLong(tex);
                     bool isNormalMap = info.TextureType == "Normal";
-                    bool hasAlpha = HasSignificantAlpha(tex);
-                    var targetFormat = EstimateTargetFormat(config, isNormalMap, analysis.NormalizedComplexity, hasAlpha);
+                    bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
+                    var targetFormat = formatSelector.PredictFormat(isNormalMap, analysis.NormalizedComplexity, hasAlpha);
                     long estimatedMemory = EstimateCompressedMemory(
                         analysis.RecommendedResolution.x,
                         analysis.RecommendedResolution.y,
@@ -759,80 +765,6 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
                 default:
                     return 32f; // Assume uncompressed RGBA
-            }
-        }
-
-        /// <summary>
-        /// Estimates the target compression format based on settings and texture properties.
-        /// </summary>
-        private TextureFormat EstimateTargetFormat(TextureCompressor config, bool isNormalMap, float complexity, bool hasAlpha)
-        {
-            var platform = ResolvePlatform(config.TargetPlatform);
-
-            if (platform == CompressionPlatform.Mobile)
-            {
-                if (isNormalMap)
-                    return TextureFormat.ASTC_4x4;
-
-                if (config.UseHighQualityFormatForHighComplexity && complexity >= config.HighQualityComplexityThreshold)
-                    return TextureFormat.ASTC_4x4;
-                else if (complexity >= config.HighQualityComplexityThreshold * 0.5f)
-                    return TextureFormat.ASTC_6x6;
-                else
-                    return TextureFormat.ASTC_8x8;
-            }
-            else
-            {
-                if (isNormalMap)
-                    return TextureFormat.BC5;
-
-                if (config.UseHighQualityFormatForHighComplexity && complexity >= config.HighQualityComplexityThreshold)
-                    return TextureFormat.BC7;
-                else if (hasAlpha)
-                    return TextureFormat.DXT5;
-                else
-                    return TextureFormat.DXT1;
-            }
-        }
-
-        /// <summary>
-        /// Resolves the target platform from settings or auto-detects from build target.
-        /// </summary>
-        private CompressionPlatform ResolvePlatform(CompressionPlatform setting)
-        {
-            if (setting != CompressionPlatform.Auto)
-                return setting;
-
-            var target = EditorUserBuildSettings.activeBuildTarget;
-            return target == BuildTarget.Android
-                ? CompressionPlatform.Mobile
-                : CompressionPlatform.Desktop;
-        }
-
-        /// <summary>
-        /// Checks if the texture has significant alpha (samples a subset of pixels).
-        /// </summary>
-        private bool HasSignificantAlpha(Texture2D texture)
-        {
-            if (!texture.isReadable)
-                return true; // Assume alpha if we can't check
-
-            try
-            {
-                var pixels = texture.GetPixels32();
-                int sampleCount = Mathf.Min(pixels.Length, 5000);
-                int step = Mathf.Max(1, pixels.Length / sampleCount);
-
-                for (int i = 0; i < pixels.Length; i += step)
-                {
-                    if (pixels[i].a < 250)
-                        return true;
-                }
-                return false;
-            }
-            catch
-            {
-                return true; // Assume alpha on error
             }
         }
 

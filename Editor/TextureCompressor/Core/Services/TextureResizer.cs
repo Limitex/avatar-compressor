@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEditor;
 
 namespace dev.limitex.avatar.compressor.texture
 {
@@ -15,9 +14,7 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly int _minResolution;
         private readonly int _maxResolution;
         private readonly bool _forcePowerOfTwo;
-        private readonly CompressionPlatform _targetPlatform;
-        private readonly bool _useHighQualityFormatForHighComplexity;
-        private readonly float _highQualityComplexityThreshold;
+        private readonly TextureFormatSelector _formatSelector;
 
         public TextureResizer(int minResolution, int maxResolution, bool forcePowerOfTwo,
             CompressionPlatform targetPlatform = CompressionPlatform.Auto,
@@ -27,9 +24,11 @@ namespace dev.limitex.avatar.compressor.texture
             _minResolution = minResolution;
             _maxResolution = maxResolution;
             _forcePowerOfTwo = forcePowerOfTwo;
-            _targetPlatform = targetPlatform;
-            _useHighQualityFormatForHighComplexity = useHighQualityFormatForHighComplexity;
-            _highQualityComplexityThreshold = highQualityComplexityThreshold;
+            _formatSelector = new TextureFormatSelector(
+                targetPlatform,
+                useHighQualityFormatForHighComplexity,
+                highQualityComplexityThreshold
+            );
         }
 
         /// <summary>
@@ -50,7 +49,7 @@ namespace dev.limitex.avatar.compressor.texture
             }
 
             // Apply compression to reduce memory usage
-            CompressTexture(result, source.format, isNormalMap, analysis.NormalizedComplexity);
+            _formatSelector.CompressTexture(result, source.format, isNormalMap, analysis.NormalizedComplexity);
 
             if (enableLogging)
             {
@@ -63,177 +62,6 @@ namespace dev.limitex.avatar.compressor.texture
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Compresses a texture, preserving the original format if already compressed,
-        /// or converting to platform-appropriate format based on complexity if uncompressed.
-        /// </summary>
-        private void CompressTexture(Texture2D texture, TextureFormat sourceFormat, bool isNormalMap, float complexity)
-        {
-            TextureFormat targetFormat;
-
-            // Check if source is already a compressed format - preserve it
-            if (IsCompressedFormat(sourceFormat))
-            {
-                targetFormat = sourceFormat;
-            }
-            else
-            {
-                // Resolve platform and select appropriate format
-                var platform = ResolvePlatform(_targetPlatform);
-                bool hasAlpha = HasSignificantAlpha(texture);
-
-                if (platform == CompressionPlatform.Mobile)
-                {
-                    targetFormat = SelectMobileFormat(isNormalMap, complexity, hasAlpha);
-                }
-                else
-                {
-                    targetFormat = SelectDesktopFormat(isNormalMap, complexity, hasAlpha);
-                }
-            }
-
-            try
-            {
-                EditorUtility.CompressTexture(texture, targetFormat, TextureCompressionQuality.Best);
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogWarning($"[TextureCompressor] Failed to compress texture to {targetFormat}: {e.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Resolves the target platform from settings or auto-detects from build target.
-        /// </summary>
-        private CompressionPlatform ResolvePlatform(CompressionPlatform setting)
-        {
-            if (setting != CompressionPlatform.Auto)
-            {
-                return setting;
-            }
-
-            var target = EditorUserBuildSettings.activeBuildTarget;
-            return target == BuildTarget.Android
-                ? CompressionPlatform.Mobile
-                : CompressionPlatform.Desktop;
-        }
-
-        /// <summary>
-        /// Selects compression format for Desktop (PC VRChat) - DXT/BC formats.
-        /// </summary>
-        private TextureFormat SelectDesktopFormat(bool isNormalMap, float complexity, bool hasAlpha)
-        {
-            if (isNormalMap)
-            {
-                // BC5 is optimal for normal maps (2 channels, high quality)
-                return TextureFormat.BC5;
-            }
-            else if (_useHighQualityFormatForHighComplexity && complexity >= _highQualityComplexityThreshold)
-            {
-                // BC7 for high complexity textures (highest quality, 8 bpp)
-                return TextureFormat.BC7;
-            }
-            else if (hasAlpha)
-            {
-                // DXT5 for textures with alpha channel (8 bpp)
-                return TextureFormat.DXT5;
-            }
-            else
-            {
-                // DXT1 for opaque textures (4 bpp, most efficient)
-                return TextureFormat.DXT1;
-            }
-        }
-
-        /// <summary>
-        /// Selects compression format for Mobile (Quest/Android) - ASTC formats.
-        /// Uses complexity-based block size selection.
-        /// Note: hasAlpha parameter is kept for API consistency with SelectDesktopFormat,
-        /// but ASTC formats inherently support alpha channels.
-        /// </summary>
-        private TextureFormat SelectMobileFormat(bool isNormalMap, float complexity, bool hasAlpha)
-        {
-            // ASTC formats support alpha inherently, so hasAlpha doesn't affect format selection
-            _ = hasAlpha;
-
-            if (isNormalMap)
-            {
-                // ASTC 4x4 for normal maps (highest quality)
-                return TextureFormat.ASTC_4x4;
-            }
-
-            // Complexity-based ASTC block size selection
-            if (_useHighQualityFormatForHighComplexity && complexity >= _highQualityComplexityThreshold)
-            {
-                // High complexity: ASTC 4x4 (8 bpp, highest quality)
-                return TextureFormat.ASTC_4x4;
-            }
-            else if (complexity >= _highQualityComplexityThreshold * 0.5f)
-            {
-                // Medium complexity: ASTC 6x6 (3.56 bpp, balanced)
-                return TextureFormat.ASTC_6x6;
-            }
-            else
-            {
-                // Low complexity: ASTC 8x8 (2 bpp, efficient)
-                return TextureFormat.ASTC_8x8;
-            }
-        }
-
-        /// <summary>
-        /// Checks if the texture format is a compressed format.
-        /// </summary>
-        private bool IsCompressedFormat(TextureFormat format)
-        {
-            switch (format)
-            {
-                case TextureFormat.DXT1:
-                case TextureFormat.DXT1Crunched:
-                case TextureFormat.DXT5:
-                case TextureFormat.DXT5Crunched:
-                case TextureFormat.BC4:
-                case TextureFormat.BC5:
-                case TextureFormat.BC6H:
-                case TextureFormat.BC7:
-                case TextureFormat.ASTC_4x4:
-                case TextureFormat.ASTC_5x5:
-                case TextureFormat.ASTC_6x6:
-                case TextureFormat.ASTC_8x8:
-                case TextureFormat.ASTC_10x10:
-                case TextureFormat.ASTC_12x12:
-                case TextureFormat.ETC_RGB4:
-                case TextureFormat.ETC2_RGB:
-                case TextureFormat.ETC2_RGBA1:
-                case TextureFormat.ETC2_RGBA8:
-                case TextureFormat.PVRTC_RGB2:
-                case TextureFormat.PVRTC_RGB4:
-                case TextureFormat.PVRTC_RGBA2:
-                case TextureFormat.PVRTC_RGBA4:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        /// <summary>
-        /// Checks if the texture has significant alpha (non-fully-opaque pixels).
-        /// </summary>
-        private bool HasSignificantAlpha(Texture2D texture)
-        {
-            var pixels = texture.GetPixels32();
-            int sampleCount = Mathf.Min(pixels.Length, 10000);
-            int step = Mathf.Max(1, pixels.Length / sampleCount);
-
-            for (int i = 0; i < pixels.Length; i += step)
-            {
-                if (pixels[i].a < 250)
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         /// <summary>
