@@ -30,7 +30,6 @@ namespace dev.limitex.avatar.compressor.texture.editor
         private SerializedProperty _skipIfSmallerThan;
         private SerializedProperty _targetPlatform;
         private SerializedProperty _useHighQualityFormatForHighComplexity;
-        private SerializedProperty _highQualityComplexityThreshold;
         private SerializedProperty _enableLogging;
 
         private bool _showPreview;
@@ -88,7 +87,6 @@ namespace dev.limitex.avatar.compressor.texture.editor
             _skipIfSmallerThan = serializedObject.FindProperty("SkipIfSmallerThan");
             _targetPlatform = serializedObject.FindProperty("TargetPlatform");
             _useHighQualityFormatForHighComplexity = serializedObject.FindProperty("UseHighQualityFormatForHighComplexity");
-            _highQualityComplexityThreshold = serializedObject.FindProperty("HighQualityComplexityThreshold");
             _enableLogging = serializedObject.FindProperty("EnableLogging");
         }
 
@@ -274,9 +272,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
             DrawSectionHeader("Compression Format");
             EditorGUILayout.PropertyField(_targetPlatform, new GUIContent("Target Platform"));
             EditorGUILayout.PropertyField(_useHighQualityFormatForHighComplexity,
-                new GUIContent("High Quality for Complex", "Use BC7/ASTC_4x4 for high complexity textures"));
-            EditorGUILayout.PropertyField(_highQualityComplexityThreshold,
-                new GUIContent("Complexity Threshold", "Complexity threshold above which high quality format is used"));
+                new GUIContent("High Quality for Complex", "Use BC7/ASTC_4x4 for high complexity textures (uses Complexity Threshold)"));
         }
 
         private void DrawAllSettings(TextureCompressor compressor)
@@ -303,7 +299,6 @@ namespace dev.limitex.avatar.compressor.texture.editor
             EditorGUILayout.PropertyField(_skipIfSmallerThan);
             EditorGUILayout.PropertyField(_targetPlatform);
             EditorGUILayout.PropertyField(_useHighQualityFormatForHighComplexity);
-            EditorGUILayout.PropertyField(_highQualityComplexityThreshold);
 
             EditorGUI.indentLevel--;
         }
@@ -390,7 +385,6 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 hash = hash * 31 + config.SkipIfSmallerThan;
                 hash = hash * 31 + config.TargetPlatform.GetHashCode();
                 hash = hash * 31 + config.UseHighQualityFormatForHighComplexity.GetHashCode();
-                hash = hash * 31 + config.HighQualityComplexityThreshold.GetHashCode();
                 hash = hash * 31 + config.gameObject.GetInstanceID();
                 return hash;
             }
@@ -422,7 +416,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 config.ForcePowerOfTwo,
                 config.TargetPlatform,
                 config.UseHighQualityFormatForHighComplexity,
-                config.HighQualityComplexityThreshold
+                config.HighComplexityThreshold
             );
 
             var complexityCalc = new ComplexityCalculator(
@@ -435,7 +429,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
             var formatSelector = new TextureFormatSelector(
                 config.TargetPlatform,
                 config.UseHighQualityFormatForHighComplexity,
-                config.HighQualityComplexityThreshold
+                config.HighComplexityThreshold
             );
 
             var allTextures = collector.CollectAll(config.gameObject);

@@ -38,7 +38,7 @@ namespace dev.limitex.avatar.compressor.texture
                 config.ForcePowerOfTwo,
                 config.TargetPlatform,
                 config.UseHighQualityFormatForHighComplexity,
-                config.HighQualityComplexityThreshold
+                config.HighComplexityThreshold
             );
 
             _complexityCalc = new ComplexityCalculator(

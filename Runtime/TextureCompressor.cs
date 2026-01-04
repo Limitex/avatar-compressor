@@ -60,8 +60,6 @@ namespace dev.limitex.avatar.compressor.texture
         public CompressionPlatform TargetPlatform = CompressionPlatform.Auto;
         [Tooltip("Use BC7/ASTC_4x4 format for high complexity textures (highest quality)")]
         public bool UseHighQualityFormatForHighComplexity = true;
-        [Tooltip("Complexity threshold above which high quality format is used")]
-        [Range(0f, 1f)] public float HighQualityComplexityThreshold = 0.7f;
 
         [Header("Debug")]
         public bool EnableLogging = true;
@@ -116,7 +114,6 @@ namespace dev.limitex.avatar.compressor.texture
             SkipIfSmallerThan = 512;
             TargetPlatform = CompressionPlatform.Auto;
             UseHighQualityFormatForHighComplexity = true;
-            HighQualityComplexityThreshold = 0.5f;
         }
 
         private void ApplyQualityPreset()
@@ -140,7 +137,6 @@ namespace dev.limitex.avatar.compressor.texture
             SkipIfSmallerThan = 256;
             TargetPlatform = CompressionPlatform.Auto;
             UseHighQualityFormatForHighComplexity = true;
-            HighQualityComplexityThreshold = 0.6f;
         }
 
         private void ApplyBalancedPreset()
@@ -164,7 +160,6 @@ namespace dev.limitex.avatar.compressor.texture
             SkipIfSmallerThan = 128;
             TargetPlatform = CompressionPlatform.Auto;
             UseHighQualityFormatForHighComplexity = true;
-            HighQualityComplexityThreshold = 0.7f;
         }
 
         private void ApplyAggressivePreset()
@@ -188,7 +183,6 @@ namespace dev.limitex.avatar.compressor.texture
             SkipIfSmallerThan = 64;
             TargetPlatform = CompressionPlatform.Auto;
             UseHighQualityFormatForHighComplexity = false;
-            HighQualityComplexityThreshold = 0.7f;
         }
 
         private void ApplyMaximumPreset()
@@ -212,7 +206,6 @@ namespace dev.limitex.avatar.compressor.texture
             SkipIfSmallerThan = 32;
             TargetPlatform = CompressionPlatform.Auto;
             UseHighQualityFormatForHighComplexity = false;
-            HighQualityComplexityThreshold = 0.7f;
         }
     }
 
