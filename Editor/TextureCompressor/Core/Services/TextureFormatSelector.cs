@@ -245,6 +245,9 @@ namespace dev.limitex.avatar.compressor.texture
         /// </summary>
         public static bool HasSignificantAlpha(Texture2D texture)
         {
+            if (texture == null || !texture.isReadable)
+                return true;
+
             try
             {
                 var pixels = texture.GetPixels32();
@@ -260,11 +263,9 @@ namespace dev.limitex.avatar.compressor.texture
                 }
                 return false;
             }
-            catch (System.Exception e)
+            catch
             {
-                // Log warning for debugging, assume no alpha as fallback
-                Debug.LogWarning($"[TextureCompressor] Failed to read pixels from texture '{texture?.name}': {e.Message}. Assuming no alpha.");
-                return false;
+                return true;
             }
         }
     }
