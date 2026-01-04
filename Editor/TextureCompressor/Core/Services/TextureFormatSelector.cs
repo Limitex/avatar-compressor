@@ -79,6 +79,12 @@ namespace dev.limitex.avatar.compressor.texture
         /// </summary>
         private bool ApplyCompression(Texture2D texture, TextureFormat targetFormat)
         {
+            // Skip if texture is already in the target format
+            if (texture.format == targetFormat)
+            {
+                return false;
+            }
+
             try
             {
                 EditorUtility.CompressTexture(texture, targetFormat, TextureCompressionQuality.Best);
