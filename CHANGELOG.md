@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Non-destructive tests** - Comprehensive test suite verifying compression process doesn't modify original assets
+  - Material non-destructive tests (texture reference, shader, color, name, render queue)
+  - Texture non-destructive tests (pixels, dimensions, name, format)
+  - Multiple and shared texture tests across materials
+  - Hierarchy tests including inactive GameObjects
+  - Post-compression state verification tests
+  - Frozen texture settings compatibility tests
+  - Mixed renderer type tests (MeshRenderer, SkinnedMeshRenderer)
+  - Preset variation tests for all compression presets
+  - Edge case tests (null materials, empty arrays, size boundary conditions)
+
 ## [v0.3.1] 2026-01-05
 
 ### Fixed
