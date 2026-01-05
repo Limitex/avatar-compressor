@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.1] 2026-01-05
+
+### Fixed
+
+- **CHANGELOG** - Fixed version header not updated for v0.3.0 release
+
+## [v0.3.0] 2026-01-05
+
 ### Added
 
 - **Frozen Textures** - Manual override for individual texture compression settings
