@@ -20,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Preset variation tests for all compression presets
   - Edge case tests (null materials, empty arrays, size boundary conditions)
 
+### Fixed
+
+- **TexTransTool compatibility** - Fixed conflicts with TexTransTool's AtlasTexture feature
+  - Added `ObjectRegistry.RegisterReplacedObject` for materials and textures to enable proper reference tracking across NDMF plugins
+  - Plugin now runs before TexTransTool in the build pipeline
+
 ## [v0.3.1] 2026-01-05
 
 ### Fixed
