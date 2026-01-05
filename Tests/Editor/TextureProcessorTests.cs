@@ -316,6 +316,7 @@ namespace dev.limitex.avatar.compressor.tests
             
             Assert.IsNotNull(result);
             Assert.AreEqual(256, result.height);
+            Assert.AreEqual(256, result.width);
             Assert.AreEqual(1, result.mipmapCount, "Result should not have mipmaps when source doesn't have mipmaps");
             
             Object.DestroyImmediate(sourceTexture);
