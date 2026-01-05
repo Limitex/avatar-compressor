@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using dev.limitex.avatar.compressor.common;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -141,6 +142,11 @@ namespace dev.limitex.avatar.compressor.texture
 
                 var compressedTexture = _processor.Resize(originalTexture, analysis, enableLogging, textureInfo.IsNormalMap, formatOverride);
                 compressedTexture.name = originalTexture.name + "_compressed";
+
+                // Register the texture replacement in ObjectRegistry so that subsequent NDMF plugins
+                // can track which original texture was replaced. This maintains proper reference
+                // tracking across the build pipeline for tools like TexTransTool and Avatar Optimizer.
+                ObjectRegistry.RegisterReplacedObject(originalTexture, compressedTexture);
 
                 processedTextures[originalTexture] = compressedTexture;
 
