@@ -41,6 +41,13 @@ export async function generateMetadata({
       template: '%s | Avatar Compressor',
     },
     description,
+    alternates: {
+      canonical: `${siteUrl}/${lang}`,
+      languages: {
+        en: `${siteUrl}/en`,
+        ja: `${siteUrl}/ja`,
+      },
+    },
     openGraph: {
       type: 'website',
       siteName: 'Avatar Compressor',
