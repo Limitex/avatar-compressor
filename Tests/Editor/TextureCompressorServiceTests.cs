@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using dev.limitex.avatar.compressor.texture;
 
@@ -552,6 +553,119 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 _createdObjects.Add(newTex);
             }
+        }
+
+        #endregion
+
+        #region Mipmap Streaming Tests
+
+        [Test]
+        public void Compress_CompressedTexture_HasMipmapStreamingEnabled()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(256, 256);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+
+            // Verify mipmap streaming is enabled using SerializedObject
+            var serializedTexture = new SerializedObject(newTexture);
+            var streamingMipmaps = serializedTexture.FindProperty("m_StreamingMipmaps");
+            Assert.IsNotNull(streamingMipmaps, "m_StreamingMipmaps property should exist");
+            Assert.IsTrue(streamingMipmaps.boolValue, "Mipmap streaming should be enabled on compressed texture");
+
+            // Clean up
+            _createdObjects.Add(newTexture);
+        }
+
+        [Test]
+        public void Compress_MultipleTextures_AllHaveMipmapStreamingEnabled()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var mainTex = CreateTexture(256, 256);
+            var normalTex = CreateTexture(256, 256);
+            material.SetTexture("_MainTex", mainTex);
+            material.SetTexture("_BumpMap", normalTex);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newMaterial = renderer.sharedMaterial;
+            var newMainTex = newMaterial.GetTexture("_MainTex") as Texture2D;
+            var newNormalTex = newMaterial.GetTexture("_BumpMap") as Texture2D;
+
+            Assert.IsNotNull(newMainTex);
+            Assert.IsNotNull(newNormalTex);
+
+            // Verify mipmap streaming is enabled on both textures
+            var serializedMainTex = new SerializedObject(newMainTex);
+            var mainTexStreaming = serializedMainTex.FindProperty("m_StreamingMipmaps");
+            Assert.IsTrue(mainTexStreaming.boolValue, "Main texture should have mipmap streaming enabled");
+
+            var serializedNormalTex = new SerializedObject(newNormalTex);
+            var normalTexStreaming = serializedNormalTex.FindProperty("m_StreamingMipmaps");
+            Assert.IsTrue(normalTexStreaming.boolValue, "Normal texture should have mipmap streaming enabled");
+
+            // Clean up
+            _createdObjects.Add(newMainTex);
+            _createdObjects.Add(newNormalTex);
+        }
+
+        [Test]
+        public void Compress_SharedTexture_HasMipmapStreamingEnabled()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var child1 = CreateGameObject("Child1");
+            var child2 = CreateGameObject("Child2");
+            child1.transform.SetParent(root.transform);
+            child2.transform.SetParent(root.transform);
+
+            var renderer1 = child1.AddComponent<MeshRenderer>();
+            var renderer2 = child2.AddComponent<MeshRenderer>();
+            var material1 = CreateMaterial();
+            var material2 = CreateMaterial();
+            var sharedTexture = CreateTexture(256, 256);
+
+            material1.SetTexture("_MainTex", sharedTexture);
+            material2.SetTexture("_MainTex", sharedTexture);
+            renderer1.sharedMaterial = material1;
+            renderer2.sharedMaterial = material2;
+
+            service.Compress(root, false);
+
+            var newTex = renderer1.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTex);
+
+            // Verify mipmap streaming is enabled on shared texture
+            var serializedTexture = new SerializedObject(newTex);
+            var streamingMipmaps = serializedTexture.FindProperty("m_StreamingMipmaps");
+            Assert.IsTrue(streamingMipmaps.boolValue, "Shared compressed texture should have mipmap streaming enabled");
+
+            // Clean up
+            _createdObjects.Add(newTex);
         }
 
         #endregion
