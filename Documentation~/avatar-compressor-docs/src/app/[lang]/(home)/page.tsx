@@ -8,7 +8,11 @@ import {
   HardDrive,
   Eye,
 } from 'lucide-react';
-import { getLocale, type Locale } from '@/lib/i18n';
+import { getLocale, i18n, type Locale } from '@/lib/i18n';
+
+export function generateStaticParams() {
+  return i18n.languages.map((lang) => ({ lang }));
+}
 
 type Translations = {
   badge: string;
