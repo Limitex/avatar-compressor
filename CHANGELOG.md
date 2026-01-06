@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.3.4] - 2026-01-06
+
+### Fixed
+
+- **Mipmap streaming** - Fixed NDMF warning about mipmap streaming not being enabled on generated textures
+  - Newly compressed textures now have `m_StreamingMipmaps` enabled via SerializedObject
+  - Follows the same approach as TexTransTool for proper streaming mipmap support
+
 ## [v0.3.3] - 2026-01-06
 
 ### Fixed
