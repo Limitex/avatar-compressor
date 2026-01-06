@@ -103,6 +103,8 @@ namespace dev.limitex.avatar.compressor.texture
         /// </summary>
         public Texture2D ResizeTo(Texture2D source, int newWidth, int newHeight)
         {
+            bool hasMipMap = source.mipmapCount > 1;
+
             lock (RenderTextureLock)
             {
                 RenderTexture rt = RenderTexture.GetTemporary(newWidth, newHeight, 0, RenderTextureFormat.ARGB32);
@@ -112,9 +114,9 @@ namespace dev.limitex.avatar.compressor.texture
                 RenderTexture.active = rt;
                 Graphics.Blit(source, rt);
 
-                Texture2D result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, false);
+                Texture2D result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, hasMipMap);
                 result.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
-                result.Apply();
+                result.Apply(hasMipMap);
 
                 // Copy texture settings from source
                 result.wrapModeU = source.wrapModeU;
