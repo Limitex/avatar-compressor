@@ -98,25 +98,42 @@ namespace dev.limitex.avatar.compressor.texture
         }
 
         /// <summary>
-        /// Resizes a texture to the specified dimensions.
+        /// Resizes a texture to the specified dimensions with full mipmap chain.
         /// Thread-safe: uses lock to protect RenderTexture.active.
         /// </summary>
         public Texture2D ResizeTo(Texture2D source, int newWidth, int newHeight)
         {
-            bool hasMipMap = source.mipmapCount > 1;
-
             lock (RenderTextureLock)
             {
-                RenderTexture rt = RenderTexture.GetTemporary(newWidth, newHeight, 0, RenderTextureFormat.ARGB32);
-                rt.filterMode = FilterMode.Bilinear;
+                // Create texture with mipmaps enabled
+                Texture2D result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, true);
+                int mipCount = result.mipmapCount;
 
                 RenderTexture previous = RenderTexture.active;
-                RenderTexture.active = rt;
-                Graphics.Blit(source, rt);
 
-                Texture2D result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, hasMipMap);
-                result.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
-                result.Apply(hasMipMap);
+                // Copy each mipmap level
+                for (int mip = 0; mip < mipCount; mip++)
+                {
+                    int mipWidth = Mathf.Max(1, newWidth >> mip);
+                    int mipHeight = Mathf.Max(1, newHeight >> mip);
+
+                    RenderTexture rt = RenderTexture.GetTemporary(mipWidth, mipHeight, 0, RenderTextureFormat.ARGB32);
+                    rt.filterMode = FilterMode.Bilinear;
+
+                    RenderTexture.active = rt;
+                    Graphics.Blit(source, rt);
+
+                    Texture2D temp = new Texture2D(mipWidth, mipHeight, TextureFormat.RGBA32, false);
+                    temp.ReadPixels(new Rect(0, 0, mipWidth, mipHeight), 0, 0);
+                    temp.Apply();
+
+                    result.SetPixels(temp.GetPixels(), mip);
+
+                    RenderTexture.ReleaseTemporary(rt);
+                    Object.DestroyImmediate(temp);
+                }
+
+                result.Apply(false);
 
                 // Copy texture settings from source
                 result.wrapModeU = source.wrapModeU;
@@ -126,7 +143,6 @@ namespace dev.limitex.avatar.compressor.texture
                 result.anisoLevel = source.anisoLevel;
 
                 RenderTexture.active = previous;
-                RenderTexture.ReleaseTemporary(rt);
 
                 return result;
             }
