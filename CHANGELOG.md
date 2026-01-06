@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Mipmap streaming** - Fixed NDMF warning about mipmap streaming not being enabled on generated textures
   - Newly compressed textures now have `m_StreamingMipmaps` enabled via SerializedObject
   - Follows the same approach as TexTransTool for proper streaming mipmap support
+  - Added comprehensive unit tests for mipmap streaming behavior
 
 ## [v0.3.3] - 2026-01-06
 
