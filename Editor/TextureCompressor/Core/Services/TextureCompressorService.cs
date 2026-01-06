@@ -143,6 +143,13 @@ namespace dev.limitex.avatar.compressor.texture
                 var compressedTexture = _processor.Resize(originalTexture, analysis, enableLogging, textureInfo.IsNormalMap, formatOverride);
                 compressedTexture.name = originalTexture.name + "_compressed";
 
+                // Enable mipmap streaming for the newly created texture
+                // This is required to avoid NDMF warnings about streaming mipmaps
+                var serializedTexture = new SerializedObject(compressedTexture);
+                var streamingMipmaps = serializedTexture.FindProperty("m_StreamingMipmaps");
+                streamingMipmaps.boolValue = true;
+                serializedTexture.ApplyModifiedPropertiesWithoutUndo();
+
                 // Register the texture replacement in ObjectRegistry so that subsequent NDMF plugins
                 // can track which original texture was replaced. This maintains proper reference
                 // tracking across the build pipeline for tools like TexTransTool and Avatar Optimizer.
