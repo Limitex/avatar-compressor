@@ -395,7 +395,9 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void ResizeTo_NormalMap_UsesLinearColorSpace()
         {
-            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
+            // Create texture with linear color space (5th parameter = true)
+            // Normal maps store linear data, not sRGB
+            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true, true);
 
             // Fill with normal map data (neutral normal = 0.5, 0.5, 1.0)
             var pixels = new Color[512 * 512];
@@ -425,7 +427,8 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Copy_NormalMap_PreservesData()
         {
-            var sourceTexture = new Texture2D(256, 256, TextureFormat.RGBA32, false);
+            // Create texture with linear color space for normal map data
+            var sourceTexture = new Texture2D(256, 256, TextureFormat.RGBA32, false, true);
 
             var pixels = new Color[256 * 256];
             for (int i = 0; i < pixels.Length; i++)
@@ -453,6 +456,226 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.IsNotNull(result);
             Assert.AreEqual(256, result.width);
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void GetReadablePixels_NormalMap_PreservesVectorData()
+        {
+            // Create texture with linear color space for normal map data
+            var sourceTexture = new Texture2D(64, 64, TextureFormat.RGBA32, false, true);
+
+            // Fill with normal map data (neutral normal = 0.5, 0.5, 1.0)
+            var pixels = new Color[64 * 64];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = new Color(0.5f, 0.5f, 1.0f, 1.0f);
+            }
+            sourceTexture.SetPixels(pixels);
+            sourceTexture.Apply();
+
+            var result = _processor.GetReadablePixels(sourceTexture, isNormalMap: true);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(64 * 64, result.Length);
+
+            // Verify normal data is preserved
+            var centerPixel = result[result.Length / 2];
+            Assert.That(centerPixel.r, Is.InRange(0.45f, 0.55f), "Red channel should preserve normal X");
+            Assert.That(centerPixel.g, Is.InRange(0.45f, 0.55f), "Green channel should preserve normal Y");
+            Assert.That(centerPixel.b, Is.InRange(0.95f, 1.05f), "Blue channel should preserve normal Z");
+
+            Object.DestroyImmediate(sourceTexture);
+        }
+
+        [Test]
+        public void GetReadablePixels_NonNormalMap_ReturnsCorrectPixels()
+        {
+            var sourceTexture = new Texture2D(64, 64, TextureFormat.RGBA32, false);
+
+            var pixels = new Color[64 * 64];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = new Color(1.0f, 0.0f, 0.0f, 1.0f); // Red
+            }
+            sourceTexture.SetPixels(pixels);
+            sourceTexture.Apply();
+
+            var result = _processor.GetReadablePixels(sourceTexture, isNormalMap: false);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(64 * 64, result.Length);
+
+            var centerPixel = result[result.Length / 2];
+            Assert.That(centerPixel.r, Is.InRange(0.95f, 1.05f), "Red channel should be preserved");
+            Assert.That(centerPixel.g, Is.InRange(-0.05f, 0.05f), "Green channel should be near zero");
+
+            Object.DestroyImmediate(sourceTexture);
+        }
+
+        [Test]
+        public void GetReadablePixels_NormalMap_WithVariedNormals_PreservesData()
+        {
+            // Create texture with linear color space for normal map data
+            var sourceTexture = new Texture2D(64, 64, TextureFormat.RGBA32, false, true);
+
+            // Fill with varied normal map data to test different vector values
+            var pixels = new Color[64 * 64];
+            for (int y = 0; y < 64; y++)
+            {
+                for (int x = 0; x < 64; x++)
+                {
+                    // Create gradient normals to test range preservation
+                    float nx = x / 63.0f;  // 0 to 1
+                    float ny = y / 63.0f;  // 0 to 1
+                    pixels[y * 64 + x] = new Color(nx, ny, 1.0f, 1.0f);
+                }
+            }
+            sourceTexture.SetPixels(pixels);
+            sourceTexture.Apply();
+
+            var result = _processor.GetReadablePixels(sourceTexture, isNormalMap: true);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(64 * 64, result.Length);
+
+            // Check corner pixels to verify gradient is preserved
+            Assert.That(result[0].r, Is.InRange(-0.05f, 0.15f), "Top-left X should be near 0");
+            Assert.That(result[0].g, Is.InRange(-0.05f, 0.15f), "Top-left Y should be near 0");
+            Assert.That(result[63].r, Is.InRange(0.85f, 1.05f), "Top-right X should be near 1");
+            Assert.That(result[63 * 64 + 63].r, Is.InRange(0.85f, 1.05f), "Bottom-right X should be near 1");
+            Assert.That(result[63 * 64 + 63].g, Is.InRange(0.85f, 1.05f), "Bottom-right Y should be near 1");
+
+            Object.DestroyImmediate(sourceTexture);
+        }
+
+        #endregion
+
+        #region BC5 Format Tests
+
+        [Test]
+        public void ResizeTo_BC5SimulatedData_PreservesNormalMapData()
+        {
+            // BC5 stores normals in RG channels only (XY), Z is reconstructed
+            // Simulate BC5-like data with only RG channels containing normal data
+            // Create texture with linear color space (BC5 is always linear)
+            var sourceTexture = new Texture2D(128, 128, TextureFormat.RGBA32, false, true);
+
+            var pixels = new Color[128 * 128];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                // BC5 format: R=X, G=Y, B and A are not used for normal data
+                pixels[i] = new Color(0.5f, 0.5f, 0.0f, 1.0f);
+            }
+            sourceTexture.SetPixels(pixels);
+            sourceTexture.Apply();
+
+            var result = _processor.ResizeTo(sourceTexture, 64, 64, isNormalMap: true);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(64, result.width);
+            Assert.AreEqual(64, result.height);
+
+            var resultPixels = result.GetPixels();
+            var centerPixel = resultPixels[resultPixels.Length / 2];
+
+            // BC5 critical channels (R and G) should be preserved accurately
+            Assert.That(centerPixel.r, Is.InRange(0.45f, 0.55f), "R channel (normal X) should be preserved");
+            Assert.That(centerPixel.g, Is.InRange(0.45f, 0.55f), "G channel (normal Y) should be preserved");
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Copy_BC5SimulatedData_PreservesNormalMapData()
+        {
+            // Create texture with linear color space (BC5 is always linear)
+            var sourceTexture = new Texture2D(128, 128, TextureFormat.RGBA32, false, true);
+
+            var pixels = new Color[128 * 128];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = new Color(0.5f, 0.5f, 0.0f, 1.0f);
+            }
+            sourceTexture.SetPixels(pixels);
+            sourceTexture.Apply();
+
+            var result = _processor.Copy(sourceTexture, isNormalMap: true);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(128, result.width);
+
+            var resultPixels = result.GetPixels();
+            var centerPixel = resultPixels[resultPixels.Length / 2];
+
+            Assert.That(centerPixel.r, Is.InRange(0.45f, 0.55f), "R channel should be preserved");
+            Assert.That(centerPixel.g, Is.InRange(0.45f, 0.55f), "G channel should be preserved");
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void GetReadablePixels_BC5SimulatedData_PreservesNormalMapData()
+        {
+            // Create texture with linear color space (BC5 is always linear)
+            var sourceTexture = new Texture2D(64, 64, TextureFormat.RGBA32, false, true);
+
+            var pixels = new Color[64 * 64];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                // BC5: Only R and G contain meaningful normal data
+                pixels[i] = new Color(0.5f, 0.5f, 0.0f, 1.0f);
+            }
+            sourceTexture.SetPixels(pixels);
+            sourceTexture.Apply();
+
+            var result = _processor.GetReadablePixels(sourceTexture, isNormalMap: true);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(64 * 64, result.Length);
+
+            var centerPixel = result[result.Length / 2];
+            Assert.That(centerPixel.r, Is.InRange(0.45f, 0.55f), "R channel (normal X) should be preserved");
+            Assert.That(centerPixel.g, Is.InRange(0.45f, 0.55f), "G channel (normal Y) should be preserved");
+
+            Object.DestroyImmediate(sourceTexture);
+        }
+
+        [Test]
+        public void ResizeTo_BC5SimulatedData_WithExtremeValues_PreservesRange()
+        {
+            // Create texture with linear color space (BC5 is always linear)
+            var sourceTexture = new Texture2D(64, 64, TextureFormat.RGBA32, false, true);
+
+            var pixels = new Color[64 * 64];
+            for (int y = 0; y < 64; y++)
+            {
+                for (int x = 0; x < 64; x++)
+                {
+                    // Test extreme normal values that BC5 might contain
+                    // Normals can point in any direction: values 0-1 map to -1 to +1
+                    float nx = x / 63.0f;
+                    float ny = y / 63.0f;
+                    pixels[y * 64 + x] = new Color(nx, ny, 0.0f, 1.0f);
+                }
+            }
+            sourceTexture.SetPixels(pixels);
+            sourceTexture.Apply();
+
+            var result = _processor.ResizeTo(sourceTexture, 32, 32, isNormalMap: true);
+
+            Assert.IsNotNull(result);
+            var resultPixels = result.GetPixels();
+
+            // Check corners to verify range is preserved
+            Assert.That(resultPixels[0].r, Is.InRange(-0.1f, 0.2f), "Top-left X should be near 0");
+            Assert.That(resultPixels[0].g, Is.InRange(-0.1f, 0.2f), "Top-left Y should be near 0");
+            Assert.That(resultPixels[31 * 32 + 31].r, Is.InRange(0.8f, 1.1f), "Bottom-right X should be near 1");
+            Assert.That(resultPixels[31 * 32 + 31].g, Is.InRange(0.8f, 1.1f), "Bottom-right Y should be near 1");
 
             Object.DestroyImmediate(sourceTexture);
             Object.DestroyImmediate(result);
