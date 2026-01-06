@@ -390,6 +390,76 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Normal Map Tests
+
+        [Test]
+        public void ResizeTo_NormalMap_UsesLinearColorSpace()
+        {
+            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
+
+            // Fill with normal map data (neutral normal = 0.5, 0.5, 1.0)
+            var pixels = new Color[512 * 512];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = new Color(0.5f, 0.5f, 1.0f, 1.0f);
+            }
+            sourceTexture.SetPixels(pixels);
+            sourceTexture.Apply();
+
+            var result = _processor.ResizeTo(sourceTexture, 256, 256, isNormalMap: true);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(256, result.height);
+
+            // Verify normal data is preserved (should be close to 0.5, 0.5, 1.0)
+            var resultPixels = result.GetPixels();
+            var centerPixel = resultPixels[resultPixels.Length / 2];
+            Assert.That(centerPixel.r, Is.InRange(0.45f, 0.55f), "Red channel should preserve normal X");
+            Assert.That(centerPixel.g, Is.InRange(0.45f, 0.55f), "Green channel should preserve normal Y");
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Copy_NormalMap_PreservesData()
+        {
+            var sourceTexture = new Texture2D(256, 256, TextureFormat.RGBA32, false);
+
+            var pixels = new Color[256 * 256];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = new Color(0.5f, 0.5f, 1.0f, 1.0f);
+            }
+            sourceTexture.SetPixels(pixels);
+            sourceTexture.Apply();
+
+            var result = _processor.Copy(sourceTexture, isNormalMap: true);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(256, result.width);
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void ResizeTo_NonNormalMap_UsesDefaultColorSpace()
+        {
+            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+
+            var result = _processor.ResizeTo(sourceTexture, 256, 256, isNormalMap: false);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(256, result.width);
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private static bool IsPowerOfTwo(int x)

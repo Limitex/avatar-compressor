@@ -46,11 +46,11 @@ namespace dev.limitex.avatar.compressor.texture
                 source.width <= _maxResolution &&
                 source.height <= _maxResolution)
             {
-                result = Copy(source);
+                result = Copy(source, isNormalMap);
             }
             else
             {
-                result = ResizeTo(source, analysis.RecommendedResolution.x, analysis.RecommendedResolution.y);
+                result = ResizeTo(source, analysis.RecommendedResolution.x, analysis.RecommendedResolution.y, isNormalMap);
             }
 
             // Apply compression to reduce memory usage
@@ -101,11 +101,23 @@ namespace dev.limitex.avatar.compressor.texture
         /// Resizes a texture to the specified dimensions.
         /// Thread-safe: uses lock to protect RenderTexture.active.
         /// </summary>
-        public Texture2D ResizeTo(Texture2D source, int newWidth, int newHeight)
+        /// <param name="source">Source texture to resize</param>
+        /// <param name="newWidth">Target width</param>
+        /// <param name="newHeight">Target height</param>
+        /// <param name="isNormalMap">Whether this is a normal map texture (uses linear color space)</param>
+        public Texture2D ResizeTo(Texture2D source, int newWidth, int newHeight, bool isNormalMap = false)
         {
             lock (RenderTextureLock)
             {
-                RenderTexture rt = RenderTexture.GetTemporary(newWidth, newHeight, 0, RenderTextureFormat.ARGB32);
+                // Use linear color space for normal maps to preserve vector data correctly
+                RenderTextureReadWrite colorSpace = isNormalMap
+                    ? RenderTextureReadWrite.Linear
+                    : RenderTextureReadWrite.Default;
+
+                RenderTexture rt = RenderTexture.GetTemporary(
+                    newWidth, newHeight, 0,
+                    RenderTextureFormat.ARGB32,
+                    colorSpace);
                 rt.filterMode = FilterMode.Bilinear;
 
                 RenderTexture previous = RenderTexture.active;
@@ -135,16 +147,20 @@ namespace dev.limitex.avatar.compressor.texture
         /// <summary>
         /// Creates a copy of the texture.
         /// </summary>
-        public Texture2D Copy(Texture2D source)
+        /// <param name="source">Source texture to copy</param>
+        /// <param name="isNormalMap">Whether this is a normal map texture (uses linear color space)</param>
+        public Texture2D Copy(Texture2D source, bool isNormalMap = false)
         {
-            return ResizeTo(source, source.width, source.height);
+            return ResizeTo(source, source.width, source.height, isNormalMap);
         }
 
         /// <summary>
         /// Gets readable pixels from a texture.
         /// Thread-safe: uses lock to protect RenderTexture.active when needed.
         /// </summary>
-        public Color[] GetReadablePixels(Texture2D texture)
+        /// <param name="texture">Source texture to read pixels from</param>
+        /// <param name="isNormalMap">Whether this is a normal map texture (uses linear color space)</param>
+        public Color[] GetReadablePixels(Texture2D texture, bool isNormalMap = false)
         {
             if (texture == null)
             {
@@ -174,8 +190,15 @@ namespace dev.limitex.avatar.compressor.texture
 
                 try
                 {
+                    // Use linear color space for normal maps to preserve vector data correctly
+                    RenderTextureReadWrite colorSpace = isNormalMap
+                        ? RenderTextureReadWrite.Linear
+                        : RenderTextureReadWrite.Default;
+
                     rt = RenderTexture.GetTemporary(
-                        texture.width, texture.height, 0, RenderTextureFormat.ARGB32);
+                        texture.width, texture.height, 0,
+                        RenderTextureFormat.ARGB32,
+                        colorSpace);
 
                     if (rt == null)
                     {

@@ -42,7 +42,7 @@ namespace dev.limitex.avatar.compressor.texture
             {
                 var texture = kvp.Key;
                 var info = kvp.Value;
-                var pixels = _processor.GetReadablePixels(texture);
+                var pixels = _processor.GetReadablePixels(texture, info.IsNormalMap);
 
                 if (pixels.Length == 0) continue;
 
