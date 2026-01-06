@@ -112,9 +112,11 @@ namespace dev.limitex.avatar.compressor.texture
                 RenderTexture.active = rt;
                 Graphics.Blit(source, rt);
 
-                Texture2D result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, false);
+                // Preserve mipmap setting from source texture
+                // Mipmaps are important for performance, visual quality, and VRAM optimization
+                Texture2D result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, source.mipmapCount > 1);
                 result.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
-                result.Apply();
+                result.Apply(source.mipmapCount > 1);
 
                 // Copy texture settings from source
                 result.wrapModeU = source.wrapModeU;
@@ -184,9 +186,10 @@ namespace dev.limitex.avatar.compressor.texture
                     Graphics.Blit(texture, rt);
                     RenderTexture.active = rt;
 
-                    readable = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
+                    // Preserve mipmap setting from source texture
+                    readable = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, texture.mipmapCount > 1);
                     readable.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
-                    readable.Apply();
+                    readable.Apply(texture.mipmapCount > 1);
 
                     return readable.GetPixels();
                 }

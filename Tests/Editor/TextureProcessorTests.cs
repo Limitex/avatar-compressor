@@ -289,6 +289,107 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region ResizeTo and Copy Tests
+
+        [Test]
+        public void ResizeTo_WithMipmaps_PreservesMipmaps()
+        {
+            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
+            
+            var result = _processor.ResizeTo(sourceTexture, 256, 256);
+            
+            Assert.IsNotNull(result);
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(256, result.height);
+            Assert.IsTrue(result.mipmapCount > 1, "Result should have mipmaps when source has mipmaps");
+            
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void ResizeTo_WithoutMipmaps_DoesNotAddMipmaps()
+        {
+            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+            
+            var result = _processor.ResizeTo(sourceTexture, 256, 256);
+            
+            Assert.IsNotNull(result);
+            Assert.AreEqual(256, result.height);
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(1, result.mipmapCount, "Result should not have mipmaps when source doesn't have mipmaps");
+            
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void ResizeTo_PreservesTextureSettings()
+        {
+            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
+            sourceTexture.wrapModeU = TextureWrapMode.Repeat;
+            sourceTexture.wrapModeV = TextureWrapMode.Clamp;
+            sourceTexture.filterMode = FilterMode.Trilinear;
+            sourceTexture.anisoLevel = 4;
+            
+            var result = _processor.ResizeTo(sourceTexture, 256, 256);
+            
+            Assert.AreEqual(TextureWrapMode.Repeat, result.wrapModeU);
+            Assert.AreEqual(TextureWrapMode.Clamp, result.wrapModeV);
+            Assert.AreEqual(FilterMode.Trilinear, result.filterMode);
+            Assert.AreEqual(4, result.anisoLevel);
+            
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Copy_PreservesMipmaps()
+        {
+            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
+            
+            var result = _processor.Copy(sourceTexture);
+            
+            Assert.IsNotNull(result);
+            Assert.AreEqual(512, result.width);
+            Assert.AreEqual(512, result.height);
+            Assert.IsTrue(result.mipmapCount > 1, "Copied texture should preserve mipmaps");
+            
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Copy_WithoutMipmaps_DoesNotAddMipmaps()
+        {
+            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+            
+            var result = _processor.Copy(sourceTexture);
+            
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.mipmapCount, "Copied texture should not have mipmaps when source doesn't have them");
+            
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void ResizeTo_SameDimensions_PreservesMipmaps()
+        {
+            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
+            
+            var result = _processor.ResizeTo(sourceTexture, 512, 512);
+            
+            Assert.AreEqual(512, result.width);
+            Assert.AreEqual(512, result.height);
+            Assert.IsTrue(result.mipmapCount > 1, "Should preserve mipmaps even when not actually resizing");
+            
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private static bool IsPowerOfTwo(int x)
