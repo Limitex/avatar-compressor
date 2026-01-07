@@ -9,17 +9,19 @@ interface VPMRepositoryLinkProps {
   repoUrl: string;
   label?: string;
   method?: "alcom" | "vcc";
+  eventName?: string;
 }
 
 const VPMRepositoryLink: React.FC<VPMRepositoryLinkProps> = ({
   repoUrl,
   label = "Add Repository",
   method = "vcc",
+  eventName = "add_repository",
 }) => {
   const vccUrl = `vcc://vpm/addRepo?url=${repoUrl}`;
 
   const handleClick = () => {
-    sendGAEvent("event", "add_repository", {
+    sendGAEvent("event", eventName, {
       method,
       repo_url: repoUrl,
     });
