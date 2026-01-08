@@ -736,7 +736,30 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         FrozenSettings = frozenSettings
                     };
 
-                    if (isFrozen && !frozenSettings.Skip)
+                    if (isFrozen && frozenSettings.Skip)
+                    {
+                        // Frozen with Skip=true - add to skipped list
+                        skippedList.Add(new TexturePreviewData
+                        {
+                            Texture = tex,
+                            Path = assetPath,
+                            Complexity = 0f,
+                            RecommendedDivisor = 1,
+                            OriginalSize = new Vector2Int(tex.width, tex.height),
+                            RecommendedSize = new Vector2Int(tex.width, tex.height),
+                            TextureType = info.TextureType,
+                            IsProcessed = false,
+                            SkipReason = SkipReason.FrozenSkip,
+                            OriginalMemory = originalMemory,
+                            EstimatedMemory = originalMemory,
+                            IsNormalMap = isNormalMap,
+                            PredictedFormat = null,
+                            HasAlpha = false,
+                            IsFrozen = true,
+                            FrozenSettings = frozenSettings
+                        });
+                    }
+                    else if (isFrozen)
                     {
                         frozenList.Add(previewData);
                     }
