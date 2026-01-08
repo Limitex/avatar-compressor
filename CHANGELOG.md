@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Animation-referenced material support** - Materials referenced by animations are now included in compression
+  - MaterialCloner can now clone additional materials (e.g., from animations)
+  - TextureCollector collects textures from additional materials
+  - Editor UI displays animation-referenced materials in preview with dedicated section
+  - Supports Animator components that swap materials via animation clips
+
+### Fixed
+
+- **DXT/BC texture dimension compatibility** - `EnsureMultipleOf4` now rounds up instead of down
+  - Ensures textures meet the 4x4 block size requirement for DXT/BC compression formats
+  - Prevents potential texture corruption from undersized dimensions
+- **Frozen texture skip handling** - Skipped frozen textures now display correctly in preview
+  - Textures with "Skip" setting are properly shown as skipped in the texture list
+
+### Changed
+
+- **TextureCompressorPass refactored** - Improved robustness and maintainability
+  - Extracted pass logic into dedicated `TextureCompressorPass` class
+  - Better separation of concerns between plugin registration and execution
+
 ## [v0.3.4] - 2026-01-06
 
 ### Fixed
