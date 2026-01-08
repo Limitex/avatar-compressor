@@ -284,7 +284,14 @@ namespace dev.limitex.avatar.compressor.texture.editor
             EditorGUILayout.PropertyField(_maxDivisor, new GUIContent("Max Divisor"));
             EditorGUILayout.PropertyField(_maxResolution, new GUIContent("Max Resolution"));
             EditorGUILayout.PropertyField(_minResolution, new GUIContent("Min Resolution"));
-            EditorGUILayout.PropertyField(_forcePowerOfTwo, new GUIContent("Force Power of 2"));
+            EditorGUILayout.PropertyField(_forcePowerOfTwo, new GUIContent("Force Power of 2",
+                "When enabled, dimensions are rounded to nearest power of 2.\n" +
+                "When disabled, dimensions are rounded to nearest multiple of 4.\n" +
+                "Note: All output dimensions are always multiples of 4 for DXT/BC compression compatibility."));
+            EditorGUILayout.HelpBox(
+                "Output dimensions are always multiples of 4 for DXT/BC compression compatibility. " +
+                "Example: 150x150 becomes 152x152.",
+                MessageType.Info);
 
             EditorGUILayout.Space(10);
 
