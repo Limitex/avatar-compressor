@@ -76,11 +76,63 @@ namespace dev.limitex.avatar.compressor.texture
             );
         }
 
+        /// <summary>
+        /// Compresses textures in the avatar hierarchy (ICompressor interface).
+        /// Does not process animation-referenced materials.
+        /// </summary>
         public void Compress(GameObject root, bool enableLogging)
         {
-            MaterialCloner.CloneMaterials(root);
+            CompressWithAnimationSupport(root, enableLogging, null);
+        }
 
+        /// <summary>
+        /// Compresses textures in the avatar hierarchy with additional materials from animations.
+        /// This is an extended version used by TextureCompressorPass for NDMF integration.
+        /// Unlike the ICompressor.Compress method, this returns mappings needed for animation curve updates.
+        /// </summary>
+        /// <param name="root">Avatar root GameObject</param>
+        /// <param name="enableLogging">Whether to log progress</param>
+        /// <param name="additionalMaterials">Additional materials to process (e.g., from animations)</param>
+        /// <returns>Tuple containing processed textures and cloned materials mappings for animation curve updates</returns>
+        public (Dictionary<Texture2D, Texture2D> ProcessedTextures, Dictionary<Material, Material> ClonedMaterials) CompressWithAnimationSupport(
+            GameObject root,
+            bool enableLogging,
+            IEnumerable<Material> additionalMaterials)
+        {
+            // Clone all materials: renderer materials + additional materials (e.g., from animations)
+            var clonedMaterials = MaterialCloner.CloneMaterials(root, additionalMaterials);
+
+            // Collect textures from Renderers (now using cloned materials)
             var textures = _collector.Collect(root);
+
+            // Collect textures from additional materials (using cloned versions)
+            // We must use cloned materials here, not originals, because:
+            // 1. Animation curves will be rewritten to point to cloned materials
+            // 2. Texture references need to be updated on cloned materials
+            // 3. Using originals would leave cloned materials with uncompressed textures
+            if (additionalMaterials != null)
+            {
+                var clonedAdditionalMaterials = new List<Material>();
+                foreach (var originalMat in additionalMaterials)
+                {
+                    if (originalMat == null) continue;
+
+                    if (clonedMaterials.TryGetValue(originalMat, out var clonedMat))
+                    {
+                        clonedAdditionalMaterials.Add(clonedMat);
+                    }
+                    else
+                    {
+                        // This should not happen as MaterialCloner.CloneMaterials receives
+                        // the same additionalMaterials list. Log warning and skip.
+                        Debug.LogWarning(
+                            $"[{Name}] Material '{originalMat.name}' was not cloned. " +
+                            "This may indicate a bug in the cloning process. Skipping.");
+                    }
+                }
+
+                _collector.CollectFromMaterials(clonedAdditionalMaterials, textures);
+            }
 
             if (textures.Count == 0)
             {
@@ -88,7 +140,7 @@ namespace dev.limitex.avatar.compressor.texture
                 {
                     Debug.Log($"[{Name}] No textures found to process.");
                 }
-                return;
+                return (new Dictionary<Texture2D, Texture2D>(), clonedMaterials);
             }
 
             if (enableLogging)
@@ -167,6 +219,8 @@ namespace dev.limitex.avatar.compressor.texture
             {
                 LogSummary(textures, processedTextures);
             }
+
+            return (processedTextures, clonedMaterials);
         }
 
         private void LogSummary(

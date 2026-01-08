@@ -16,9 +16,23 @@ namespace dev.limitex.avatar.compressor.common
         /// <returns>Dictionary mapping original materials to cloned materials</returns>
         public static Dictionary<Material, Material> CloneMaterials(GameObject root)
         {
+            return CloneMaterials(root, null);
+        }
+
+        /// <summary>
+        /// Clones all materials in the hierarchy and additional materials to allow safe modification.
+        /// </summary>
+        /// <param name="root">Root GameObject of the hierarchy</param>
+        /// <param name="additionalMaterials">Additional materials to clone (e.g., from animations)</param>
+        /// <returns>Dictionary mapping original materials to cloned materials</returns>
+        public static Dictionary<Material, Material> CloneMaterials(
+            GameObject root,
+            IEnumerable<Material> additionalMaterials)
+        {
             var renderers = root.GetComponentsInChildren<Renderer>(true);
             var clonedMaterials = new Dictionary<Material, Material>();
 
+            // Clone materials from renderers
             foreach (var renderer in renderers)
             {
                 var originalMaterials = renderer.sharedMaterials;
@@ -33,24 +47,43 @@ namespace dev.limitex.avatar.compressor.common
                         continue;
                     }
 
-                    if (!clonedMaterials.TryGetValue(originalMat, out var clonedMat))
-                    {
-                        clonedMat = Object.Instantiate(originalMat);
-                        clonedMat.name = originalMat.name + "_clone";
-                        // Register the material replacement in ObjectRegistry so that subsequent NDMF plugins
-                        // can track which original material was cloned. This maintains proper reference
-                        // tracking across the build pipeline for tools like TexTransTool and Avatar Optimizer.
-                        ObjectRegistry.RegisterReplacedObject(originalMat, clonedMat);
-                        clonedMaterials[originalMat] = clonedMat;
-                    }
-
-                    newMaterials[i] = clonedMat;
+                    newMaterials[i] = GetOrCloneMaterial(originalMat, clonedMaterials);
                 }
 
                 renderer.sharedMaterials = newMaterials;
             }
 
+            // Clone additional materials (e.g., from animations)
+            if (additionalMaterials != null)
+            {
+                foreach (var material in additionalMaterials)
+                {
+                    if (material == null) continue;
+                    GetOrCloneMaterial(material, clonedMaterials);
+                }
+            }
+
             return clonedMaterials;
+        }
+
+        private static Material GetOrCloneMaterial(
+            Material originalMat,
+            Dictionary<Material, Material> clonedMaterials)
+        {
+            if (clonedMaterials.TryGetValue(originalMat, out var clonedMat))
+            {
+                return clonedMat;
+            }
+
+            clonedMat = Object.Instantiate(originalMat);
+            clonedMat.name = originalMat.name + "_clone";
+            // Register the material replacement in ObjectRegistry so that subsequent NDMF plugins
+            // can track which original material was cloned. This maintains proper reference
+            // tracking across the build pipeline for tools like TexTransTool and Avatar Optimizer.
+            ObjectRegistry.RegisterReplacedObject(originalMat, clonedMat);
+            clonedMaterials[originalMat] = clonedMat;
+
+            return clonedMat;
         }
     }
 }

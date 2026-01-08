@@ -420,6 +420,163 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Additional Materials Tests
+
+        [Test]
+        public void CloneMaterials_WithAdditionalMaterials_ClonesAll()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var rendererMaterial = CreateMaterial("RendererMaterial");
+            renderer.sharedMaterial = rendererMaterial;
+
+            var additionalMaterial = CreateMaterial("AdditionalMaterial");
+            var additionalMaterials = new Material[] { additionalMaterial };
+
+            var result = MaterialCloner.CloneMaterials(root, additionalMaterials);
+
+            Assert.AreEqual(2, result.Count);
+            Assert.IsTrue(result.ContainsKey(rendererMaterial));
+            Assert.IsTrue(result.ContainsKey(additionalMaterial));
+
+            // Clean up clones
+            foreach (var kvp in result)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+        }
+
+        [Test]
+        public void CloneMaterials_WithNullAdditionalMaterials_HandlesGracefully()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial("Material");
+            renderer.sharedMaterial = material;
+
+            var result = MaterialCloner.CloneMaterials(root, null);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(material));
+
+            // Clean up clone
+            _createdObjects.Add(result[material]);
+        }
+
+        [Test]
+        public void CloneMaterials_WithEmptyAdditionalMaterials_ClonesOnlyRendererMaterials()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial("Material");
+            renderer.sharedMaterial = material;
+
+            var result = MaterialCloner.CloneMaterials(root, new Material[0]);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(material));
+
+            // Clean up clone
+            _createdObjects.Add(result[material]);
+        }
+
+        [Test]
+        public void CloneMaterials_AdditionalMaterialsWithNulls_SkipsNulls()
+        {
+            var root = CreateGameObject("Root");
+            var validMaterial = CreateMaterial("ValidMaterial");
+            var additionalMaterials = new Material[] { null, validMaterial, null };
+
+            var result = MaterialCloner.CloneMaterials(root, additionalMaterials);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(validMaterial));
+
+            // Clean up clone
+            _createdObjects.Add(result[validMaterial]);
+        }
+
+        [Test]
+        public void CloneMaterials_SharedMaterialBetweenRendererAndAdditional_ClonesOnce()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var sharedMaterial = CreateMaterial("SharedMaterial");
+            renderer.sharedMaterial = sharedMaterial;
+
+            // Same material passed as additional
+            var additionalMaterials = new Material[] { sharedMaterial };
+
+            var result = MaterialCloner.CloneMaterials(root, additionalMaterials);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(sharedMaterial));
+
+            // Clean up clone
+            _createdObjects.Add(result[sharedMaterial]);
+        }
+
+        [Test]
+        public void CloneMaterials_AdditionalMaterialOnly_ClonesSuccessfully()
+        {
+            var root = CreateGameObject("Root"); // No renderer
+
+            var additionalMaterial = CreateMaterial("AdditionalMaterial");
+            var additionalMaterials = new Material[] { additionalMaterial };
+
+            var result = MaterialCloner.CloneMaterials(root, additionalMaterials);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(additionalMaterial));
+            Assert.AreNotSame(additionalMaterial, result[additionalMaterial]);
+
+            // Clean up clone
+            _createdObjects.Add(result[additionalMaterial]);
+        }
+
+        [Test]
+        public void CloneMaterials_MultipleAdditionalMaterials_ClonesAll()
+        {
+            var root = CreateGameObject("Root");
+
+            var additionalMat1 = CreateMaterial("Additional1");
+            var additionalMat2 = CreateMaterial("Additional2");
+            var additionalMat3 = CreateMaterial("Additional3");
+            var additionalMaterials = new Material[] { additionalMat1, additionalMat2, additionalMat3 };
+
+            var result = MaterialCloner.CloneMaterials(root, additionalMaterials);
+
+            Assert.AreEqual(3, result.Count);
+            Assert.IsTrue(result.ContainsKey(additionalMat1));
+            Assert.IsTrue(result.ContainsKey(additionalMat2));
+            Assert.IsTrue(result.ContainsKey(additionalMat3));
+
+            // Clean up clones
+            foreach (var kvp in result)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+        }
+
+        [Test]
+        public void CloneMaterials_DuplicateAdditionalMaterials_ClonesOnce()
+        {
+            var root = CreateGameObject("Root");
+
+            var material = CreateMaterial("DuplicateMaterial");
+            var additionalMaterials = new Material[] { material, material, material };
+
+            var result = MaterialCloner.CloneMaterials(root, additionalMaterials);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(material));
+
+            // Clean up clone
+            _createdObjects.Add(result[material]);
+        }
+
+        #endregion
+
         #region Material Array Integrity Tests
 
         [Test]

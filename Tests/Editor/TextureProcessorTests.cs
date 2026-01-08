@@ -78,12 +78,16 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CalculateNewDimensions_WithoutForcePowerOfTwo_ReturnsExactValue()
+        public void CalculateNewDimensions_WithoutForcePowerOfTwo_ReturnsMultipleOf4()
         {
+            // Without forcePowerOfTwo, dimensions are still rounded to multiples of 4
+            // for DXT/BC compression compatibility. 300/2=150, rounded up to 152 (38*4)
             var resizerNoPow2 = new TextureProcessor(32, 2048, false);
             var result = resizerNoPow2.CalculateNewDimensions(300, 300, 2);
-            Assert.AreEqual(150, result.x);
-            Assert.AreEqual(150, result.y);
+            Assert.AreEqual(152, result.x);
+            Assert.AreEqual(152, result.y);
+            Assert.AreEqual(0, result.x % 4, "Width should be multiple of 4");
+            Assert.AreEqual(0, result.y % 4, "Height should be multiple of 4");
         }
 
         [Test]
@@ -144,6 +148,36 @@ namespace dev.limitex.avatar.compressor.tests
             var result = _processor.CalculateNewDimensions(2048, 64, 1);
             Assert.AreEqual(2048, result.x);
             Assert.AreEqual(64, result.y);
+        }
+
+        [Test]
+        public void CalculateNewDimensions_WithoutForcePowerOfTwo_ExactMultipleOf4_ReturnsExact()
+        {
+            // 400/2=200, which is already a multiple of 4, so no rounding needed
+            var resizerNoPow2 = new TextureProcessor(32, 2048, false);
+            var result = resizerNoPow2.CalculateNewDimensions(400, 400, 2);
+            Assert.AreEqual(200, result.x);
+            Assert.AreEqual(200, result.y);
+        }
+
+        [Test]
+        public void CalculateNewDimensions_WithoutForcePowerOfTwo_AllResultsAreMultipleOf4()
+        {
+            var resizerNoPow2 = new TextureProcessor(32, 2048, false);
+            int[] sizes = { 100, 150, 200, 300, 500, 600, 700, 800, 1000 };
+            int[] divisors = { 1, 2, 4, 8 };
+
+            foreach (int size in sizes)
+            {
+                foreach (int div in divisors)
+                {
+                    var result = resizerNoPow2.CalculateNewDimensions(size, size, div);
+                    Assert.AreEqual(0, result.x % 4,
+                        $"Size {size} with divisor {div}: Width {result.x} is not multiple of 4");
+                    Assert.AreEqual(0, result.y % 4,
+                        $"Size {size} with divisor {div}: Height {result.y} is not multiple of 4");
+                }
+            }
         }
 
         #endregion

@@ -46,7 +46,18 @@ namespace dev.limitex.avatar.compressor.texture
                 source.width <= _maxResolution &&
                 source.height <= _maxResolution)
             {
-                result = Copy(source);
+                // Even when copying, ensure dimensions are multiples of 4 for DXT/BC compression
+                int width = EnsureMultipleOf4(source.width);
+                int height = EnsureMultipleOf4(source.height);
+
+                if (width == source.width && height == source.height)
+                {
+                    result = Copy(source);
+                }
+                else
+                {
+                    result = ResizeTo(source, width, height);
+                }
             }
             else
             {
@@ -73,7 +84,17 @@ namespace dev.limitex.avatar.compressor.texture
         }
 
         /// <summary>
+        /// Ensures a dimension is a multiple of 4 for DXT/BC compression compatibility.
+        /// Rounds down to nearest multiple of 4, with minimum of 4.
+        /// </summary>
+        private static int EnsureMultipleOf4(int dimension)
+        {
+            return Mathf.Max(4, (dimension / 4) * 4);
+        }
+
+        /// <summary>
         /// Calculates new dimensions based on divisor.
+        /// Ensures dimensions are always multiples of 4 for DXT/BC compression compatibility.
         /// </summary>
         public Vector2Int CalculateNewDimensions(int width, int height, int divisor)
         {
@@ -92,6 +113,12 @@ namespace dev.limitex.avatar.compressor.texture
                     newWidth = Mathf.ClosestPowerOfTwo(_maxResolution / 2) * 2;
                 if (newHeight > _maxResolution)
                     newHeight = Mathf.ClosestPowerOfTwo(_maxResolution / 2) * 2;
+            }
+            else
+            {
+                // Ensure dimensions are multiples of 4 for DXT/BC compression compatibility
+                newWidth = EnsureMultipleOf4(newWidth);
+                newHeight = EnsureMultipleOf4(newHeight);
             }
 
             return new Vector2Int(newWidth, newHeight);

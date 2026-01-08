@@ -557,6 +557,274 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Additional Materials Tests
+
+        [Test]
+        public void Compress_WithAdditionalMaterials_ReturnsProcessedTextures()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+
+            var additionalMaterial = CreateMaterial();
+            var texture = CreateTexture(256, 256);
+            additionalMaterial.SetTexture("_MainTex", texture);
+
+            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
+                root, false, new Material[] { additionalMaterial });
+
+            Assert.IsNotNull(processedTextures);
+            Assert.IsNotNull(clonedMaterials);
+            Assert.AreEqual(1, processedTextures.Count);
+            Assert.AreEqual(1, clonedMaterials.Count);
+
+            // Clean up compressed texture
+            foreach (var kvp in processedTextures)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+            foreach (var kvp in clonedMaterials)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+        }
+
+        [Test]
+        public void CompressWithAnimationSupport_WithNullAdditionalMaterials_CompletesSuccessfully()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(256, 256);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(root, false, null);
+
+            Assert.IsNotNull(processedTextures);
+            Assert.IsNotNull(clonedMaterials);
+            Assert.AreEqual(1, processedTextures.Count);
+            Assert.AreEqual(1, clonedMaterials.Count);
+
+            // Clean up
+            foreach (var kvp in processedTextures)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+        }
+
+        [Test]
+        public void CompressWithAnimationSupport_WithAdditionalMaterials_ClonesAdditionalMaterials()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+
+            var additionalMaterial = CreateMaterial();
+            additionalMaterial.name = "AdditionalMaterial";
+            var texture = CreateTexture(256, 256);
+            additionalMaterial.SetTexture("_MainTex", texture);
+
+            var (_, clonedMaterials) = service.CompressWithAnimationSupport(
+                root, false, new Material[] { additionalMaterial });
+
+            Assert.AreEqual(1, clonedMaterials.Count);
+            Assert.IsTrue(clonedMaterials.ContainsKey(additionalMaterial));
+            Assert.AreNotSame(additionalMaterial, clonedMaterials[additionalMaterial]);
+
+            // Clean up
+            foreach (var kvp in clonedMaterials)
+            {
+                _createdObjects.Add(kvp.Value);
+                var tex = kvp.Value.GetTexture("_MainTex") as Texture2D;
+                if (tex != null) _createdObjects.Add(tex);
+            }
+        }
+
+        [Test]
+        public void CompressWithAnimationSupport_WithAdditionalMaterials_UpdatesTextureOnClonedMaterial()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+
+            var additionalMaterial = CreateMaterial();
+            var originalTexture = CreateTexture(256, 256);
+            additionalMaterial.SetTexture("_MainTex", originalTexture);
+
+            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
+                root, false, new Material[] { additionalMaterial });
+
+            var clonedMaterial = clonedMaterials[additionalMaterial];
+            var textureOnClonedMaterial = clonedMaterial.GetTexture("_MainTex") as Texture2D;
+
+            // Cloned material should have the compressed texture
+            Assert.IsNotNull(textureOnClonedMaterial);
+            Assert.That(textureOnClonedMaterial.name, Does.Contain("_compressed"));
+
+            // Clean up
+            foreach (var kvp in processedTextures)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+            foreach (var kvp in clonedMaterials)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+        }
+
+        [Test]
+        public void CompressWithAnimationSupport_MixedRendererAndAdditionalMaterials_ProcessesAll()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var rendererMaterial = CreateMaterial();
+            var rendererTexture = CreateTexture(256, 256);
+            rendererMaterial.SetTexture("_MainTex", rendererTexture);
+            renderer.sharedMaterial = rendererMaterial;
+
+            var additionalMaterial = CreateMaterial();
+            var additionalTexture = CreateTexture(256, 256);
+            additionalMaterial.SetTexture("_MainTex", additionalTexture);
+
+            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
+                root, false, new Material[] { additionalMaterial });
+
+            Assert.AreEqual(2, processedTextures.Count);
+            Assert.AreEqual(2, clonedMaterials.Count);
+            Assert.IsTrue(processedTextures.ContainsKey(rendererTexture));
+            Assert.IsTrue(processedTextures.ContainsKey(additionalTexture));
+
+            // Clean up
+            foreach (var kvp in processedTextures)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+            foreach (var kvp in clonedMaterials)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+        }
+
+        [Test]
+        public void CompressWithAnimationSupport_SharedTextureBetweenRendererAndAdditional_ProcessesOnce()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var rendererMaterial = CreateMaterial();
+            var sharedTexture = CreateTexture(256, 256);
+            rendererMaterial.SetTexture("_MainTex", sharedTexture);
+            renderer.sharedMaterial = rendererMaterial;
+
+            var additionalMaterial = CreateMaterial();
+            additionalMaterial.SetTexture("_MainTex", sharedTexture);
+
+            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
+                root, false, new Material[] { additionalMaterial });
+
+            // Same texture should be processed only once
+            Assert.AreEqual(1, processedTextures.Count);
+            Assert.IsTrue(processedTextures.ContainsKey(sharedTexture));
+
+            // Both materials should have the same compressed texture
+            var compressedTexture = processedTextures[sharedTexture];
+            var rendererClonedMaterial = clonedMaterials[rendererMaterial];
+            var additionalClonedMaterial = clonedMaterials[additionalMaterial];
+
+            Assert.AreEqual(compressedTexture, rendererClonedMaterial.GetTexture("_MainTex"));
+            Assert.AreEqual(compressedTexture, additionalClonedMaterial.GetTexture("_MainTex"));
+
+            // Clean up
+            foreach (var kvp in processedTextures)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+            foreach (var kvp in clonedMaterials)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+        }
+
+        [Test]
+        public void CompressWithAnimationSupport_EmptyAdditionalMaterials_ProcessesOnlyRendererMaterials()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(256, 256);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
+                root, false, new Material[0]);
+
+            Assert.AreEqual(1, processedTextures.Count);
+            Assert.AreEqual(1, clonedMaterials.Count);
+
+            // Clean up
+            foreach (var kvp in processedTextures)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+        }
+
+        [Test]
+        public void CompressWithAnimationSupport_NoTexturesFromAdditionalMaterials_ReturnsEmptyProcessedTextures()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+
+            // Additional material without textures
+            var additionalMaterial = CreateMaterial();
+
+            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
+                root, false, new Material[] { additionalMaterial });
+
+            Assert.AreEqual(0, processedTextures.Count);
+            Assert.AreEqual(1, clonedMaterials.Count);
+
+            // Clean up
+            foreach (var kvp in clonedMaterials)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+        }
+
+        #endregion
+
         #region Mipmap Streaming Tests
 
         [Test]
