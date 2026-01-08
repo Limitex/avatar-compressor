@@ -199,8 +199,11 @@ namespace dev.limitex.avatar.compressor.texture
                 // This is required to avoid NDMF warnings about streaming mipmaps
                 var serializedTexture = new SerializedObject(compressedTexture);
                 var streamingMipmaps = serializedTexture.FindProperty("m_StreamingMipmaps");
-                streamingMipmaps.boolValue = true;
-                serializedTexture.ApplyModifiedPropertiesWithoutUndo();
+                if (streamingMipmaps != null)
+                {
+                    streamingMipmaps.boolValue = true;
+                    serializedTexture.ApplyModifiedPropertiesWithoutUndo();
+                }
 
                 // Register the texture replacement in ObjectRegistry so that subsequent NDMF plugins
                 // can track which original texture was replaced. This maintains proper reference

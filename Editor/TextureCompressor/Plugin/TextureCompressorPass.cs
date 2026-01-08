@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using dev.limitex.avatar.compressor.common;
@@ -21,26 +22,7 @@ namespace dev.limitex.avatar.compressor.texture
 
             if (components.Length == 0) return;
 
-            // Warn about multiple components
-            if (components.Length > 1)
-            {
-                Debug.LogWarning(
-                    $"[LAC Texture Compressor] Multiple TextureCompressor components found ({components.Length}). " +
-                    "Only the first component's settings will be used.",
-                    components[0]);
-            }
-
-            // Warn about components not on avatar root
-            foreach (var component in components)
-            {
-                if (!RuntimeUtil.IsAvatarRoot(component.transform))
-                {
-                    Debug.LogWarning(
-                        $"[LAC Texture Compressor] Component on '{component.gameObject.name}' is not on the avatar root. " +
-                        "It is recommended to place the component on the avatar root GameObject.",
-                        component);
-                }
-            }
+            ValidateComponents(components);
 
             var config = components[0];
 
@@ -60,24 +42,62 @@ namespace dev.limitex.avatar.compressor.texture
             CleanupComponents(components);
         }
 
+        private static void ValidateComponents(TextureCompressor[] components)
+        {
+            if (components == null || components.Length == 0) return;
+
+            // Warn about multiple components
+            if (components.Length > 1)
+            {
+                Debug.LogWarning(
+                    $"[LAC Texture Compressor] Multiple TextureCompressor components found ({components.Length}). " +
+                    "Only the first component's settings will be used.",
+                    components[0]);
+            }
+
+            // Warn about components not on avatar root
+            foreach (var component in components)
+            {
+                if (component == null) continue;
+
+                if (!RuntimeUtil.IsAvatarRoot(component.transform))
+                {
+                    Debug.LogWarning(
+                        $"[LAC Texture Compressor] Component on '{component.gameObject.name}' is not on the avatar root. " +
+                        "It is recommended to place the component on the avatar root GameObject.",
+                        component);
+                }
+            }
+        }
+
         /// <summary>
         /// Gets materials referenced by animations (MaterialSwap, etc.) from AnimatorServicesContext.
         /// </summary>
         private static List<Material> GetAnimationReferencedMaterials(BuildContext ctx)
         {
-            // Activate the AnimatorServicesContext extension before accessing it
-            ctx.ActivateExtensionContextRecursive<AnimatorServicesContext>();
-
-            var animatorServices = ctx.Extension<AnimatorServicesContext>();
-            if (animatorServices?.AnimationIndex == null)
+            try
             {
+                // Activate the AnimatorServicesContext extension before accessing it
+                ctx.ActivateExtensionContextRecursive<AnimatorServicesContext>();
+
+                var animatorServices = ctx.Extension<AnimatorServicesContext>();
+                if (animatorServices?.AnimationIndex == null)
+                {
+                    return new List<Material>();
+                }
+
+                return animatorServices.AnimationIndex.GetPPtrReferencedObjects
+                    .OfType<Material>()
+                    .Distinct()
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning(
+                    $"[LAC Texture Compressor] Failed to get animation-referenced materials: {ex.Message}. " +
+                    "Animation materials will not be processed.");
                 return new List<Material>();
             }
-
-            return animatorServices.AnimationIndex.GetPPtrReferencedObjects
-                .OfType<Material>()
-                .Distinct()
-                .ToList();
         }
 
         /// <summary>
@@ -88,37 +108,41 @@ namespace dev.limitex.avatar.compressor.texture
             Dictionary<Texture2D, Texture2D> processedTextures,
             Dictionary<Material, Material> clonedMaterials)
         {
-            var animatorServices = ctx.Extension<AnimatorServicesContext>();
-            if (animatorServices?.AnimationIndex == null) return;
-
-            var animationIndex = animatorServices.AnimationIndex;
-
-            // Rewrite object curves: update both materials and textures in a single pass
-            animationIndex.RewriteObjectCurves(obj =>
+            try
             {
-                // Replace materials with cloned versions
-                if (obj is Material originalMaterial &&
-                    clonedMaterials.TryGetValue(originalMaterial, out var clonedMaterial))
-                {
-                    return clonedMaterial;
-                }
+                var animatorServices = ctx.Extension<AnimatorServicesContext>();
+                if (animatorServices?.AnimationIndex == null) return;
 
-                // Replace textures with compressed versions
-                if (obj is Texture2D originalTexture &&
-                    processedTextures.TryGetValue(originalTexture, out var compressedTexture))
-                {
-                    return compressedTexture;
-                }
+                var animationIndex = animatorServices.AnimationIndex;
 
-                return obj;
-            });
+                // Rewrite object curves: update both materials and textures in a single pass
+                animationIndex.RewriteObjectCurves(obj =>
+                {
+                    if (obj is Material m && clonedMaterials.TryGetValue(m, out var cloned))
+                        return cloned;
+                    if (obj is Texture2D t && processedTextures.TryGetValue(t, out var compressed))
+                        return compressed;
+                    return obj;
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning(
+                    $"[LAC Texture Compressor] Failed to update animation references: {ex.Message}. " +
+                    "Some animation curves may reference original materials/textures.");
+            }
         }
 
         private static void CleanupComponents(TextureCompressor[] components)
         {
+            if (components == null) return;
+
             foreach (var component in components)
             {
-                ComponentUtils.SafeDestroy(component);
+                if (component != null)
+                {
+                    ComponentUtils.SafeDestroy(component);
+                }
             }
         }
     }
