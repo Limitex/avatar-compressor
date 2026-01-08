@@ -126,8 +126,8 @@ namespace dev.limitex.avatar.compressor.texture
                         // This should not happen as MaterialCloner.CloneMaterials receives
                         // the same additionalMaterials list. Log warning and skip.
                         Debug.LogWarning(
-                            $"[{Name}] Material '{originalMat.name}' was not cloned. " +
-                            "This may indicate a bug in the cloning process. Skipping.");
+                            $"[{Name}] Internal error: Material '{originalMat.name}' should have been cloned " +
+                            "but wasn't found in clonedMaterials dictionary. Skipping.");
                     }
                 }
 
@@ -203,6 +203,12 @@ namespace dev.limitex.avatar.compressor.texture
                 {
                     streamingMipmaps.boolValue = true;
                     serializedTexture.ApplyModifiedPropertiesWithoutUndo();
+                }
+                else
+                {
+                    Debug.LogWarning(
+                        $"[{Name}] Could not enable streaming mipmaps for texture '{compressedTexture.name}': " +
+                        "property 'm_StreamingMipmaps' not found. This may indicate a Unity version difference.");
                 }
 
                 // Register the texture replacement in ObjectRegistry so that subsequent NDMF plugins
