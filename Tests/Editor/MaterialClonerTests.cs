@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.common;
+using dev.limitex.avatar.compressor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {

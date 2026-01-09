@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using nadena.dev.ndmf;
 using UnityEngine;
 
-namespace dev.limitex.avatar.compressor.common
+namespace dev.limitex.avatar.compressor.texture
 {
     /// <summary>
     /// Service for cloning materials to avoid modifying original assets.
