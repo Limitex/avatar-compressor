@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Component-referenced material support** - Materials referenced by components (MA MaterialSetter, etc.) are now detected
   - Scans all components' serialized properties for Material references
   - Respects `EditorOnly` tag (excluded from collection as they are stripped from build)
+- **Non-NDMF usage warning** - Added runtime warning when `ICompressor.Compress()` is called outside NDMF build context
+  - Warns users that Renderer material references will be changed (though original .mat files are NOT modified)
+  - Recommends using the NDMF plugin for non-destructive workflow
 
 ### Changed
 
@@ -31,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Ensures textures meet the 4x4 block size requirement for DXT/BC compression formats
   - Prevents potential texture corruption from undersized dimensions
 - **Frozen texture skip handling** - Skipped frozen textures now display correctly in preview
+- **Modular Avatar compatibility** - Added `AfterPlugin("nadena.dev.modular-avatar")` to ensure proper execution order
+  - Fixes potential issues with materials added/modified by Modular Avatar not being processed correctly
+  - Ensures animation-referenced materials from MA are properly detected and compressed
 
 ## [v0.3.4] - 2026-01-06
 

@@ -15,6 +15,7 @@ namespace dev.limitex.avatar.compressor.texture
         protected override void Configure()
         {
             InPhase(BuildPhase.Optimizing)
+                .AfterPlugin("nadena.dev.modular-avatar")
                 .BeforePlugin("net.rs64.tex-trans-tool")
                 .BeforePlugin("com.anatawa12.avatar-optimizer")
                 .Run(TextureCompressorPass.Instance);

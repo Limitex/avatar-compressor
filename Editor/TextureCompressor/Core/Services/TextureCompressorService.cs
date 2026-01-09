@@ -26,6 +26,9 @@ namespace dev.limitex.avatar.compressor.texture
         // Flag to avoid repeating the same warning for every texture
         private static bool _streamingMipmapsWarningShown;
 
+        // Flag to avoid repeating build context warning
+        private static bool _buildContextWarningShown;
+
         public TextureCompressorService(TextureCompressor config)
         {
             _config = config;
@@ -83,9 +86,54 @@ namespace dev.limitex.avatar.compressor.texture
         /// Compresses textures in the avatar hierarchy (ICompressor interface).
         /// Does not process animation-referenced materials.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>WARNING:</b> This method modifies the Renderer components on the provided GameObject
+        /// by replacing their material references with cloned materials. While the original
+        /// material asset files (.mat) are NOT modified, the scene will be marked as dirty
+        /// if called outside of an NDMF build context.
+        /// </para>
+        /// <para>
+        /// For production use, prefer using the NDMF plugin (TextureCompressorPass) which
+        /// operates on a cloned avatar and properly handles animation-referenced materials.
+        /// </para>
+        /// </remarks>
         public void Compress(GameObject root, bool enableLogging)
         {
+            // Warn if materials are linked to asset files (indicates non-build context usage)
+            WarnIfNotInBuildContext(root);
+
             CompressWithAnimationSupport(root, enableLogging, null);
+        }
+
+        /// <summary>
+        /// Warns if materials appear to be asset files, which indicates usage outside NDMF build context.
+        /// In NDMF build context, materials should already be cloned/runtime objects.
+        /// </summary>
+        private void WarnIfNotInBuildContext(GameObject root)
+        {
+            if (_buildContextWarningShown) return;
+
+            var renderers = root.GetComponentsInChildren<Renderer>(true);
+            foreach (var renderer in renderers)
+            {
+                foreach (var material in renderer.sharedMaterials)
+                {
+                    if (material == null) continue;
+
+                    string assetPath = AssetDatabase.GetAssetPath(material);
+                    if (!string.IsNullOrEmpty(assetPath))
+                    {
+                        _buildContextWarningShown = true;
+                        Debug.LogWarning(
+                            $"[{Name}] Material '{material.name}' is an asset file ({assetPath}). " +
+                            "This suggests usage outside NDMF build context. " +
+                            "While original asset files will NOT be modified, the Renderer's material " +
+                            "references will be changed. For non-destructive workflow, use the NDMF plugin.");
+                        return;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -257,7 +305,7 @@ namespace dev.limitex.avatar.compressor.texture
             float savings = originalSize > 0 ? 1f - (float)compressedSize / originalSize : 0f;
 
             Debug.Log($"[{Name}] Complete: " +
-                      $"{originalSize / 1024f / 1024f:F2}MB → {compressedSize / 1024f / 1024f:F2}MB " +
+                      $"{originalSize / 1024f / 1024f:F2}MB -> {compressedSize / 1024f / 1024f:F2}MB " +
                       $"({savings:P0} reduction)");
         }
     }
