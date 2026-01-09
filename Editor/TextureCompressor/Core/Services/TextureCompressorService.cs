@@ -23,6 +23,9 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly TextureAnalyzer _analyzer;
         private readonly Dictionary<string, FrozenTextureSettings> _frozenLookup;
 
+        // Flag to avoid repeating the same warning for every texture
+        private static bool _streamingMipmapsWarningShown;
+
         public TextureCompressorService(TextureCompressor config)
         {
             _config = config;
@@ -204,10 +207,11 @@ namespace dev.limitex.avatar.compressor.texture
                     streamingMipmaps.boolValue = true;
                     serializedTexture.ApplyModifiedPropertiesWithoutUndo();
                 }
-                else
+                else if (!_streamingMipmapsWarningShown)
                 {
+                    _streamingMipmapsWarningShown = true;
                     Debug.LogWarning(
-                        $"[{Name}] Could not enable streaming mipmaps for texture '{compressedTexture.name}': " +
+                        $"[{Name}] Could not enable streaming mipmaps: " +
                         "property 'm_StreamingMipmaps' not found. This may indicate a Unity version difference.");
                 }
 

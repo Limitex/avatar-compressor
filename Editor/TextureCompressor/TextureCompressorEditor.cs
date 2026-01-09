@@ -626,17 +626,11 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             // 1. Collect from animation-referenced materials (AnimationClip ObjectReferenceCurves)
             var animationMaterials = CollectAnimationReferencedMaterials(config.gameObject);
-            foreach (var mat in animationMaterials)
-            {
-                additionalMaterials.Add(mat);
-            }
+            additionalMaterials.UnionWith(animationMaterials);
 
             // 2. Collect from component material references (MA MaterialSetter, etc.)
             var componentMaterials = CollectComponentReferencedMaterials(config.gameObject);
-            foreach (var mat in componentMaterials)
-            {
-                additionalMaterials.Add(mat);
-            }
+            additionalMaterials.UnionWith(componentMaterials);
 
             if (additionalMaterials.Count > 0)
             {
