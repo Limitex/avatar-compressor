@@ -722,6 +722,186 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region EditorOnly Skip Tests
+
+        [Test]
+        public void Collect_EditorOnlyTaggedRenderer_SkipsTextures()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyChild = CreateGameObject("EditorOnlyChild");
+            editorOnlyChild.transform.SetParent(root.transform);
+            editorOnlyChild.tag = "EditorOnly";
+
+            var renderer = editorOnlyChild.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void Collect_ParentIsEditorOnly_SkipsChildTextures()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyParent = CreateGameObject("EditorOnlyParent");
+            var child = CreateGameObject("Child");
+            editorOnlyParent.transform.SetParent(root.transform);
+            child.transform.SetParent(editorOnlyParent.transform);
+            editorOnlyParent.tag = "EditorOnly";
+
+            var renderer = child.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void Collect_GrandparentIsEditorOnly_SkipsDescendantTextures()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyGrandparent = CreateGameObject("EditorOnlyGrandparent");
+            var parent = CreateGameObject("Parent");
+            var child = CreateGameObject("Child");
+
+            editorOnlyGrandparent.transform.SetParent(root.transform);
+            parent.transform.SetParent(editorOnlyGrandparent.transform);
+            child.transform.SetParent(parent.transform);
+            editorOnlyGrandparent.tag = "EditorOnly";
+
+            var renderer = child.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void Collect_SiblingIsEditorOnly_CollectsNonEditorOnlySibling()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyChild = CreateGameObject("EditorOnlyChild");
+            var normalChild = CreateGameObject("NormalChild");
+
+            editorOnlyChild.transform.SetParent(root.transform);
+            normalChild.transform.SetParent(root.transform);
+            editorOnlyChild.tag = "EditorOnly";
+
+            var editorOnlyRenderer = editorOnlyChild.AddComponent<MeshRenderer>();
+            var normalRenderer = normalChild.AddComponent<MeshRenderer>();
+
+            var editorOnlyMaterial = CreateMaterial();
+            var normalMaterial = CreateMaterial();
+            var editorOnlyTexture = CreateTexture(128, 128);
+            var normalTexture = CreateTexture(128, 128);
+
+            editorOnlyMaterial.SetTexture("_MainTex", editorOnlyTexture);
+            normalMaterial.SetTexture("_MainTex", normalTexture);
+
+            editorOnlyRenderer.sharedMaterial = editorOnlyMaterial;
+            normalRenderer.sharedMaterial = normalMaterial;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsFalse(result.ContainsKey(editorOnlyTexture));
+            Assert.IsTrue(result.ContainsKey(normalTexture));
+        }
+
+        [Test]
+        public void Collect_InactiveEditorOnlyObject_StillSkips()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyChild = CreateGameObject("EditorOnlyChild");
+            editorOnlyChild.transform.SetParent(root.transform);
+            editorOnlyChild.tag = "EditorOnly";
+            editorOnlyChild.SetActive(false);
+
+            var renderer = editorOnlyChild.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void CollectAll_EditorOnlyTaggedRenderer_StillSkips()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyChild = CreateGameObject("EditorOnlyChild");
+            editorOnlyChild.transform.SetParent(root.transform);
+            editorOnlyChild.tag = "EditorOnly";
+
+            var renderer = editorOnlyChild.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.CollectAll(root);
+
+            // Even CollectAll should skip EditorOnly objects
+            // because they are stripped from build
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void Collect_SharedTextureBetweenEditorOnlyAndNormal_CollectsFromNormalOnly()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyChild = CreateGameObject("EditorOnlyChild");
+            var normalChild = CreateGameObject("NormalChild");
+
+            editorOnlyChild.transform.SetParent(root.transform);
+            normalChild.transform.SetParent(root.transform);
+            editorOnlyChild.tag = "EditorOnly";
+
+            var editorOnlyRenderer = editorOnlyChild.AddComponent<MeshRenderer>();
+            var normalRenderer = normalChild.AddComponent<MeshRenderer>();
+
+            var editorOnlyMaterial = CreateMaterial();
+            var normalMaterial = CreateMaterial();
+            var sharedTexture = CreateTexture(128, 128);
+
+            // Same texture used by both materials
+            editorOnlyMaterial.SetTexture("_MainTex", sharedTexture);
+            normalMaterial.SetTexture("_MainTex", sharedTexture);
+
+            editorOnlyRenderer.sharedMaterial = editorOnlyMaterial;
+            normalRenderer.sharedMaterial = normalMaterial;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(sharedTexture));
+            // Should only have 1 reference (from normal child)
+            Assert.AreEqual(1, result[sharedTexture].References.Count);
+            Assert.AreEqual(normalMaterial, result[sharedTexture].References[0].Material);
+        }
+
+        #endregion
+
         #region FrozenSkip Tests
 
         [Test]
