@@ -26,7 +26,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **TextureCompressorPass refactored** - Extracted pass logic into dedicated class
   - Better separation of concerns between plugin registration and execution
   - Improved error handling with try-catch and warning messages
+- **MaterialCloner moved** - Relocated from `Common/Services` to `TextureCompressor/Core/Services`
+  - Now part of the TextureCompressor module for better cohesion
+  - Enhanced to support cloning additional materials beyond renderer-attached ones
 - **Streaming mipmaps warning** - Now only displays once per build instead of per texture
+- **Unit tests expanded** - Added comprehensive tests for new features
+  - MaterialCollector tests (animation/component material detection, EditorOnly filtering)
+  - MaterialReference tests (equality, cloning, source tracking)
+  - ComponentUtils tests (IsEditorOnly hierarchy traversal)
+  - TextureCollector tests (EditorOnly tagged object skipping)
 
 ### Fixed
 
