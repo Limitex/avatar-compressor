@@ -10,10 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Animation-referenced material support** - Materials referenced by animations are now included in compression
-  - MaterialCloner can now clone additional materials (e.g., from animations)
-  - TextureCollector collects textures from additional materials
-  - Editor UI displays animation-referenced materials in preview with dedicated section
-  - Supports Animator components that swap materials via animation clips
+  - Uses NDMF's `AnimatorServicesContext` to detect materials in animation clips (MaterialSwap, etc.)
+  - MaterialCloner can now clone additional materials beyond renderer-attached ones
+  - TextureCollector collects textures from animation-referenced materials
+  - Animation curves are automatically updated to reference compressed textures
+- **Component-referenced material support** - Materials referenced by components (MA MaterialSetter, etc.) are now detected
+  - Scans all components' serialized properties for Material references
+  - Respects `EditorOnly` tag (excluded from collection as they are stripped from build)
+
+### Changed
+
+- **TextureCompressorPass refactored** - Extracted pass logic into dedicated class
+  - Better separation of concerns between plugin registration and execution
+  - Improved error handling with try-catch and warning messages
+- **Streaming mipmaps warning** - Now only displays once per build instead of per texture
 
 ### Fixed
 
@@ -21,13 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Ensures textures meet the 4x4 block size requirement for DXT/BC compression formats
   - Prevents potential texture corruption from undersized dimensions
 - **Frozen texture skip handling** - Skipped frozen textures now display correctly in preview
-  - Textures with "Skip" setting are properly shown as skipped in the texture list
-
-### Changed
-
-- **TextureCompressorPass refactored** - Improved robustness and maintainability
-  - Extracted pass logic into dedicated `TextureCompressorPass` class
-  - Better separation of concerns between plugin registration and execution
 
 ## [v0.3.4] - 2026-01-06
 
