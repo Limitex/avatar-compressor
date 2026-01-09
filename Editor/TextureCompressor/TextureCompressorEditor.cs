@@ -1164,6 +1164,9 @@ namespace dev.limitex.avatar.compressor.texture.editor
             {
                 if (component == null) continue;
 
+                // Skip EditorOnly tagged objects (stripped from build)
+                if (component.gameObject.CompareTag("EditorOnly")) continue;
+
                 // Skip Renderer components (already handled by TextureCollector)
                 if (component is Renderer) continue;
 
