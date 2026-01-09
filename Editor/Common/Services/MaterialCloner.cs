@@ -13,21 +13,11 @@ namespace dev.limitex.avatar.compressor.common
         /// Clones all materials in the hierarchy to allow safe modification.
         /// </summary>
         /// <param name="root">Root GameObject of the hierarchy</param>
-        /// <returns>Dictionary mapping original materials to cloned materials</returns>
-        public static Dictionary<Material, Material> CloneMaterials(GameObject root)
-        {
-            return CloneMaterials(root, null);
-        }
-
-        /// <summary>
-        /// Clones all materials in the hierarchy and additional materials to allow safe modification.
-        /// </summary>
-        /// <param name="root">Root GameObject of the hierarchy</param>
         /// <param name="additionalMaterials">Additional materials to clone (e.g., from animations)</param>
         /// <returns>Dictionary mapping original materials to cloned materials</returns>
         public static Dictionary<Material, Material> CloneMaterials(
             GameObject root,
-            IEnumerable<Material> additionalMaterials)
+            IEnumerable<Material> additionalMaterials = null)
         {
             var renderers = root.GetComponentsInChildren<Renderer>(true);
             var clonedMaterials = new Dictionary<Material, Material>();
