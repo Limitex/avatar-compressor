@@ -86,7 +86,7 @@ namespace dev.limitex.avatar.compressor.texture
                     ? " [FROZEN]"
                     : "";
                 Debug.Log($"[TextureCompressor] {source.name}: " +
-                          $"{source.width}x{source.height} → " +
+                          $"{source.width}x{source.height} -> " +
                           $"{result.width}x{result.height} ({format}){frozenInfo} " +
                           $"(Complexity: {analysis.NormalizedComplexity:P0}, " +
                           $"Divisor: {analysis.RecommendedDivisor}x)");
@@ -104,7 +104,7 @@ namespace dev.limitex.avatar.compressor.texture
         /// DXT (S3TC) and BC (BPTC) compression formats operate on 4x4 pixel blocks.
         /// Textures with dimensions not divisible by 4 may cause compression artifacts
         /// or failures. This method ensures all dimensions are compatible by rounding up.
-        /// <para>Examples: 1→4, 5→8, 150→152, 256→256</para>
+        /// <para>Examples: 1->4, 5->8, 150->152, 256->256</para>
         /// </remarks>
         private static int EnsureMultipleOf4(int dimension)
         {
@@ -127,9 +127,9 @@ namespace dev.limitex.avatar.compressor.texture
         /// <para>
         /// Examples (with minResolution=32, maxResolution=2048, forcePowerOfTwo=false):
         /// <list type="bullet">
-        /// <item><description>300x300, divisor=2 → 152x152 (150 rounded up to nearest multiple of 4)</description></item>
-        /// <item><description>400x400, divisor=2 → 200x200 (already a multiple of 4)</description></item>
-        /// <item><description>100x100, divisor=4 → 32x32 (25 clamped to minResolution 32)</description></item>
+        /// <item><description>300x300, divisor=2 -> 152x152 (150 rounded up to nearest multiple of 4)</description></item>
+        /// <item><description>400x400, divisor=2 -> 200x200 (already a multiple of 4)</description></item>
+        /// <item><description>100x100, divisor=4 -> 32x32 (25 clamped to minResolution 32)</description></item>
         /// </list>
         /// </para>
         /// </remarks>

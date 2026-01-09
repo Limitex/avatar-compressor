@@ -81,7 +81,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void CalculateNewDimensions_WithoutForcePowerOfTwo_ReturnsMultipleOf4()
         {
             // Without forcePowerOfTwo, dimensions are still rounded to multiples of 4
-            // for DXT/BC compression compatibility. 300/2=150, rounded up to 152 (38*4)
+            // for DXT/BC compression compatibility. 300/2=150, rounded up to 152 (next multiple of 4)
             var resizerNoPow2 = new TextureProcessor(32, 2048, false);
             var result = resizerNoPow2.CalculateNewDimensions(300, 300, 2);
             Assert.AreEqual(152, result.x);
