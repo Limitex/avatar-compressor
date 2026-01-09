@@ -78,6 +78,9 @@ namespace dev.limitex.avatar.compressor.texture
 
             foreach (var renderer in renderers)
             {
+                // Skip EditorOnly tagged objects (stripped from build)
+                if (renderer.gameObject.CompareTag("EditorOnly")) continue;
+
                 var materials = renderer.sharedMaterials;
                 foreach (var material in materials)
                 {
