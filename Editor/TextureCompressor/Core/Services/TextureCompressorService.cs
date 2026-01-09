@@ -156,11 +156,9 @@ namespace dev.limitex.avatar.compressor.texture
             // Collect textures from Renderers (now using cloned materials)
             var textures = _collector.Collect(root);
 
-            // Collect textures from additional materials (using cloned versions)
-            // We must use cloned materials here, not originals, because:
+            // Collect textures from additional materials using cloned versions, because:
             // 1. Animation curves will be rewritten to point to cloned materials
             // 2. Texture references need to be updated on cloned materials
-            // 3. Using originals would leave cloned materials with uncompressed textures
             if (additionalMaterials != null)
             {
                 var clonedAdditionalMaterials = new List<Material>();
@@ -246,8 +244,7 @@ namespace dev.limitex.avatar.compressor.texture
                 var compressedTexture = _processor.Resize(originalTexture, analysis, enableLogging, textureInfo.IsNormalMap, formatOverride);
                 compressedTexture.name = originalTexture.name + "_compressed";
 
-                // Enable mipmap streaming for the newly created texture
-                // This is required to avoid NDMF warnings about streaming mipmaps
+                // Enable mipmap streaming to avoid NDMF warnings
                 var serializedTexture = new SerializedObject(compressedTexture);
                 var streamingMipmaps = serializedTexture.FindProperty("m_StreamingMipmaps");
                 if (streamingMipmaps != null)

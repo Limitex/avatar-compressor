@@ -110,8 +110,6 @@ namespace dev.limitex.avatar.compressor.texture
             foreach (var material in materials.Distinct())
             {
                 if (material == null) continue;
-                // Note: renderer is null for animation-referenced materials since they are not
-                // associated with a specific Renderer (used in MaterialSwap, etc.)
                 CollectFromMaterial(material, null, textures, collectAll);
             }
         }

@@ -22,7 +22,6 @@ namespace dev.limitex.avatar.compressor.common
             var renderers = root.GetComponentsInChildren<Renderer>(true);
             var clonedMaterials = new Dictionary<Material, Material>();
 
-            // Clone materials from renderers
             foreach (var renderer in renderers)
             {
                 var originalMaterials = renderer.sharedMaterials;
@@ -43,7 +42,6 @@ namespace dev.limitex.avatar.compressor.common
                 renderer.sharedMaterials = newMaterials;
             }
 
-            // Clone additional materials (e.g., from animations)
             if (additionalMaterials != null)
             {
                 foreach (var material in additionalMaterials)
