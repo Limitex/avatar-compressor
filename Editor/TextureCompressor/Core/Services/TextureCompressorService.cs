@@ -84,7 +84,7 @@ namespace dev.limitex.avatar.compressor.texture
 
         /// <summary>
         /// Compresses textures in the avatar hierarchy (ICompressor interface).
-        /// Does not process animation-referenced materials.
+        /// Only processes materials on Renderers.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -103,7 +103,9 @@ namespace dev.limitex.avatar.compressor.texture
             // Warn if materials are linked to asset files (indicates non-build context usage)
             WarnIfNotInBuildContext(root);
 
-            CompressWithAnimationSupport(root, enableLogging, null);
+            // Collect only Renderer materials for ICompressor interface
+            var references = MaterialCollector.CollectFromRenderers(root);
+            CompressWithMappings(references, enableLogging);
         }
 
         /// <summary>
@@ -137,51 +139,24 @@ namespace dev.limitex.avatar.compressor.texture
         }
 
         /// <summary>
-        /// Compresses textures in the avatar hierarchy with additional materials from animations.
-        /// This is an extended version used by TextureCompressorPass for NDMF integration.
-        /// Unlike the ICompressor.Compress method, this returns mappings needed for animation curve updates.
+        /// Compresses textures from the given material references and returns mapping information.
         /// </summary>
-        /// <param name="root">Avatar root GameObject</param>
+        /// <param name="materialReferences">Material references to process (from Renderers, animations, components, etc.)</param>
         /// <param name="enableLogging">Whether to log progress</param>
-        /// <param name="additionalMaterials">Additional materials to process (e.g., from animations)</param>
-        /// <returns>Tuple containing processed textures and cloned materials mappings for animation curve updates</returns>
-        public (Dictionary<Texture2D, Texture2D> ProcessedTextures, Dictionary<Material, Material> ClonedMaterials) CompressWithAnimationSupport(
-            GameObject root,
-            bool enableLogging,
-            IEnumerable<Material> additionalMaterials)
+        /// <returns>Tuple containing original-to-compressed texture mappings and original-to-cloned material mappings</returns>
+        public (Dictionary<Texture2D, Texture2D> ProcessedTextures, Dictionary<Material, Material> ClonedMaterials) CompressWithMappings(
+            IEnumerable<MaterialReference> materialReferences,
+            bool enableLogging)
         {
-            // Clone all materials: renderer materials + additional materials (e.g., from animations)
-            var clonedMaterials = MaterialCloner.CloneMaterials(root, additionalMaterials);
+            var referenceList = materialReferences.ToList();
 
-            // Collect textures from Renderers (now using cloned materials)
-            var textures = _collector.Collect(root);
+            // Clone all materials and update Renderer references
+            var clonedMaterials = MaterialCloner.CloneAndReplace(referenceList);
 
-            // Collect textures from additional materials using cloned versions, because:
-            // 1. Animation curves will be rewritten to point to cloned materials
-            // 2. Texture references need to be updated on cloned materials
-            if (additionalMaterials != null)
-            {
-                var clonedAdditionalMaterials = new List<Material>();
-                foreach (var originalMat in additionalMaterials)
-                {
-                    if (originalMat == null) continue;
-
-                    if (clonedMaterials.TryGetValue(originalMat, out var clonedMat))
-                    {
-                        clonedAdditionalMaterials.Add(clonedMat);
-                    }
-                    else
-                    {
-                        // This should not happen as MaterialCloner.CloneMaterials receives
-                        // the same additionalMaterials list. Log warning and skip.
-                        Debug.LogWarning(
-                            $"[{Name}] Internal error: Material '{originalMat.name}' should have been cloned " +
-                            "but wasn't found in clonedMaterials dictionary. Skipping.");
-                    }
-                }
-
-                _collector.CollectFromMaterials(clonedAdditionalMaterials, textures);
-            }
+            // Collect textures from cloned materials
+            var clonedMaterialList = clonedMaterials.Values.ToList();
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            _collector.CollectFromMaterials(clonedMaterialList, textures);
 
             if (textures.Count == 0)
             {

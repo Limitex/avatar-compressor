@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -557,24 +558,26 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region Additional Materials Tests
+        #region MaterialReference Tests
 
         [Test]
-        public void Compress_WithAdditionalMaterials_ReturnsProcessedTextures()
+        public void CompressWithMappings_WithAnimationMaterialReferences_ReturnsProcessedTextures()
         {
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
             var service = new TextureCompressorService(config);
 
-            var root = CreateGameObject("Root");
-
             var additionalMaterial = CreateMaterial();
             var texture = CreateTexture(256, 256);
             additionalMaterial.SetTexture("_MainTex", texture);
 
-            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
-                root, false, new Material[] { additionalMaterial });
+            var references = new List<MaterialReference>
+            {
+                MaterialReference.FromAnimation(additionalMaterial, null)
+            };
+
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
 
             Assert.IsNotNull(processedTextures);
             Assert.IsNotNull(clonedMaterials);
@@ -593,7 +596,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CompressWithAnimationSupport_WithNullAdditionalMaterials_CompletesSuccessfully()
+        public void CompressWithMappings_WithRendererReferences_CompletesSuccessfully()
         {
             var config = CreateConfig();
             config.MinSourceSize = 64;
@@ -607,7 +610,8 @@ namespace dev.limitex.avatar.compressor.tests
             material.SetTexture("_MainTex", texture);
             renderer.sharedMaterial = material;
 
-            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(root, false, null);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
 
             Assert.IsNotNull(processedTextures);
             Assert.IsNotNull(clonedMaterials);
@@ -622,22 +626,24 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CompressWithAnimationSupport_WithAdditionalMaterials_ClonesAdditionalMaterials()
+        public void CompressWithMappings_WithAnimationReferences_ClonesAnimationMaterials()
         {
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
             var service = new TextureCompressorService(config);
 
-            var root = CreateGameObject("Root");
-
             var additionalMaterial = CreateMaterial();
             additionalMaterial.name = "AdditionalMaterial";
             var texture = CreateTexture(256, 256);
             additionalMaterial.SetTexture("_MainTex", texture);
 
-            var (_, clonedMaterials) = service.CompressWithAnimationSupport(
-                root, false, new Material[] { additionalMaterial });
+            var references = new List<MaterialReference>
+            {
+                MaterialReference.FromAnimation(additionalMaterial, null)
+            };
+
+            var (_, clonedMaterials) = service.CompressWithMappings(references, false);
 
             Assert.AreEqual(1, clonedMaterials.Count);
             Assert.IsTrue(clonedMaterials.ContainsKey(additionalMaterial));
@@ -653,21 +659,23 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CompressWithAnimationSupport_WithAdditionalMaterials_UpdatesTextureOnClonedMaterial()
+        public void CompressWithMappings_WithAnimationReferences_UpdatesTextureOnClonedMaterial()
         {
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
             var service = new TextureCompressorService(config);
 
-            var root = CreateGameObject("Root");
-
             var additionalMaterial = CreateMaterial();
             var originalTexture = CreateTexture(256, 256);
             additionalMaterial.SetTexture("_MainTex", originalTexture);
 
-            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
-                root, false, new Material[] { additionalMaterial });
+            var references = new List<MaterialReference>
+            {
+                MaterialReference.FromAnimation(additionalMaterial, null)
+            };
+
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
 
             var clonedMaterial = clonedMaterials[additionalMaterial];
             var textureOnClonedMaterial = clonedMaterial.GetTexture("_MainTex") as Texture2D;
@@ -688,7 +696,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CompressWithAnimationSupport_MixedRendererAndAdditionalMaterials_ProcessesAll()
+        public void CompressWithMappings_MixedRendererAndAnimationReferences_ProcessesAll()
         {
             var config = CreateConfig();
             config.MinSourceSize = 64;
@@ -706,8 +714,11 @@ namespace dev.limitex.avatar.compressor.tests
             var additionalTexture = CreateTexture(256, 256);
             additionalMaterial.SetTexture("_MainTex", additionalTexture);
 
-            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
-                root, false, new Material[] { additionalMaterial });
+            var references = new List<MaterialReference>();
+            references.AddRange(MaterialCollector.CollectFromRenderers(root));
+            references.Add(MaterialReference.FromAnimation(additionalMaterial, null));
+
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
 
             Assert.AreEqual(2, processedTextures.Count);
             Assert.AreEqual(2, clonedMaterials.Count);
@@ -726,7 +737,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CompressWithAnimationSupport_SharedTextureBetweenRendererAndAdditional_ProcessesOnce()
+        public void CompressWithMappings_SharedTextureBetweenRendererAndAnimation_ProcessesOnce()
         {
             var config = CreateConfig();
             config.MinSourceSize = 64;
@@ -743,8 +754,11 @@ namespace dev.limitex.avatar.compressor.tests
             var additionalMaterial = CreateMaterial();
             additionalMaterial.SetTexture("_MainTex", sharedTexture);
 
-            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
-                root, false, new Material[] { additionalMaterial });
+            var references = new List<MaterialReference>();
+            references.AddRange(MaterialCollector.CollectFromRenderers(root));
+            references.Add(MaterialReference.FromAnimation(additionalMaterial, null));
+
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
 
             // Same texture should be processed only once
             Assert.AreEqual(1, processedTextures.Count);
@@ -770,48 +784,38 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CompressWithAnimationSupport_EmptyAdditionalMaterials_ProcessesOnlyRendererMaterials()
+        public void CompressWithMappings_EmptyReferences_ReturnsEmptyResults()
         {
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
             var service = new TextureCompressorService(config);
 
-            var root = CreateGameObject("Root");
-            var renderer = root.AddComponent<MeshRenderer>();
-            var material = CreateMaterial();
-            var texture = CreateTexture(256, 256);
-            material.SetTexture("_MainTex", texture);
-            renderer.sharedMaterial = material;
+            var references = new List<MaterialReference>();
 
-            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
-                root, false, new Material[0]);
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
 
-            Assert.AreEqual(1, processedTextures.Count);
-            Assert.AreEqual(1, clonedMaterials.Count);
-
-            // Clean up
-            foreach (var kvp in processedTextures)
-            {
-                _createdObjects.Add(kvp.Value);
-            }
+            Assert.AreEqual(0, processedTextures.Count);
+            Assert.AreEqual(0, clonedMaterials.Count);
         }
 
         [Test]
-        public void CompressWithAnimationSupport_NoTexturesFromAdditionalMaterials_ReturnsEmptyProcessedTextures()
+        public void CompressWithMappings_NoTexturesFromReferences_ReturnsEmptyProcessedTextures()
         {
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
             var service = new TextureCompressorService(config);
 
-            var root = CreateGameObject("Root");
-
-            // Additional material without textures
+            // Material without textures
             var additionalMaterial = CreateMaterial();
 
-            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
-                root, false, new Material[] { additionalMaterial });
+            var references = new List<MaterialReference>
+            {
+                MaterialReference.FromAnimation(additionalMaterial, null)
+            };
+
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
 
             Assert.AreEqual(0, processedTextures.Count);
             Assert.AreEqual(1, clonedMaterials.Count);

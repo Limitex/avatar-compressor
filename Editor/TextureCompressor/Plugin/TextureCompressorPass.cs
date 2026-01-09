@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using dev.limitex.avatar.compressor.common;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.animator;
@@ -26,15 +25,14 @@ namespace dev.limitex.avatar.compressor.texture
 
             var config = components[0];
 
-            // Get animation-referenced materials from AnimatorServicesContext
-            var animationMaterials = GetAnimationReferencedMaterials(ctx);
+            // Collect all material references using MaterialCollector
+            var materialReferences = MaterialCollector.CollectAll(ctx);
 
             // Create service and compress textures
             var service = new TextureCompressorService(config);
-            var (processedTextures, clonedMaterials) = service.CompressWithAnimationSupport(
-                ctx.AvatarRootObject,
-                config.EnableLogging,
-                animationMaterials);
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(
+                materialReferences,
+                config.EnableLogging);
 
             // Update animation curves with replaced materials and textures
             UpdateAnimationReferences(ctx, processedTextures, clonedMaterials);
@@ -67,36 +65,6 @@ namespace dev.limitex.avatar.compressor.texture
                         "It is recommended to place the component on the avatar root GameObject.",
                         component);
                 }
-            }
-        }
-
-        /// <summary>
-        /// Gets materials referenced by animations (MaterialSwap, etc.) from AnimatorServicesContext.
-        /// </summary>
-        private static List<Material> GetAnimationReferencedMaterials(BuildContext ctx)
-        {
-            try
-            {
-                // Activate the AnimatorServicesContext extension before accessing it
-                ctx.ActivateExtensionContextRecursive<AnimatorServicesContext>();
-
-                var animatorServices = ctx.Extension<AnimatorServicesContext>();
-                if (animatorServices?.AnimationIndex == null)
-                {
-                    return new List<Material>();
-                }
-
-                return animatorServices.AnimationIndex.GetPPtrReferencedObjects
-                    .OfType<Material>()
-                    .Distinct()
-                    .ToList();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning(
-                    $"[LAC Texture Compressor] Failed to get animation-referenced materials: {ex.Message}. " +
-                    "Animation materials will not be processed.");
-                return new List<Material>();
             }
         }
 

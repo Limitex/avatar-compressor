@@ -1,13 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using dev.limitex.avatar.compressor.common;
 using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.texture;
 using nadena.dev.ndmf.runtime;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEditor;
-using UnityEditor.Animations;
 
 namespace dev.limitex.avatar.compressor.texture.editor
 {
@@ -622,18 +620,13 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             var allTextures = collector.CollectAll(config.gameObject);
 
-            // Collect additional materials from various sources
-            var additionalMaterials = new HashSet<Material>();
+            // Collect additional materials from animations and components using MaterialCollector
+            var additionalMaterialRefs = new List<MaterialReference>();
+            additionalMaterialRefs.AddRange(MaterialCollector.CollectFromAnimator(config.gameObject));
+            additionalMaterialRefs.AddRange(MaterialCollector.CollectFromComponents(config.gameObject));
 
-            // 1. Collect from animation-referenced materials (AnimationClip ObjectReferenceCurves)
-            var animationMaterials = CollectAnimationReferencedMaterials(config.gameObject);
-            additionalMaterials.UnionWith(animationMaterials);
-
-            // 2. Collect from component material references (MA MaterialSetter, etc.)
-            var componentMaterials = CollectComponentReferencedMaterials(config.gameObject);
-            additionalMaterials.UnionWith(componentMaterials);
-
-            if (additionalMaterials.Count > 0)
+            var additionalMaterials = MaterialCollector.GetDistinctMaterials(additionalMaterialRefs);
+            if (additionalMaterials.Any())
             {
                 // Use collectAll: true to include skipped textures in preview
                 collector.CollectFromMaterials(additionalMaterials, allTextures, collectAll: true);
@@ -1150,193 +1143,5 @@ namespace dev.limitex.avatar.compressor.texture.editor
             };
         }
 
-        /// <summary>
-        /// Collects materials referenced by components (MA MaterialSetter, etc.) in the avatar hierarchy.
-        /// Scans all components' serialized properties for Material references.
-        /// </summary>
-        private static List<Material> CollectComponentReferencedMaterials(GameObject root)
-        {
-            var materials = new HashSet<Material>();
-
-            // Get all components in the hierarchy (excluding Renderer which is handled separately)
-            var allComponents = root.GetComponentsInChildren<Component>(true);
-
-            foreach (var component in allComponents)
-            {
-                if (component == null) continue;
-
-                // Skip EditorOnly tagged objects (stripped from build)
-                if (ComponentUtils.IsEditorOnly(component.gameObject)) continue;
-
-                // Skip Renderer components (already handled by TextureCollector)
-                if (component is Renderer) continue;
-
-                // Use SerializedObject to find all Material references
-                try
-                {
-                    var serializedObject = new SerializedObject(component);
-                    var iterator = serializedObject.GetIterator();
-
-                    while (iterator.NextVisible(true))
-                    {
-                        // Check for direct Material reference
-                        if (iterator.propertyType == SerializedPropertyType.ObjectReference)
-                        {
-                            var obj = iterator.objectReferenceValue;
-                            if (obj is Material material && material != null)
-                            {
-                                materials.Add(material);
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // Ignore errors from components that can't be serialized
-                }
-            }
-
-            return materials.ToList();
-        }
-
-        /// <summary>
-        /// Collects materials referenced by animations (MaterialSwap, etc.) from the avatar's AnimatorController.
-        /// This is used for preview without NDMF context.
-        /// </summary>
-        private static List<Material> CollectAnimationReferencedMaterials(GameObject root)
-        {
-            var materials = new HashSet<Material>();
-
-            // Get Animator component
-            var animator = root.GetComponent<Animator>();
-            if (animator == null || animator.runtimeAnimatorController == null)
-            {
-                return new List<Material>();
-            }
-
-            // Get all animation clips from the controller
-            var clips = GetAllAnimationClips(animator.runtimeAnimatorController);
-
-            foreach (var clip in clips)
-            {
-                if (clip == null) continue;
-
-                // Get object reference curve bindings (these contain material references)
-                var bindings = AnimationUtility.GetObjectReferenceCurveBindings(clip);
-
-                foreach (var binding in bindings)
-                {
-                    var keyframes = AnimationUtility.GetObjectReferenceCurve(clip, binding);
-                    foreach (var keyframe in keyframes)
-                    {
-                        if (keyframe.value is Material material && material != null)
-                        {
-                            materials.Add(material);
-                        }
-                    }
-                }
-            }
-
-            return materials.ToList();
-        }
-
-        /// <summary>
-        /// Gets all animation clips from a runtime animator controller, including those in sub-state machines.
-        /// </summary>
-        private static List<AnimationClip> GetAllAnimationClips(RuntimeAnimatorController controller)
-        {
-            var clips = new HashSet<AnimationClip>();
-
-            // Handle AnimatorOverrideController
-            if (controller is AnimatorOverrideController overrideController)
-            {
-                // Get clips from the override controller
-                var overrides = new List<KeyValuePair<AnimationClip, AnimationClip>>(overrideController.overridesCount);
-                overrideController.GetOverrides(overrides);
-
-                foreach (var pair in overrides)
-                {
-                    if (pair.Value != null)
-                        clips.Add(pair.Value);
-                    else if (pair.Key != null)
-                        clips.Add(pair.Key);
-                }
-
-                // Also check the base controller
-                if (overrideController.runtimeAnimatorController != null)
-                {
-                    foreach (var clip in GetAllAnimationClips(overrideController.runtimeAnimatorController))
-                    {
-                        clips.Add(clip);
-                    }
-                }
-            }
-            // Handle AnimatorController (editor-only type)
-            else if (controller is AnimatorController animatorController)
-            {
-                foreach (var layer in animatorController.layers)
-                {
-                    CollectClipsFromStateMachine(layer.stateMachine, clips);
-                }
-            }
-            else
-            {
-                // Fallback: use animationClips property
-                foreach (var clip in controller.animationClips)
-                {
-                    if (clip != null)
-                        clips.Add(clip);
-                }
-            }
-
-            return clips.ToList();
-        }
-
-        /// <summary>
-        /// Recursively collects animation clips from a state machine and its sub-state machines.
-        /// </summary>
-        private static void CollectClipsFromStateMachine(AnimatorStateMachine stateMachine, HashSet<AnimationClip> clips)
-        {
-            if (stateMachine == null) return;
-
-            // Collect clips from states
-            foreach (var state in stateMachine.states)
-            {
-                if (state.state?.motion is AnimationClip clip)
-                {
-                    clips.Add(clip);
-                }
-                else if (state.state?.motion is BlendTree blendTree)
-                {
-                    CollectClipsFromBlendTree(blendTree, clips);
-                }
-            }
-
-            // Recursively collect from sub-state machines
-            foreach (var subStateMachine in stateMachine.stateMachines)
-            {
-                CollectClipsFromStateMachine(subStateMachine.stateMachine, clips);
-            }
-        }
-
-        /// <summary>
-        /// Recursively collects animation clips from a blend tree.
-        /// </summary>
-        private static void CollectClipsFromBlendTree(BlendTree blendTree, HashSet<AnimationClip> clips)
-        {
-            if (blendTree == null) return;
-
-            foreach (var child in blendTree.children)
-            {
-                if (child.motion is AnimationClip clip)
-                {
-                    clips.Add(clip);
-                }
-                else if (child.motion is BlendTree childBlendTree)
-                {
-                    CollectClipsFromBlendTree(childBlendTree, clips);
-                }
-            }
-        }
     }
 }
