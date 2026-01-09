@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using dev.limitex.avatar.compressor.common;
 using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.texture;
 using nadena.dev.ndmf.runtime;
@@ -1165,7 +1166,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 if (component == null) continue;
 
                 // Skip EditorOnly tagged objects (stripped from build)
-                if (component.gameObject.CompareTag("EditorOnly")) continue;
+                if (ComponentUtils.IsEditorOnly(component.gameObject)) continue;
 
                 // Skip Renderer components (already handled by TextureCollector)
                 if (component is Renderer) continue;

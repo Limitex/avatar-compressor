@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using dev.limitex.avatar.compressor.common;
 using UnityEngine;
 using UnityEditor;
 
@@ -79,7 +80,7 @@ namespace dev.limitex.avatar.compressor.texture
             foreach (var renderer in renderers)
             {
                 // Skip EditorOnly tagged objects (stripped from build)
-                if (renderer.gameObject.CompareTag("EditorOnly")) continue;
+                if (ComponentUtils.IsEditorOnly(renderer.gameObject)) continue;
 
                 var materials = renderer.sharedMaterials;
                 foreach (var material in materials)
