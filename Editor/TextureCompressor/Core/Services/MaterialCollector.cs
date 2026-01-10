@@ -18,6 +18,11 @@ namespace dev.limitex.avatar.compressor.texture
         /// <summary>
         /// Collects all materials from Renderer components in the hierarchy.
         /// </summary>
+        /// <remarks>
+        /// This method is kept separate from <see cref="CollectFromComponents"/> for performance reasons.
+        /// Direct access to <see cref="Renderer.sharedMaterials"/> is significantly faster than
+        /// iterating through all properties via <see cref="UnityEditor.SerializedObject"/>.
+        /// </remarks>
         /// <param name="root">Root GameObject of the hierarchy</param>
         /// <returns>List of material references from Renderers</returns>
         public static List<MaterialReference> CollectFromRenderers(GameObject root)
@@ -30,13 +35,11 @@ namespace dev.limitex.avatar.compressor.texture
                 if (renderer == null) continue;
                 if (ComponentUtils.IsEditorOnly(renderer.gameObject)) continue;
 
-                var materials = renderer.sharedMaterials;
-                for (int i = 0; i < materials.Length; i++)
+                foreach (var material in renderer.sharedMaterials)
                 {
-                    var material = materials[i];
                     if (material == null) continue;
 
-                    references.Add(MaterialReference.FromRenderer(material, renderer, i));
+                    references.Add(MaterialReference.FromRenderer(material, renderer));
                 }
             }
 
@@ -128,6 +131,11 @@ namespace dev.limitex.avatar.compressor.texture
         /// <summary>
         /// Collects materials referenced by components (e.g., MA MaterialSetter) in the hierarchy.
         /// </summary>
+        /// <remarks>
+        /// Renderer components are skipped because they are handled by <see cref="CollectFromRenderers"/>,
+        /// which provides faster direct access to materials. This avoids duplicate collection and
+        /// leverages the performance benefit of direct property access over SerializedObject iteration.
+        /// </remarks>
         /// <param name="root">Root GameObject of the hierarchy</param>
         /// <returns>List of material references from components</returns>
         public static List<MaterialReference> CollectFromComponents(GameObject root)

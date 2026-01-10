@@ -37,36 +37,29 @@ namespace dev.limitex.avatar.compressor.texture
         public Object SourceObject { get; }
 
         /// <summary>
-        /// The index of the material slot (for Renderer sources).
-        /// -1 if not applicable.
-        /// </summary>
-        public int SlotIndex { get; }
-
-        /// <summary>
         /// Creates a new MaterialReference.
         /// </summary>
         /// <param name="material">The referenced material</param>
         /// <param name="sourceType">The type of source</param>
         /// <param name="sourceObject">The object that references this material</param>
-        /// <param name="slotIndex">The material slot index (-1 if not applicable)</param>
         public MaterialReference(
             Material material,
             MaterialSourceType sourceType,
-            Object sourceObject,
-            int slotIndex = -1)
+            Object sourceObject)
         {
             Material = material;
             SourceType = sourceType;
             SourceObject = sourceObject;
-            SlotIndex = slotIndex;
         }
 
         /// <summary>
         /// Creates a MaterialReference for a Renderer source.
         /// </summary>
-        public static MaterialReference FromRenderer(Material material, Renderer renderer, int slotIndex)
+        /// <param name="material">The material</param>
+        /// <param name="renderer">The renderer that references this material</param>
+        public static MaterialReference FromRenderer(Material material, Renderer renderer)
         {
-            return new MaterialReference(material, MaterialSourceType.Renderer, renderer, slotIndex);
+            return new MaterialReference(material, MaterialSourceType.Renderer, renderer);
         }
 
         /// <summary>

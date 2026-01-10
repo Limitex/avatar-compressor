@@ -40,27 +40,11 @@ namespace dev.limitex.avatar.compressor.tests
             var reference = new MaterialReference(
                 material,
                 MaterialSourceType.Renderer,
-                sourceObject,
-                2);
+                sourceObject);
 
             Assert.AreEqual(material, reference.Material);
             Assert.AreEqual(MaterialSourceType.Renderer, reference.SourceType);
             Assert.AreEqual(sourceObject, reference.SourceObject);
-            Assert.AreEqual(2, reference.SlotIndex);
-        }
-
-        [Test]
-        public void Constructor_WithDefaultSlotIndex_SetsToMinusOne()
-        {
-            var material = CreateMaterial();
-            var sourceObject = CreateGameObject("SourceObject");
-
-            var reference = new MaterialReference(
-                material,
-                MaterialSourceType.Animation,
-                sourceObject);
-
-            Assert.AreEqual(-1, reference.SlotIndex);
         }
 
         [Test]
@@ -100,24 +84,11 @@ namespace dev.limitex.avatar.compressor.tests
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
 
-            var reference = MaterialReference.FromRenderer(material, renderer, 0);
+            var reference = MaterialReference.FromRenderer(material, renderer);
 
             Assert.AreEqual(material, reference.Material);
             Assert.AreEqual(MaterialSourceType.Renderer, reference.SourceType);
             Assert.AreEqual(renderer, reference.SourceObject);
-            Assert.AreEqual(0, reference.SlotIndex);
-        }
-
-        [Test]
-        public void FromRenderer_WithDifferentSlotIndex_SetsCorrectIndex()
-        {
-            var material = CreateMaterial();
-            var root = CreateGameObject("Root");
-            var renderer = root.AddComponent<MeshRenderer>();
-
-            var reference = MaterialReference.FromRenderer(material, renderer, 3);
-
-            Assert.AreEqual(3, reference.SlotIndex);
         }
 
         [Test]
@@ -125,7 +96,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var material = CreateMaterial();
 
-            var reference = MaterialReference.FromRenderer(material, null, 0);
+            var reference = MaterialReference.FromRenderer(material, null);
 
             Assert.IsNull(reference.SourceObject);
             Assert.AreEqual(MaterialSourceType.Renderer, reference.SourceType);
@@ -138,10 +109,10 @@ namespace dev.limitex.avatar.compressor.tests
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<SkinnedMeshRenderer>();
 
-            var reference = MaterialReference.FromRenderer(material, renderer, 1);
+            var reference = MaterialReference.FromRenderer(material, renderer);
 
             Assert.AreEqual(renderer, reference.SourceObject);
-            Assert.AreEqual(1, reference.SlotIndex);
+            Assert.AreEqual(MaterialSourceType.Renderer, reference.SourceType);
         }
 
         #endregion
@@ -160,7 +131,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(material, reference.Material);
             Assert.AreEqual(MaterialSourceType.Animation, reference.SourceType);
             Assert.AreEqual(animationClip, reference.SourceObject);
-            Assert.AreEqual(-1, reference.SlotIndex);
         }
 
         [Test]
@@ -173,16 +143,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(material, reference.Material);
             Assert.AreEqual(MaterialSourceType.Animation, reference.SourceType);
             Assert.IsNull(reference.SourceObject);
-        }
-
-        [Test]
-        public void FromAnimation_SlotIndexIsAlwaysMinusOne()
-        {
-            var material = CreateMaterial();
-
-            var reference = MaterialReference.FromAnimation(material, null);
-
-            Assert.AreEqual(-1, reference.SlotIndex);
         }
 
         #endregion
@@ -201,7 +161,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(material, reference.Material);
             Assert.AreEqual(MaterialSourceType.Component, reference.SourceType);
             Assert.AreEqual(component, reference.SourceObject);
-            Assert.AreEqual(-1, reference.SlotIndex);
         }
 
         [Test]
@@ -213,18 +172,6 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.IsNull(reference.SourceObject);
             Assert.AreEqual(MaterialSourceType.Component, reference.SourceType);
-        }
-
-        [Test]
-        public void FromComponent_SlotIndexIsAlwaysMinusOne()
-        {
-            var material = CreateMaterial();
-            var root = CreateGameObject("Root");
-            var component = root.AddComponent<BoxCollider>();
-
-            var reference = MaterialReference.FromComponent(material, component);
-
-            Assert.AreEqual(-1, reference.SlotIndex);
         }
 
         #endregion

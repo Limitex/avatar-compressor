@@ -126,19 +126,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(renderer, result[0].SourceObject);
         }
 
-        [Test]
-        public void CollectFromRenderers_SingleMaterial_HasCorrectSlotIndex()
-        {
-            var root = CreateGameObject("Root");
-            var renderer = root.AddComponent<MeshRenderer>();
-            var material = CreateMaterial();
-            renderer.sharedMaterial = material;
-
-            var result = MaterialCollector.CollectFromRenderers(root);
-
-            Assert.AreEqual(0, result[0].SlotIndex);
-        }
-
         #endregion
 
         #region CollectFromRenderers - Multiple Materials Tests
@@ -162,21 +149,6 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CollectFromRenderers_MultipleMaterialsOnSameRenderer_CorrectSlotIndices()
-        {
-            var root = CreateGameObject("Root");
-            var renderer = root.AddComponent<MeshRenderer>();
-            var material1 = CreateMaterial();
-            var material2 = CreateMaterial();
-            renderer.sharedMaterials = new Material[] { material1, material2 };
-
-            var result = MaterialCollector.CollectFromRenderers(root);
-
-            Assert.AreEqual(0, result[0].SlotIndex);
-            Assert.AreEqual(1, result[1].SlotIndex);
-        }
-
-        [Test]
         public void CollectFromRenderers_MultipleMaterialsWithNulls_SkipsNulls()
         {
             var root = CreateGameObject("Root");
@@ -189,9 +161,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(2, result.Count);
             Assert.AreEqual(material1, result[0].Material);
-            Assert.AreEqual(0, result[0].SlotIndex);
             Assert.AreEqual(material2, result[1].Material);
-            Assert.AreEqual(2, result[1].SlotIndex);
         }
 
         [Test]
@@ -207,8 +177,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(2, result.Count);
             Assert.AreEqual(material, result[0].Material);
             Assert.AreEqual(material, result[1].Material);
-            Assert.AreEqual(0, result[0].SlotIndex);
-            Assert.AreEqual(1, result[1].SlotIndex);
         }
 
         #endregion
@@ -534,7 +502,7 @@ namespace dev.limitex.avatar.compressor.tests
             var material = CreateMaterial();
             var references = new List<MaterialReference>
             {
-                MaterialReference.FromRenderer(material, null, 0)
+                MaterialReference.FromRenderer(material, null)
             };
 
             var result = MaterialCollector.GetDistinctMaterials(references).ToList();
@@ -549,8 +517,8 @@ namespace dev.limitex.avatar.compressor.tests
             var material = CreateMaterial();
             var references = new List<MaterialReference>
             {
-                MaterialReference.FromRenderer(material, null, 0),
-                MaterialReference.FromRenderer(material, null, 1),
+                MaterialReference.FromRenderer(material, null),
+                MaterialReference.FromRenderer(material, null),
                 MaterialReference.FromAnimation(material, null)
             };
 
@@ -568,7 +536,7 @@ namespace dev.limitex.avatar.compressor.tests
             var material3 = CreateMaterial();
             var references = new List<MaterialReference>
             {
-                MaterialReference.FromRenderer(material1, null, 0),
+                MaterialReference.FromRenderer(material1, null),
                 MaterialReference.FromAnimation(material2, null),
                 MaterialReference.FromComponent(material3, null)
             };
@@ -588,7 +556,7 @@ namespace dev.limitex.avatar.compressor.tests
             var references = new List<MaterialReference>
             {
                 null,
-                MaterialReference.FromRenderer(material, null, 0),
+                MaterialReference.FromRenderer(material, null),
                 null
             };
 
@@ -604,8 +572,8 @@ namespace dev.limitex.avatar.compressor.tests
             var material = CreateMaterial();
             var references = new List<MaterialReference>
             {
-                new MaterialReference(null, MaterialSourceType.Renderer, null, 0),
-                MaterialReference.FromRenderer(material, null, 0)
+                new MaterialReference(null, MaterialSourceType.Renderer, null),
+                MaterialReference.FromRenderer(material, null)
             };
 
             var result = MaterialCollector.GetDistinctMaterials(references).ToList();
@@ -623,7 +591,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var references = new List<MaterialReference>
             {
-                MaterialReference.FromRenderer(rendererMat, null, 0),
+                MaterialReference.FromRenderer(rendererMat, null),
                 MaterialReference.FromAnimation(animationMat, null),
                 MaterialReference.FromComponent(componentMat, null)
             };
@@ -639,7 +607,7 @@ namespace dev.limitex.avatar.compressor.tests
             var material = CreateMaterial();
             var references = new List<MaterialReference>
             {
-                MaterialReference.FromRenderer(material, null, 0),
+                MaterialReference.FromRenderer(material, null),
                 MaterialReference.FromAnimation(material, null),
                 MaterialReference.FromComponent(material, null)
             };

@@ -530,7 +530,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var references = new List<MaterialReference>
             {
-                MaterialReference.FromRenderer(rendererMaterial, null, 0),
+                MaterialReference.FromRenderer(rendererMaterial, null),
                 MaterialReference.FromAnimation(animationMaterial, null),
                 MaterialReference.FromComponent(componentMaterial, null)
             };
