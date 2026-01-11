@@ -376,6 +376,9 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 return;
             }
 
+            // TODO: Remove this call after users have migrated from TexturePath to TextureGuid
+            DrawLegacyPathMigrationUI(compressor);
+
             // Only use ScrollView when there are many items (3+)
             bool useScrollView = frozenCount >= 3;
 
@@ -499,6 +502,45 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 compressor.FrozenTextures.RemoveAt(index);
                 EditorUtility.SetDirty(compressor);
             }
+        }
+
+        // TODO: Remove this method after users have migrated from TexturePath to TextureGuid
+        private void DrawLegacyPathMigrationUI(TextureCompressor compressor)
+        {
+            bool hasLegacyPaths = false;
+            foreach (var frozen in compressor.FrozenTextures)
+            {
+                if (!string.IsNullOrEmpty(frozen.TextureGuid) && frozen.TextureGuid.StartsWith("Assets/"))
+                {
+                    hasLegacyPaths = true;
+                    break;
+                }
+            }
+
+            if (!hasLegacyPaths) return;
+
+            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+            EditorGUILayout.HelpBox("Legacy path-based entries detected. Convert to GUID for better stability.", MessageType.Warning);
+            if (GUILayout.Button("Convert to GUID", GUILayout.Width(120), GUILayout.Height(38)))
+            {
+                Undo.RecordObject(compressor, "Convert Frozen Textures to GUID");
+                int converted = 0;
+                foreach (var frozen in compressor.FrozenTextures)
+                {
+                    if (!string.IsNullOrEmpty(frozen.TextureGuid) && frozen.TextureGuid.StartsWith("Assets/"))
+                    {
+                        string guid = AssetDatabase.AssetPathToGUID(frozen.TextureGuid);
+                        if (!string.IsNullOrEmpty(guid))
+                        {
+                            frozen.TextureGuid = guid;
+                            converted++;
+                        }
+                    }
+                }
+                EditorUtility.SetDirty(compressor);
+                Debug.Log($"[TextureCompressor] Converted {converted} frozen texture entries from path to GUID.");
+            }
+            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawPreviewSection(TextureCompressor compressor)
