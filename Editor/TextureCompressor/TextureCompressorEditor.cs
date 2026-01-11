@@ -172,6 +172,9 @@ namespace dev.limitex.avatar.compressor.texture.editor
             EditorGUILayout.Space(15);
             DrawPreviewSection(compressor);
 
+            EditorGUILayout.Space(15);
+            DrawGitHubSection();
+
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -1336,6 +1339,40 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
                 _ => Color.white
             };
+        }
+
+        private void DrawGitHubSection()
+        {
+            DrawSeparator();
+
+            // Gray text (line 1)
+            var savedColor = GUI.color;
+            GUI.color = new Color(0.6f, 0.6f, 0.6f);
+            var centeredStyle = new GUIStyle(EditorStyles.miniLabel)
+            {
+                alignment = TextAnchor.MiddleCenter
+            };
+            EditorGUILayout.LabelField("Bugs? Ideas? Let us know! Stars appreciated.", centeredStyle);
+            GUI.color = savedColor;
+
+            // Clickable link (line 2)
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            var linkStyle = new GUIStyle(EditorStyles.miniLabel)
+            {
+                normal = { textColor = new Color(0.3f, 0.5f, 0.9f) },
+                hover = { textColor = new Color(0.4f, 0.6f, 1.0f) }
+            };
+            var linkContent = new GUIContent("Limitex/avatar-compressor", "Open GitHub repository");
+            if (GUILayout.Button(linkContent, linkStyle))
+            {
+                Application.OpenURL("https://github.com/Limitex/avatar-compressor");
+            }
+            EditorGUIUtility.AddCursorRect(GUILayoutUtility.GetLastRect(), MouseCursor.Link);
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
         }
 
         /// <summary>
