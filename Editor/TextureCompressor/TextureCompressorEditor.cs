@@ -33,7 +33,6 @@ namespace dev.limitex.avatar.compressor.texture.editor
         private SerializedProperty _targetPlatform;
         private SerializedProperty _useHighQualityFormatForHighComplexity;
         private SerializedProperty _enableLogging;
-        private SerializedProperty _excludedTextures;
         private SerializedProperty _frozenTextures;
 
         private bool _showPreview;
@@ -99,7 +98,6 @@ namespace dev.limitex.avatar.compressor.texture.editor
             _targetPlatform = serializedObject.FindProperty("TargetPlatform");
             _useHighQualityFormatForHighComplexity = serializedObject.FindProperty("UseHighQualityFormatForHighComplexity");
             _enableLogging = serializedObject.FindProperty("EnableLogging");
-            _excludedTextures = serializedObject.FindProperty("ExcludedTextures");
             _frozenTextures = serializedObject.FindProperty("FrozenTextures");
         }
 
@@ -149,9 +147,6 @@ namespace dev.limitex.avatar.compressor.texture.editor
             EditorGUILayout.Space(10);
 
             EditorGUILayout.PropertyField(_enableLogging, new GUIContent("Enable Logging"));
-
-            EditorGUILayout.Space(15);
-            EditorGUILayout.PropertyField(_excludedTextures, new GUIContent("Excluded Textures"), true);
 
             EditorGUILayout.Space(15);
             DrawFrozenTexturesSection(compressor);
@@ -568,12 +563,6 @@ namespace dev.limitex.avatar.compressor.texture.editor
                     hash = hash * 31 + frozen.Skip.GetHashCode();
                 }
 
-                // Include excluded textures in hash
-                foreach (var tex in config.ExcludedTextures)
-                {
-                    hash = hash * 31 + (tex != null ? tex.GetInstanceID() : 0);
-                }
-
                 return hash;
             }
         }
@@ -598,26 +587,13 @@ namespace dev.limitex.avatar.compressor.texture.editor
                     frozenLookup[frozen.TexturePath] = frozen;
             }
 
-            // Get frozen skip paths (textures with Skip=true)
-            var frozenSkipPaths = config.FrozenTextures
-                .Where(f => f.Skip && !string.IsNullOrEmpty(f.TexturePath))
-                .Select(f => f.TexturePath);
-
-            // Get excluded texture paths
-            var excludedTexturePaths = config.ExcludedTextures
-                .Where(t => t != null)
-                .Select(t => AssetDatabase.GetAssetPath(t))
-                .Where(p => !string.IsNullOrEmpty(p));
-
             var collector = new TextureCollector(
                 config.MinSourceSize,
                 config.SkipIfSmallerThan,
                 config.ProcessMainTextures,
                 config.ProcessNormalMaps,
                 config.ProcessEmissionMaps,
-                config.ProcessOtherTextures,
-                frozenSkipPaths,
-                excludedTexturePaths
+                config.ProcessOtherTextures
             );
 
             var processor = new TextureProcessor(
@@ -1030,7 +1006,6 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         SkipReason.FilteredByType => "Filtered by type",
                         SkipReason.FrozenSkip => "User frozen (skipped)",
                         SkipReason.RuntimeGenerated => "Runtime generated",
-                        SkipReason.UserExcluded => "User excluded",
                         _ => "Skipped"
                     };
                     EditorGUILayout.LabelField(reasonText, EditorStyles.miniLabel);

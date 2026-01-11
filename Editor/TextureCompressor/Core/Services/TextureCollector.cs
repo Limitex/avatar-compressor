@@ -34,7 +34,6 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly bool _processEmissionMaps;
         private readonly bool _processOtherTextures;
         private readonly HashSet<string> _frozenSkipPaths;
-        private readonly HashSet<string> _excludedTexturePaths;
 
         public TextureCollector(
             int minSourceSize,
@@ -43,8 +42,7 @@ namespace dev.limitex.avatar.compressor.texture
             bool processNormalMaps,
             bool processEmissionMaps,
             bool processOtherTextures,
-            IEnumerable<string> frozenSkipPaths = null,
-            IEnumerable<string> excludedTexturePaths = null)
+            IEnumerable<string> frozenSkipPaths = null)
         {
             _minSourceSize = minSourceSize;
             _skipIfSmallerThan = skipIfSmallerThan;
@@ -54,9 +52,6 @@ namespace dev.limitex.avatar.compressor.texture
             _processOtherTextures = processOtherTextures;
             _frozenSkipPaths = frozenSkipPaths != null
                 ? new HashSet<string>(frozenSkipPaths)
-                : new HashSet<string>();
-            _excludedTexturePaths = excludedTexturePaths != null
-                ? new HashSet<string>(excludedTexturePaths.Where(p => !string.IsNullOrWhiteSpace(p)))
                 : new HashSet<string>();
         }
 
@@ -205,10 +200,6 @@ namespace dev.limitex.avatar.compressor.texture
             // Check frozen skip (highest priority for asset-based textures)
             if (_frozenSkipPaths.Contains(assetPath))
                 return (false, SkipReason.FrozenSkip);
-
-            // Check user-excluded textures
-            if (_excludedTexturePaths.Contains(assetPath))
-                return (false, SkipReason.UserExcluded);
 
             int maxDim = Mathf.Max(texture.width, texture.height);
             if (maxDim < _minSourceSize) return (false, SkipReason.TooSmall);
