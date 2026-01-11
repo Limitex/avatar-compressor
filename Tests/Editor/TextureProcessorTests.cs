@@ -251,72 +251,19 @@ namespace dev.limitex.avatar.compressor.tests
         #region Constructor Tests
 
         [Test]
-        public void Constructor_WithBasicParameters_CreatesInstance()
+        public void Constructor_WithParameters_CreatesInstance()
         {
             var processor = new TextureProcessor(32, 2048, true);
             Assert.IsNotNull(processor);
         }
 
         [Test]
-        public void Constructor_WithAllParameters_CreatesInstance()
+        public void Constructor_WithCustomMinMax_CreatesInstance()
         {
             var processor = new TextureProcessor(
                 minResolution: 64,
                 maxResolution: 1024,
-                forcePowerOfTwo: false,
-                targetPlatform: CompressionPlatform.Mobile,
-                useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.5f);
-
-            Assert.IsNotNull(processor);
-        }
-
-        [Test]
-        public void Constructor_WithDesktopPlatform_CreatesInstance()
-        {
-            var processor = new TextureProcessor(
-                32, 2048, true,
-                targetPlatform: CompressionPlatform.Desktop);
-
-            Assert.IsNotNull(processor);
-        }
-
-        [Test]
-        public void Constructor_WithMobilePlatform_CreatesInstance()
-        {
-            var processor = new TextureProcessor(
-                32, 2048, true,
-                targetPlatform: CompressionPlatform.Mobile);
-
-            Assert.IsNotNull(processor);
-        }
-
-        [Test]
-        public void Constructor_WithAutoPlatform_CreatesInstance()
-        {
-            var processor = new TextureProcessor(
-                32, 2048, true,
-                targetPlatform: CompressionPlatform.Auto);
-
-            Assert.IsNotNull(processor);
-        }
-
-        [Test]
-        public void Constructor_HighQualityFormatDisabled_CreatesInstance()
-        {
-            var processor = new TextureProcessor(
-                32, 2048, true,
-                useHighQualityFormatForHighComplexity: false);
-
-            Assert.IsNotNull(processor);
-        }
-
-        [Test]
-        public void Constructor_CustomThreshold_CreatesInstance()
-        {
-            var processor = new TextureProcessor(
-                32, 2048, true,
-                highQualityComplexityThreshold: 0.9f);
+                forcePowerOfTwo: false);
 
             Assert.IsNotNull(processor);
         }

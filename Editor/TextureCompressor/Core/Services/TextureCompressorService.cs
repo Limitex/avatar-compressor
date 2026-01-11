@@ -19,6 +19,7 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly TextureCompressor _config;
         private readonly TextureCollector _collector;
         private readonly TextureProcessor _processor;
+        private readonly TextureFormatSelector _formatSelector;
         private readonly ComplexityCalculator _complexityCalc;
         private readonly TextureAnalyzer _analyzer;
         private readonly Dictionary<string, FrozenTextureSettings> _frozenLookup;
@@ -59,7 +60,10 @@ namespace dev.limitex.avatar.compressor.texture
             _processor = new TextureProcessor(
                 config.MinResolution,
                 config.MaxResolution,
-                config.ForcePowerOfTwo,
+                config.ForcePowerOfTwo
+            );
+
+            _formatSelector = new TextureFormatSelector(
                 config.TargetPlatform,
                 config.UseHighQualityFormatForHighComplexity,
                 config.HighComplexityThreshold
@@ -216,8 +220,33 @@ namespace dev.limitex.avatar.compressor.texture
                     }
                 }
 
-                var compressedTexture = _processor.Resize(originalTexture, analysis, enableLogging, textureInfo.IsNormalMap, formatOverride);
-                compressedTexture.name = originalTexture.name + "_compressed";
+                // Resize texture
+                var resizedTexture = _processor.Resize(originalTexture, analysis);
+
+                // Apply compression
+                _formatSelector.CompressTexture(
+                    resizedTexture,
+                    originalTexture.format,
+                    textureInfo.IsNormalMap,
+                    analysis.NormalizedComplexity,
+                    formatOverride
+                );
+
+                resizedTexture.name = originalTexture.name + "_compressed";
+
+                if (enableLogging)
+                {
+                    var frozenInfo = formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto
+                        ? " [FROZEN]"
+                        : "";
+                    Debug.Log($"[{Name}] {originalTexture.name}: " +
+                              $"{originalTexture.width}x{originalTexture.height} -> " +
+                              $"{resizedTexture.width}x{resizedTexture.height} ({resizedTexture.format}){frozenInfo} " +
+                              $"(Complexity: {analysis.NormalizedComplexity:P0}, " +
+                              $"Divisor: {analysis.RecommendedDivisor}x)");
+                }
+
+                var compressedTexture = resizedTexture;
 
                 // Enable mipmap streaming to avoid NDMF warnings
                 var serializedTexture = new SerializedObject(compressedTexture);

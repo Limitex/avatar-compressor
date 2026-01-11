@@ -599,10 +599,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
             var processor = new TextureProcessor(
                 config.MinResolution,
                 config.MaxResolution,
-                config.ForcePowerOfTwo,
-                config.TargetPlatform,
-                config.UseHighQualityFormatForHighComplexity,
-                config.HighComplexityThreshold
+                config.ForcePowerOfTwo
             );
 
             var complexityCalc = new ComplexityCalculator(
