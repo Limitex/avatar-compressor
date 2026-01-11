@@ -935,17 +935,17 @@ namespace dev.limitex.avatar.compressor.tests
         #region FrozenSkip Tests
 
         [Test]
-        public void Constructor_WithFrozenSkipPaths_AcceptsParameter()
+        public void Constructor_WithFrozenSkipGuids_AcceptsParameter()
         {
-            var frozenPaths = new[] { "Assets/Textures/frozen1.png", "Assets/Textures/frozen2.png" };
+            var frozenGuids = new[] { "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4", "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5" };
 
-            var collector = new TextureCollector(64, 0, true, true, true, true, null, frozenPaths);
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, frozenGuids);
 
             Assert.IsNotNull(collector);
         }
 
         [Test]
-        public void Constructor_WithNullFrozenSkipPaths_DoesNotThrow()
+        public void Constructor_WithNullFrozenSkipGuids_DoesNotThrow()
         {
             Assert.DoesNotThrow(() =>
             {
@@ -954,7 +954,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void Constructor_WithEmptyFrozenSkipPaths_DoesNotThrow()
+        public void Constructor_WithEmptyFrozenSkipGuids_DoesNotThrow()
         {
             Assert.DoesNotThrow(() =>
             {
@@ -963,9 +963,9 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CollectAll_TextureWithFrozenSkipPath_HasFrozenSkipReason()
+        public void CollectAll_TextureWithFrozenSkipGuid_HasFrozenSkipReason()
         {
-            // Note: In-memory textures don't have asset paths, so this tests
+            // Note: In-memory textures don't have asset GUIDs, so this tests
             // the SkipReason enum value exists and can be assigned
             var info = new TextureInfo
             {
