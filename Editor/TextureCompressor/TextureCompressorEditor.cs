@@ -972,11 +972,11 @@ namespace dev.limitex.avatar.compressor.texture.editor
             _frozenCount = frozenList.Count;
             _skippedCount = skippedList.Count;
 
-            // Combine and sort: processed first, then frozen, then skipped (each sorted by GUID)
+            // Combine and sort: processed first, then frozen, then skipped (each sorted by file path)
             var allPreviewData = new List<TexturePreviewData>(processedList.Count + frozenList.Count + skippedList.Count);
-            processedList.Sort((a, b) => string.Compare(a.Guid, b.Guid, System.StringComparison.Ordinal));
-            frozenList.Sort((a, b) => string.Compare(a.Guid, b.Guid, System.StringComparison.Ordinal));
-            skippedList.Sort((a, b) => string.Compare(a.Guid, b.Guid, System.StringComparison.Ordinal));
+            processedList.Sort((a, b) => string.Compare(AssetDatabase.GUIDToAssetPath(a.Guid), AssetDatabase.GUIDToAssetPath(b.Guid), System.StringComparison.Ordinal));
+            frozenList.Sort((a, b) => string.Compare(AssetDatabase.GUIDToAssetPath(a.Guid), AssetDatabase.GUIDToAssetPath(b.Guid), System.StringComparison.Ordinal));
+            skippedList.Sort((a, b) => string.Compare(AssetDatabase.GUIDToAssetPath(a.Guid), AssetDatabase.GUIDToAssetPath(b.Guid), System.StringComparison.Ordinal));
             allPreviewData.AddRange(processedList);
             allPreviewData.AddRange(frozenList);
             allPreviewData.AddRange(skippedList);
