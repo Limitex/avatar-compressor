@@ -574,10 +574,9 @@ namespace dev.limitex.avatar.compressor.texture.editor
             // Resolve path from GUID for display and loading
             string assetPath = AssetDatabase.GUIDToAssetPath(frozen.TextureGuid);
 
-            // Thumbnail
+            // Thumbnail (clickable to ping asset in Project window)
             var texture = !string.IsNullOrEmpty(assetPath) ? AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath) : null;
-            var preview = texture != null ? AssetPreview.GetAssetPreview(texture) : null;
-            GUILayout.Label(preview ?? Texture2D.whiteTexture, GUILayout.Width(40), GUILayout.Height(40));
+            DrawClickableThumbnail(texture);
 
             EditorGUILayout.BeginVertical();
 
@@ -668,6 +667,30 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 EditorUtility.SetDirty(compressor);
                 InvalidateSearchCache();
             }
+        }
+
+        private void DrawClickableThumbnail(Texture2D texture)
+        {
+            // Temporarily enable GUI to allow clicking even when inside a disabled group
+            var wasEnabled = GUI.enabled;
+            GUI.enabled = true;
+
+            var preview = texture != null ? AssetPreview.GetAssetPreview(texture) : null;
+            var thumbnailContent = new GUIContent(preview ?? Texture2D.whiteTexture, "Click to highlight in Project");
+            var thumbnailStyle = new GUIStyle(GUI.skin.label) { padding = new RectOffset(0, 0, 0, 0) };
+            if (GUILayout.Button(thumbnailContent, thumbnailStyle, GUILayout.Width(40), GUILayout.Height(40)))
+            {
+                if (texture != null)
+                {
+                    EditorGUIUtility.PingObject(texture);
+                }
+            }
+            if (texture != null)
+            {
+                EditorGUIUtility.AddCursorRect(GUILayoutUtility.GetLastRect(), MouseCursor.Link);
+            }
+
+            GUI.enabled = wasEnabled;
         }
 
         // TODO: Remove this method after users have migrated from TexturePath to TextureGuid
@@ -1178,8 +1201,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
                     EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
-                    var preview = AssetPreview.GetAssetPreview(data.Texture);
-                    GUILayout.Label(preview ?? Texture2D.whiteTexture, GUILayout.Width(40), GUILayout.Height(40));
+                    // Thumbnail (clickable to ping asset in Project window)
+                    DrawClickableThumbnail(data.Texture);
 
                     EditorGUILayout.BeginVertical();
 
