@@ -974,9 +974,23 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             // Combine and sort: processed first, then frozen, then skipped (each sorted by file path)
             var allPreviewData = new List<TexturePreviewData>(processedList.Count + frozenList.Count + skippedList.Count);
-            processedList.Sort((a, b) => string.Compare(AssetDatabase.GUIDToAssetPath(a.Guid), AssetDatabase.GUIDToAssetPath(b.Guid), System.StringComparison.Ordinal));
-            frozenList.Sort((a, b) => string.Compare(AssetDatabase.GUIDToAssetPath(a.Guid), AssetDatabase.GUIDToAssetPath(b.Guid), System.StringComparison.Ordinal));
-            skippedList.Sort((a, b) => string.Compare(AssetDatabase.GUIDToAssetPath(a.Guid), AssetDatabase.GUIDToAssetPath(b.Guid), System.StringComparison.Ordinal));
+
+            // Cache GUID to path conversions to avoid redundant API calls during sorting
+            var pathCache = new Dictionary<string, string>();
+            foreach (var data in processedList.Concat(frozenList).Concat(skippedList))
+            {
+                if (!string.IsNullOrEmpty(data.Guid) && !pathCache.ContainsKey(data.Guid))
+                    pathCache[data.Guid] = AssetDatabase.GUIDToAssetPath(data.Guid);
+            }
+            System.Comparison<TexturePreviewData> pathComparison = (a, b) =>
+                string.Compare(
+                    pathCache.TryGetValue(a.Guid, out var pathA) ? pathA : "",
+                    pathCache.TryGetValue(b.Guid, out var pathB) ? pathB : "",
+                    System.StringComparison.Ordinal);
+
+            processedList.Sort(pathComparison);
+            frozenList.Sort(pathComparison);
+            skippedList.Sort(pathComparison);
             allPreviewData.AddRange(processedList);
             allPreviewData.AddRange(frozenList);
             allPreviewData.AddRange(skippedList);
