@@ -34,18 +34,18 @@ namespace dev.limitex.avatar.compressor.texture
         {
             _config = config;
 
-            // Build frozen texture lookup
+            // Build frozen texture lookup (GUID -> Settings)
             _frozenLookup = new Dictionary<string, FrozenTextureSettings>();
             foreach (var frozen in config.FrozenTextures)
             {
-                if (!string.IsNullOrEmpty(frozen.TexturePath))
-                    _frozenLookup[frozen.TexturePath] = frozen;
+                if (!string.IsNullOrEmpty(frozen.TextureGuid))
+                    _frozenLookup[frozen.TextureGuid] = frozen;
             }
 
-            // Get frozen skip paths (textures with Skip=true should be excluded from collection)
-            var frozenSkipPaths = config.FrozenTextures
-                .Where(f => f.Skip && !string.IsNullOrEmpty(f.TexturePath))
-                .Select(f => f.TexturePath);
+            // Get frozen skip GUIDs (textures with Skip=true should be excluded from collection)
+            var frozenSkipGuids = config.FrozenTextures
+                .Where(f => f.Skip && !string.IsNullOrEmpty(f.TextureGuid))
+                .Select(f => f.TextureGuid);
 
             _collector = new TextureCollector(
                 config.MinSourceSize,
@@ -55,7 +55,7 @@ namespace dev.limitex.avatar.compressor.texture
                 config.ProcessEmissionMaps,
                 config.ProcessOtherTextures,
                 config.ExcludedPaths,
-                frozenSkipPaths
+                frozenSkipGuids
             );
 
             _processor = new TextureProcessor(
@@ -188,12 +188,13 @@ namespace dev.limitex.avatar.compressor.texture
                 if (processedTextures.ContainsKey(originalTexture)) continue;
 
                 string assetPath = AssetDatabase.GetAssetPath(originalTexture);
+                string guid = AssetDatabase.AssetPathToGUID(assetPath);
                 TextureAnalysisResult analysis;
                 FrozenTextureSettings frozenSettings = null;
                 FrozenTextureFormat? formatOverride = null;
 
                 // Check if texture is frozen (non-skipped frozen textures are still in collection)
-                if (_frozenLookup.TryGetValue(assetPath, out frozenSettings) && !frozenSettings.Skip)
+                if (!string.IsNullOrEmpty(guid) && _frozenLookup.TryGetValue(guid, out frozenSettings) && !frozenSettings.Skip)
                 {
                     // Use frozen settings instead of analysis
                     int divisor = frozenSettings.Divisor;

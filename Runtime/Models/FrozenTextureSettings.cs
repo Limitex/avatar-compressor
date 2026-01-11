@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine.Serialization;
 
 namespace dev.limitex.avatar.compressor.texture
 {
@@ -24,9 +25,11 @@ namespace dev.limitex.avatar.compressor.texture
     public class FrozenTextureSettings
     {
         /// <summary>
-        /// Asset path of the texture (stable identifier).
+        /// GUID of the texture asset (stable identifier that survives renames/moves).
         /// </summary>
-        public string TexturePath;
+        // TODO: Remove [FormerlySerializedAs] after users have migrated from TexturePath to TextureGuid
+        [FormerlySerializedAs("TexturePath")]
+        public string TextureGuid;
 
         /// <summary>
         /// Resolution divisor (1 = no reduction, 2 = half, 4 = quarter, etc.)
@@ -47,14 +50,14 @@ namespace dev.limitex.avatar.compressor.texture
         {
         }
 
-        public FrozenTextureSettings(string texturePath)
+        public FrozenTextureSettings(string textureGuid)
         {
-            TexturePath = texturePath;
+            TextureGuid = textureGuid;
         }
 
-        public FrozenTextureSettings(string texturePath, int divisor, FrozenTextureFormat format, bool skip)
+        public FrozenTextureSettings(string textureGuid, int divisor, FrozenTextureFormat format, bool skip)
         {
-            TexturePath = texturePath;
+            TextureGuid = textureGuid;
             Divisor = divisor;
             Format = format;
             Skip = skip;

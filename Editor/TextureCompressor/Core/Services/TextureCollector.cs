@@ -34,7 +34,7 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly bool _processEmissionMaps;
         private readonly bool _processOtherTextures;
         private readonly List<string> _excludedPathPrefixes;
-        private readonly HashSet<string> _frozenSkipPaths;
+        private readonly HashSet<string> _frozenSkipGuids;
 
         public TextureCollector(
             int minSourceSize,
@@ -44,7 +44,7 @@ namespace dev.limitex.avatar.compressor.texture
             bool processEmissionMaps,
             bool processOtherTextures,
             IEnumerable<string> excludedPathPrefixes = null,
-            IEnumerable<string> frozenSkipPaths = null)
+            IEnumerable<string> frozenSkipGuids = null)
         {
             _minSourceSize = minSourceSize;
             _skipIfSmallerThan = skipIfSmallerThan;
@@ -55,8 +55,8 @@ namespace dev.limitex.avatar.compressor.texture
             _excludedPathPrefixes = excludedPathPrefixes != null
                 ? new List<string>(excludedPathPrefixes.Where(p => !string.IsNullOrWhiteSpace(p)))
                 : new List<string>();
-            _frozenSkipPaths = frozenSkipPaths != null
-                ? new HashSet<string>(frozenSkipPaths)
+            _frozenSkipGuids = frozenSkipGuids != null
+                ? new HashSet<string>(frozenSkipGuids)
                 : new HashSet<string>();
         }
 
@@ -209,8 +209,9 @@ namespace dev.limitex.avatar.compressor.texture
                     return (false, SkipReason.ExcludedPath);
             }
 
-            // Check frozen skip (highest priority for asset-based textures)
-            if (_frozenSkipPaths.Contains(assetPath))
+            // Check frozen skip using GUID for reliable comparison
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            if (!string.IsNullOrEmpty(guid) && _frozenSkipGuids.Contains(guid))
                 return (false, SkipReason.FrozenSkip);
 
             int maxDim = Mathf.Max(texture.width, texture.height);
