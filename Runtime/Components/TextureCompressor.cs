@@ -69,26 +69,26 @@ namespace dev.limitex.avatar.compressor.texture
         public List<FrozenTextureSettings> FrozenTextures = new List<FrozenTextureSettings>();
 
         /// <summary>
-        /// Gets frozen settings for a texture by its asset path.
+        /// Gets frozen settings for a texture by its GUID.
         /// </summary>
-        public FrozenTextureSettings GetFrozenSettings(string assetPath)
+        public FrozenTextureSettings GetFrozenSettings(string guid)
         {
-            return FrozenTextures.Find(f => f.TexturePath == assetPath);
+            return FrozenTextures.Find(f => f.TextureGuid == guid);
         }
 
         /// <summary>
-        /// Checks if a texture is frozen.
+        /// Checks if a texture is frozen by its GUID.
         /// </summary>
-        public bool IsFrozen(string assetPath)
+        public bool IsFrozen(string guid)
         {
-            return FrozenTextures.Exists(f => f.TexturePath == assetPath);
+            return FrozenTextures.Exists(f => f.TextureGuid == guid);
         }
 
         /// <summary>
         /// Adds or updates frozen settings for a texture.
         /// Validates that divisor is a valid power of 2 (1, 2, 4, 8, or 16).
         /// </summary>
-        public void SetFrozenSettings(string assetPath, FrozenTextureSettings settings)
+        public void SetFrozenSettings(string guid, FrozenTextureSettings settings)
         {
             // Validate divisor is a valid power of 2
             if (!IsValidDivisor(settings.Divisor))
@@ -97,7 +97,7 @@ namespace dev.limitex.avatar.compressor.texture
                 settings.Divisor = GetClosestValidDivisor(settings.Divisor);
             }
 
-            var existingIndex = FrozenTextures.FindIndex(f => f.TexturePath == assetPath);
+            var existingIndex = FrozenTextures.FindIndex(f => f.TextureGuid == guid);
             if (existingIndex >= 0)
                 FrozenTextures[existingIndex] = settings;
             else
@@ -135,11 +135,11 @@ namespace dev.limitex.avatar.compressor.texture
         }
 
         /// <summary>
-        /// Removes frozen settings for a texture.
+        /// Removes frozen settings for a texture by its GUID.
         /// </summary>
-        public void UnfreezeTexture(string assetPath)
+        public void UnfreezeTexture(string guid)
         {
-            FrozenTextures.RemoveAll(f => f.TexturePath == assetPath);
+            FrozenTextures.RemoveAll(f => f.TextureGuid == guid);
         }
 
         /// <summary>

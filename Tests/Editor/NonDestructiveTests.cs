@@ -569,10 +569,10 @@ namespace dev.limitex.avatar.compressor.tests
         public void Compress_WithFrozenSettingsInConfig_NonDestructiveBehaviorMaintained()
         {
             var config = CreateConfig();
-            // Add frozen settings to config (won't match runtime textures due to no asset path)
+            // Add frozen settings to config (won't match runtime textures due to no asset GUID)
             config.FrozenTextures.Add(new FrozenTextureSettings
             {
-                TexturePath = "Assets/NonExistent/Texture.png",
+                TextureGuid = "00000000000000000000000000000001",
                 Divisor = 2,
                 Format = FrozenTextureFormat.DXT5,
                 Skip = false
@@ -605,10 +605,10 @@ namespace dev.limitex.avatar.compressor.tests
         public void Compress_WithFrozenSkipSettingsInConfig_MaterialStillCloned()
         {
             var config = CreateConfig();
-            // Add frozen skip settings
+            // Add frozen skip settings (dummy GUID that won't match any real texture)
             config.FrozenTextures.Add(new FrozenTextureSettings
             {
-                TexturePath = "Assets/NonExistent/SkippedTexture.png",
+                TextureGuid = "00000000000000000000000000000002",
                 Skip = true
             });
             var service = new TextureCompressorService(config);

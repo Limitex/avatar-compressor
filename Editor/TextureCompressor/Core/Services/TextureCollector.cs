@@ -33,7 +33,7 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly bool _processNormalMaps;
         private readonly bool _processEmissionMaps;
         private readonly bool _processOtherTextures;
-        private readonly HashSet<string> _frozenSkipPaths;
+        private readonly HashSet<string> _frozenSkipGuids;
 
         public TextureCollector(
             int minSourceSize,
@@ -42,7 +42,7 @@ namespace dev.limitex.avatar.compressor.texture
             bool processNormalMaps,
             bool processEmissionMaps,
             bool processOtherTextures,
-            IEnumerable<string> frozenSkipPaths = null)
+            IEnumerable<string> frozenSkipGuids = null)
         {
             _minSourceSize = minSourceSize;
             _skipIfSmallerThan = skipIfSmallerThan;
@@ -50,8 +50,8 @@ namespace dev.limitex.avatar.compressor.texture
             _processNormalMaps = processNormalMaps;
             _processEmissionMaps = processEmissionMaps;
             _processOtherTextures = processOtherTextures;
-            _frozenSkipPaths = frozenSkipPaths != null
-                ? new HashSet<string>(frozenSkipPaths)
+            _frozenSkipGuids = frozenSkipGuids != null
+                ? new HashSet<string>(frozenSkipGuids)
                 : new HashSet<string>();
         }
 
@@ -189,9 +189,10 @@ namespace dev.limitex.avatar.compressor.texture
 
         private (bool shouldProcess, SkipReason skipReason) GetProcessResult(Texture2D texture, string propertyName)
         {
-            // Check frozen skip first (highest priority)
+            // Check frozen skip first (highest priority) using GUID for reliable comparison
             string assetPath = AssetDatabase.GetAssetPath(texture);
-            if (_frozenSkipPaths.Contains(assetPath))
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            if (!string.IsNullOrEmpty(guid) && _frozenSkipGuids.Contains(guid))
                 return (false, SkipReason.FrozenSkip);
 
             int maxDim = Mathf.Max(texture.width, texture.height);

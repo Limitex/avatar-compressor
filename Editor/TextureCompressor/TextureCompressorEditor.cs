@@ -58,7 +58,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
         private struct TexturePreviewData
         {
             public Texture2D Texture;
-            public string Path;
+            public string Guid;
             public float Complexity;
             public int RecommendedDivisor;
             public Vector2Int OriginalSize;
@@ -403,8 +403,11 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
+            // Resolve path from GUID for display and loading
+            string assetPath = AssetDatabase.GUIDToAssetPath(frozen.TextureGuid);
+
             // Thumbnail
-            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(frozen.TexturePath);
+            var texture = !string.IsNullOrEmpty(assetPath) ? AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath) : null;
             var preview = texture != null ? AssetPreview.GetAssetPreview(texture) : null;
             GUILayout.Label(preview ?? Texture2D.whiteTexture, GUILayout.Width(40), GUILayout.Height(40));
 
@@ -413,7 +416,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
             // Header row with texture name and unfreeze button
             EditorGUILayout.BeginHorizontal();
 
-            string textureName = System.IO.Path.GetFileName(frozen.TexturePath);
+            string textureName = !string.IsNullOrEmpty(assetPath) ? System.IO.Path.GetFileName(assetPath) : frozen.TextureGuid;
             EditorGUILayout.LabelField(textureName, EditorStyles.boldLabel);
 
             if (GUILayout.Button("Unfreeze", GUILayout.Width(70)))
@@ -557,7 +560,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 // Include frozen textures in hash
                 foreach (var frozen in config.FrozenTextures)
                 {
-                    hash = hash * 31 + (frozen.TexturePath?.GetHashCode() ?? 0);
+                    hash = hash * 31 + (frozen.TextureGuid?.GetHashCode() ?? 0);
                     hash = hash * 31 + frozen.Divisor;
                     hash = hash * 31 + frozen.Format.GetHashCode();
                     hash = hash * 31 + frozen.Skip.GetHashCode();
@@ -579,12 +582,12 @@ namespace dev.limitex.avatar.compressor.texture.editor
         {
             _previewSettingsHash = ComputeSettingsHash(config);
 
-            // Build frozen texture lookup
+            // Build frozen texture lookup (GUID -> Settings)
             var frozenLookup = new Dictionary<string, FrozenTextureSettings>();
             foreach (var frozen in config.FrozenTextures)
             {
-                if (!string.IsNullOrEmpty(frozen.TexturePath))
-                    frozenLookup[frozen.TexturePath] = frozen;
+                if (!string.IsNullOrEmpty(frozen.TextureGuid))
+                    frozenLookup[frozen.TextureGuid] = frozen;
             }
 
             var collector = new TextureCollector(
@@ -669,9 +672,10 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 var tex = kvp.Key;
                 var info = kvp.Value;
                 string assetPath = AssetDatabase.GetAssetPath(tex);
+                string guid = AssetDatabase.AssetPathToGUID(assetPath);
 
-                // Check if texture is frozen
-                frozenLookup.TryGetValue(assetPath, out var frozenSettings);
+                // Check if texture is frozen (using GUID for reliable lookup)
+                frozenLookup.TryGetValue(guid, out var frozenSettings);
                 bool isFrozen = frozenSettings != null;
 
                 if (info.IsProcessed && analysisResults.TryGetValue(tex, out var analysis))
@@ -714,7 +718,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                     var previewData = new TexturePreviewData
                     {
                         Texture = tex,
-                        Path = assetPath,
+                        Guid = guid,
                         Complexity = analysis.NormalizedComplexity,
                         RecommendedDivisor = divisor,
                         OriginalSize = new Vector2Int(tex.width, tex.height),
@@ -737,7 +741,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         skippedList.Add(new TexturePreviewData
                         {
                             Texture = tex,
-                            Path = assetPath,
+                            Guid = guid,
                             Complexity = 0f,
                             RecommendedDivisor = 1,
                             OriginalSize = new Vector2Int(tex.width, tex.height),
@@ -770,7 +774,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                     skippedList.Add(new TexturePreviewData
                     {
                         Texture = tex,
-                        Path = assetPath,
+                        Guid = guid,
                         Complexity = 0f,
                         RecommendedDivisor = 1,
                         OriginalSize = new Vector2Int(tex.width, tex.height),
@@ -793,11 +797,11 @@ namespace dev.limitex.avatar.compressor.texture.editor
             _frozenCount = frozenList.Count;
             _skippedCount = skippedList.Count;
 
-            // Combine and sort: processed first, then frozen, then skipped (each sorted by path)
+            // Combine and sort: processed first, then frozen, then skipped (each sorted by GUID)
             var allPreviewData = new List<TexturePreviewData>(processedList.Count + frozenList.Count + skippedList.Count);
-            processedList.Sort((a, b) => string.Compare(a.Path, b.Path, System.StringComparison.Ordinal));
-            frozenList.Sort((a, b) => string.Compare(a.Path, b.Path, System.StringComparison.Ordinal));
-            skippedList.Sort((a, b) => string.Compare(a.Path, b.Path, System.StringComparison.Ordinal));
+            processedList.Sort((a, b) => string.Compare(a.Guid, b.Guid, System.StringComparison.Ordinal));
+            frozenList.Sort((a, b) => string.Compare(a.Guid, b.Guid, System.StringComparison.Ordinal));
+            skippedList.Sort((a, b) => string.Compare(a.Guid, b.Guid, System.StringComparison.Ordinal));
             allPreviewData.AddRange(processedList);
             allPreviewData.AddRange(frozenList);
             allPreviewData.AddRange(skippedList);
@@ -879,8 +883,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 }
 
                 bool isSkipped = !data.IsProcessed;
-                // Check if texture was frozen after preview was generated (real-time check)
-                bool isFrozenNow = !data.IsFrozen && compressor.IsFrozen(data.Path);
+                // Check if texture was frozen after preview was generated (real-time check using GUID)
+                bool isFrozenNow = !data.IsFrozen && compressor.IsFrozen(data.Guid);
                 if (isSkipped || isFrozenNow)
                 {
                     EditorGUI.BeginDisabledGroup(true);
@@ -908,7 +912,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         if (GUILayout.Button("Unfreeze", GUILayout.Width(70)))
                         {
                             Undo.RecordObject(compressor, "Unfreeze Texture");
-                            compressor.UnfreezeTexture(data.Path);
+                            compressor.UnfreezeTexture(data.Guid);
                             EditorUtility.SetDirty(compressor);
                         }
                         GUI.backgroundColor = savedColor;
@@ -919,8 +923,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         if (GUILayout.Button("Freeze", GUILayout.Width(70)))
                         {
                             Undo.RecordObject(compressor, "Freeze Texture");
-                            var frozenSettings = new FrozenTextureSettings(data.Path, data.RecommendedDivisor, FrozenTextureFormat.Auto, false);
-                            compressor.SetFrozenSettings(data.Path, frozenSettings);
+                            var frozenSettings = new FrozenTextureSettings(data.Guid, data.RecommendedDivisor, FrozenTextureFormat.Auto, false);
+                            compressor.SetFrozenSettings(data.Guid, frozenSettings);
                             EditorUtility.SetDirty(compressor);
                         }
                     }
