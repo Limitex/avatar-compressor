@@ -991,6 +991,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         SkipReason.TooSmall => "Too small",
                         SkipReason.FilteredByType => "Filtered by type",
                         SkipReason.FrozenSkip => "User frozen (skipped)",
+                        SkipReason.RuntimeGenerated => "Runtime generated",
                         _ => "Skipped"
                     };
                     EditorGUILayout.LabelField(reasonText, EditorStyles.miniLabel);

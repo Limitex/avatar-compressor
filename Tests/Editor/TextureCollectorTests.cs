@@ -964,6 +964,7 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(values, Contains.Item(SkipReason.TooSmall));
             Assert.That(values, Contains.Item(SkipReason.FilteredByType));
             Assert.That(values, Contains.Item(SkipReason.FrozenSkip));
+            Assert.That(values, Contains.Item(SkipReason.RuntimeGenerated));
         }
 
         #endregion

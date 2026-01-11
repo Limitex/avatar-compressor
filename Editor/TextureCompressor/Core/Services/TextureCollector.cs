@@ -189,8 +189,16 @@ namespace dev.limitex.avatar.compressor.texture
 
         private (bool shouldProcess, SkipReason skipReason) GetProcessResult(Texture2D texture, string propertyName)
         {
-            // Check frozen skip first (highest priority)
             string assetPath = AssetDatabase.GetAssetPath(texture);
+
+            // Skip runtime-generated textures (no asset path).
+            // These are typically created dynamically by tools like VRCFury SPS during build.
+            // Compressing them can corrupt data textures that use RGB values for calculations
+            // (e.g., depth data, deformation vectors) rather than visual color information.
+            if (string.IsNullOrEmpty(assetPath))
+                return (false, SkipReason.RuntimeGenerated);
+
+            // Check frozen skip (highest priority for asset-based textures)
             if (_frozenSkipPaths.Contains(assetPath))
                 return (false, SkipReason.FrozenSkip);
 
