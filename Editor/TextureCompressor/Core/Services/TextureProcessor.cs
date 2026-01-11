@@ -3,7 +3,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.texture
 {
     /// <summary>
-    /// Service for processing textures (resizing and compression).
+    /// Service for processing textures (resizing only).
     /// All output dimensions are guaranteed to be multiples of 4 for DXT/BC compression compatibility.
     /// </summary>
     public class TextureProcessor
@@ -14,21 +14,12 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly int _minResolution;
         private readonly int _maxResolution;
         private readonly bool _forcePowerOfTwo;
-        private readonly TextureFormatSelector _formatSelector;
 
-        public TextureProcessor(int minResolution, int maxResolution, bool forcePowerOfTwo,
-            CompressionPlatform targetPlatform = CompressionPlatform.Auto,
-            bool useHighQualityFormatForHighComplexity = true,
-            float highQualityComplexityThreshold = 0.7f)
+        public TextureProcessor(int minResolution, int maxResolution, bool forcePowerOfTwo)
         {
             _minResolution = minResolution;
             _maxResolution = maxResolution;
             _forcePowerOfTwo = forcePowerOfTwo;
-            _formatSelector = new TextureFormatSelector(
-                targetPlatform,
-                useHighQualityFormatForHighComplexity,
-                highQualityComplexityThreshold
-            );
         }
 
         /// <summary>
@@ -36,10 +27,8 @@ namespace dev.limitex.avatar.compressor.texture
         /// </summary>
         /// <param name="source">Source texture to resize</param>
         /// <param name="analysis">Pre-computed analysis result with recommended settings</param>
-        /// <param name="enableLogging">Whether to log the operation</param>
-        /// <param name="isNormalMap">Whether this is a normal map texture</param>
-        /// <param name="formatOverride">Optional format override from frozen settings</param>
-        public Texture2D Resize(Texture2D source, TextureAnalysisResult analysis, bool enableLogging, bool isNormalMap = false, FrozenTextureFormat? formatOverride = null)
+        /// <returns>Resized texture (uncompressed RGBA32 format)</returns>
+        public Texture2D Resize(Texture2D source, TextureAnalysisResult analysis)
         {
             Texture2D result;
             if (analysis.RecommendedDivisor <= 1 &&
@@ -62,22 +51,6 @@ namespace dev.limitex.avatar.compressor.texture
             else
             {
                 result = ResizeTo(source, analysis.RecommendedResolution.x, analysis.RecommendedResolution.y);
-            }
-
-            // Apply compression to reduce memory usage
-            _formatSelector.CompressTexture(result, source.format, isNormalMap, analysis.NormalizedComplexity, formatOverride);
-
-            if (enableLogging)
-            {
-                var format = result.format;
-                var frozenInfo = formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto
-                    ? " [FROZEN]"
-                    : "";
-                Debug.Log($"[TextureCompressor] {source.name}: " +
-                          $"{source.width}x{source.height} -> " +
-                          $"{result.width}x{result.height} ({format}){frozenInfo} " +
-                          $"(Complexity: {analysis.NormalizedComplexity:P0}, " +
-                          $"Divisor: {analysis.RecommendedDivisor}x)");
             }
 
             return result;

@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Runtime-generated texture skipping** - Textures without asset paths are now automatically skipped
+  - Prevents corruption of data textures dynamically created during build
+  - These textures may use RGB values for non-visual data (depth, deformation vectors)
+  - New `SkipReason.RuntimeGenerated` enum value for UI display
+- **Path-based texture exclusion** - Exclude textures by asset path prefix
+  - `ExcludedPaths` list in TextureCompressor component for user-defined exclusions
+  - Textures with paths starting with listed prefixes are skipped from compression
+  - Built-in presets for common packages (e.g., VRCFury Temp)
+  - Collapsible "Path Exclusions" section in Editor UI with preset buttons
+  - New `SkipReason.ExcludedPath` enum value for UI display
 - **Animation-referenced material support** - Materials referenced by animations are now included in compression
   - Uses NDMF's `AnimatorServicesContext` to detect materials in animation clips (MaterialSwap, etc.)
   - MaterialCloner can now clone additional materials beyond renderer-attached ones
@@ -23,6 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **TextureProcessor responsibility simplified** - Now handles resizing only, compression moved to TextureFormatSelector
+  - Clearer separation of concerns between resizing and compression
+  - TextureCompressorService now coordinates both operations
 - **TextureCompressorPass refactored** - Extracted pass logic into dedicated class
   - Better separation of concerns between plugin registration and execution
   - Improved error handling with try-catch and warning messages
@@ -34,7 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - MaterialCollector tests (animation/component material detection, EditorOnly filtering)
   - MaterialReference tests (equality, cloning, source tracking)
   - ComponentUtils tests (IsEditorOnly hierarchy traversal)
-  - TextureCollector tests (EditorOnly tagged object skipping)
+  - TextureCollector tests (EditorOnly tagged object skipping, RuntimeGenerated skip, ExcludedPath skip)
+  - TextureProcessor tests for resize functionality and settings preservation
 
 ### Fixed
 
@@ -42,6 +56,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Prevents broken references when texture files are moved or renamed
   - TextureGuid now serializes GUID directly for more reliable comparison
   - Legacy path-based settings are automatically detected with migration UI in Inspector
+- **Normal map alpha channel preservation** - Normal maps with alpha now use BC7 instead of BC5
+  - BC5 format only stores 2 channels (RG), losing alpha data
+  - Ensures alpha information is preserved for special normal map workflows
+- **Preview format consistency** - Preview now correctly shows preserved format for already-compressed textures
+  - Matches the actual compression behavior where original compressed formats are maintained
+  - Prevents misleading format predictions in the preview UI
 - **DXT/BC texture dimension compatibility** - `EnsureMultipleOf4` now rounds up instead of down
   - Ensures textures meet the 4x4 block size requirement for DXT/BC compression formats
   - Prevents potential texture corruption from undersized dimensions

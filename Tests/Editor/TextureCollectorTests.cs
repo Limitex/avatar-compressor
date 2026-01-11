@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using dev.limitex.avatar.compressor.texture;
 
@@ -8,8 +9,10 @@ namespace dev.limitex.avatar.compressor.tests
     [TestFixture]
     public class TextureCollectorTests
     {
+        private const string TestAssetFolder = "Assets/_LAC_TMP";
         private TextureCollector _collector;
         private List<Object> _createdObjects;
+        private List<string> _createdAssetPaths;
 
         [SetUp]
         public void SetUp()
@@ -17,6 +20,13 @@ namespace dev.limitex.avatar.compressor.tests
             // Default: minSourceSize=64, skipIfSmallerThan=0, process all texture types
             _collector = new TextureCollector(64, 0, true, true, true, true);
             _createdObjects = new List<Object>();
+            _createdAssetPaths = new List<string>();
+
+            // Ensure test folder exists
+            if (!AssetDatabase.IsValidFolder(TestAssetFolder))
+            {
+                AssetDatabase.CreateFolder("Assets", "_LAC_TMP");
+            }
         }
 
         [TearDown]
@@ -30,6 +40,26 @@ namespace dev.limitex.avatar.compressor.tests
                 }
             }
             _createdObjects.Clear();
+
+            // Delete created asset files
+            foreach (var path in _createdAssetPaths)
+            {
+                if (!string.IsNullOrEmpty(path) && AssetDatabase.LoadAssetAtPath<Object>(path) != null)
+                {
+                    AssetDatabase.DeleteAsset(path);
+                }
+            }
+            _createdAssetPaths.Clear();
+
+            // Clean up test folder if empty
+            if (AssetDatabase.IsValidFolder(TestAssetFolder))
+            {
+                var remaining = AssetDatabase.FindAssets("", new[] { TestAssetFolder });
+                if (remaining.Length == 0)
+                {
+                    AssetDatabase.DeleteAsset(TestAssetFolder);
+                }
+            }
         }
 
         #region Empty/Null Input Tests
@@ -909,7 +939,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var frozenPaths = new[] { "Assets/Textures/frozen1.png", "Assets/Textures/frozen2.png" };
 
-            var collector = new TextureCollector(64, 0, true, true, true, true, frozenPaths);
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, frozenPaths);
 
             Assert.IsNotNull(collector);
         }
@@ -919,7 +949,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var collector = new TextureCollector(64, 0, true, true, true, true, null);
+                var collector = new TextureCollector(64, 0, true, true, true, true, null, null);
             });
         }
 
@@ -928,7 +958,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var collector = new TextureCollector(64, 0, true, true, true, true, new string[0]);
+                var collector = new TextureCollector(64, 0, true, true, true, true, null, new string[0]);
             });
         }
 
@@ -964,6 +994,59 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(values, Contains.Item(SkipReason.TooSmall));
             Assert.That(values, Contains.Item(SkipReason.FilteredByType));
             Assert.That(values, Contains.Item(SkipReason.FrozenSkip));
+            Assert.That(values, Contains.Item(SkipReason.RuntimeGenerated));
+            Assert.That(values, Contains.Item(SkipReason.ExcludedPath));
+        }
+
+        #endregion
+
+        #region RuntimeGenerated Skip Tests
+
+        [Test]
+        public void CollectFromMaterials_RuntimeGeneratedTexture_IsSkipped()
+        {
+            var material = CreateMaterial();
+            var runtimeTexture = CreateRuntimeTexture(512, 512);
+            material.SetTexture("_MainTex", runtimeTexture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            _collector.CollectFromMaterials(new Material[] { material }, textures, collectAll: true);
+
+            Assert.AreEqual(1, textures.Count);
+            Assert.IsTrue(textures.ContainsKey(runtimeTexture));
+            Assert.IsFalse(textures[runtimeTexture].IsProcessed);
+            Assert.AreEqual(SkipReason.RuntimeGenerated, textures[runtimeTexture].SkipReason);
+        }
+
+        [Test]
+        public void CollectFromMaterials_RuntimeGeneratedTexture_WithCollectAllFalse_NotCollected()
+        {
+            var material = CreateMaterial();
+            var runtimeTexture = CreateRuntimeTexture(512, 512);
+            material.SetTexture("_MainTex", runtimeTexture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            _collector.CollectFromMaterials(new Material[] { material }, textures, collectAll: false);
+
+            Assert.AreEqual(0, textures.Count);
+        }
+
+        [Test]
+        public void CollectFromMaterials_MixedTextures_ProcessesOnlyAssetTextures()
+        {
+            var material = CreateMaterial();
+            var assetTexture = CreateTexture(512, 512);
+            var runtimeTexture = CreateRuntimeTexture(512, 512);
+            material.SetTexture("_MainTex", assetTexture);
+            material.SetTexture("_BumpMap", runtimeTexture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            _collector.CollectFromMaterials(new Material[] { material }, textures, collectAll: true);
+
+            Assert.AreEqual(2, textures.Count);
+            Assert.IsTrue(textures[assetTexture].IsProcessed);
+            Assert.IsFalse(textures[runtimeTexture].IsProcessed);
+            Assert.AreEqual(SkipReason.RuntimeGenerated, textures[runtimeTexture].SkipReason);
         }
 
         #endregion
@@ -985,6 +1068,30 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         private Texture2D CreateTexture(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            var pixels = new Color[width * height];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = Color.white;
+            }
+            texture.SetPixels(pixels);
+            texture.Apply();
+
+            // Save as asset to get a valid asset path
+            string assetPath = $"{TestAssetFolder}/TestTexture_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            // Reload from asset to ensure it has a valid asset path
+            var loadedTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+            return loadedTexture;
+        }
+
+        /// <summary>
+        /// Creates a runtime texture without an asset path (for testing RuntimeGenerated skip).
+        /// </summary>
+        private Texture2D CreateRuntimeTexture(int width, int height)
         {
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
             var pixels = new Color[width * height];

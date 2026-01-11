@@ -251,72 +251,19 @@ namespace dev.limitex.avatar.compressor.tests
         #region Constructor Tests
 
         [Test]
-        public void Constructor_WithBasicParameters_CreatesInstance()
+        public void Constructor_WithParameters_CreatesInstance()
         {
             var processor = new TextureProcessor(32, 2048, true);
             Assert.IsNotNull(processor);
         }
 
         [Test]
-        public void Constructor_WithAllParameters_CreatesInstance()
+        public void Constructor_WithCustomMinMax_CreatesInstance()
         {
             var processor = new TextureProcessor(
                 minResolution: 64,
                 maxResolution: 1024,
-                forcePowerOfTwo: false,
-                targetPlatform: CompressionPlatform.Mobile,
-                useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.5f);
-
-            Assert.IsNotNull(processor);
-        }
-
-        [Test]
-        public void Constructor_WithDesktopPlatform_CreatesInstance()
-        {
-            var processor = new TextureProcessor(
-                32, 2048, true,
-                targetPlatform: CompressionPlatform.Desktop);
-
-            Assert.IsNotNull(processor);
-        }
-
-        [Test]
-        public void Constructor_WithMobilePlatform_CreatesInstance()
-        {
-            var processor = new TextureProcessor(
-                32, 2048, true,
-                targetPlatform: CompressionPlatform.Mobile);
-
-            Assert.IsNotNull(processor);
-        }
-
-        [Test]
-        public void Constructor_WithAutoPlatform_CreatesInstance()
-        {
-            var processor = new TextureProcessor(
-                32, 2048, true,
-                targetPlatform: CompressionPlatform.Auto);
-
-            Assert.IsNotNull(processor);
-        }
-
-        [Test]
-        public void Constructor_HighQualityFormatDisabled_CreatesInstance()
-        {
-            var processor = new TextureProcessor(
-                32, 2048, true,
-                useHighQualityFormatForHighComplexity: false);
-
-            Assert.IsNotNull(processor);
-        }
-
-        [Test]
-        public void Constructor_CustomThreshold_CreatesInstance()
-        {
-            var processor = new TextureProcessor(
-                32, 2048, true,
-                highQualityComplexityThreshold: 0.9f);
+                forcePowerOfTwo: false);
 
             Assert.IsNotNull(processor);
         }
@@ -424,11 +371,178 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Resize Tests
+
+        [Test]
+        public void Resize_WithDivisor1_ReturnsSameSize()
+        {
+            var source = CreateTexture(512, 512);
+            var analysis = new TextureAnalysisResult(0.5f, 1, new Vector2Int(512, 512));
+
+            var result = _processor.Resize(source, analysis);
+
+            Assert.AreEqual(512, result.width);
+            Assert.AreEqual(512, result.height);
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_WithDivisor2_ReturnsHalfSize()
+        {
+            var source = CreateTexture(512, 512);
+            var analysis = new TextureAnalysisResult(0.3f, 2, new Vector2Int(256, 256));
+
+            var result = _processor.Resize(source, analysis);
+
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(256, result.height);
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_ReturnsUncompressedRGBA32Format()
+        {
+            var source = CreateTexture(256, 256);
+            var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(128, 128));
+
+            var result = _processor.Resize(source, analysis);
+
+            Assert.AreEqual(TextureFormat.RGBA32, result.format,
+                "Resize should return uncompressed RGBA32 format (compression is handled separately)");
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_UsesRecommendedResolution()
+        {
+            var source = CreateTexture(1024, 512);
+            var analysis = new TextureAnalysisResult(0.4f, 4, new Vector2Int(256, 128));
+
+            var result = _processor.Resize(source, analysis);
+
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(128, result.height);
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_WhenNoDivisorNeeded_ReturnsCopy()
+        {
+            var source = CreateTexture(256, 256);
+            var analysis = new TextureAnalysisResult(0.8f, 1, new Vector2Int(256, 256));
+
+            var result = _processor.Resize(source, analysis);
+
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(256, result.height);
+            Assert.AreNotSame(source, result, "Should return a new texture instance");
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_EnsuresDimensionsAreMultipleOf4()
+        {
+            // Using non-power-of-two processor
+            var processorNoPow2 = new TextureProcessor(32, 2048, false);
+            var source = CreateTexture(300, 300);
+            var analysis = new TextureAnalysisResult(0.5f, 1, new Vector2Int(300, 300));
+
+            var result = processorNoPow2.Resize(source, analysis);
+
+            Assert.AreEqual(0, result.width % 4, "Width should be multiple of 4 for DXT/BC compression compatibility");
+            Assert.AreEqual(0, result.height % 4, "Height should be multiple of 4 for DXT/BC compression compatibility");
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_PreservesTextureSettings()
+        {
+            var source = CreateTexture(512, 512);
+            source.wrapModeU = TextureWrapMode.Repeat;
+            source.wrapModeV = TextureWrapMode.Clamp;
+            source.filterMode = FilterMode.Trilinear;
+            source.anisoLevel = 8;
+
+            var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(256, 256));
+
+            var result = _processor.Resize(source, analysis);
+
+            Assert.AreEqual(TextureWrapMode.Repeat, result.wrapModeU);
+            Assert.AreEqual(TextureWrapMode.Clamp, result.wrapModeV);
+            Assert.AreEqual(FilterMode.Trilinear, result.filterMode);
+            Assert.AreEqual(8, result.anisoLevel);
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_PreservesMipmapSetting()
+        {
+            var sourceWithMips = new Texture2D(512, 512, TextureFormat.RGBA32, true);
+            var sourceWithoutMips = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+
+            var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(256, 256));
+
+            var resultWithMips = _processor.Resize(sourceWithMips, analysis);
+            var resultWithoutMips = _processor.Resize(sourceWithoutMips, analysis);
+
+            Assert.IsTrue(resultWithMips.mipmapCount > 1, "Should preserve mipmaps when source has mipmaps");
+            Assert.AreEqual(1, resultWithoutMips.mipmapCount, "Should not add mipmaps when source has none");
+
+            Object.DestroyImmediate(sourceWithMips);
+            Object.DestroyImmediate(sourceWithoutMips);
+            Object.DestroyImmediate(resultWithMips);
+            Object.DestroyImmediate(resultWithoutMips);
+        }
+
+        [Test]
+        public void Resize_NonSquareTexture_PreservesAspectRatio()
+        {
+            var source = CreateTexture(1024, 256);
+            var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(512, 128));
+
+            var result = _processor.Resize(source, analysis);
+
+            Assert.AreEqual(512, result.width);
+            Assert.AreEqual(128, result.height);
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private static bool IsPowerOfTwo(int x)
         {
             return x > 0 && (x & (x - 1)) == 0;
+        }
+
+        private Texture2D CreateTexture(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            var pixels = new Color[width * height];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = Color.white;
+            }
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return texture;
         }
 
         #endregion
