@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Prevents corruption of data textures dynamically created during build
   - These textures may use RGB values for non-visual data (depth, deformation vectors)
   - New `SkipReason.RuntimeGenerated` enum value for UI display
+- **Path-based texture exclusion** - Exclude textures by asset path prefix
+  - `ExcludedPaths` list in TextureCompressor component for user-defined exclusions
+  - Textures with paths starting with listed prefixes are skipped from compression
+  - Built-in presets for common packages (e.g., VRCFury Temp)
+  - Collapsible "Path Exclusions" section in Editor UI with preset buttons
+  - New `SkipReason.ExcludedPath` enum value for UI display
 - **Animation-referenced material support** - Materials referenced by animations are now included in compression
   - Uses NDMF's `AnimatorServicesContext` to detect materials in animation clips (MaterialSwap, etc.)
   - MaterialCloner can now clone additional materials beyond renderer-attached ones
@@ -41,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - MaterialCollector tests (animation/component material detection, EditorOnly filtering)
   - MaterialReference tests (equality, cloning, source tracking)
   - ComponentUtils tests (IsEditorOnly hierarchy traversal)
-  - TextureCollector tests (EditorOnly tagged object skipping, RuntimeGenerated skip)
+  - TextureCollector tests (EditorOnly tagged object skipping, RuntimeGenerated skip, ExcludedPath skip)
   - TextureProcessor tests for resize functionality and settings preservation
 
 ### Fixed
