@@ -33,6 +33,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Frozen texture identification** - Changed from asset path to GUID-based identification (**Breaking**)
+  - `FrozenTextureSettings.TexturePath` renamed to `TextureGuid`
+  - `TextureCompressor` API methods now accept GUID instead of asset path:
+    - `IsFrozen(string guid)`
+    - `GetFrozenSettings(string guid)`
+    - `SetFrozenSettings(string guid, FrozenTextureSettings settings)`
+    - `UnfreezeTexture(string guid)`
+  - Prevents broken references when texture files are moved or renamed
+  - Legacy path-based settings are automatically migrated via `[FormerlySerializedAs]`
+  - Migration UI in Inspector to convert legacy path entries to GUID
 - **TextureProcessor responsibility simplified** - Now handles resizing only, compression moved to TextureFormatSelector
   - Clearer separation of concerns between resizing and compression
   - TextureCompressorService now coordinates both operations
@@ -52,10 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Frozen texture GUID reference** - Frozen textures are now identified by GUID instead of asset path
-  - Prevents broken references when texture files are moved or renamed
-  - TextureGuid now serializes GUID directly for more reliable comparison
-  - Legacy path-based settings are automatically detected with migration UI in Inspector
 - **Normal map alpha channel preservation** - Normal maps with alpha now use BC7 instead of BC5
   - BC5 format only stores 2 channels (RG), losing alpha data
   - Ensures alpha information is preserved for special normal map workflows
