@@ -10,12 +10,21 @@ namespace dev.limitex.avatar.compressor.tests
     [TestFixture]
     public class TextureCompressorServiceTests
     {
+        private const string TestAssetFolder = "Assets/_LAC_TMP";
         private List<Object> _createdObjects;
+        private List<string> _createdAssetPaths;
 
         [SetUp]
         public void SetUp()
         {
             _createdObjects = new List<Object>();
+            _createdAssetPaths = new List<string>();
+
+            // Ensure test folder exists
+            if (!AssetDatabase.IsValidFolder(TestAssetFolder))
+            {
+                AssetDatabase.CreateFolder("Assets", "_LAC_TMP");
+            }
         }
 
         [TearDown]
@@ -29,6 +38,26 @@ namespace dev.limitex.avatar.compressor.tests
                 }
             }
             _createdObjects.Clear();
+
+            // Delete created asset files
+            foreach (var path in _createdAssetPaths)
+            {
+                if (!string.IsNullOrEmpty(path) && AssetDatabase.LoadAssetAtPath<Object>(path) != null)
+                {
+                    AssetDatabase.DeleteAsset(path);
+                }
+            }
+            _createdAssetPaths.Clear();
+
+            // Clean up test folder if empty
+            if (AssetDatabase.IsValidFolder(TestAssetFolder))
+            {
+                var remaining = AssetDatabase.FindAssets("", new[] { TestAssetFolder });
+                if (remaining.Length == 0)
+                {
+                    AssetDatabase.DeleteAsset(TestAssetFolder);
+                }
+            }
         }
 
         #region Constructor Tests
@@ -980,8 +1009,15 @@ namespace dev.limitex.avatar.compressor.tests
 
             texture.SetPixels(pixels);
             texture.Apply();
-            _createdObjects.Add(texture);
-            return texture;
+
+            // Save as asset to get a valid asset path
+            string assetPath = $"{TestAssetFolder}/TestTexture_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            // Reload from asset to ensure it has a valid asset path
+            var loadedTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+            return loadedTexture;
         }
 
         private static bool IsPowerOfTwo(int x)
