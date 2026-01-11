@@ -510,7 +510,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
             bool hasLegacyPaths = false;
             foreach (var frozen in compressor.FrozenTextures)
             {
-                if (!string.IsNullOrEmpty(frozen.TextureGuid) && frozen.TextureGuid.StartsWith("Assets/"))
+                if (!string.IsNullOrEmpty(frozen.TextureGuid) &&
+                    (frozen.TextureGuid.StartsWith("Assets/") || frozen.TextureGuid.StartsWith("Packages/")))
                 {
                     hasLegacyPaths = true;
                     break;
@@ -527,7 +528,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 int converted = 0;
                 foreach (var frozen in compressor.FrozenTextures)
                 {
-                    if (!string.IsNullOrEmpty(frozen.TextureGuid) && frozen.TextureGuid.StartsWith("Assets/"))
+                    if (!string.IsNullOrEmpty(frozen.TextureGuid) &&
+                        (frozen.TextureGuid.StartsWith("Assets/") || frozen.TextureGuid.StartsWith("Packages/")))
                     {
                         string guid = AssetDatabase.AssetPathToGUID(frozen.TextureGuid);
                         if (!string.IsNullOrEmpty(guid))
