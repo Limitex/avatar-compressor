@@ -22,7 +22,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void GuidConstructor_SetsGuidAndDefaults()
         {
-            var guid = "a1b2c3d4e5f6g7h8";
+            var guid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
             var settings = new FrozenTextureSettings(guid);
 
             Assert.AreEqual(guid, settings.TextureGuid);
@@ -34,7 +34,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void FullConstructor_SetsAllValues()
         {
-            var guid = "a1b2c3d4e5f6g7h8";
+            var guid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
             var settings = new FrozenTextureSettings(guid, 4, FrozenTextureFormat.BC7, true);
 
             Assert.AreEqual(guid, settings.TextureGuid);
@@ -82,9 +82,9 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var settings = new FrozenTextureSettings();
 
-            settings.TextureGuid = "newguid12345678";
+            settings.TextureGuid = "0123456789abcdef0123456789abcdef";
 
-            Assert.AreEqual("newguid12345678", settings.TextureGuid);
+            Assert.AreEqual("0123456789abcdef0123456789abcdef", settings.TextureGuid);
         }
 
         #endregion
