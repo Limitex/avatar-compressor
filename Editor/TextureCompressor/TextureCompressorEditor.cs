@@ -49,6 +49,10 @@ namespace dev.limitex.avatar.compressor.texture.editor
         private bool _showFrozenSection = true;
         private Vector2 _frozenScrollPosition;
 
+        // Cached GUIStyle for GitHub section
+        private static GUIStyle _centeredLabelStyle;
+        private static GUIStyle _linkStyle;
+
         // Excluded paths section state (collapsed by default)
         private bool _showExcludedPathsSection = false;
 
@@ -171,6 +175,9 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             EditorGUILayout.Space(15);
             DrawPreviewSection(compressor);
+
+            EditorGUILayout.Space(15);
+            DrawGitHubSection();
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -1352,6 +1359,61 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
                 _ => Color.white
             };
+        }
+
+        private void DrawGitHubSection()
+        {
+            DrawSeparator();
+
+            // Initialize cached style if needed
+            _centeredLabelStyle ??= new GUIStyle(EditorStyles.miniLabel)
+            {
+                alignment = TextAnchor.MiddleCenter
+            };
+
+            // Gray text (line 1)
+            var savedColor = GUI.color;
+            GUI.color = new Color(0.6f, 0.6f, 0.6f);
+            EditorGUILayout.LabelField("Bugs? Ideas? Let us know! Stars appreciated.", _centeredLabelStyle);
+            GUI.color = savedColor;
+
+            // Clickable link (line 2)
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            var linkContent = new GUIContent("Limitex/avatar-compressor", "Open GitHub repository");
+
+            // Initialize cached link style if needed
+            _linkStyle ??= new GUIStyle(EditorStyles.miniLabel);
+            var linkRect = GUILayoutUtility.GetRect(linkContent, _linkStyle);
+            var isHovering = linkRect.Contains(Event.current.mousePosition);
+
+            // Theme-aware link colors (brighter for dark theme, darker for light theme)
+            Color normalColor = EditorGUIUtility.isProSkin
+                ? new Color(0.4f, 0.6f, 1.0f)   // Brighter blue for dark theme
+                : new Color(0.2f, 0.4f, 0.8f);  // Darker blue for light theme
+            Color hoverColor = EditorGUIUtility.isProSkin
+                ? new Color(0.6f, 0.8f, 1.0f)   // Even brighter on hover (dark theme)
+                : new Color(0.3f, 0.5f, 0.9f);  // Slightly brighter on hover (light theme)
+
+            // Use GUI.color instead of modifying static style directly
+            var linkSavedColor = GUI.color;
+            GUI.color = isHovering ? hoverColor : normalColor;
+            if (GUI.Button(linkRect, linkContent, _linkStyle))
+            {
+                Application.OpenURL("https://github.com/Limitex/avatar-compressor");
+            }
+            GUI.color = linkSavedColor;
+            EditorGUIUtility.AddCursorRect(linkRect, MouseCursor.Link);
+
+            // Request repaint for hover effect
+            if (isHovering)
+            {
+                Repaint();
+            }
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
         }
 
         /// <summary>
