@@ -44,7 +44,7 @@ namespace dev.limitex.avatar.compressor.texture
             bool processEmissionMaps,
             bool processOtherTextures,
             IEnumerable<string> frozenSkipPaths = null,
-            IEnumerable<Texture2D> excludedTextures = null)
+            IEnumerable<string> excludedTexturePaths = null)
         {
             _minSourceSize = minSourceSize;
             _skipIfSmallerThan = skipIfSmallerThan;
@@ -55,19 +55,9 @@ namespace dev.limitex.avatar.compressor.texture
             _frozenSkipPaths = frozenSkipPaths != null
                 ? new HashSet<string>(frozenSkipPaths)
                 : new HashSet<string>();
-            _excludedTexturePaths = new HashSet<string>();
-            if (excludedTextures != null)
-            {
-                foreach (var tex in excludedTextures)
-                {
-                    if (tex != null)
-                    {
-                        string path = AssetDatabase.GetAssetPath(tex);
-                        if (!string.IsNullOrEmpty(path))
-                            _excludedTexturePaths.Add(path);
-                    }
-                }
-            }
+            _excludedTexturePaths = excludedTexturePaths != null
+                ? new HashSet<string>(excludedTexturePaths.Where(p => !string.IsNullOrEmpty(p)))
+                : new HashSet<string>();
         }
 
         /// <summary>

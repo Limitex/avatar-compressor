@@ -47,6 +47,12 @@ namespace dev.limitex.avatar.compressor.texture
                 .Where(f => f.Skip && !string.IsNullOrEmpty(f.TexturePath))
                 .Select(f => f.TexturePath);
 
+            // Get excluded texture paths
+            var excludedTexturePaths = config.ExcludedTextures
+                .Where(t => t != null)
+                .Select(t => AssetDatabase.GetAssetPath(t))
+                .Where(p => !string.IsNullOrEmpty(p));
+
             _collector = new TextureCollector(
                 config.MinSourceSize,
                 config.SkipIfSmallerThan,
@@ -55,7 +61,7 @@ namespace dev.limitex.avatar.compressor.texture
                 config.ProcessEmissionMaps,
                 config.ProcessOtherTextures,
                 frozenSkipPaths,
-                config.ExcludedTextures
+                excludedTexturePaths
             );
 
             _processor = new TextureProcessor(

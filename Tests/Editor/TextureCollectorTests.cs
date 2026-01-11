@@ -1054,17 +1054,17 @@ namespace dev.limitex.avatar.compressor.tests
         #region UserExcluded Skip Tests
 
         [Test]
-        public void Constructor_WithExcludedTextures_AcceptsParameter()
+        public void Constructor_WithExcludedTexturePaths_AcceptsParameter()
         {
-            var excludedTextures = new List<Texture2D>();
+            var excludedPaths = new List<string>();
 
-            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedTextures);
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedPaths);
 
             Assert.IsNotNull(collector);
         }
 
         [Test]
-        public void Constructor_WithNullExcludedTextures_DoesNotThrow()
+        public void Constructor_WithNullExcludedTexturePaths_DoesNotThrow()
         {
             Assert.DoesNotThrow(() =>
             {
@@ -1083,8 +1083,8 @@ namespace dev.limitex.avatar.compressor.tests
             material.SetTexture("_MainTex", texture);
             renderer.sharedMaterial = material;
 
-            var excludedTextures = new List<Texture2D> { texture };
-            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedTextures);
+            var excludedPaths = new List<string> { AssetDatabase.GetAssetPath(texture) };
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedPaths);
 
             var result = collector.Collect(root);
 
@@ -1102,8 +1102,8 @@ namespace dev.limitex.avatar.compressor.tests
             material.SetTexture("_MainTex", texture);
             renderer.sharedMaterial = material;
 
-            var excludedTextures = new List<Texture2D> { texture };
-            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedTextures);
+            var excludedPaths = new List<string> { AssetDatabase.GetAssetPath(texture) };
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedPaths);
 
             var result = collector.CollectAll(root);
 
@@ -1126,8 +1126,8 @@ namespace dev.limitex.avatar.compressor.tests
             material.SetTexture("_BumpMap", normalTexture);
             renderer.sharedMaterial = material;
 
-            var excludedTextures = new List<Texture2D> { excludedTexture };
-            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedTextures);
+            var excludedPaths = new List<string> { AssetDatabase.GetAssetPath(excludedTexture) };
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedPaths);
 
             var result = collector.Collect(root);
 
@@ -1137,7 +1137,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void Collect_ExcludedTextureWithNullInList_SkipsNullEntries()
+        public void Collect_ExcludedTexturePathsWithEmptyStrings_SkipsEmptyEntries()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1147,12 +1147,12 @@ namespace dev.limitex.avatar.compressor.tests
             material.SetTexture("_MainTex", texture);
             renderer.sharedMaterial = material;
 
-            var excludedTextures = new List<Texture2D> { null, null };
-            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedTextures);
+            var excludedPaths = new List<string> { "", null, "   " };
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedPaths);
 
             var result = collector.Collect(root);
 
-            // Texture should be processed since nulls are skipped
+            // Texture should be processed since empty/null paths are skipped
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(texture));
         }
