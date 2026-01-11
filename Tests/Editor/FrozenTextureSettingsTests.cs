@@ -13,19 +13,19 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var settings = new FrozenTextureSettings();
 
-            Assert.IsNull(settings.TexturePath);
+            Assert.IsNull(settings.TextureGuid);
             Assert.AreEqual(1, settings.Divisor);
             Assert.AreEqual(FrozenTextureFormat.Auto, settings.Format);
             Assert.IsFalse(settings.Skip);
         }
 
         [Test]
-        public void PathConstructor_SetsPathAndDefaults()
+        public void GuidConstructor_SetsGuidAndDefaults()
         {
-            var path = "Assets/Textures/test.png";
-            var settings = new FrozenTextureSettings(path);
+            var guid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
+            var settings = new FrozenTextureSettings(guid);
 
-            Assert.AreEqual(path, settings.TexturePath);
+            Assert.AreEqual(guid, settings.TextureGuid);
             Assert.AreEqual(1, settings.Divisor);
             Assert.AreEqual(FrozenTextureFormat.Auto, settings.Format);
             Assert.IsFalse(settings.Skip);
@@ -34,10 +34,10 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void FullConstructor_SetsAllValues()
         {
-            var path = "Assets/Textures/test.png";
-            var settings = new FrozenTextureSettings(path, 4, FrozenTextureFormat.BC7, true);
+            var guid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
+            var settings = new FrozenTextureSettings(guid, 4, FrozenTextureFormat.BC7, true);
 
-            Assert.AreEqual(path, settings.TexturePath);
+            Assert.AreEqual(guid, settings.TextureGuid);
             Assert.AreEqual(4, settings.Divisor);
             Assert.AreEqual(FrozenTextureFormat.BC7, settings.Format);
             Assert.IsTrue(settings.Skip);
@@ -78,13 +78,13 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void TexturePath_CanBeModified()
+        public void TextureGuid_CanBeModified()
         {
             var settings = new FrozenTextureSettings();
 
-            settings.TexturePath = "Assets/NewPath/texture.png";
+            settings.TextureGuid = "0123456789abcdef0123456789abcdef";
 
-            Assert.AreEqual("Assets/NewPath/texture.png", settings.TexturePath);
+            Assert.AreEqual("0123456789abcdef0123456789abcdef", settings.TextureGuid);
         }
 
         #endregion

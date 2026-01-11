@@ -33,6 +33,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Frozen texture identification** - Changed from asset path to GUID-based identification (**Breaking**)
+  - `FrozenTextureSettings.TexturePath` renamed to `TextureGuid`
+  - `TextureCompressor` API methods now accept GUID instead of asset path:
+    - `IsFrozen(string guid)`
+    - `GetFrozenSettings(string guid)`
+    - `SetFrozenSettings(string guid, FrozenTextureSettings settings)`
+    - `UnfreezeTexture(string guid)`
+  - Prevents broken references when texture files are moved or renamed
+  - Legacy path-based settings are automatically migrated via `[FormerlySerializedAs]`
+  - Migration UI in Inspector to convert legacy path entries to GUID
 - **TextureProcessor responsibility simplified** - Now handles resizing only, compression moved to TextureFormatSelector
   - Clearer separation of concerns between resizing and compression
   - TextureCompressorService now coordinates both operations

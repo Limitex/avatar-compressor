@@ -308,43 +308,43 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void IsFrozen_EmptyList_ReturnsFalse()
         {
-            Assert.IsFalse(_config.IsFrozen("Assets/Textures/test.png"));
+            Assert.IsFalse(_config.IsFrozen("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"));
         }
 
         [Test]
         public void IsFrozen_AfterAddingFrozen_ReturnsTrue()
         {
-            var path = "Assets/Textures/test.png";
-            _config.SetFrozenSettings(path, new FrozenTextureSettings(path));
+            var guid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
+            _config.SetFrozenSettings(guid, new FrozenTextureSettings(guid));
 
-            Assert.IsTrue(_config.IsFrozen(path));
+            Assert.IsTrue(_config.IsFrozen(guid));
         }
 
         [Test]
-        public void IsFrozen_DifferentPath_ReturnsFalse()
+        public void IsFrozen_DifferentGuid_ReturnsFalse()
         {
-            _config.SetFrozenSettings("Assets/Textures/one.png",
-                new FrozenTextureSettings("Assets/Textures/one.png"));
+            _config.SetFrozenSettings("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1",
+                new FrozenTextureSettings("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1"));
 
-            Assert.IsFalse(_config.IsFrozen("Assets/Textures/two.png"));
+            Assert.IsFalse(_config.IsFrozen("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d2"));
         }
 
         [Test]
         public void GetFrozenSettings_EmptyList_ReturnsNull()
         {
-            var result = _config.GetFrozenSettings("Assets/Textures/test.png");
+            var result = _config.GetFrozenSettings("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4");
 
             Assert.IsNull(result);
         }
 
         [Test]
-        public void GetFrozenSettings_ExistingPath_ReturnsSettings()
+        public void GetFrozenSettings_ExistingGuid_ReturnsSettings()
         {
-            var path = "Assets/Textures/test.png";
-            var settings = new FrozenTextureSettings(path, 4, FrozenTextureFormat.BC7, false);
-            _config.SetFrozenSettings(path, settings);
+            var guid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
+            var settings = new FrozenTextureSettings(guid, 4, FrozenTextureFormat.BC7, false);
+            _config.SetFrozenSettings(guid, settings);
 
-            var result = _config.GetFrozenSettings(path);
+            var result = _config.GetFrozenSettings(guid);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(4, result.Divisor);
@@ -352,23 +352,23 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void SetFrozenSettings_NewPath_AddToList()
+        public void SetFrozenSettings_NewGuid_AddToList()
         {
-            var path = "Assets/Textures/test.png";
-            var settings = new FrozenTextureSettings(path, 2, FrozenTextureFormat.DXT5, false);
+            var guid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
+            var settings = new FrozenTextureSettings(guid, 2, FrozenTextureFormat.DXT5, false);
 
-            _config.SetFrozenSettings(path, settings);
+            _config.SetFrozenSettings(guid, settings);
 
             Assert.AreEqual(1, _config.FrozenTextures.Count);
-            Assert.AreEqual(path, _config.FrozenTextures[0].TexturePath);
+            Assert.AreEqual(guid, _config.FrozenTextures[0].TextureGuid);
         }
 
         [Test]
-        public void SetFrozenSettings_ExistingPath_UpdatesSettings()
+        public void SetFrozenSettings_ExistingGuid_UpdatesSettings()
         {
-            var path = "Assets/Textures/test.png";
-            _config.SetFrozenSettings(path, new FrozenTextureSettings(path, 2, FrozenTextureFormat.DXT1, false));
-            _config.SetFrozenSettings(path, new FrozenTextureSettings(path, 8, FrozenTextureFormat.BC7, true));
+            var guid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
+            _config.SetFrozenSettings(guid, new FrozenTextureSettings(guid, 2, FrozenTextureFormat.DXT1, false));
+            _config.SetFrozenSettings(guid, new FrozenTextureSettings(guid, 8, FrozenTextureFormat.BC7, true));
 
             Assert.AreEqual(1, _config.FrozenTextures.Count);
             Assert.AreEqual(8, _config.FrozenTextures[0].Divisor);
@@ -377,24 +377,24 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void UnfreezeTexture_ExistingPath_RemovesFromList()
+        public void UnfreezeTexture_ExistingGuid_RemovesFromList()
         {
-            var path = "Assets/Textures/test.png";
-            _config.SetFrozenSettings(path, new FrozenTextureSettings(path));
+            var guid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
+            _config.SetFrozenSettings(guid, new FrozenTextureSettings(guid));
 
-            _config.UnfreezeTexture(path);
+            _config.UnfreezeTexture(guid);
 
             Assert.AreEqual(0, _config.FrozenTextures.Count);
-            Assert.IsFalse(_config.IsFrozen(path));
+            Assert.IsFalse(_config.IsFrozen(guid));
         }
 
         [Test]
-        public void UnfreezeTexture_NonExistingPath_DoesNothing()
+        public void UnfreezeTexture_NonExistingGuid_DoesNothing()
         {
-            _config.SetFrozenSettings("Assets/Textures/one.png",
-                new FrozenTextureSettings("Assets/Textures/one.png"));
+            _config.SetFrozenSettings("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1",
+                new FrozenTextureSettings("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1"));
 
-            _config.UnfreezeTexture("Assets/Textures/two.png");
+            _config.UnfreezeTexture("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d2");
 
             Assert.AreEqual(1, _config.FrozenTextures.Count);
         }
@@ -539,24 +539,24 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void SetFrozenSettings_InvalidDivisor_AdjustsToClosestValid()
         {
-            var path = "Assets/Textures/test.png";
-            var settings = new FrozenTextureSettings(path, 3, FrozenTextureFormat.Auto, false);
+            var guid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
+            var settings = new FrozenTextureSettings(guid, 3, FrozenTextureFormat.Auto, false);
 
-            _config.SetFrozenSettings(path, settings);
+            _config.SetFrozenSettings(guid, settings);
 
-            var result = _config.GetFrozenSettings(path);
+            var result = _config.GetFrozenSettings(guid);
             Assert.That(result.Divisor, Is.EqualTo(2).Or.EqualTo(4));
         }
 
         [Test]
         public void SetFrozenSettings_ValidDivisor_PreservesDivisor()
         {
-            var path = "Assets/Textures/test.png";
-            var settings = new FrozenTextureSettings(path, 8, FrozenTextureFormat.Auto, false);
+            var guid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
+            var settings = new FrozenTextureSettings(guid, 8, FrozenTextureFormat.Auto, false);
 
-            _config.SetFrozenSettings(path, settings);
+            _config.SetFrozenSettings(guid, settings);
 
-            var result = _config.GetFrozenSettings(path);
+            var result = _config.GetFrozenSettings(guid);
             Assert.AreEqual(8, result.Divisor);
         }
 
