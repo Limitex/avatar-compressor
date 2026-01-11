@@ -939,7 +939,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var frozenPaths = new[] { "Assets/Textures/frozen1.png", "Assets/Textures/frozen2.png" };
 
-            var collector = new TextureCollector(64, 0, true, true, true, true, frozenPaths);
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, frozenPaths);
 
             Assert.IsNotNull(collector);
         }
@@ -949,7 +949,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var collector = new TextureCollector(64, 0, true, true, true, true, null);
+                var collector = new TextureCollector(64, 0, true, true, true, true, null, null);
             });
         }
 
@@ -958,7 +958,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var collector = new TextureCollector(64, 0, true, true, true, true, new string[0]);
+                var collector = new TextureCollector(64, 0, true, true, true, true, null, new string[0]);
             });
         }
 
@@ -995,6 +995,7 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(values, Contains.Item(SkipReason.FilteredByType));
             Assert.That(values, Contains.Item(SkipReason.FrozenSkip));
             Assert.That(values, Contains.Item(SkipReason.RuntimeGenerated));
+            Assert.That(values, Contains.Item(SkipReason.ExcludedPath));
         }
 
         #endregion

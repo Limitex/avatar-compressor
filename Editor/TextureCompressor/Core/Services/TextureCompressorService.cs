@@ -54,6 +54,7 @@ namespace dev.limitex.avatar.compressor.texture
                 config.ProcessNormalMaps,
                 config.ProcessEmissionMaps,
                 config.ProcessOtherTextures,
+                config.ExcludedPaths,
                 frozenSkipPaths
             );
 

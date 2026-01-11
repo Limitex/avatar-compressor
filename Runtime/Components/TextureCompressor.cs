@@ -55,6 +55,10 @@ namespace dev.limitex.avatar.compressor.texture
         [Tooltip("Skip textures smaller than or equal to this size")]
         public int SkipIfSmallerThan = 128;
 
+        [Header("Path Exclusions")]
+        [Tooltip("Texture paths starting with these prefixes will be excluded from compression")]
+        public List<string> ExcludedPaths = new List<string>(ExcludedPathPresets.GetDefaultPaths());
+
         [Header("Compression Format")]
         [Tooltip("Target platform for compression format selection (Auto detects from build target)")]
         public CompressionPlatform TargetPlatform = CompressionPlatform.Auto;

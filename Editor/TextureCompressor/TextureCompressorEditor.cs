@@ -30,6 +30,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
         private SerializedProperty _processOtherTextures;
         private SerializedProperty _minSourceSize;
         private SerializedProperty _skipIfSmallerThan;
+        private SerializedProperty _excludedPaths;
         private SerializedProperty _targetPlatform;
         private SerializedProperty _useHighQualityFormatForHighComplexity;
         private SerializedProperty _enableLogging;
@@ -47,6 +48,9 @@ namespace dev.limitex.avatar.compressor.texture.editor
         // Frozen textures section state
         private bool _showFrozenSection = true;
         private Vector2 _frozenScrollPosition;
+
+        // Excluded paths section state (collapsed by default)
+        private bool _showExcludedPathsSection = false;
 
         private static readonly Color HighQualityColor = new Color(0.1f, 0.9f, 0.6f);
         private static readonly Color QualityColor = new Color(0.2f, 0.8f, 0.4f);
@@ -95,6 +99,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
             _processOtherTextures = serializedObject.FindProperty("ProcessOtherTextures");
             _minSourceSize = serializedObject.FindProperty("MinSourceSize");
             _skipIfSmallerThan = serializedObject.FindProperty("SkipIfSmallerThan");
+            _excludedPaths = serializedObject.FindProperty("ExcludedPaths");
             _targetPlatform = serializedObject.FindProperty("TargetPlatform");
             _useHighQualityFormatForHighComplexity = serializedObject.FindProperty("UseHighQualityFormatForHighComplexity");
             _enableLogging = serializedObject.FindProperty("EnableLogging");
@@ -147,6 +152,19 @@ namespace dev.limitex.avatar.compressor.texture.editor
             EditorGUILayout.Space(10);
 
             EditorGUILayout.PropertyField(_enableLogging, new GUIContent("Enable Logging"));
+
+            EditorGUILayout.Space(10);
+
+            // Excluded paths section (collapsed by default for troubleshooting)
+            int excludedCount = compressor.ExcludedPaths.Count;
+            string excludedLabel = excludedCount > 0
+                ? $"Path Exclusions ({excludedCount})"
+                : "Path Exclusions";
+            _showExcludedPathsSection = EditorGUILayout.Foldout(_showExcludedPathsSection, excludedLabel, true);
+            if (_showExcludedPathsSection)
+            {
+                DrawExcludedPathsSection(compressor);
+            }
 
             EditorGUILayout.Space(15);
             DrawFrozenTexturesSection(compressor);
@@ -362,6 +380,102 @@ namespace dev.limitex.avatar.compressor.texture.editor
             EndBox();
         }
 
+        private void DrawExcludedPathsSection(TextureCompressor compressor)
+        {
+            BeginBox();
+
+            // Display existing paths
+            for (int i = compressor.ExcludedPaths.Count - 1; i >= 0; i--)
+            {
+                string currentPath = compressor.ExcludedPaths[i];
+
+                EditorGUILayout.BeginHorizontal();
+
+                EditorGUI.BeginChangeCheck();
+                string newPath = EditorGUILayout.TextField(currentPath);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(compressor, "Edit Excluded Path");
+                    compressor.ExcludedPaths[i] = newPath;
+                    EditorUtility.SetDirty(compressor);
+                    currentPath = newPath;
+                }
+
+                if (GUILayout.Button("X", GUILayout.Width(25)))
+                {
+                    Undo.RecordObject(compressor, "Remove Excluded Path");
+                    compressor.ExcludedPaths.RemoveAt(i);
+                    EditorUtility.SetDirty(compressor);
+                    EditorGUILayout.EndHorizontal();
+                    continue;
+                }
+
+                EditorGUILayout.EndHorizontal();
+
+                // Show warning if path doesn't exist
+                if (!string.IsNullOrWhiteSpace(currentPath) && !IsValidAssetPath(currentPath))
+                {
+                    var savedColor = GUI.color;
+                    GUI.color = new Color(1f, 0.7f, 0.3f);
+                    EditorGUILayout.LabelField("  ⚠ Path not found", EditorStyles.miniLabel);
+                    GUI.color = savedColor;
+                }
+            }
+
+            // Add new path button with dropdown for presets
+            if (GUILayout.Button("+ Add Path..."))
+            {
+                ShowAddPathMenu(compressor);
+            }
+
+            if (compressor.ExcludedPaths.Count == 0)
+            {
+                EditorGUILayout.HelpBox("Textures with paths starting with listed prefixes will be skipped.", MessageType.None);
+            }
+
+            EndBox();
+        }
+
+        private void ShowAddPathMenu(TextureCompressor compressor)
+        {
+            var menu = new GenericMenu();
+
+            // Empty path option
+            menu.AddItem(new GUIContent("Empty"), false, () =>
+            {
+                Undo.RecordObject(compressor, "Add Excluded Path");
+                compressor.ExcludedPaths.Add("");
+                EditorUtility.SetDirty(compressor);
+            });
+
+            // Separator and presets
+            if (ExcludedPathPresets.Presets.Length > 0)
+            {
+                menu.AddSeparator("");
+
+                foreach (var preset in ExcludedPathPresets.Presets)
+                {
+                    bool alreadyAdded = compressor.ExcludedPaths.Contains(preset.Path);
+                    if (alreadyAdded)
+                    {
+                        menu.AddDisabledItem(new GUIContent($"{preset.Label} (added)"));
+                    }
+                    else
+                    {
+                        var presetCopy = preset;
+                        menu.AddItem(new GUIContent(preset.Label), false, () =>
+                        {
+                            Undo.RecordObject(compressor, $"Add {presetCopy.Label} Excluded Path");
+                            compressor.ExcludedPaths.Add(presetCopy.Path);
+                            EditorUtility.SetDirty(compressor);
+                        });
+                    }
+                }
+            }
+
+            menu.ShowAsContext();
+        }
+
         private void DrawFrozenTexturesSection(TextureCompressor compressor)
         {
             int frozenCount = compressor.FrozenTextures.Count;
@@ -550,6 +664,11 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 hash = hash * 31 + config.ProcessOtherTextures.GetHashCode();
                 hash = hash * 31 + config.MinSourceSize;
                 hash = hash * 31 + config.SkipIfSmallerThan;
+                hash = hash * 31 + config.ExcludedPaths.Count;
+                foreach (var path in config.ExcludedPaths)
+                {
+                    hash = hash * 31 + (path?.GetHashCode() ?? 0);
+                }
                 hash = hash * 31 + config.TargetPlatform.GetHashCode();
                 hash = hash * 31 + config.UseHighQualityFormatForHighComplexity.GetHashCode();
                 hash = hash * 31 + config.gameObject.GetInstanceID();
@@ -593,7 +712,8 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 config.ProcessMainTextures,
                 config.ProcessNormalMaps,
                 config.ProcessEmissionMaps,
-                config.ProcessOtherTextures
+                config.ProcessOtherTextures,
+                config.ExcludedPaths
             );
 
             var processor = new TextureProcessor(
@@ -1006,6 +1126,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         SkipReason.FilteredByType => "Filtered by type",
                         SkipReason.FrozenSkip => "User frozen (skipped)",
                         SkipReason.RuntimeGenerated => "Runtime generated",
+                        SkipReason.ExcludedPath => "Excluded by path",
                         _ => "Skipped"
                     };
                     EditorGUILayout.LabelField(reasonText, EditorStyles.miniLabel);
@@ -1153,6 +1274,47 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
                 _ => Color.white
             };
+        }
+
+        /// <summary>
+        /// Checks if the given path prefix exists as a valid folder in the project.
+        /// </summary>
+        private static bool IsValidAssetPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return false;
+
+            // Remove trailing slash for folder check
+            string folderPath = path.TrimEnd('/', '\\');
+
+            // Check if it's a valid folder
+            if (AssetDatabase.IsValidFolder(folderPath))
+                return true;
+
+            // Check if parent folder exists (for partial paths like "Assets/Textures/")
+            int lastSlash = folderPath.LastIndexOfAny(new[] { '/', '\\' });
+            if (lastSlash > 0)
+            {
+                string parentPath = folderPath.Substring(0, lastSlash);
+                if (AssetDatabase.IsValidFolder(parentPath))
+                    return true;
+            }
+
+            // Check Packages folder specially (may not appear as regular folder)
+            if (path.StartsWith("Packages/"))
+            {
+                // Extract package name (e.g., "com.vrcfury.temp" from "Packages/com.vrcfury.temp/")
+                string[] parts = path.Split('/');
+                if (parts.Length >= 2)
+                {
+                    string packagePath = $"Packages/{parts[1]}";
+                    // Check if package.json exists in the package
+                    string packageJsonPath = $"{packagePath}/package.json";
+                    return System.IO.File.Exists(packageJsonPath);
+                }
+            }
+
+            return false;
         }
 
     }
