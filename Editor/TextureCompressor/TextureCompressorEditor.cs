@@ -691,6 +691,11 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         {
                             targetFormat = TextureFormatSelector.ConvertFrozenFormat(frozenSettings.Format);
                         }
+                        else if (TextureFormatSelector.IsCompressedFormat(tex.format))
+                        {
+                            // Preserve original compressed format (matches CompressTexture behavior)
+                            targetFormat = tex.format;
+                        }
                         else
                         {
                             targetFormat = formatSelector.PredictFormat(isNormalMap, 0.5f, hasAlpha);
@@ -700,7 +705,16 @@ namespace dev.limitex.avatar.compressor.texture.editor
                     {
                         divisor = analysis.RecommendedDivisor;
                         recommendedSize = analysis.RecommendedResolution;
-                        targetFormat = formatSelector.PredictFormat(isNormalMap, analysis.NormalizedComplexity, hasAlpha);
+
+                        if (TextureFormatSelector.IsCompressedFormat(tex.format))
+                        {
+                            // Preserve original compressed format (matches CompressTexture behavior)
+                            targetFormat = tex.format;
+                        }
+                        else
+                        {
+                            targetFormat = formatSelector.PredictFormat(isNormalMap, analysis.NormalizedComplexity, hasAlpha);
+                        }
                     }
 
                     long estimatedMemory = EstimateCompressedMemory(
