@@ -38,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Frozen texture GUID reference** - Frozen textures are now identified by GUID instead of asset path
+  - Prevents broken references when texture files are moved or renamed
+  - TextureGuid now serializes GUID directly for more reliable comparison
+  - Legacy path-based settings are automatically detected with migration UI in Inspector
 - **DXT/BC texture dimension compatibility** - `EnsureMultipleOf4` now rounds up instead of down
   - Ensures textures meet the 4x4 block size requirement for DXT/BC compression formats
   - Prevents potential texture corruption from undersized dimensions
