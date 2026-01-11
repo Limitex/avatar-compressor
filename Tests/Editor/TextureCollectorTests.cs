@@ -1165,6 +1165,95 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(values, Contains.Item(SkipReason.UserExcluded));
         }
 
+        [Test]
+        public void CollectAll_FrozenSkipAndUserExcluded_FrozenSkipTakesPriority()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            string texturePath = AssetDatabase.GetAssetPath(texture);
+            var frozenSkipPaths = new List<string> { texturePath };
+            var excludedPaths = new List<string> { texturePath };
+
+            // Both FrozenSkip and UserExcluded apply to the same texture
+            var collector = new TextureCollector(64, 0, true, true, true, true, frozenSkipPaths, excludedPaths);
+
+            var result = collector.CollectAll(root);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+            Assert.IsFalse(result[texture].IsProcessed);
+            // FrozenSkip should take priority over UserExcluded
+            Assert.AreEqual(SkipReason.FrozenSkip, result[texture].SkipReason);
+        }
+
+        [Test]
+        public void CollectFromMaterials_ExcludedTexture_IsSkipped()
+        {
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+
+            string texturePath = AssetDatabase.GetAssetPath(texture);
+            var excludedPaths = new List<string> { texturePath };
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedPaths);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new[] { material }, textures);
+
+            // Excluded texture should not be in the result (collectAll defaults to false)
+            Assert.AreEqual(0, textures.Count);
+        }
+
+        [Test]
+        public void CollectFromMaterials_ExcludedTexture_CollectAllTrue_HasUserExcludedReason()
+        {
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+
+            string texturePath = AssetDatabase.GetAssetPath(texture);
+            var excludedPaths = new List<string> { texturePath };
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedPaths);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new[] { material }, textures, collectAll: true);
+
+            Assert.AreEqual(1, textures.Count);
+            Assert.IsTrue(textures.ContainsKey(texture));
+            Assert.IsFalse(textures[texture].IsProcessed);
+            Assert.AreEqual(SkipReason.UserExcluded, textures[texture].SkipReason);
+        }
+
+        [Test]
+        public void CollectFromMaterials_MixedExcludedAndNonExcluded_ProcessesOnlyNonExcluded()
+        {
+            var material = CreateMaterial();
+            var excludedTexture = CreateTexture(128, 128);
+            var normalTexture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", excludedTexture);
+            material.SetTexture("_BumpMap", normalTexture);
+
+            string excludedPath = AssetDatabase.GetAssetPath(excludedTexture);
+            var excludedPaths = new List<string> { excludedPath };
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedPaths);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new[] { material }, textures);
+
+            Assert.AreEqual(1, textures.Count);
+            Assert.IsFalse(textures.ContainsKey(excludedTexture));
+            Assert.IsTrue(textures.ContainsKey(normalTexture));
+        }
+
         #endregion
 
         #region Helper Methods

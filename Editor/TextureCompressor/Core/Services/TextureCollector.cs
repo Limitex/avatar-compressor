@@ -56,7 +56,7 @@ namespace dev.limitex.avatar.compressor.texture
                 ? new HashSet<string>(frozenSkipPaths)
                 : new HashSet<string>();
             _excludedTexturePaths = excludedTexturePaths != null
-                ? new HashSet<string>(excludedTexturePaths.Where(p => !string.IsNullOrEmpty(p)))
+                ? new HashSet<string>(excludedTexturePaths.Where(p => !string.IsNullOrWhiteSpace(p)))
                 : new HashSet<string>();
         }
 
