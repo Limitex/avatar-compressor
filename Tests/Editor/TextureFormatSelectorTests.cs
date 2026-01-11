@@ -23,6 +23,20 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void PredictFormat_Desktop_NormalMapWithAlpha_ReturnsBC7()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            // Normal maps with alpha should use BC7 to preserve the alpha channel
+            var format = selector.PredictFormat(isNormalMap: true, complexity: 0.5f, hasAlpha: true);
+
+            Assert.AreEqual(TextureFormat.BC7, format);
+        }
+
+        [Test]
         public void PredictFormat_Desktop_HighComplexity_ReturnsBC7()
         {
             var selector = new TextureFormatSelector(
@@ -500,6 +514,25 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.IsTrue(result, "Compression should return true when format changes");
             Assert.AreEqual(TextureFormat.BC5, texture.format, "Normal map should compress to BC5");
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CompressTexture_NormalMapWithAlpha_Desktop_CompressesToBC7()
+        {
+            var selector = new TextureFormatSelector(
+                CompressionPlatform.Desktop,
+                useHighQualityFormatForHighComplexity: true,
+                highQualityComplexityThreshold: 0.7f);
+
+            var texture = CreateTextureWithAlpha(64, 64);
+            var originalFormat = texture.format;
+
+            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: true, complexity: 0.5f);
+
+            Assert.IsTrue(result, "Compression should return true when format changes");
+            Assert.AreEqual(TextureFormat.BC7, texture.format, "Normal map with alpha should compress to BC7 to preserve alpha");
 
             Object.DestroyImmediate(texture);
         }

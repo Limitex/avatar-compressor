@@ -163,7 +163,12 @@ namespace dev.limitex.avatar.compressor.texture
         {
             if (isNormalMap)
             {
-                // BC5 is optimal for normal maps (2 channels, high quality)
+                // If normal map has alpha channel, use BC7 to preserve it
+                if (hasAlpha)
+                {
+                    return TextureFormat.BC7;
+                }
+                // BC5 is optimal for normal maps without alpha (2 channels, high quality)
                 return TextureFormat.BC5;
             }
             else if (_useHighQualityFormatForHighComplexity && complexity >= _highQualityComplexityThreshold)
