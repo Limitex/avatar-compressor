@@ -41,5 +41,22 @@ namespace dev.limitex.avatar.compressor.common
             }
             return component;
         }
+
+        /// <summary>
+        /// Checks if a GameObject or any of its parents has the EditorOnly tag.
+        /// Objects with EditorOnly tag are stripped from build.
+        /// </summary>
+        public static bool IsEditorOnly(GameObject obj)
+        {
+            if (obj == null) return false;
+
+            var current = obj.transform;
+            while (current != null)
+            {
+                if (current.CompareTag("EditorOnly")) return true;
+                current = current.parent;
+            }
+            return false;
+        }
     }
 }

@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using dev.limitex.avatar.compressor.common;
 using UnityEngine;
 using UnityEditor;
 
@@ -77,6 +79,9 @@ namespace dev.limitex.avatar.compressor.texture
 
             foreach (var renderer in renderers)
             {
+                // Skip EditorOnly tagged objects (stripped from build)
+                if (ComponentUtils.IsEditorOnly(renderer.gameObject)) continue;
+
                 var materials = renderer.sharedMaterials;
                 foreach (var material in materials)
                 {
@@ -86,6 +91,27 @@ namespace dev.limitex.avatar.compressor.texture
             }
 
             return textures;
+        }
+
+        /// <summary>
+        /// Collects textures from a list of materials (e.g., from animations).
+        /// Call this after Collect() to add additional materials to the same dictionary.
+        /// </summary>
+        /// <param name="materials">The materials to collect textures from.</param>
+        /// <param name="textures">The texture dictionary to add to (typically from Collect()).</param>
+        /// <param name="collectAll">If true, collects all textures including skipped ones (for preview).</param>
+        public void CollectFromMaterials(
+            IEnumerable<Material> materials,
+            Dictionary<Texture2D, TextureInfo> textures,
+            bool collectAll = false)
+        {
+            if (materials == null || textures == null) return;
+
+            foreach (var material in materials.Distinct())
+            {
+                if (material == null) continue;
+                CollectFromMaterial(material, null, textures, collectAll);
+            }
         }
 
         private void CollectFromMaterial(

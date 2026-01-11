@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.texture;
 using nadena.dev.ndmf.runtime;
@@ -282,7 +283,14 @@ namespace dev.limitex.avatar.compressor.texture.editor
             EditorGUILayout.PropertyField(_maxDivisor, new GUIContent("Max Divisor"));
             EditorGUILayout.PropertyField(_maxResolution, new GUIContent("Max Resolution"));
             EditorGUILayout.PropertyField(_minResolution, new GUIContent("Min Resolution"));
-            EditorGUILayout.PropertyField(_forcePowerOfTwo, new GUIContent("Force Power of 2"));
+            EditorGUILayout.PropertyField(_forcePowerOfTwo, new GUIContent("Force Power of 2",
+                "When enabled, dimensions are rounded to nearest power of 2.\n" +
+                "When disabled, dimensions are rounded to nearest multiple of 4.\n" +
+                "Note: All output dimensions are always multiples of 4 for DXT/BC compression compatibility."));
+            EditorGUILayout.HelpBox(
+                "Output dimensions are always multiples of 4 for DXT/BC compression compatibility. " +
+                "Example: 150x150 becomes 152x152.",
+                MessageType.Info);
 
             EditorGUILayout.Space(10);
 
@@ -612,6 +620,18 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             var allTextures = collector.CollectAll(config.gameObject);
 
+            // Collect additional materials from animations and components using MaterialCollector
+            var additionalMaterialRefs = new List<MaterialReference>();
+            additionalMaterialRefs.AddRange(MaterialCollector.CollectFromAnimator(config.gameObject));
+            additionalMaterialRefs.AddRange(MaterialCollector.CollectFromComponents(config.gameObject));
+
+            var additionalMaterials = MaterialCollector.GetDistinctMaterials(additionalMaterialRefs);
+            if (additionalMaterials.Any())
+            {
+                // Use collectAll: true to include skipped textures in preview
+                collector.CollectFromMaterials(additionalMaterials, allTextures, collectAll: true);
+            }
+
             if (allTextures.Count == 0)
             {
                 _previewData = new TexturePreviewData[0];
@@ -711,7 +731,30 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         FrozenSettings = frozenSettings
                     };
 
-                    if (isFrozen && !frozenSettings.Skip)
+                    if (isFrozen && frozenSettings.Skip)
+                    {
+                        // Frozen with Skip=true - add to skipped list
+                        skippedList.Add(new TexturePreviewData
+                        {
+                            Texture = tex,
+                            Path = assetPath,
+                            Complexity = 0f,
+                            RecommendedDivisor = 1,
+                            OriginalSize = new Vector2Int(tex.width, tex.height),
+                            RecommendedSize = new Vector2Int(tex.width, tex.height),
+                            TextureType = info.TextureType,
+                            IsProcessed = false,
+                            SkipReason = SkipReason.FrozenSkip,
+                            OriginalMemory = originalMemory,
+                            EstimatedMemory = originalMemory,
+                            IsNormalMap = isNormalMap,
+                            PredictedFormat = null,
+                            HasAlpha = false,
+                            IsFrozen = true,
+                            FrozenSettings = frozenSettings
+                        });
+                    }
+                    else if (isFrozen)
                     {
                         frozenList.Add(previewData);
                     }
@@ -1099,5 +1142,6 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 _ => Color.white
             };
         }
+
     }
 }

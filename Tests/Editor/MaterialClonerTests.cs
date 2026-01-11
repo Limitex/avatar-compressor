@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.common;
+using dev.limitex.avatar.compressor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -32,55 +33,29 @@ namespace dev.limitex.avatar.compressor.tests
         #region Empty/Null Input Tests
 
         [Test]
-        public void CloneMaterials_EmptyGameObject_ReturnsEmptyDictionary()
+        public void CloneAndReplace_EmptyReferences_ReturnsEmptyDictionary()
         {
-            var root = CreateGameObject("EmptyRoot");
+            var references = new List<MaterialReference>();
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Count);
         }
 
         [Test]
-        public void CloneMaterials_NoRenderers_ReturnsEmptyDictionary()
-        {
-            var root = CreateGameObject("Root");
-            var child = CreateGameObject("Child");
-            child.transform.SetParent(root.transform);
-
-            var result = MaterialCloner.CloneMaterials(root);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(0, result.Count);
-        }
-
-        [Test]
-        public void CloneMaterials_RendererWithNoMaterial_ReturnsEmptyDictionary()
-        {
-            var root = CreateGameObject("Root");
-            var renderer = root.AddComponent<MeshRenderer>();
-            renderer.sharedMaterials = new Material[0];
-
-            var result = MaterialCloner.CloneMaterials(root);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(0, result.Count);
-        }
-
-        [Test]
-        public void CloneMaterials_RendererWithNullMaterial_HandlesGracefully()
+        public void CloneAndReplace_NullMaterialInReference_SkipsNull()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
             renderer.sharedMaterials = new Material[] { null };
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+
+            var result = MaterialCloner.CloneAndReplace(references);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Count);
-            // Renderer should still have null material
-            Assert.IsNull(renderer.sharedMaterials[0]);
         }
 
         #endregion
@@ -88,28 +63,31 @@ namespace dev.limitex.avatar.compressor.tests
         #region Single Material Tests
 
         [Test]
-        public void CloneMaterials_SingleMaterial_CreatesClone()
+        public void CloneAndReplace_SingleMaterial_CreatesClone()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
             var originalMaterial = CreateMaterial("OriginalMaterial");
             renderer.sharedMaterial = originalMaterial;
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(originalMaterial));
+            _createdObjects.Add(result[originalMaterial]);
         }
 
         [Test]
-        public void CloneMaterials_SingleMaterial_CloneIsDifferentInstance()
+        public void CloneAndReplace_SingleMaterial_CloneIsDifferentInstance()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
             var originalMaterial = CreateMaterial("OriginalMaterial");
             renderer.sharedMaterial = originalMaterial;
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             var clonedMaterial = result[originalMaterial];
             Assert.AreNotSame(originalMaterial, clonedMaterial);
@@ -117,14 +95,15 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CloneMaterials_SingleMaterial_RendererUsesClone()
+        public void CloneAndReplace_SingleMaterial_RendererUsesClone()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
             var originalMaterial = CreateMaterial("OriginalMaterial");
             renderer.sharedMaterial = originalMaterial;
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             var clonedMaterial = result[originalMaterial];
             Assert.AreEqual(clonedMaterial, renderer.sharedMaterial);
@@ -132,14 +111,15 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CloneMaterials_SingleMaterial_CloneHasCorrectName()
+        public void CloneAndReplace_SingleMaterial_CloneHasCorrectName()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
             var originalMaterial = CreateMaterial("OriginalMaterial");
             renderer.sharedMaterial = originalMaterial;
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             var clonedMaterial = result[originalMaterial];
             Assert.AreEqual("OriginalMaterial_clone", clonedMaterial.name);
@@ -147,7 +127,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CloneMaterials_SingleMaterial_ClonePreservesShader()
+        public void CloneAndReplace_SingleMaterial_ClonePreservesShader()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -155,7 +135,8 @@ namespace dev.limitex.avatar.compressor.tests
             var shader = originalMaterial.shader;
             renderer.sharedMaterial = originalMaterial;
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             var clonedMaterial = result[originalMaterial];
             Assert.AreEqual(shader, clonedMaterial.shader);
@@ -163,7 +144,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CloneMaterials_SingleMaterial_ClonePreservesColor()
+        public void CloneAndReplace_SingleMaterial_ClonePreservesColor()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -171,7 +152,8 @@ namespace dev.limitex.avatar.compressor.tests
             originalMaterial.color = Color.red;
             renderer.sharedMaterial = originalMaterial;
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             var clonedMaterial = result[originalMaterial];
             Assert.AreEqual(Color.red, clonedMaterial.color);
@@ -183,7 +165,7 @@ namespace dev.limitex.avatar.compressor.tests
         #region Multiple Materials Tests
 
         [Test]
-        public void CloneMaterials_MultipleMaterialsOnSameRenderer_ClonesAll()
+        public void CloneAndReplace_MultipleMaterialsOnSameRenderer_ClonesAll()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -191,13 +173,13 @@ namespace dev.limitex.avatar.compressor.tests
             var material2 = CreateMaterial("Material2");
             renderer.sharedMaterials = new Material[] { material1, material2 };
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             Assert.AreEqual(2, result.Count);
             Assert.IsTrue(result.ContainsKey(material1));
             Assert.IsTrue(result.ContainsKey(material2));
 
-            // Clean up clones
             foreach (var kvp in result)
             {
                 _createdObjects.Add(kvp.Value);
@@ -205,7 +187,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CloneMaterials_MultipleMaterialsOnSameRenderer_AllClonesAreUnique()
+        public void CloneAndReplace_MultipleMaterialsOnSameRenderer_AllClonesAreUnique()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -213,19 +195,19 @@ namespace dev.limitex.avatar.compressor.tests
             var material2 = CreateMaterial("Material2");
             renderer.sharedMaterials = new Material[] { material1, material2 };
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             var clone1 = result[material1];
             var clone2 = result[material2];
             Assert.AreNotSame(clone1, clone2);
 
-            // Clean up clones
             _createdObjects.Add(clone1);
             _createdObjects.Add(clone2);
         }
 
         [Test]
-        public void CloneMaterials_SameMaterialOnMultipleRenderers_ClonesOnce()
+        public void CloneAndReplace_SameMaterialOnMultipleRenderers_ClonesOnce()
         {
             var root = CreateGameObject("Root");
             var child1 = CreateGameObject("Child1");
@@ -239,18 +221,17 @@ namespace dev.limitex.avatar.compressor.tests
             renderer1.sharedMaterial = sharedMaterial;
             renderer2.sharedMaterial = sharedMaterial;
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             Assert.AreEqual(1, result.Count);
-            // Both renderers should use the same clone
             Assert.AreEqual(renderer1.sharedMaterial, renderer2.sharedMaterial);
 
-            // Clean up clone
             _createdObjects.Add(result[sharedMaterial]);
         }
 
         [Test]
-        public void CloneMaterials_DifferentMaterialsOnDifferentRenderers_ClonesAll()
+        public void CloneAndReplace_DifferentMaterialsOnDifferentRenderers_ClonesAll()
         {
             var root = CreateGameObject("Root");
             var child1 = CreateGameObject("Child1");
@@ -265,13 +246,13 @@ namespace dev.limitex.avatar.compressor.tests
             renderer1.sharedMaterial = material1;
             renderer2.sharedMaterial = material2;
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             Assert.AreEqual(2, result.Count);
             Assert.IsTrue(result.ContainsKey(material1));
             Assert.IsTrue(result.ContainsKey(material2));
 
-            // Clean up clones
             foreach (var kvp in result)
             {
                 _createdObjects.Add(kvp.Value);
@@ -283,7 +264,7 @@ namespace dev.limitex.avatar.compressor.tests
         #region Hierarchy Tests
 
         [Test]
-        public void CloneMaterials_DeepHierarchy_ProcessesAllRenderers()
+        public void CloneAndReplace_DeepHierarchy_ProcessesAllRenderers()
         {
             var root = CreateGameObject("Root");
             var level1 = CreateGameObject("Level1");
@@ -298,17 +279,17 @@ namespace dev.limitex.avatar.compressor.tests
             var material = CreateMaterial("DeepMaterial");
             renderer.sharedMaterial = material;
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(material));
 
-            // Clean up clone
             _createdObjects.Add(result[material]);
         }
 
         [Test]
-        public void CloneMaterials_InactiveChildren_ProcessesAll()
+        public void CloneAndReplace_InactiveChildren_ProcessesAll()
         {
             var root = CreateGameObject("Root");
             var inactiveChild = CreateGameObject("InactiveChild");
@@ -319,51 +300,13 @@ namespace dev.limitex.avatar.compressor.tests
             var material = CreateMaterial("InactiveMaterial");
             renderer.sharedMaterial = material;
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(material));
 
-            // Clean up clone
             _createdObjects.Add(result[material]);
-        }
-
-        [Test]
-        public void CloneMaterials_MixedHierarchy_ProcessesAllMaterials()
-        {
-            var root = CreateGameObject("Root");
-            var child1 = CreateGameObject("Child1");
-            var child2 = CreateGameObject("Child2");
-            var grandchild = CreateGameObject("Grandchild");
-
-            child1.transform.SetParent(root.transform);
-            child2.transform.SetParent(root.transform);
-            grandchild.transform.SetParent(child1.transform);
-
-            // Root has renderer
-            var rootRenderer = root.AddComponent<MeshRenderer>();
-            var rootMaterial = CreateMaterial("RootMaterial");
-            rootRenderer.sharedMaterial = rootMaterial;
-
-            // Child2 has renderer
-            var child2Renderer = child2.AddComponent<MeshRenderer>();
-            var child2Material = CreateMaterial("Child2Material");
-            child2Renderer.sharedMaterial = child2Material;
-
-            // Grandchild has renderer
-            var grandchildRenderer = grandchild.AddComponent<MeshRenderer>();
-            var grandchildMaterial = CreateMaterial("GrandchildMaterial");
-            grandchildRenderer.sharedMaterial = grandchildMaterial;
-
-            var result = MaterialCloner.CloneMaterials(root);
-
-            Assert.AreEqual(3, result.Count);
-
-            // Clean up clones
-            foreach (var kvp in result)
-            {
-                _createdObjects.Add(kvp.Value);
-            }
         }
 
         #endregion
@@ -371,25 +314,25 @@ namespace dev.limitex.avatar.compressor.tests
         #region Different Renderer Types Tests
 
         [Test]
-        public void CloneMaterials_SkinnedMeshRenderer_ProcessesMaterials()
+        public void CloneAndReplace_SkinnedMeshRenderer_ProcessesMaterials()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<SkinnedMeshRenderer>();
             var material = CreateMaterial("SkinnedMaterial");
             renderer.sharedMaterial = material;
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(material));
             Assert.AreEqual(result[material], renderer.sharedMaterial);
 
-            // Clean up clone
             _createdObjects.Add(result[material]);
         }
 
         [Test]
-        public void CloneMaterials_MixedRendererTypes_ProcessesAll()
+        public void CloneAndReplace_MixedRendererTypes_ProcessesAll()
         {
             var root = CreateGameObject("Root");
             var meshChild = CreateGameObject("MeshChild");
@@ -407,11 +350,11 @@ namespace dev.limitex.avatar.compressor.tests
             meshRenderer.sharedMaterial = meshMaterial;
             skinnedRenderer.sharedMaterial = skinnedMaterial;
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             Assert.AreEqual(2, result.Count);
 
-            // Clean up clones
             foreach (var kvp in result)
             {
                 _createdObjects.Add(kvp.Value);
@@ -420,17 +363,130 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Mixed Source Tests
+
+        [Test]
+        public void CloneAndReplace_MixedSources_ClonesAll()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var rendererMaterial = CreateMaterial("RendererMaterial");
+            renderer.sharedMaterial = rendererMaterial;
+
+            var animationMaterial = CreateMaterial("AnimationMaterial");
+
+            var references = new List<MaterialReference>();
+            references.AddRange(MaterialCollector.CollectFromRenderers(root));
+            references.Add(MaterialReference.FromAnimation(animationMaterial, null));
+
+            var result = MaterialCloner.CloneAndReplace(references);
+
+            Assert.AreEqual(2, result.Count);
+            Assert.IsTrue(result.ContainsKey(rendererMaterial));
+            Assert.IsTrue(result.ContainsKey(animationMaterial));
+
+            foreach (var kvp in result)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+        }
+
+        [Test]
+        public void CloneAndReplace_AnimationOnlyMaterials_ClonesWithoutRendererUpdate()
+        {
+            var root = CreateGameObject("Root");
+
+            var animationMaterial = CreateMaterial("AnimationMaterial");
+            var references = new List<MaterialReference>
+            {
+                MaterialReference.FromAnimation(animationMaterial, null)
+            };
+
+            var result = MaterialCloner.CloneAndReplace(references);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(animationMaterial));
+            Assert.AreNotSame(animationMaterial, result[animationMaterial]);
+
+            _createdObjects.Add(result[animationMaterial]);
+        }
+
+        [Test]
+        public void CloneAndReplace_SharedMaterialBetweenRendererAndAnimation_ClonesOnce()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var sharedMaterial = CreateMaterial("SharedMaterial");
+            renderer.sharedMaterial = sharedMaterial;
+
+            var references = new List<MaterialReference>();
+            references.AddRange(MaterialCollector.CollectFromRenderers(root));
+            references.Add(MaterialReference.FromAnimation(sharedMaterial, null));
+
+            var result = MaterialCloner.CloneAndReplace(references);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(sharedMaterial));
+
+            _createdObjects.Add(result[sharedMaterial]);
+        }
+
+        [Test]
+        public void CloneAndReplace_DuplicateReferences_ClonesOnce()
+        {
+            var material = CreateMaterial("DuplicateMaterial");
+
+            var references = new List<MaterialReference>
+            {
+                MaterialReference.FromAnimation(material, null),
+                MaterialReference.FromAnimation(material, null),
+                MaterialReference.FromComponent(material, null)
+            };
+
+            var result = MaterialCloner.CloneAndReplace(references);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(material));
+
+            _createdObjects.Add(result[material]);
+        }
+
+        #endregion
+
+        #region CloneOnly Tests
+
+        [Test]
+        public void CloneOnly_SingleMaterial_ClonesWithoutUpdatingRenderer()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var originalMaterial = CreateMaterial("OriginalMaterial");
+            renderer.sharedMaterial = originalMaterial;
+
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneOnly(references);
+
+            Assert.AreEqual(1, result.Count);
+            // Renderer should still have original material
+            Assert.AreEqual(originalMaterial, renderer.sharedMaterial);
+
+            _createdObjects.Add(result[originalMaterial]);
+        }
+
+        #endregion
+
         #region Material Array Integrity Tests
 
         [Test]
-        public void CloneMaterials_MaterialArrayWithNulls_PreservesArrayStructure()
+        public void CloneAndReplace_MaterialArrayWithNulls_PreservesArrayStructure()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
             var material1 = CreateMaterial("Material1");
             renderer.sharedMaterials = new Material[] { material1, null, material1 };
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             Assert.AreEqual(1, result.Count);
             var materials = renderer.sharedMaterials;
@@ -439,27 +495,67 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.IsNull(materials[1]);
             Assert.AreEqual(result[material1], materials[2]);
 
-            // Clean up clone
             _createdObjects.Add(result[material1]);
         }
 
         [Test]
-        public void CloneMaterials_DuplicateMaterialInArray_UsesSameClone()
+        public void CloneAndReplace_DuplicateMaterialInArray_UsesSameClone()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
             var material = CreateMaterial("DuplicatedMaterial");
             renderer.sharedMaterials = new Material[] { material, material, material };
 
-            var result = MaterialCloner.CloneMaterials(root);
+            var references = MaterialCollector.CollectFromRenderers(root);
+            var result = MaterialCloner.CloneAndReplace(references);
 
             Assert.AreEqual(1, result.Count);
             var materials = renderer.sharedMaterials;
             Assert.AreEqual(materials[0], materials[1]);
             Assert.AreEqual(materials[1], materials[2]);
 
-            // Clean up clone
             _createdObjects.Add(result[material]);
+        }
+
+        #endregion
+
+        #region GetClonedMaterialsBySource Tests
+
+        [Test]
+        public void GetClonedMaterialsBySource_FiltersBySourceType()
+        {
+            var rendererMaterial = CreateMaterial("RendererMaterial");
+            var animationMaterial = CreateMaterial("AnimationMaterial");
+            var componentMaterial = CreateMaterial("ComponentMaterial");
+
+            var references = new List<MaterialReference>
+            {
+                MaterialReference.FromRenderer(rendererMaterial, null),
+                MaterialReference.FromAnimation(animationMaterial, null),
+                MaterialReference.FromComponent(componentMaterial, null)
+            };
+
+            var clonedMaterials = MaterialCloner.CloneOnly(references);
+
+            var rendererClones = MaterialCloner.GetClonedMaterialsBySource(
+                references, clonedMaterials, MaterialSourceType.Renderer);
+            var animationClones = MaterialCloner.GetClonedMaterialsBySource(
+                references, clonedMaterials, MaterialSourceType.Animation);
+            var componentClones = MaterialCloner.GetClonedMaterialsBySource(
+                references, clonedMaterials, MaterialSourceType.Component);
+
+            Assert.AreEqual(1, rendererClones.Count);
+            Assert.AreEqual(1, animationClones.Count);
+            Assert.AreEqual(1, componentClones.Count);
+
+            Assert.AreEqual(clonedMaterials[rendererMaterial], rendererClones[0]);
+            Assert.AreEqual(clonedMaterials[animationMaterial], animationClones[0]);
+            Assert.AreEqual(clonedMaterials[componentMaterial], componentClones[0]);
+
+            foreach (var kvp in clonedMaterials)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
         }
 
         #endregion

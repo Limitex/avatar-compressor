@@ -518,6 +518,390 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region CollectFromMaterials Tests
+
+        [Test]
+        public void CollectFromMaterials_SingleMaterial_AddsTextures()
+        {
+            var root = CreateGameObject("Root");
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+            material.SetTexture("_MainTex", texture);
+
+            var existingTextures = new Dictionary<Texture2D, TextureInfo>();
+            var materials = new Material[] { material };
+
+            _collector.CollectFromMaterials(materials, existingTextures);
+
+            Assert.AreEqual(1, existingTextures.Count);
+            Assert.IsTrue(existingTextures.ContainsKey(texture));
+        }
+
+        [Test]
+        public void CollectFromMaterials_NullMaterials_HandlesGracefully()
+        {
+            var existingTextures = new Dictionary<Texture2D, TextureInfo>();
+
+            Assert.DoesNotThrow(() => _collector.CollectFromMaterials(null, existingTextures));
+            Assert.AreEqual(0, existingTextures.Count);
+        }
+
+        [Test]
+        public void CollectFromMaterials_NullTexturesDictionary_HandlesGracefully()
+        {
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+            material.SetTexture("_MainTex", texture);
+            var materials = new Material[] { material };
+
+            Assert.DoesNotThrow(() => _collector.CollectFromMaterials(materials, null));
+        }
+
+        [Test]
+        public void CollectFromMaterials_EmptyMaterials_DoesNotModifyDictionary()
+        {
+            var existingTextures = new Dictionary<Texture2D, TextureInfo>();
+            var materials = new Material[0];
+
+            _collector.CollectFromMaterials(materials, existingTextures);
+
+            Assert.AreEqual(0, existingTextures.Count);
+        }
+
+        [Test]
+        public void CollectFromMaterials_MaterialsWithNulls_SkipsNulls()
+        {
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+            material.SetTexture("_MainTex", texture);
+
+            var existingTextures = new Dictionary<Texture2D, TextureInfo>();
+            var materials = new Material[] { null, material, null };
+
+            _collector.CollectFromMaterials(materials, existingTextures);
+
+            Assert.AreEqual(1, existingTextures.Count);
+            Assert.IsTrue(existingTextures.ContainsKey(texture));
+        }
+
+        [Test]
+        public void CollectFromMaterials_MergesWithExistingTextures()
+        {
+            var existingMaterial = CreateMaterial();
+            var existingTexture = CreateTexture(128, 128);
+            existingMaterial.SetTexture("_MainTex", existingTexture);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = existingMaterial;
+
+            // First collect from renderer
+            var textures = _collector.Collect(root);
+            Assert.AreEqual(1, textures.Count);
+
+            // Now add additional material
+            var additionalMaterial = CreateMaterial();
+            var additionalTexture = CreateTexture(128, 128);
+            additionalMaterial.SetTexture("_MainTex", additionalTexture);
+
+            _collector.CollectFromMaterials(new Material[] { additionalMaterial }, textures);
+
+            Assert.AreEqual(2, textures.Count);
+            Assert.IsTrue(textures.ContainsKey(existingTexture));
+            Assert.IsTrue(textures.ContainsKey(additionalTexture));
+        }
+
+        [Test]
+        public void CollectFromMaterials_DuplicateTexture_AddsReference()
+        {
+            var material1 = CreateMaterial();
+            var material2 = CreateMaterial();
+            var sharedTexture = CreateTexture(128, 128);
+            material1.SetTexture("_MainTex", sharedTexture);
+            material2.SetTexture("_MainTex", sharedTexture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            _collector.CollectFromMaterials(new Material[] { material1 }, textures);
+
+            Assert.AreEqual(1, textures.Count);
+            Assert.AreEqual(1, textures[sharedTexture].References.Count);
+
+            // Add second material with same texture
+            _collector.CollectFromMaterials(new Material[] { material2 }, textures);
+
+            Assert.AreEqual(1, textures.Count);
+            Assert.AreEqual(2, textures[sharedTexture].References.Count);
+        }
+
+        [Test]
+        public void CollectFromMaterials_RendererIsNull_HandlesGracefully()
+        {
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+            material.SetTexture("_MainTex", texture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            _collector.CollectFromMaterials(new Material[] { material }, textures);
+
+            Assert.AreEqual(1, textures.Count);
+            // Renderer should be null for animation-referenced materials
+            Assert.IsNull(textures[texture].References[0].Renderer);
+        }
+
+        [Test]
+        public void CollectFromMaterials_MultipleTexturesOnMaterial_AddsAll()
+        {
+            var material = CreateMaterial();
+            var mainTex = CreateTexture(128, 128);
+            var normalTex = CreateTexture(128, 128);
+            var emissionTex = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", mainTex);
+            material.SetTexture("_BumpMap", normalTex);
+            material.SetTexture("_EmissionMap", emissionTex);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            _collector.CollectFromMaterials(new Material[] { material }, textures);
+
+            Assert.AreEqual(3, textures.Count);
+            Assert.IsTrue(textures.ContainsKey(mainTex));
+            Assert.IsTrue(textures.ContainsKey(normalTex));
+            Assert.IsTrue(textures.ContainsKey(emissionTex));
+        }
+
+        [Test]
+        public void CollectFromMaterials_WithCollectAllTrue_IncludesSkippedTextures()
+        {
+            // Use collector that skips small textures
+            var collector = new TextureCollector(256, 0, true, true, true, true);
+
+            var material = CreateMaterial();
+            var smallTexture = CreateTexture(64, 64); // Below minSourceSize
+            material.SetTexture("_MainTex", smallTexture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new Material[] { material }, textures, collectAll: true);
+
+            Assert.AreEqual(1, textures.Count);
+            Assert.IsTrue(textures.ContainsKey(smallTexture));
+            Assert.IsFalse(textures[smallTexture].IsProcessed);
+            Assert.AreEqual(SkipReason.TooSmall, textures[smallTexture].SkipReason);
+        }
+
+        [Test]
+        public void CollectFromMaterials_WithCollectAllFalse_ExcludesSkippedTextures()
+        {
+            // Use collector that skips small textures
+            var collector = new TextureCollector(256, 0, true, true, true, true);
+
+            var material = CreateMaterial();
+            var smallTexture = CreateTexture(64, 64); // Below minSourceSize
+            material.SetTexture("_MainTex", smallTexture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new Material[] { material }, textures, collectAll: false);
+
+            Assert.AreEqual(0, textures.Count);
+        }
+
+        [Test]
+        public void CollectFromMaterials_DuplicateMaterials_ProcessesOnce()
+        {
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+            material.SetTexture("_MainTex", texture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            // Pass same material multiple times
+            _collector.CollectFromMaterials(new Material[] { material, material, material }, textures);
+
+            Assert.AreEqual(1, textures.Count);
+            // Should have only 1 reference since Distinct() is used
+            Assert.AreEqual(1, textures[texture].References.Count);
+        }
+
+        #endregion
+
+        #region EditorOnly Skip Tests
+
+        [Test]
+        public void Collect_EditorOnlyTaggedRenderer_SkipsTextures()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyChild = CreateGameObject("EditorOnlyChild");
+            editorOnlyChild.transform.SetParent(root.transform);
+            editorOnlyChild.tag = "EditorOnly";
+
+            var renderer = editorOnlyChild.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void Collect_ParentIsEditorOnly_SkipsChildTextures()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyParent = CreateGameObject("EditorOnlyParent");
+            var child = CreateGameObject("Child");
+            editorOnlyParent.transform.SetParent(root.transform);
+            child.transform.SetParent(editorOnlyParent.transform);
+            editorOnlyParent.tag = "EditorOnly";
+
+            var renderer = child.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void Collect_GrandparentIsEditorOnly_SkipsDescendantTextures()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyGrandparent = CreateGameObject("EditorOnlyGrandparent");
+            var parent = CreateGameObject("Parent");
+            var child = CreateGameObject("Child");
+
+            editorOnlyGrandparent.transform.SetParent(root.transform);
+            parent.transform.SetParent(editorOnlyGrandparent.transform);
+            child.transform.SetParent(parent.transform);
+            editorOnlyGrandparent.tag = "EditorOnly";
+
+            var renderer = child.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void Collect_SiblingIsEditorOnly_CollectsNonEditorOnlySibling()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyChild = CreateGameObject("EditorOnlyChild");
+            var normalChild = CreateGameObject("NormalChild");
+
+            editorOnlyChild.transform.SetParent(root.transform);
+            normalChild.transform.SetParent(root.transform);
+            editorOnlyChild.tag = "EditorOnly";
+
+            var editorOnlyRenderer = editorOnlyChild.AddComponent<MeshRenderer>();
+            var normalRenderer = normalChild.AddComponent<MeshRenderer>();
+
+            var editorOnlyMaterial = CreateMaterial();
+            var normalMaterial = CreateMaterial();
+            var editorOnlyTexture = CreateTexture(128, 128);
+            var normalTexture = CreateTexture(128, 128);
+
+            editorOnlyMaterial.SetTexture("_MainTex", editorOnlyTexture);
+            normalMaterial.SetTexture("_MainTex", normalTexture);
+
+            editorOnlyRenderer.sharedMaterial = editorOnlyMaterial;
+            normalRenderer.sharedMaterial = normalMaterial;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsFalse(result.ContainsKey(editorOnlyTexture));
+            Assert.IsTrue(result.ContainsKey(normalTexture));
+        }
+
+        [Test]
+        public void Collect_InactiveEditorOnlyObject_StillSkips()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyChild = CreateGameObject("EditorOnlyChild");
+            editorOnlyChild.transform.SetParent(root.transform);
+            editorOnlyChild.tag = "EditorOnly";
+            editorOnlyChild.SetActive(false);
+
+            var renderer = editorOnlyChild.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void CollectAll_EditorOnlyTaggedRenderer_StillSkips()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyChild = CreateGameObject("EditorOnlyChild");
+            editorOnlyChild.transform.SetParent(root.transform);
+            editorOnlyChild.tag = "EditorOnly";
+
+            var renderer = editorOnlyChild.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.CollectAll(root);
+
+            // Even CollectAll should skip EditorOnly objects
+            // because they are stripped from build
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void Collect_SharedTextureBetweenEditorOnlyAndNormal_CollectsFromNormalOnly()
+        {
+            var root = CreateGameObject("Root");
+            var editorOnlyChild = CreateGameObject("EditorOnlyChild");
+            var normalChild = CreateGameObject("NormalChild");
+
+            editorOnlyChild.transform.SetParent(root.transform);
+            normalChild.transform.SetParent(root.transform);
+            editorOnlyChild.tag = "EditorOnly";
+
+            var editorOnlyRenderer = editorOnlyChild.AddComponent<MeshRenderer>();
+            var normalRenderer = normalChild.AddComponent<MeshRenderer>();
+
+            var editorOnlyMaterial = CreateMaterial();
+            var normalMaterial = CreateMaterial();
+            var sharedTexture = CreateTexture(128, 128);
+
+            // Same texture used by both materials
+            editorOnlyMaterial.SetTexture("_MainTex", sharedTexture);
+            normalMaterial.SetTexture("_MainTex", sharedTexture);
+
+            editorOnlyRenderer.sharedMaterial = editorOnlyMaterial;
+            normalRenderer.sharedMaterial = normalMaterial;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(sharedTexture));
+            // Should only have 1 reference (from normal child)
+            Assert.AreEqual(1, result[sharedTexture].References.Count);
+            Assert.AreEqual(normalMaterial, result[sharedTexture].References[0].Material);
+        }
+
+        #endregion
+
         #region FrozenSkip Tests
 
         [Test]

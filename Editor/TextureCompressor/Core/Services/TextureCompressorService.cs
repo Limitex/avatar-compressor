@@ -23,6 +23,12 @@ namespace dev.limitex.avatar.compressor.texture
         private readonly TextureAnalyzer _analyzer;
         private readonly Dictionary<string, FrozenTextureSettings> _frozenLookup;
 
+        // Flag to avoid repeating the same warning for every texture
+        private static bool _streamingMipmapsWarningShown;
+
+        // Flag to avoid repeating build context warning
+        private static bool _buildContextWarningShown;
+
         public TextureCompressorService(TextureCompressor config)
         {
             _config = config;
@@ -76,11 +82,81 @@ namespace dev.limitex.avatar.compressor.texture
             );
         }
 
+        /// <summary>
+        /// Compresses textures in the avatar hierarchy (ICompressor interface).
+        /// Only processes materials on Renderers.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>WARNING:</b> This method modifies the Renderer components on the provided GameObject
+        /// by replacing their material references with cloned materials. While the original
+        /// material asset files (.mat) are NOT modified, the scene will be marked as dirty
+        /// if called outside of an NDMF build context.
+        /// </para>
+        /// <para>
+        /// For production use, prefer using the NDMF plugin (TextureCompressorPass) which
+        /// operates on a cloned avatar and properly handles animation-referenced materials.
+        /// </para>
+        /// </remarks>
         public void Compress(GameObject root, bool enableLogging)
         {
-            MaterialCloner.CloneMaterials(root);
+            // Warn if materials are linked to asset files (indicates non-build context usage)
+            WarnIfNotInBuildContext(root);
 
-            var textures = _collector.Collect(root);
+            // Collect only Renderer materials for ICompressor interface
+            var references = MaterialCollector.CollectFromRenderers(root);
+            CompressWithMappings(references, enableLogging);
+        }
+
+        /// <summary>
+        /// Warns if materials appear to be asset files, which indicates usage outside NDMF build context.
+        /// In NDMF build context, materials should already be cloned/runtime objects.
+        /// </summary>
+        private void WarnIfNotInBuildContext(GameObject root)
+        {
+            if (_buildContextWarningShown) return;
+
+            var renderers = root.GetComponentsInChildren<Renderer>(true);
+            foreach (var renderer in renderers)
+            {
+                foreach (var material in renderer.sharedMaterials)
+                {
+                    if (material == null) continue;
+
+                    string assetPath = AssetDatabase.GetAssetPath(material);
+                    if (!string.IsNullOrEmpty(assetPath))
+                    {
+                        _buildContextWarningShown = true;
+                        Debug.LogWarning(
+                            $"[{Name}] Material '{material.name}' is an asset file ({assetPath}). " +
+                            "This suggests usage outside NDMF build context. " +
+                            "While original asset files will NOT be modified, the Renderer's material " +
+                            "references will be changed. For non-destructive workflow, use the NDMF plugin.");
+                        return;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Compresses textures from the given material references and returns mapping information.
+        /// </summary>
+        /// <param name="materialReferences">Material references to process (from Renderers, animations, components, etc.)</param>
+        /// <param name="enableLogging">Whether to log progress</param>
+        /// <returns>Tuple containing original-to-compressed texture mappings and original-to-cloned material mappings</returns>
+        public (Dictionary<Texture2D, Texture2D> ProcessedTextures, Dictionary<Material, Material> ClonedMaterials) CompressWithMappings(
+            IEnumerable<MaterialReference> materialReferences,
+            bool enableLogging)
+        {
+            var referenceList = materialReferences.ToList();
+
+            // Clone all materials and update Renderer references
+            var clonedMaterials = MaterialCloner.CloneAndReplace(referenceList);
+
+            // Collect textures from cloned materials
+            var clonedMaterialList = clonedMaterials.Values.ToList();
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            _collector.CollectFromMaterials(clonedMaterialList, textures);
 
             if (textures.Count == 0)
             {
@@ -88,7 +164,7 @@ namespace dev.limitex.avatar.compressor.texture
                 {
                     Debug.Log($"[{Name}] No textures found to process.");
                 }
-                return;
+                return (new Dictionary<Texture2D, Texture2D>(), clonedMaterials);
             }
 
             if (enableLogging)
@@ -143,12 +219,21 @@ namespace dev.limitex.avatar.compressor.texture
                 var compressedTexture = _processor.Resize(originalTexture, analysis, enableLogging, textureInfo.IsNormalMap, formatOverride);
                 compressedTexture.name = originalTexture.name + "_compressed";
 
-                // Enable mipmap streaming for the newly created texture
-                // This is required to avoid NDMF warnings about streaming mipmaps
+                // Enable mipmap streaming to avoid NDMF warnings
                 var serializedTexture = new SerializedObject(compressedTexture);
                 var streamingMipmaps = serializedTexture.FindProperty("m_StreamingMipmaps");
-                streamingMipmaps.boolValue = true;
-                serializedTexture.ApplyModifiedPropertiesWithoutUndo();
+                if (streamingMipmaps != null)
+                {
+                    streamingMipmaps.boolValue = true;
+                    serializedTexture.ApplyModifiedPropertiesWithoutUndo();
+                }
+                else if (!_streamingMipmapsWarningShown)
+                {
+                    _streamingMipmapsWarningShown = true;
+                    Debug.LogWarning(
+                        $"[{Name}] Could not enable streaming mipmaps: " +
+                        "property 'm_StreamingMipmaps' not found. This may indicate a Unity version difference.");
+                }
 
                 // Register the texture replacement in ObjectRegistry so that subsequent NDMF plugins
                 // can track which original texture was replaced. This maintains proper reference
@@ -167,6 +252,8 @@ namespace dev.limitex.avatar.compressor.texture
             {
                 LogSummary(textures, processedTextures);
             }
+
+            return (processedTextures, clonedMaterials);
         }
 
         private void LogSummary(
@@ -190,7 +277,7 @@ namespace dev.limitex.avatar.compressor.texture
             float savings = originalSize > 0 ? 1f - (float)compressedSize / originalSize : 0f;
 
             Debug.Log($"[{Name}] Complete: " +
-                      $"{originalSize / 1024f / 1024f:F2}MB → {compressedSize / 1024f / 1024f:F2}MB " +
+                      $"{originalSize / 1024f / 1024f:F2}MB -> {compressedSize / 1024f / 1024f:F2}MB " +
                       $"({savings:P0} reduction)");
         }
     }

@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Animation-referenced material support** - Materials referenced by animations are now included in compression
+  - Uses NDMF's `AnimatorServicesContext` to detect materials in animation clips (MaterialSwap, etc.)
+  - MaterialCloner can now clone additional materials beyond renderer-attached ones
+  - TextureCollector collects textures from animation-referenced materials
+  - Animation curves are automatically updated to reference compressed textures
+- **Component-referenced material support** - Materials referenced by components (MA MaterialSetter, etc.) are now detected
+  - Scans all components' serialized properties for Material references
+  - Respects `EditorOnly` tag (excluded from collection as they are stripped from build)
+- **Non-NDMF usage warning** - Added runtime warning when `ICompressor.Compress()` is called outside NDMF build context
+  - Warns users that Renderer material references will be changed (though original .mat files are NOT modified)
+  - Recommends using the NDMF plugin for non-destructive workflow
+
+### Changed
+
+- **TextureCompressorPass refactored** - Extracted pass logic into dedicated class
+  - Better separation of concerns between plugin registration and execution
+  - Improved error handling with try-catch and warning messages
+- **MaterialCloner moved** - Relocated from `Common/Services` to `TextureCompressor/Core/Services`
+  - Now part of the TextureCompressor module for better cohesion
+  - Enhanced to support cloning additional materials beyond renderer-attached ones
+- **Streaming mipmaps warning** - Now only displays once per build instead of per texture
+- **Unit tests expanded** - Added comprehensive tests for new features
+  - MaterialCollector tests (animation/component material detection, EditorOnly filtering)
+  - MaterialReference tests (equality, cloning, source tracking)
+  - ComponentUtils tests (IsEditorOnly hierarchy traversal)
+  - TextureCollector tests (EditorOnly tagged object skipping)
+
+### Fixed
+
+- **DXT/BC texture dimension compatibility** - `EnsureMultipleOf4` now rounds up instead of down
+  - Ensures textures meet the 4x4 block size requirement for DXT/BC compression formats
+  - Prevents potential texture corruption from undersized dimensions
+- **Frozen texture skip handling** - Skipped frozen textures now display correctly in preview
+- **Modular Avatar compatibility** - Added `AfterPlugin("nadena.dev.modular-avatar")` to ensure proper execution order
+  - Fixes potential issues with materials added/modified by Modular Avatar not being processed correctly
+  - Ensures animation-referenced materials from MA are properly detected and compressed
+
 ## [v0.3.4] - 2026-01-06
 
 ### Fixed
