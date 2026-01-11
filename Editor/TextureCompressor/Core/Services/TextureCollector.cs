@@ -192,9 +192,8 @@ namespace dev.limitex.avatar.compressor.texture
             string assetPath = AssetDatabase.GetAssetPath(texture);
 
             // Skip runtime-generated textures (no asset path).
-            // These are typically created dynamically by tools like VRCFury SPS during build.
-            // Compressing them can corrupt data textures that use RGB values for calculations
-            // (e.g., depth data, deformation vectors) rather than visual color information.
+            // These are dynamically created during build and may use RGB values for non-visual data
+            // (e.g., depth, deformation vectors), which compression would corrupt.
             if (string.IsNullOrEmpty(assetPath))
                 return (false, SkipReason.RuntimeGenerated);
 
