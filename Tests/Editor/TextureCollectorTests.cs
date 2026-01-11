@@ -995,6 +995,7 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(values, Contains.Item(SkipReason.FilteredByType));
             Assert.That(values, Contains.Item(SkipReason.FrozenSkip));
             Assert.That(values, Contains.Item(SkipReason.RuntimeGenerated));
+            Assert.That(values, Contains.Item(SkipReason.UserExcluded));
         }
 
         #endregion
@@ -1046,6 +1047,122 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.IsTrue(textures[assetTexture].IsProcessed);
             Assert.IsFalse(textures[runtimeTexture].IsProcessed);
             Assert.AreEqual(SkipReason.RuntimeGenerated, textures[runtimeTexture].SkipReason);
+        }
+
+        #endregion
+
+        #region UserExcluded Skip Tests
+
+        [Test]
+        public void Constructor_WithExcludedTextures_AcceptsParameter()
+        {
+            var excludedTextures = new List<Texture2D>();
+
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedTextures);
+
+            Assert.IsNotNull(collector);
+        }
+
+        [Test]
+        public void Constructor_WithNullExcludedTextures_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                var collector = new TextureCollector(64, 0, true, true, true, true, null, null);
+            });
+        }
+
+        [Test]
+        public void Collect_ExcludedTexture_IsSkipped()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var excludedTextures = new List<Texture2D> { texture };
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedTextures);
+
+            var result = collector.Collect(root);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void CollectAll_ExcludedTexture_HasUserExcludedReason()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var excludedTextures = new List<Texture2D> { texture };
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedTextures);
+
+            var result = collector.CollectAll(root);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+            Assert.IsFalse(result[texture].IsProcessed);
+            Assert.AreEqual(SkipReason.UserExcluded, result[texture].SkipReason);
+        }
+
+        [Test]
+        public void Collect_MixedExcludedAndNonExcluded_ProcessesOnlyNonExcluded()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var excludedTexture = CreateTexture(128, 128);
+            var normalTexture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", excludedTexture);
+            material.SetTexture("_BumpMap", normalTexture);
+            renderer.sharedMaterial = material;
+
+            var excludedTextures = new List<Texture2D> { excludedTexture };
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedTextures);
+
+            var result = collector.Collect(root);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsFalse(result.ContainsKey(excludedTexture));
+            Assert.IsTrue(result.ContainsKey(normalTexture));
+        }
+
+        [Test]
+        public void Collect_ExcludedTextureWithNullInList_SkipsNullEntries()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var excludedTextures = new List<Texture2D> { null, null };
+            var collector = new TextureCollector(64, 0, true, true, true, true, null, excludedTextures);
+
+            var result = collector.Collect(root);
+
+            // Texture should be processed since nulls are skipped
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+        }
+
+        [Test]
+        public void SkipReason_UserExcluded_IsDefined()
+        {
+            var values = System.Enum.GetValues(typeof(SkipReason));
+
+            Assert.That(values, Contains.Item(SkipReason.UserExcluded));
         }
 
         #endregion

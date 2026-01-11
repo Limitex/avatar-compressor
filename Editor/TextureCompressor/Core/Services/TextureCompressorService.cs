@@ -54,7 +54,8 @@ namespace dev.limitex.avatar.compressor.texture
                 config.ProcessNormalMaps,
                 config.ProcessEmissionMaps,
                 config.ProcessOtherTextures,
-                frozenSkipPaths
+                frozenSkipPaths,
+                config.ExcludedTextures
             );
 
             _processor = new TextureProcessor(

@@ -12,7 +12,8 @@ namespace dev.limitex.avatar.compressor.texture
         TooSmall,
         FilteredByType,
         FrozenSkip,
-        RuntimeGenerated
+        RuntimeGenerated,
+        UserExcluded
     }
 
     /// <summary>

@@ -64,6 +64,10 @@ namespace dev.limitex.avatar.compressor.texture
         [Header("Debug")]
         public bool EnableLogging = true;
 
+        [Header("Excluded Textures")]
+        [Tooltip("Textures to exclude from compression processing")]
+        public List<Texture2D> ExcludedTextures = new List<Texture2D>();
+
         [Header("Frozen Textures")]
         [Tooltip("Textures with manually specified compression settings")]
         public List<FrozenTextureSettings> FrozenTextures = new List<FrozenTextureSettings>();
