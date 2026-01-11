@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using dev.limitex.avatar.compressor.common;
 using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.texture;
 using nadena.dev.ndmf.runtime;
@@ -53,8 +54,23 @@ namespace dev.limitex.avatar.compressor.texture.editor
         private static GUIStyle _centeredLabelStyle;
         private static GUIStyle _linkStyle;
 
+        // Cached GUIStyle for search section
+        private static GUIStyle _hiddenCountStyle;
+        private static GUIStyle _placeholderStyle;
+        private static GUIStyle _hitCountStyle;
+
         // Excluded paths section state (collapsed by default)
         private bool _showExcludedPathsSection = false;
+
+        // Search functionality
+        private string _searchText = "";
+        private bool _useFuzzySearch = false;
+
+        // Search result cache
+        private string _cachedSearchText;
+        private bool _cachedUseFuzzySearch;
+        private HashSet<int> _cachedFrozenMatchIndices;
+        private HashSet<int> _cachedPreviewMatchIndices;
 
         private static readonly Color HighQualityColor = new Color(0.1f, 0.9f, 0.6f);
         private static readonly Color QualityColor = new Color(0.2f, 0.8f, 0.4f);
@@ -171,6 +187,9 @@ namespace dev.limitex.avatar.compressor.texture.editor
             }
 
             EditorGUILayout.Space(15);
+            DrawSearchBox();
+
+            EditorGUILayout.Space(10);
             DrawFrozenTexturesSection(compressor);
 
             EditorGUILayout.Space(15);
@@ -486,8 +505,15 @@ namespace dev.limitex.avatar.compressor.texture.editor
         private void DrawFrozenTexturesSection(TextureCompressor compressor)
         {
             int frozenCount = compressor.FrozenTextures.Count;
-            _showFrozenSection = EditorGUILayout.Foldout(_showFrozenSection,
-                $"Frozen Textures ({frozenCount})", true);
+            bool isSearching = !string.IsNullOrEmpty(_searchText);
+            int filteredCount = isSearching ? CountFrozenMatches(compressor) : frozenCount;
+
+            // Show filtered count in header when searching
+            string headerText = isSearching && filteredCount != frozenCount
+                ? $"Frozen Textures ({filteredCount}/{frozenCount})"
+                : $"Frozen Textures ({frozenCount})";
+
+            _showFrozenSection = EditorGUILayout.Foldout(_showFrozenSection, headerText, true);
 
             if (!_showFrozenSection) return;
 
@@ -497,11 +523,18 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 return;
             }
 
+            // Show "no results" message when searching with no matches
+            if (isSearching && filteredCount == 0)
+            {
+                DrawHelpBox("No frozen textures match the search.", MessageType.Info);
+                return;
+            }
+
             // TODO: Remove this call after users have migrated from TexturePath to TextureGuid
             DrawLegacyPathMigrationUI(compressor);
 
-            // Only use ScrollView when there are many items (3+)
-            bool useScrollView = frozenCount >= 3;
+            // Only use ScrollView when there are many visible items (3+)
+            bool useScrollView = filteredCount >= 3;
 
             if (useScrollView)
             {
@@ -511,12 +544,23 @@ namespace dev.limitex.avatar.compressor.texture.editor
             for (int i = compressor.FrozenTextures.Count - 1; i >= 0; i--)
             {
                 var frozen = compressor.FrozenTextures[i];
+
+                // Skip items that don't match search (use cached result)
+                if (isSearching && !IsFrozenMatchCached(i))
+                    continue;
+
                 DrawFrozenTextureEntry(compressor, frozen, i);
             }
 
             if (useScrollView)
             {
                 EditorGUILayout.EndScrollView();
+            }
+
+            // Show hidden count when searching
+            if (isSearching && filteredCount < frozenCount)
+            {
+                DrawHiddenCount(frozenCount - filteredCount);
             }
         }
 
@@ -622,6 +666,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 Undo.RecordObject(compressor, "Unfreeze Texture");
                 compressor.FrozenTextures.RemoveAt(index);
                 EditorUtility.SetDirty(compressor);
+                InvalidateSearchCache();
             }
         }
 
@@ -1014,14 +1059,32 @@ namespace dev.limitex.avatar.compressor.texture.editor
             allPreviewData.AddRange(frozenList);
             allPreviewData.AddRange(skippedList);
             _previewData = allPreviewData.ToArray();
+
+            // Invalidate search cache since preview data changed
+            InvalidateSearchCache();
         }
 
         private void DrawPreview()
         {
             EditorGUILayout.Space(10);
 
-            string frozenInfo = _frozenCount > 0 ? $", {_frozenCount} frozen" : "";
-            DrawSectionHeader($"Preview ({_processedCount} to compress{frozenInfo}, {_skippedCount} skipped)");
+            bool isSearching = !string.IsNullOrEmpty(_searchText);
+            int totalCount = _previewData.Length;
+            int filteredCount = isSearching ? CountPreviewMatches() : totalCount;
+
+            // Build header text with filtered count when searching
+            string headerText;
+            if (isSearching && filteredCount != totalCount)
+            {
+                string frozenInfo = _frozenCount > 0 ? $", {_frozenCount} frozen" : "";
+                headerText = $"Preview ({filteredCount}/{totalCount} shown{frozenInfo})";
+            }
+            else
+            {
+                string frozenInfo = _frozenCount > 0 ? $", {_frozenCount} frozen" : "";
+                headerText = $"Preview ({_processedCount} to compress{frozenInfo}, {_skippedCount} skipped)";
+            }
+            DrawSectionHeader(headerText);
 
             long totalOriginal = 0;
             long totalAfter = 0;
@@ -1057,173 +1120,197 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             EndBox();
 
-            EditorGUILayout.Space(5);
-
-            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUILayout.MaxHeight(300));
-
-            bool hasDrawnProcessedHeader = false;
-            bool hasDrawnFrozenHeader = false;
-            bool hasDrawnSkippedHeader = false;
-
-            var compressor = (TextureCompressor)target;
-
-            foreach (var data in _previewData)
+            // Show "no results" message when searching with no matches
+            if (isSearching && filteredCount == 0)
             {
-                // Section headers
-                if (data.IsProcessed && !data.IsFrozen && !hasDrawnProcessedHeader)
+                EditorGUILayout.Space(5);
+                DrawHelpBox("No textures match the search.", MessageType.Info);
+            }
+            else
+            {
+                EditorGUILayout.Space(5);
+
+                _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUILayout.MaxHeight(300));
+
+                // Track which section headers have been drawn (for filtered items only)
+                bool hasDrawnProcessedHeader = false;
+                bool hasDrawnFrozenHeader = false;
+                bool hasDrawnSkippedHeader = false;
+
+                var compressor = (TextureCompressor)target;
+
+                for (int i = 0; i < _previewData.Length; i++)
                 {
-                    EditorGUILayout.LabelField("Textures to Compress", EditorStyles.boldLabel);
-                    hasDrawnProcessedHeader = true;
-                }
+                    var data = _previewData[i];
 
-                if (data.IsProcessed && data.IsFrozen && !hasDrawnFrozenHeader)
-                {
-                    EditorGUILayout.Space(10);
-                    EditorGUILayout.LabelField("Frozen Textures (Manual Override)", EditorStyles.boldLabel);
-                    hasDrawnFrozenHeader = true;
-                }
+                    // Skip items that don't match search (use cached result)
+                    if (isSearching && !IsPreviewMatchCached(i))
+                        continue;
 
-                if (!data.IsProcessed && !hasDrawnSkippedHeader)
-                {
-                    EditorGUILayout.Space(10);
-                    EditorGUILayout.LabelField("Skipped Textures", EditorStyles.boldLabel);
-                    hasDrawnSkippedHeader = true;
-                }
-
-                bool isSkipped = !data.IsProcessed;
-                // Check if texture was frozen after preview was generated (real-time check using GUID)
-                bool isFrozenNow = !data.IsFrozen && compressor.IsFrozen(data.Guid);
-                if (isSkipped || isFrozenNow)
-                {
-                    EditorGUI.BeginDisabledGroup(true);
-                }
-
-                EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-                var preview = AssetPreview.GetAssetPreview(data.Texture);
-                GUILayout.Label(preview ?? Texture2D.whiteTexture, GUILayout.Width(40), GUILayout.Height(40));
-
-                EditorGUILayout.BeginVertical();
-
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(data.Texture.name, EditorStyles.boldLabel);
-                EditorGUILayout.LabelField($"[{data.TextureType}]", GUILayout.Width(60));
-
-                // Freeze/Frozen button for processed textures
-                if (data.IsProcessed)
-                {
-                    if (data.IsFrozen)
+                    // Section headers
+                    if (data.IsProcessed && !data.IsFrozen && !hasDrawnProcessedHeader)
                     {
-                        // Show Unfreeze button for frozen textures
-                        var savedColor = GUI.backgroundColor;
-                        GUI.backgroundColor = new Color(0.5f, 0.8f, 1f);
-                        if (GUILayout.Button("Unfreeze", GUILayout.Width(70)))
+                        EditorGUILayout.LabelField("Textures to Compress", EditorStyles.boldLabel);
+                        hasDrawnProcessedHeader = true;
+                    }
+
+                    if (data.IsProcessed && data.IsFrozen && !hasDrawnFrozenHeader)
+                    {
+                        EditorGUILayout.Space(10);
+                        EditorGUILayout.LabelField("Frozen Textures (Manual Override)", EditorStyles.boldLabel);
+                        hasDrawnFrozenHeader = true;
+                    }
+
+                    if (!data.IsProcessed && !hasDrawnSkippedHeader)
+                    {
+                        EditorGUILayout.Space(10);
+                        EditorGUILayout.LabelField("Skipped Textures", EditorStyles.boldLabel);
+                        hasDrawnSkippedHeader = true;
+                    }
+
+                    bool isSkipped = !data.IsProcessed;
+                    // Check if texture was frozen after preview was generated (real-time check using GUID)
+                    bool isFrozenNow = !data.IsFrozen && compressor.IsFrozen(data.Guid);
+                    if (isSkipped || isFrozenNow)
+                    {
+                        EditorGUI.BeginDisabledGroup(true);
+                    }
+
+                    EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+
+                    var preview = AssetPreview.GetAssetPreview(data.Texture);
+                    GUILayout.Label(preview ?? Texture2D.whiteTexture, GUILayout.Width(40), GUILayout.Height(40));
+
+                    EditorGUILayout.BeginVertical();
+
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField(data.Texture.name, EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField($"[{data.TextureType}]", GUILayout.Width(60));
+
+                    // Freeze/Frozen button for processed textures
+                    if (data.IsProcessed)
+                    {
+                        if (data.IsFrozen)
                         {
-                            Undo.RecordObject(compressor, "Unfreeze Texture");
-                            compressor.UnfreezeTexture(data.Guid);
-                            EditorUtility.SetDirty(compressor);
+                            // Show Unfreeze button for frozen textures
+                            var savedColor = GUI.backgroundColor;
+                            GUI.backgroundColor = new Color(0.5f, 0.8f, 1f);
+                            if (GUILayout.Button("Unfreeze", GUILayout.Width(70)))
+                            {
+                                Undo.RecordObject(compressor, "Unfreeze Texture");
+                                compressor.UnfreezeTexture(data.Guid);
+                                EditorUtility.SetDirty(compressor);
+                                InvalidateSearchCache();
+                            }
+                            GUI.backgroundColor = savedColor;
                         }
-                        GUI.backgroundColor = savedColor;
+                        else
+                        {
+                            // Show Freeze button
+                            if (GUILayout.Button("Freeze", GUILayout.Width(70)))
+                            {
+                                Undo.RecordObject(compressor, "Freeze Texture");
+                                var frozenSettings = new FrozenTextureSettings(data.Guid, data.RecommendedDivisor, FrozenTextureFormat.Auto, false);
+                                compressor.SetFrozenSettings(data.Guid, frozenSettings);
+                                EditorUtility.SetDirty(compressor);
+                                InvalidateSearchCache();
+                            }
+                        }
+                    }
+
+                    EditorGUILayout.EndHorizontal();
+
+                    if (data.IsProcessed)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUILayout.LabelField("Complexity:", GUILayout.Width(70));
+
+                        Color complexityColor = Color.Lerp(Color.green, Color.red, data.Complexity);
+                        DrawProgressBar(data.Complexity, 100, 16, complexityColor);
+
+                        EditorGUILayout.LabelField($"{data.Complexity:P0}", GUILayout.Width(45));
+                        EditorGUILayout.EndHorizontal();
+
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUILayout.LabelField("Size:", GUILayout.Width(70));
+
+                        string sizeText;
+                        string manualIndicator = data.IsFrozen ? " (manual)" : "";
+                        if (data.RecommendedDivisor > 1)
+                        {
+                            sizeText = $"{data.OriginalSize.x}x{data.OriginalSize.y} → {data.RecommendedSize.x}x{data.RecommendedSize.y} (÷{data.RecommendedDivisor}){manualIndicator}";
+                        }
+                        else
+                        {
+                            sizeText = $"{data.OriginalSize.x}x{data.OriginalSize.y} (unchanged){manualIndicator}";
+                        }
+                        EditorGUILayout.LabelField(sizeText);
+                        EditorGUILayout.EndHorizontal();
+
+                        // Display predicted compression format
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUILayout.LabelField("Format:", GUILayout.Width(70));
+                        if (data.PredictedFormat.HasValue)
+                        {
+                            string formatName = GetFormatDisplayName(data.PredictedFormat.Value);
+                            string formatInfo = GetFormatInfo(data.PredictedFormat.Value);
+                            if (data.IsFrozen && data.FrozenSettings != null && data.FrozenSettings.Format != FrozenTextureFormat.Auto)
+                            {
+                                formatInfo += " (manual)";
+                            }
+                            var formatColor = GetFormatColor(data.PredictedFormat.Value);
+
+                            var savedGuiColor = GUI.color;
+                            GUI.color = formatColor;
+                            EditorGUILayout.LabelField(formatName, EditorStyles.boldLabel, GUILayout.Width(70));
+                            GUI.color = savedGuiColor;
+                            EditorGUILayout.LabelField(formatInfo, EditorStyles.miniLabel);
+                        }
+                        else
+                        {
+                            EditorGUILayout.LabelField("N/A", EditorStyles.miniLabel);
+                        }
+                        EditorGUILayout.EndHorizontal();
                     }
                     else
                     {
-                        // Show Freeze button
-                        if (GUILayout.Button("Freeze", GUILayout.Width(70)))
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUILayout.LabelField("Size:", GUILayout.Width(70));
+                        EditorGUILayout.LabelField($"{data.OriginalSize.x}x{data.OriginalSize.y}");
+                        EditorGUILayout.EndHorizontal();
+
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUILayout.LabelField("Reason:", GUILayout.Width(70));
+                        string reasonText = data.SkipReason switch
                         {
-                            Undo.RecordObject(compressor, "Freeze Texture");
-                            var frozenSettings = new FrozenTextureSettings(data.Guid, data.RecommendedDivisor, FrozenTextureFormat.Auto, false);
-                            compressor.SetFrozenSettings(data.Guid, frozenSettings);
-                            EditorUtility.SetDirty(compressor);
-                        }
+                            SkipReason.TooSmall => "Too small",
+                            SkipReason.FilteredByType => "Filtered by type",
+                            SkipReason.FrozenSkip => "User frozen (skipped)",
+                            SkipReason.RuntimeGenerated => "Runtime generated",
+                            SkipReason.ExcludedPath => "Excluded by path",
+                            _ => "Skipped"
+                        };
+                        EditorGUILayout.LabelField(reasonText, EditorStyles.miniLabel);
+                        EditorGUILayout.EndHorizontal();
+                    }
+
+                    EditorGUILayout.EndVertical();
+                    EditorGUILayout.EndHorizontal();
+
+                    if (isSkipped || isFrozenNow)
+                    {
+                        EditorGUI.EndDisabledGroup();
                     }
                 }
 
-                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndScrollView();
 
-                if (data.IsProcessed)
+                // Show hidden count when searching
+                if (isSearching && filteredCount < totalCount)
                 {
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField("Complexity:", GUILayout.Width(70));
-
-                    Color complexityColor = Color.Lerp(Color.green, Color.red, data.Complexity);
-                    DrawProgressBar(data.Complexity, 100, 16, complexityColor);
-
-                    EditorGUILayout.LabelField($"{data.Complexity:P0}", GUILayout.Width(45));
-                    EditorGUILayout.EndHorizontal();
-
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField("Size:", GUILayout.Width(70));
-
-                    string sizeText;
-                    string manualIndicator = data.IsFrozen ? " (manual)" : "";
-                    if (data.RecommendedDivisor > 1)
-                    {
-                        sizeText = $"{data.OriginalSize.x}x{data.OriginalSize.y} → {data.RecommendedSize.x}x{data.RecommendedSize.y} (÷{data.RecommendedDivisor}){manualIndicator}";
-                    }
-                    else
-                    {
-                        sizeText = $"{data.OriginalSize.x}x{data.OriginalSize.y} (unchanged){manualIndicator}";
-                    }
-                    EditorGUILayout.LabelField(sizeText);
-                    EditorGUILayout.EndHorizontal();
-
-                    // Display predicted compression format
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField("Format:", GUILayout.Width(70));
-                    if (data.PredictedFormat.HasValue)
-                    {
-                        string formatName = GetFormatDisplayName(data.PredictedFormat.Value);
-                        string formatInfo = GetFormatInfo(data.PredictedFormat.Value);
-                        if (data.IsFrozen && data.FrozenSettings != null && data.FrozenSettings.Format != FrozenTextureFormat.Auto)
-                        {
-                            formatInfo += " (manual)";
-                        }
-                        var formatColor = GetFormatColor(data.PredictedFormat.Value);
-
-                        var savedGuiColor = GUI.color;
-                        GUI.color = formatColor;
-                        EditorGUILayout.LabelField(formatName, EditorStyles.boldLabel, GUILayout.Width(70));
-                        GUI.color = savedGuiColor;
-                        EditorGUILayout.LabelField(formatInfo, EditorStyles.miniLabel);
-                    }
-                    else
-                    {
-                        EditorGUILayout.LabelField("N/A", EditorStyles.miniLabel);
-                    }
-                    EditorGUILayout.EndHorizontal();
-                }
-                else
-                {
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField("Size:", GUILayout.Width(70));
-                    EditorGUILayout.LabelField($"{data.OriginalSize.x}x{data.OriginalSize.y}");
-                    EditorGUILayout.EndHorizontal();
-
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField("Reason:", GUILayout.Width(70));
-                    string reasonText = data.SkipReason switch
-                    {
-                        SkipReason.TooSmall => "Too small",
-                        SkipReason.FilteredByType => "Filtered by type",
-                        SkipReason.FrozenSkip => "User frozen (skipped)",
-                        SkipReason.RuntimeGenerated => "Runtime generated",
-                        SkipReason.ExcludedPath => "Excluded by path",
-                        _ => "Skipped"
-                    };
-                    EditorGUILayout.LabelField(reasonText, EditorStyles.miniLabel);
-                    EditorGUILayout.EndHorizontal();
-                }
-
-                EditorGUILayout.EndVertical();
-                EditorGUILayout.EndHorizontal();
-
-                if (isSkipped || isFrozenNow)
-                {
-                    EditorGUI.EndDisabledGroup();
+                    DrawHiddenCount(totalCount - filteredCount);
                 }
             }
-
-            EditorGUILayout.EndScrollView();
 
             EditorGUILayout.Space(5);
 
@@ -1414,6 +1501,219 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
+        }
+
+        private void DrawSearchBox()
+        {
+            var compressor = (TextureCompressor)target;
+
+            // Count matching items for display
+            int frozenHits = CountFrozenMatches(compressor);
+            int previewHits = CountPreviewMatches();
+            int totalHits = frozenHits + previewHits;
+
+            BeginBox();
+
+            EditorGUILayout.BeginHorizontal();
+
+            // Search icon
+            var searchIcon = EditorGUIUtility.IconContent("d_Search Icon");
+            if (searchIcon != null && searchIcon.image != null)
+            {
+                GUILayout.Label(searchIcon, GUILayout.Width(20), GUILayout.Height(18));
+            }
+
+            // Text field with placeholder
+            var textFieldRect = EditorGUILayout.GetControlRect();
+            GUI.SetNextControlName("SearchField");
+            EditorGUI.BeginChangeCheck();
+            _searchText = EditorGUI.TextField(textFieldRect, _searchText);
+            if (EditorGUI.EndChangeCheck())
+            {
+                // Force repaint when search text changes
+                Repaint();
+            }
+
+            // Draw placeholder when empty and not focused
+            if (string.IsNullOrEmpty(_searchText) && GUI.GetNameOfFocusedControl() != "SearchField")
+            {
+                _placeholderStyle ??= new GUIStyle(EditorStyles.label)
+                {
+                    fontStyle = FontStyle.Italic,
+                    normal = { textColor = new Color(0.5f, 0.5f, 0.5f) }
+                };
+                var placeholderRect = textFieldRect;
+                placeholderRect.x += 3;
+                EditorGUI.LabelField(placeholderRect, "Search textures...", _placeholderStyle);
+            }
+
+            // Clear button
+            EditorGUI.BeginDisabledGroup(string.IsNullOrEmpty(_searchText));
+            if (GUILayout.Button("Clear", GUILayout.Width(50)))
+            {
+                _searchText = "";
+                GUI.FocusControl(null);
+            }
+            EditorGUI.EndDisabledGroup();
+
+            EditorGUILayout.EndHorizontal();
+
+            // Show options and hit count when searching
+            if (!string.IsNullOrEmpty(_searchText))
+            {
+                EditorGUILayout.BeginHorizontal();
+
+                // Space to align with search icon above
+                GUILayout.Space(30);
+
+                // Fuzzy search toggle
+                EditorGUI.BeginChangeCheck();
+                _useFuzzySearch = EditorGUILayout.ToggleLeft("Fuzzy", _useFuzzySearch, GUILayout.Width(55));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Repaint();
+                }
+
+                // Hit count (right-aligned)
+                _hitCountStyle ??= new GUIStyle(EditorStyles.miniLabel)
+                {
+                    alignment = TextAnchor.MiddleRight
+                };
+                string hitText = totalHits == 1 ? "1 hit" : $"{totalHits} hits";
+                if (frozenHits > 0 || previewHits > 0)
+                {
+                    hitText += $" (Frozen: {frozenHits}, Preview: {previewHits})";
+                }
+                EditorGUILayout.LabelField(hitText, _hitCountStyle);
+
+                EditorGUILayout.EndHorizontal();
+            }
+
+            EndBox();
+        }
+
+        private void UpdateSearchCache(TextureCompressor compressor)
+        {
+            // Check if cache is still valid
+            if (_cachedSearchText == _searchText &&
+                _cachedUseFuzzySearch == _useFuzzySearch &&
+                _cachedFrozenMatchIndices != null &&
+                _cachedPreviewMatchIndices != null)
+            {
+                return;
+            }
+
+            // Update cache state
+            _cachedSearchText = _searchText;
+            _cachedUseFuzzySearch = _useFuzzySearch;
+
+            // Rebuild frozen matches cache
+            _cachedFrozenMatchIndices = new HashSet<int>();
+            if (!string.IsNullOrEmpty(_searchText))
+            {
+                for (int i = 0; i < compressor.FrozenTextures.Count; i++)
+                {
+                    if (MatchesFrozenSearch(compressor.FrozenTextures[i]))
+                        _cachedFrozenMatchIndices.Add(i);
+                }
+            }
+
+            // Rebuild preview matches cache
+            _cachedPreviewMatchIndices = new HashSet<int>();
+            if (_previewData != null && !string.IsNullOrEmpty(_searchText))
+            {
+                for (int i = 0; i < _previewData.Length; i++)
+                {
+                    if (MatchesPreviewSearch(_previewData[i]))
+                        _cachedPreviewMatchIndices.Add(i);
+                }
+            }
+        }
+
+        private void InvalidateSearchCache()
+        {
+            _cachedFrozenMatchIndices = null;
+            _cachedPreviewMatchIndices = null;
+        }
+
+        private int CountFrozenMatches(TextureCompressor compressor)
+        {
+            if (string.IsNullOrEmpty(_searchText))
+                return compressor.FrozenTextures.Count;
+
+            UpdateSearchCache(compressor);
+            return _cachedFrozenMatchIndices.Count;
+        }
+
+        private int CountPreviewMatches()
+        {
+            if (_previewData == null || _previewData.Length == 0)
+                return 0;
+
+            if (string.IsNullOrEmpty(_searchText))
+                return _previewData.Length;
+
+            // Ensure cache is up to date
+            UpdateSearchCache((TextureCompressor)target);
+            return _cachedPreviewMatchIndices.Count;
+        }
+
+        private bool IsFrozenMatchCached(int index)
+        {
+            if (string.IsNullOrEmpty(_searchText))
+                return true;
+
+            return _cachedFrozenMatchIndices?.Contains(index) ?? false;
+        }
+
+        private bool IsPreviewMatchCached(int index)
+        {
+            if (string.IsNullOrEmpty(_searchText))
+                return true;
+
+            return _cachedPreviewMatchIndices?.Contains(index) ?? false;
+        }
+
+        private bool MatchesFrozenSearch(FrozenTextureSettings frozen)
+        {
+            string assetPath = AssetDatabase.GUIDToAssetPath(frozen.TextureGuid);
+            string textureName = System.IO.Path.GetFileName(assetPath);
+
+            return MatchesSearch(textureName) || MatchesSearch(assetPath);
+        }
+
+        private bool MatchesPreviewSearch(TexturePreviewData data)
+        {
+            string assetPath = AssetDatabase.GUIDToAssetPath(data.Guid);
+            string textureName = data.Texture != null ? data.Texture.name : "";
+
+            return MatchesSearch(textureName) || MatchesSearch(assetPath) || MatchesSearch(data.TextureType);
+        }
+
+        private bool MatchesSearch(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return false;
+
+            if (_useFuzzySearch)
+            {
+                return FuzzyMatcher.Match(text, _searchText);
+            }
+            else
+            {
+                return text.IndexOf(_searchText, System.StringComparison.OrdinalIgnoreCase) >= 0;
+            }
+        }
+
+        private void DrawHiddenCount(int hiddenCount)
+        {
+            _hiddenCountStyle ??= new GUIStyle(EditorStyles.miniLabel)
+            {
+                alignment = TextAnchor.MiddleRight,
+                normal = { textColor = new Color(0.6f, 0.6f, 0.6f) }
+            };
+            string hiddenText = hiddenCount == 1 ? "1 hidden" : $"{hiddenCount} hidden";
+            EditorGUILayout.LabelField(hiddenText, _hiddenCountStyle);
         }
 
         /// <summary>
