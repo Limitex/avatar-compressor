@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Texture search functionality** - Filter textures by name in Frozen Textures and Preview sections
+  - Search box with real-time filtering and hit count display
+  - Fuzzy search option using Bitap algorithm (Shift-Or / Baeza-Yates-Gonnet) for approximate matching
+  - Supports Japanese and other Unicode characters
+  - Fuzzy search disabled by default for improved UX (can be enabled via toggle)
+- **Clickable texture thumbnails** - Click texture thumbnails to highlight assets in Project window
+  - Works in both Frozen Textures and Preview sections
+  - Uses `EditorGUIUtility.PingObject` for asset highlighting
+- **GitHub feedback section** - Added footer with clickable GitHub repository link for bug reports and feedback
 - **Runtime-generated texture skipping** - Textures without asset paths are now automatically skipped
   - Prevents corruption of data textures dynamically created during build
   - These textures may use RGB values for non-visual data (depth, deformation vectors)
@@ -53,12 +62,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Now part of the TextureCompressor module for better cohesion
   - Enhanced to support cloning additional materials beyond renderer-attached ones
 - **Streaming mipmaps warning** - Now only displays once per build instead of per texture
+- **Editor UI architecture refactored** - Split `TextureCompressorEditor` into single-responsibility classes
+  - `SearchBoxDrawer` - Search box rendering and filtering logic
+  - `FrozenTexturesDrawer` - Frozen textures section UI
+  - `PreviewSectionDrawer` - Compression preview section UI
+  - `PresetSectionDrawer` - Preset selection and configuration UI
+  - `FooterDrawer` - Footer with feedback links
+  - `TexturePreviewGenerator` - Texture preview data generation
+  - `GUIDrawing` - Shared GUI drawing utilities
+  - `TextureFormatUtils` - Texture format display utilities
+  - `CompressorPropertySet` - SerializedProperty management
+  - Simplified `CompressorEditorBase` - moved GUI utilities to `GUIDrawing` static class
 - **Unit tests expanded** - Added comprehensive tests for new features
   - MaterialCollector tests (animation/component material detection, EditorOnly filtering)
   - MaterialReference tests (equality, cloning, source tracking)
   - ComponentUtils tests (IsEditorOnly hierarchy traversal)
   - TextureCollector tests (EditorOnly tagged object skipping, RuntimeGenerated skip, ExcludedPath skip)
   - TextureProcessor tests for resize functionality and settings preservation
+  - FuzzyMatcher tests (exact/fuzzy matching, case insensitivity, Unicode/Japanese support, edge cases)
 
 ### Fixed
 
