@@ -32,8 +32,6 @@ namespace dev.limitex.avatar.compressor.texture.editor
         {
             int totalHits = frozenHits + previewHits;
 
-            GUIDrawing.DrawSectionHeader("Texture Search");
-
             GUIDrawing.BeginBox();
 
             EditorGUILayout.BeginHorizontal();
