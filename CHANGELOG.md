@@ -75,6 +75,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Modular Avatar compatibility** - Added `AfterPlugin("nadena.dev.modular-avatar")` to ensure proper execution order
   - Fixes potential issues with materials added/modified by Modular Avatar not being processed correctly
   - Ensures animation-referenced materials from MA are properly detected and compressed
+- **Preview memory calculation accuracy** - Fixed memory estimation to account for mipmap levels ([@KosmicAnomaly](https://github.com/KosmicAnomaly))
+  - Previously used `Profiler.GetRuntimeMemorySizeLong` which returns runtime overhead, not VRAM usage
+  - Now calculates compressed memory based on format bits-per-pixel and all mipmap levels
+  - Each mipmap level adds 1/4 of the previous level's memory (geometric series)
+  - Provides more accurate before/after memory comparison in the preview UI
 
 ## [v0.3.4] - 2026-01-06
 

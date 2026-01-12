@@ -841,7 +841,12 @@ namespace dev.limitex.avatar.compressor.texture.editor
 
                 if (info.IsProcessed && analysisResults.TryGetValue(tex, out var analysis))
                 {
-                    long originalMemory = Profiler.GetRuntimeMemorySizeLong(tex);
+                    long originalMemory = CalculateCompressedMemory(
+                        tex.width,
+                        tex.height,
+                        tex.format,
+                        tex.mipmapCount
+                    );
                     bool isNormalMap = info.TextureType == "Normal";
                     bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
 
@@ -885,10 +890,12 @@ namespace dev.limitex.avatar.compressor.texture.editor
                         }
                     }
 
-                    long estimatedMemory = EstimateCompressedMemory(
+                    long estimatedMemory = CalculateCompressedMemory(
                         recommendedSize.x,
                         recommendedSize.y,
-                        targetFormat);
+                        targetFormat,
+                        tex.mipmapCount
+                    );
 
                     var previewData = new TexturePreviewData
                     {
@@ -944,7 +951,12 @@ namespace dev.limitex.avatar.compressor.texture.editor
                 }
                 else
                 {
-                    long originalMemory = Profiler.GetRuntimeMemorySizeLong(tex);
+                    long originalMemory = CalculateCompressedMemory(
+                        tex.width,
+                        tex.height,
+                        tex.format,
+                        tex.mipmapCount
+                    );
 
                     skippedList.Add(new TexturePreviewData
                     {
@@ -1216,12 +1228,16 @@ namespace dev.limitex.avatar.compressor.texture.editor
         }
 
         /// <summary>
-        /// Estimates compressed memory size based on target format.
+        /// Calculates compressed memory size based on format.
         /// </summary>
-        private long EstimateCompressedMemory(int width, int height, TextureFormat format)
+        private long CalculateCompressedMemory(int width, int height, TextureFormat format, int mipmapCount)
         {
             float bitsPerPixel = GetBitsPerPixel(format);
-            return (long)(width * height * bitsPerPixel / 8f);
+            long bytes = 0;
+            for (int index = 0; index < mipmapCount; ++index)
+                // Each mipmap level is 1/4 the size of previous: (width * height) / 4^index
+                bytes += (long) Mathf.RoundToInt(((width * height) >> (2 * index)) * bitsPerPixel / 8f);
+            return bytes;
         }
 
         /// <summary>
