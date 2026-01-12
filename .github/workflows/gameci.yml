@@ -2,13 +2,14 @@ name: GameCI
 
 on:
   push:
-  pull_request:
+  pull_request_target:
   workflow_dispatch:
 
 jobs:
   test:
     name: Test and Coverage
     runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork && 'external' || '' }}
     permissions:
       contents: read
       checks: write
@@ -17,6 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: ci_checkout
           lfs: true
 
