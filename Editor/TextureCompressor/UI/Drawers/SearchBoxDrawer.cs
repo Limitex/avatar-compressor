@@ -43,6 +43,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
             }
 
             var textFieldRect = EditorGUILayout.GetControlRect();
+            GUI.SetNextControlName("SearchField");
             EditorGUI.BeginChangeCheck();
             _searchText = EditorGUI.TextField(textFieldRect, _searchText);
             if (EditorGUI.EndChangeCheck())

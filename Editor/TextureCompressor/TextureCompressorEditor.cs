@@ -1,5 +1,4 @@
 using dev.limitex.avatar.compressor.editor;
-using nadena.dev.ndmf.runtime;
 using UnityEditor;
 using UnityEngine;
 
@@ -56,14 +55,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
             var compressor = (TextureCompressor)target;
 
             // Avatar root warning
-            if (!RuntimeUtil.IsAvatarRoot(compressor.transform))
-            {
-                GUIDrawing.DrawHelpBox(
-                    "This component should be placed on the avatar root GameObject. " +
-                    "While it will still work, placing it on the avatar root is recommended.",
-                    MessageType.Warning);
-                EditorGUILayout.Space(5);
-            }
+            DrawAvatarRootWarning(compressor.transform);
 
             EditorGUILayout.Space(5);
 
