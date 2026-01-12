@@ -10,7 +10,7 @@ namespace dev.limitex.avatar.compressor.texture.editor
     public class SearchBoxDrawer
     {
         private string _searchText = "";
-        private bool _useFuzzySearch = true;
+        private bool _useFuzzySearch = false;
 
         private static GUIStyle _placeholderStyle;
         private static GUIStyle PlaceholderStyle => _placeholderStyle ??= new GUIStyle(EditorStyles.label)
