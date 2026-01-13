@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Search functionality** - Filter frozen textures and preview list by texture name
+  - Search box at the top of the frozen textures and preview sections
+  - Supports both exact substring matching and fuzzy matching (Bitap algorithm)
+  - Toggle button to switch between exact and fuzzy search modes
+  - Shows filtered count in section headers (e.g., "Frozen Textures (2/5)")
+  - Displays "X hidden by search" indicator when items are filtered out
+- **Clickable texture thumbnails** - Click thumbnails to highlight assets in Project window
+  - Applies to both frozen textures list and compression preview
+  - Cursor changes to link pointer on hover for visual feedback
+  - Works even when the row is disabled (e.g., skipped textures)
+- **GitHub repository link** - Added repository link section at bottom of Inspector
+  - Direct link to project homepage for easy access to documentation and issues
 - **Runtime-generated texture skipping** - Textures without asset paths are now automatically skipped
   - Prevents corruption of data textures dynamically created during build
   - These textures may use RGB values for non-visual data (depth, deformation vectors)
