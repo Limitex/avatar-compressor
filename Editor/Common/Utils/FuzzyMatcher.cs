@@ -71,7 +71,7 @@ namespace dev.limitex.avatar.compressor.common
             for (int i = 0; i < n; i++)
             {
                 char c = text[i];
-                int mask = patternMask.TryGetValue(c, out int m_) ? m_ : NoMatchMask;
+                int mask = patternMask.TryGetValue(c, out int charMask) ? charMask : NoMatchMask;
 
                 int oldRk1 = R[0];
                 R[0] = (R[0] << 1) | mask;

@@ -1096,15 +1096,14 @@ namespace dev.limitex.avatar.compressor.texture.editor
             int filteredCount = isSearching ? CountPreviewMatches() : totalCount;
 
             // Build header text with filtered count when searching
+            string frozenInfo = _frozenCount > 0 ? $", {_frozenCount} frozen" : "";
             string headerText;
             if (isSearching && filteredCount != totalCount)
             {
-                string frozenInfo = _frozenCount > 0 ? $", {_frozenCount} frozen" : "";
                 headerText = $"Preview ({filteredCount}/{totalCount} shown{frozenInfo})";
             }
             else
             {
-                string frozenInfo = _frozenCount > 0 ? $", {_frozenCount} frozen" : "";
                 headerText = $"Preview ({_processedCount} to compress{frozenInfo}, {_skippedCount} skipped)";
             }
             DrawSectionHeader(headerText);
