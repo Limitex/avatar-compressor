@@ -45,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **NDMF plugin configuration** - Added `WithRequiredExtensions` for `AnimatorServicesContext`
+  - Ensures animation reference updates work correctly by requiring the animator services context
 - **Frozen texture identification** - Changed from asset path to GUID-based identification (**Breaking**)
   - `FrozenTextureSettings.TexturePath` renamed to `TextureGuid`
   - `TextureCompressor` API methods now accept GUID instead of asset path:
