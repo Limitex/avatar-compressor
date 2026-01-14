@@ -1,4 +1,3 @@
-using System;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.animator;
 
@@ -20,7 +19,7 @@ namespace dev.limitex.avatar.compressor.texture
                 .AfterPlugin("nadena.dev.modular-avatar")
                 .BeforePlugin("net.rs64.tex-trans-tool")
                 .BeforePlugin("com.anatawa12.avatar-optimizer")
-                .WithRequiredExtensions(new Type[] { typeof(AnimatorServicesContext) }, sequence =>
+                .WithRequiredExtensions(new [] { typeof(AnimatorServicesContext) }, sequence =>
                 {
                     sequence.Run(TextureCompressorPass.Instance);
                 });
