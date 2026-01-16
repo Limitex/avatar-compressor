@@ -10,13 +10,6 @@ namespace dev.limitex.avatar.compressor.texture.ui
     /// </summary>
     public static class PresetSection
     {
-        private static readonly Color HighQualityColor = new Color(0.1f, 0.9f, 0.6f);
-        private static readonly Color QualityColor = new Color(0.2f, 0.8f, 0.4f);
-        private static readonly Color BalancedColor = new Color(0.3f, 0.6f, 0.9f);
-        private static readonly Color AggressiveColor = new Color(0.9f, 0.7f, 0.2f);
-        private static readonly Color MaximumColor = new Color(0.9f, 0.3f, 0.3f);
-        private static readonly Color CustomColor = new Color(0.7f, 0.5f, 0.9f);
-
         /// <summary>
         /// Draws the complete preset section including buttons, description, and summary.
         /// </summary>
@@ -38,15 +31,15 @@ namespace dev.limitex.avatar.compressor.texture.ui
         private static void DrawPresetButtons(TextureCompressor config)
         {
             EditorGUILayout.BeginHorizontal();
-            DrawPresetButton(config, CompressorPreset.HighQuality, "High Quality", "Highest quality\nMinimal compression", HighQualityColor);
-            DrawPresetButton(config, CompressorPreset.Quality, "Quality", "Good quality\nLight compression", QualityColor);
-            DrawPresetButton(config, CompressorPreset.Balanced, "Balanced", "Balance of\nquality and size", BalancedColor);
+            DrawPresetButton(config, CompressorPreset.HighQuality, "High Quality", "Highest quality\nMinimal compression", PresetColors.HighQuality);
+            DrawPresetButton(config, CompressorPreset.Quality, "Quality", "Good quality\nLight compression", PresetColors.Quality);
+            DrawPresetButton(config, CompressorPreset.Balanced, "Balanced", "Balance of\nquality and size", PresetColors.Balanced);
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
-            DrawPresetButton(config, CompressorPreset.Aggressive, "Aggressive", "Smaller file size\nSome quality loss", AggressiveColor);
-            DrawPresetButton(config, CompressorPreset.Maximum, "Maximum", "Smallest size\nNoticeable quality loss", MaximumColor);
-            DrawPresetButton(config, CompressorPreset.Custom, "Custom", "Manual\nconfiguration", CustomColor);
+            DrawPresetButton(config, CompressorPreset.Aggressive, "Aggressive", "Smaller file size\nSome quality loss", PresetColors.Aggressive);
+            DrawPresetButton(config, CompressorPreset.Maximum, "Maximum", "Smallest size\nNoticeable quality loss", PresetColors.Maximum);
+            DrawPresetButton(config, CompressorPreset.Custom, "Custom", "Manual\nconfiguration", PresetColors.Custom);
             EditorGUILayout.EndHorizontal();
         }
 

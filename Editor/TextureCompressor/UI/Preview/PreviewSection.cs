@@ -360,7 +360,7 @@ namespace dev.limitex.avatar.compressor.texture.ui
             string assetPath = AssetDatabase.GUIDToAssetPath(data.Guid);
             string textureName = data.Texture != null ? data.Texture.name : "";
 
-            return search.MatchesSearch(textureName) || search.MatchesSearch(assetPath) || search.MatchesSearch(data.TextureType);
+            return search.MatchesSearchAny(textureName, assetPath, data.TextureType);
         }
     }
 }

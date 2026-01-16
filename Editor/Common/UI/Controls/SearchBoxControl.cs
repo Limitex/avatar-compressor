@@ -213,6 +213,23 @@ namespace dev.limitex.avatar.compressor.editor.ui
             }
         }
 
+        /// <summary>
+        /// Checks if any of the provided strings matches the current search.
+        /// </summary>
+        /// <param name="texts">Texts to match against.</param>
+        /// <returns>True if any text matches search.</returns>
+        public bool MatchesSearchAny(params string[] texts)
+        {
+            if (!IsSearching) return true;
+
+            foreach (var text in texts)
+            {
+                if (MatchesSearch(text))
+                    return true;
+            }
+            return false;
+        }
+
         private void UpdateCache(int itemCount, Func<int, bool> matchFunction)
         {
             // Check if cache is valid

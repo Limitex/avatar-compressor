@@ -10,6 +10,32 @@ namespace dev.limitex.avatar.compressor.texture.ui
     /// </summary>
     public static class FrozenTexturesSection
     {
+        private static readonly System.Collections.Generic.Dictionary<string, string> _guidPathCache = new();
+
+        /// <summary>
+        /// Gets the asset path for a GUID, using cache to avoid repeated lookups.
+        /// </summary>
+        private static string GetAssetPathCached(string guid)
+        {
+            if (string.IsNullOrEmpty(guid))
+                return "";
+
+            if (!_guidPathCache.TryGetValue(guid, out var path))
+            {
+                path = AssetDatabase.GUIDToAssetPath(guid);
+                _guidPathCache[guid] = path;
+            }
+            return path;
+        }
+
+        /// <summary>
+        /// Clears the GUID-to-path cache. Call when assets may have changed.
+        /// </summary>
+        public static void InvalidateCache()
+        {
+            _guidPathCache.Clear();
+        }
+
         /// <summary>
         /// Draws the frozen textures section with search filtering.
         /// </summary>
@@ -81,8 +107,8 @@ namespace dev.limitex.avatar.compressor.texture.ui
 
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
-            // Resolve path from GUID for display and loading
-            string assetPath = AssetDatabase.GUIDToAssetPath(frozen.TextureGuid);
+            // Resolve path from GUID for display and loading (cached)
+            string assetPath = GetAssetPathCached(frozen.TextureGuid);
             var texture = !string.IsNullOrEmpty(assetPath) ? AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath) : null;
 
             // Thumbnail
@@ -232,10 +258,12 @@ namespace dev.limitex.avatar.compressor.texture.ui
 
         private static bool MatchesFrozenSearch(FrozenTextureSettings frozen, SearchBoxControl search)
         {
-            string assetPath = AssetDatabase.GUIDToAssetPath(frozen.TextureGuid);
-            string textureName = System.IO.Path.GetFileName(assetPath);
+            string assetPath = GetAssetPathCached(frozen.TextureGuid);
+            string textureName = !string.IsNullOrEmpty(assetPath)
+                ? assetPath.Substring(assetPath.LastIndexOf('/') + 1)
+                : "";
 
-            return search.MatchesSearch(textureName) || search.MatchesSearch(assetPath);
+            return search.MatchesSearchAny(textureName, assetPath);
         }
     }
 }
