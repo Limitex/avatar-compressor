@@ -9,21 +9,21 @@ namespace dev.limitex.avatar.compressor.texture.ui
     /// </summary>
     public class TexturePreviewData
     {
-        public Texture2D Texture;
-        public string Guid;
-        public float Complexity;
-        public int RecommendedDivisor;
-        public Vector2Int OriginalSize;
-        public Vector2Int RecommendedSize;
-        public string TextureType;
-        public bool IsProcessed;
-        public SkipReason SkipReason;
-        public long OriginalMemory;
-        public long EstimatedMemory;
-        public bool IsNormalMap;
-        public TextureFormat? PredictedFormat;
-        public bool HasAlpha;
-        public bool IsFrozen;
-        public FrozenTextureSettings FrozenSettings;
+        public Texture2D Texture { get; set; }
+        public string Guid { get; set; }
+        public float Complexity { get; set; }
+        public int RecommendedDivisor { get; set; }
+        public Vector2Int OriginalSize { get; set; }
+        public Vector2Int RecommendedSize { get; set; }
+        public string TextureType { get; set; }
+        public bool IsProcessed { get; set; }
+        public SkipReason SkipReason { get; set; }
+        public long OriginalMemory { get; set; }
+        public long EstimatedMemory { get; set; }
+        public bool IsNormalMap { get; set; }
+        public TextureFormat? PredictedFormat { get; set; }
+        public bool HasAlpha { get; set; }
+        public bool IsFrozen { get; set; }
+        public FrozenTextureSettings FrozenSettings { get; set; }
     }
 }

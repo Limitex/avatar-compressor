@@ -123,6 +123,10 @@ namespace dev.limitex.avatar.compressor.texture.ui
                 string assetPath = AssetDatabase.GetAssetPath(tex);
                 string guid = AssetDatabase.AssetPathToGUID(assetPath);
 
+                // Skip textures with invalid GUID (e.g., runtime-generated textures)
+                if (string.IsNullOrEmpty(guid))
+                    continue;
+
                 // Check if texture is frozen
                 frozenLookup.TryGetValue(guid, out var frozenSettings);
                 bool isFrozen = frozenSettings != null;

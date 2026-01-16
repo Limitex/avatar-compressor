@@ -152,35 +152,42 @@ namespace dev.limitex.avatar.compressor.texture.ui
             if (string.IsNullOrWhiteSpace(path))
                 return false;
 
-            // Remove trailing slash for folder check
-            string folderPath = path.TrimEnd('/', '\\');
-
-            // Check if it's a valid folder
-            if (AssetDatabase.IsValidFolder(folderPath))
-                return true;
-
-            // Check if parent folder exists (for partial paths)
-            int lastSlash = folderPath.LastIndexOfAny(new[] { '/', '\\' });
-            if (lastSlash > 0)
+            try
             {
-                string parentPath = folderPath.Substring(0, lastSlash);
-                if (AssetDatabase.IsValidFolder(parentPath))
+                // Remove trailing slash for folder check
+                string folderPath = path.TrimEnd('/', '\\');
+
+                // Check if it's a valid folder
+                if (AssetDatabase.IsValidFolder(folderPath))
                     return true;
-            }
 
-            // Check Packages folder specially
-            if (path.StartsWith("Packages/"))
-            {
-                string[] parts = path.Split('/');
-                if (parts.Length >= 2)
+                // Check if parent folder exists (for partial paths)
+                int lastSlash = folderPath.LastIndexOfAny(new[] { '/', '\\' });
+                if (lastSlash > 0)
                 {
-                    string packagePath = $"Packages/{parts[1]}";
-                    string packageJsonPath = $"{packagePath}/package.json";
-                    return System.IO.File.Exists(packageJsonPath);
+                    string parentPath = folderPath.Substring(0, lastSlash);
+                    if (AssetDatabase.IsValidFolder(parentPath))
+                        return true;
                 }
-            }
 
-            return false;
+                // Check Packages folder specially
+                if (path.StartsWith("Packages/"))
+                {
+                    string[] parts = path.Split('/');
+                    if (parts.Length >= 2)
+                    {
+                        string packagePath = $"Packages/{parts[1]}";
+                        string packageJsonPath = $"{packagePath}/package.json";
+                        return System.IO.File.Exists(packageJsonPath);
+                    }
+                }
+
+                return false;
+            }
+            catch (System.Exception)
+            {
+                return false;
+            }
         }
     }
 }
