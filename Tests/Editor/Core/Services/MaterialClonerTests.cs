@@ -453,28 +453,6 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region CloneOnly Tests
-
-        [Test]
-        public void CloneOnly_SingleMaterial_ClonesWithoutUpdatingRenderer()
-        {
-            var root = CreateGameObject("Root");
-            var renderer = root.AddComponent<MeshRenderer>();
-            var originalMaterial = CreateMaterial("OriginalMaterial");
-            renderer.sharedMaterial = originalMaterial;
-
-            var references = MaterialCollector.CollectFromRenderers(root);
-            var result = MaterialCloner.CloneOnly(references);
-
-            Assert.AreEqual(1, result.Count);
-            // Renderer should still have original material
-            Assert.AreEqual(originalMaterial, renderer.sharedMaterial);
-
-            _createdObjects.Add(result[originalMaterial]);
-        }
-
-        #endregion
-
         #region Material Array Integrity Tests
 
         [Test]
@@ -515,47 +493,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(materials[1], materials[2]);
 
             _createdObjects.Add(result[material]);
-        }
-
-        #endregion
-
-        #region GetClonedMaterialsBySource Tests
-
-        [Test]
-        public void GetClonedMaterialsBySource_FiltersBySourceType()
-        {
-            var rendererMaterial = CreateMaterial("RendererMaterial");
-            var animationMaterial = CreateMaterial("AnimationMaterial");
-            var componentMaterial = CreateMaterial("ComponentMaterial");
-
-            var references = new List<MaterialReference>
-            {
-                MaterialReference.FromRenderer(rendererMaterial, null),
-                MaterialReference.FromAnimation(animationMaterial, null),
-                MaterialReference.FromComponent(componentMaterial, null)
-            };
-
-            var clonedMaterials = MaterialCloner.CloneOnly(references);
-
-            var rendererClones = MaterialCloner.GetClonedMaterialsBySource(
-                references, clonedMaterials, MaterialSourceType.Renderer);
-            var animationClones = MaterialCloner.GetClonedMaterialsBySource(
-                references, clonedMaterials, MaterialSourceType.Animation);
-            var componentClones = MaterialCloner.GetClonedMaterialsBySource(
-                references, clonedMaterials, MaterialSourceType.Component);
-
-            Assert.AreEqual(1, rendererClones.Count);
-            Assert.AreEqual(1, animationClones.Count);
-            Assert.AreEqual(1, componentClones.Count);
-
-            Assert.AreEqual(clonedMaterials[rendererMaterial], rendererClones[0]);
-            Assert.AreEqual(clonedMaterials[animationMaterial], animationClones[0]);
-            Assert.AreEqual(clonedMaterials[componentMaterial], componentClones[0]);
-
-            foreach (var kvp in clonedMaterials)
-            {
-                _createdObjects.Add(kvp.Value);
-            }
         }
 
         #endregion

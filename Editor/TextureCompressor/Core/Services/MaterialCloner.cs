@@ -33,31 +33,7 @@ namespace dev.limitex.avatar.compressor.texture
             return clonedMaterials;
         }
 
-        /// <summary>
-        /// Clones materials from the given references without updating any references.
-        /// Useful when you only need the cloned materials without modifying the scene.
-        /// </summary>
-        /// <param name="references">Material references to process</param>
-        /// <returns>Dictionary mapping original materials to cloned materials</returns>
-        public static Dictionary<Material, Material> CloneOnly(IEnumerable<MaterialReference> references)
-        {
-            var clonedMaterials = new Dictionary<Material, Material>();
-
-            foreach (var reference in references)
-            {
-                if (reference?.Material == null) continue;
-                GetOrCloneMaterial(reference.Material, clonedMaterials);
-            }
-
-            return clonedMaterials;
-        }
-
-        /// <summary>
-        /// Updates Renderer references to use cloned materials.
-        /// </summary>
-        /// <param name="references">Material references containing Renderer sources</param>
-        /// <param name="clonedMaterials">Dictionary mapping original to cloned materials</param>
-        public static void UpdateRendererReferences(
+        private static void UpdateRendererReferences(
             IEnumerable<MaterialReference> references,
             Dictionary<Material, Material> clonedMaterials)
         {
@@ -94,26 +70,6 @@ namespace dev.limitex.avatar.compressor.texture
                     renderer.sharedMaterials = newMaterials;
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets cloned materials for the given source type from the references.
-        /// </summary>
-        /// <param name="references">Material references</param>
-        /// <param name="clonedMaterials">Dictionary mapping original to cloned materials</param>
-        /// <param name="sourceType">The source type to filter by</param>
-        /// <returns>List of cloned materials for the specified source type</returns>
-        public static List<Material> GetClonedMaterialsBySource(
-            IEnumerable<MaterialReference> references,
-            Dictionary<Material, Material> clonedMaterials,
-            MaterialSourceType sourceType)
-        {
-            return references
-                .Where(r => r != null && r.SourceType == sourceType && r.Material != null)
-                .Select(r => clonedMaterials.TryGetValue(r.Material, out var cloned) ? cloned : null)
-                .Where(m => m != null)
-                .Distinct()
-                .ToList();
         }
 
         private static Material GetOrCloneMaterial(
