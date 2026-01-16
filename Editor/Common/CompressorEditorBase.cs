@@ -1,4 +1,4 @@
-using dev.limitex.avatar.compressor.texture.ui;
+using dev.limitex.avatar.compressor.editor.ui;
 using nadena.dev.ndmf.runtime;
 using UnityEngine;
 using UnityEditor;

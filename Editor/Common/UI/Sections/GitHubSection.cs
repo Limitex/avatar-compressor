@@ -1,8 +1,7 @@
-using dev.limitex.avatar.compressor.editor.ui;
 using UnityEngine;
 using UnityEditor;
 
-namespace dev.limitex.avatar.compressor.texture.ui
+namespace dev.limitex.avatar.compressor.editor.ui
 {
     /// <summary>
     /// Draws the GitHub link section at the bottom of the inspector.
