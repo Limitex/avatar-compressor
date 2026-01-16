@@ -1,3 +1,5 @@
+using dev.limitex.avatar.compressor.texture.ui;
+using nadena.dev.ndmf.runtime;
 using UnityEngine;
 using UnityEditor;
 
@@ -5,100 +7,51 @@ namespace dev.limitex.avatar.compressor.editor
 {
     /// <summary>
     /// Base class for compressor custom editors with common utilities.
+    /// Uses Template Method pattern to ensure consistent UI structure across all compressor editors.
     /// </summary>
     public abstract class CompressorEditorBase : Editor
     {
         protected bool _showAdvancedSettings;
-        protected Vector2 _scrollPosition;
 
         /// <summary>
-        /// Draws a colored button.
+        /// Main inspector GUI entry point. Implements common structure for all compressor editors.
         /// </summary>
-        protected bool DrawColoredButton(string label, string tooltip, Color color, bool isSelected, float height = 40f)
+        public override void OnInspectorGUI()
         {
-            GUIStyle style = new GUIStyle(GUI.skin.button)
-            {
-                fontStyle = isSelected ? FontStyle.Bold : FontStyle.Normal,
-                fixedHeight = height
-            };
+            serializedObject.Update();
 
-            Color originalBg = GUI.backgroundColor;
-            if (isSelected)
+            DrawAvatarRootWarningIfNeeded();
+
+            DrawInspectorContent();
+
+            EditorGUILayout.Space(15);
+            GitHubSection.Draw();
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        /// <summary>
+        /// Override this to draw editor-specific content.
+        /// Called between avatar root warning and GitHub section.
+        /// </summary>
+        protected abstract void DrawInspectorContent();
+
+        /// <summary>
+        /// Draws a warning if the component is not placed on an avatar root.
+        /// </summary>
+        private void DrawAvatarRootWarningIfNeeded()
+        {
+            var component = target as Component;
+            if (component == null) return;
+
+            if (!RuntimeUtil.IsAvatarRoot(component.transform))
             {
-                GUI.backgroundColor = color;
+                EditorGUILayout.HelpBox(
+                    "This component should be placed on the avatar root GameObject. " +
+                    "While it will still work, placing it on the avatar root is recommended.",
+                    MessageType.Warning);
+                EditorGUILayout.Space(5);
             }
-
-            bool clicked = GUILayout.Button(new GUIContent(label, tooltip), style, GUILayout.ExpandWidth(true));
-
-            GUI.backgroundColor = originalBg;
-
-            return clicked;
-        }
-
-        /// <summary>
-        /// Draws a progress bar with custom color.
-        /// </summary>
-        protected void DrawProgressBar(float value, float width, float height, Color fillColor)
-        {
-            Rect progressRect = EditorGUILayout.GetControlRect(GUILayout.Width(width), GUILayout.Height(height));
-            EditorGUI.DrawRect(progressRect, new Color(0.2f, 0.2f, 0.2f));
-            Rect filledRect = new Rect(progressRect.x, progressRect.y, progressRect.width * value, progressRect.height);
-            EditorGUI.DrawRect(filledRect, fillColor);
-        }
-
-        /// <summary>
-        /// Draws a help box with message type.
-        /// </summary>
-        protected void DrawHelpBox(string message, MessageType type)
-        {
-            EditorGUILayout.HelpBox(message, type);
-        }
-
-        /// <summary>
-        /// Draws a section header.
-        /// </summary>
-        protected void DrawSectionHeader(string label)
-        {
-            EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
-        }
-
-        /// <summary>
-        /// Draws a horizontal line separator.
-        /// </summary>
-        protected void DrawSeparator()
-        {
-            EditorGUILayout.Space(5);
-            Rect rect = EditorGUILayout.GetControlRect(false, 1);
-            EditorGUI.DrawRect(rect, new Color(0.5f, 0.5f, 0.5f, 0.5f));
-            EditorGUILayout.Space(5);
-        }
-
-        /// <summary>
-        /// Begins a boxed section.
-        /// </summary>
-        protected void BeginBox()
-        {
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-        }
-
-        /// <summary>
-        /// Ends a boxed section.
-        /// </summary>
-        protected void EndBox()
-        {
-            EditorGUILayout.EndVertical();
-        }
-
-        /// <summary>
-        /// Formats bytes to human-readable string.
-        /// </summary>
-        protected string FormatBytes(long bytes)
-        {
-            if (bytes >= 1024 * 1024)
-                return $"{bytes / 1024f / 1024f:F2} MB";
-            if (bytes >= 1024)
-                return $"{bytes / 1024f:F2} KB";
-            return $"{bytes} B";
         }
     }
 }
