@@ -1,6 +1,6 @@
-using dev.limitex.avatar.compressor.common;
+using dev.limitex.avatar.compressor.editor;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Result of texture complexity analysis implementing IAnalysisResult.

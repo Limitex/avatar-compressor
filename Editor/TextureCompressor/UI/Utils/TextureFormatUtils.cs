@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace dev.limitex.avatar.compressor.texture.ui
+namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
     /// <summary>
     /// Provides texture format display utilities.

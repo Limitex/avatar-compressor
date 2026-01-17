@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Specialized analyzer for Normal Map textures.

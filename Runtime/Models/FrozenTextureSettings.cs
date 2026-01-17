@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine.Serialization;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor
 {
     /// <summary>
     /// Format options for frozen textures.

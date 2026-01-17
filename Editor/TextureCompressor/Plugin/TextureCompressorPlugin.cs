@@ -1,9 +1,9 @@
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.animator;
 
-[assembly: ExportsPlugin(typeof(dev.limitex.avatar.compressor.texture.TextureCompressorPlugin))]
+[assembly: ExportsPlugin(typeof(dev.limitex.avatar.compressor.editor.texture.TextureCompressorPlugin))]
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// NDMF plugin that integrates TextureCompressorService into the avatar build pipeline.

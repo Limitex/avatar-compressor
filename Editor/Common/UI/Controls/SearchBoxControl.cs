@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using dev.limitex.avatar.compressor.common;
+using dev.limitex.avatar.compressor.editor;
 using UnityEngine;
 using UnityEditor;
 

@@ -1,4 +1,4 @@
-namespace dev.limitex.avatar.compressor.common
+namespace dev.limitex.avatar.compressor.editor
 {
     /// <summary>
     /// Generic analyzer interface for various optimization strategies.

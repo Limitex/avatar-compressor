@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace dev.limitex.avatar.compressor.common
+namespace dev.limitex.avatar.compressor.editor
 {
     /// <summary>
     /// Fuzzy string matching using the Bitap algorithm with Wu-Manber extension.

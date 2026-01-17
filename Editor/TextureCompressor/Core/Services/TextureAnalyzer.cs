@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Service for analyzing texture complexity in batch.

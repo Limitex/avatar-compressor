@@ -1,7 +1,7 @@
-using dev.limitex.avatar.compressor.common;
+using dev.limitex.avatar.compressor.editor;
 using UnityEngine;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Mathematical utilities for image processing.

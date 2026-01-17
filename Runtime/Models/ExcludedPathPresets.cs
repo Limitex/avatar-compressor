@@ -1,4 +1,4 @@
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor
 {
     /// <summary>
     /// Predefined path exclusion presets for common packages.

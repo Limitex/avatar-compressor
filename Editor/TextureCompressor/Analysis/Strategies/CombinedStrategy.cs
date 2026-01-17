@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Combined analysis strategy using weighted average of Fast, HighAccuracy, and Perceptual strategies.

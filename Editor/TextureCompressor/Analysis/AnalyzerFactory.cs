@@ -1,6 +1,6 @@
 using System;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Factory for creating texture complexity analyzers.

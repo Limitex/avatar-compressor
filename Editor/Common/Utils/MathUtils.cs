@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace dev.limitex.avatar.compressor.common
+namespace dev.limitex.avatar.compressor.editor
 {
     /// <summary>
     /// Common mathematical utility methods.
