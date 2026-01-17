@@ -44,7 +44,9 @@ jobs:
         run: |
           zip -r ${{ steps.archive.outputs.archive_name }} . \
             -x "*.git*" \
+            -x ".config/*" \
             -x ".github/*" \
+            -x ".vscode/*" \
             -x "Tests/*" \
             -x "Tests.meta" \
             -x "*~/*"
