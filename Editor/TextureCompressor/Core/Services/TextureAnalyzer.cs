@@ -135,7 +135,7 @@ namespace dev.limitex.avatar.compressor.texture
                     {
                         // Emission maps get a 10% quality boost
                         complexityResult = new TextureComplexityResult(
-                            complexityResult.Score * 0.9f,
+                            complexityResult.Score / 0.9f,
                             complexityResult.Summary + " (emission boost applied)");
                     }
                 }
