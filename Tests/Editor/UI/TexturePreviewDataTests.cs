@@ -1,8 +1,8 @@
-using NUnit.Framework;
-using UnityEngine;
 using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor.texture;
 using dev.limitex.avatar.compressor.editor.texture.ui;
+using NUnit.Framework;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -172,7 +172,7 @@ namespace dev.limitex.avatar.compressor.tests
             var data = new TexturePreviewData
             {
                 OriginalMemory = 1048576,
-                EstimatedMemory = 262144
+                EstimatedMemory = 262144,
             };
 
             Assert.That(data.OriginalMemory, Is.EqualTo(1048576));
@@ -227,7 +227,12 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void TexturePreviewData_CompleteInitialization_AllFieldsSet()
         {
-            var frozenSettings = new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false);
+            var frozenSettings = new FrozenTextureSettings(
+                "test-guid",
+                2,
+                FrozenTextureFormat.Auto,
+                false
+            );
 
             var data = new TexturePreviewData
             {
@@ -245,7 +250,7 @@ namespace dev.limitex.avatar.compressor.tests
                 PredictedFormat = TextureFormat.BC7,
                 HasAlpha = true,
                 IsFrozen = true,
-                FrozenSettings = frozenSettings
+                FrozenSettings = frozenSettings,
             };
 
             Assert.That(data.Guid, Is.EqualTo("test-guid"));
@@ -275,7 +280,7 @@ namespace dev.limitex.avatar.compressor.tests
             var data = new TexturePreviewData
             {
                 OriginalMemory = 1048576, // 1 MB
-                EstimatedMemory = 262144   // 256 KB
+                EstimatedMemory = 262144, // 256 KB
             };
 
             long savings = data.OriginalMemory - data.EstimatedMemory;

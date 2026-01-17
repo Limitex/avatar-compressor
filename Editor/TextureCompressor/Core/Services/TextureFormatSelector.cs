@@ -1,5 +1,5 @@
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
 {
@@ -16,7 +16,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public TextureFormatSelector(
             CompressionPlatform targetPlatform = CompressionPlatform.Auto,
             bool useHighQualityFormatForHighComplexity = true,
-            float highQualityComplexityThreshold = 0.7f)
+            float highQualityComplexityThreshold = 0.7f
+        )
         {
             _targetPlatform = targetPlatform;
             _useHighQualityFormatForHighComplexity = useHighQualityFormatForHighComplexity;
@@ -54,7 +55,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <param name="complexity">Normalized complexity value (0-1)</param>
         /// <param name="formatOverride">Optional format override from frozen settings</param>
         /// <returns>True if compression was applied, false if skipped or failed</returns>
-        public bool CompressTexture(Texture2D texture, TextureFormat sourceFormat, bool isNormalMap, float complexity, FrozenTextureFormat? formatOverride = null)
+        public bool CompressTexture(
+            Texture2D texture,
+            TextureFormat sourceFormat,
+            bool isNormalMap,
+            float complexity,
+            FrozenTextureFormat? formatOverride = null
+        )
         {
             TextureFormat targetFormat;
 
@@ -94,7 +101,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 FrozenTextureFormat.ASTC_4x4 => TextureFormat.ASTC_4x4,
                 FrozenTextureFormat.ASTC_6x6 => TextureFormat.ASTC_6x6,
                 FrozenTextureFormat.ASTC_8x8 => TextureFormat.ASTC_8x8,
-                _ => throw new System.ArgumentException($"Unsupported frozen format: {format}")
+                _ => throw new System.ArgumentException($"Unsupported frozen format: {format}"),
             };
         }
 
@@ -111,30 +118,45 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             try
             {
-                EditorUtility.CompressTexture(texture, targetFormat, TextureCompressionQuality.Best);
+                EditorUtility.CompressTexture(
+                    texture,
+                    targetFormat,
+                    TextureCompressionQuality.Best
+                );
                 return true;
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[TextureCompressor] Failed to compress texture to {targetFormat}: {e.Message}. " +
-                                 $"Attempting fallback.");
+                Debug.LogWarning(
+                    $"[TextureCompressor] Failed to compress texture to {targetFormat}: {e.Message}. "
+                        + $"Attempting fallback."
+                );
 
                 // Fallback to widely supported formats
                 try
                 {
                     var platform = ResolvePlatform(_targetPlatform);
-                    var fallbackFormat = platform == CompressionPlatform.Mobile
-                        ? TextureFormat.ASTC_6x6
-                        : TextureFormat.DXT5;
+                    var fallbackFormat =
+                        platform == CompressionPlatform.Mobile
+                            ? TextureFormat.ASTC_6x6
+                            : TextureFormat.DXT5;
 
-                    EditorUtility.CompressTexture(texture, fallbackFormat, TextureCompressionQuality.Normal);
-                    Debug.Log($"[TextureCompressor] Fallback compression to {fallbackFormat} succeeded.");
+                    EditorUtility.CompressTexture(
+                        texture,
+                        fallbackFormat,
+                        TextureCompressionQuality.Normal
+                    );
+                    Debug.Log(
+                        $"[TextureCompressor] Fallback compression to {fallbackFormat} succeeded."
+                    );
                     return true;
                 }
                 catch (System.Exception fallbackEx)
                 {
-                    Debug.LogError($"[TextureCompressor] Fallback compression also failed: {fallbackEx.Message}. " +
-                                   $"Texture will remain uncompressed.");
+                    Debug.LogError(
+                        $"[TextureCompressor] Fallback compression also failed: {fallbackEx.Message}. "
+                            + $"Texture will remain uncompressed."
+                    );
                     return false;
                 }
             }
@@ -171,7 +193,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 // BC5 is optimal for normal maps without alpha (2 channels, high quality)
                 return TextureFormat.BC5;
             }
-            else if (_useHighQualityFormatForHighComplexity && complexity >= _highQualityComplexityThreshold)
+            else if (
+                _useHighQualityFormatForHighComplexity
+                && complexity >= _highQualityComplexityThreshold
+            )
             {
                 // BC7 for high complexity textures (highest quality, 8 bpp)
                 return TextureFormat.BC7;
@@ -203,7 +228,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // Alpha textures need higher quality to preserve transparency edges
             if (hasAlpha)
             {
-                if (_useHighQualityFormatForHighComplexity && complexity >= _highQualityComplexityThreshold)
+                if (
+                    _useHighQualityFormatForHighComplexity
+                    && complexity >= _highQualityComplexityThreshold
+                )
                 {
                     // High complexity with alpha: ASTC 4x4 (8 bpp, highest quality)
                     return TextureFormat.ASTC_4x4;
@@ -216,12 +244,18 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             // Opaque textures: complexity-based ASTC block size selection
-            if (_useHighQualityFormatForHighComplexity && complexity >= _highQualityComplexityThreshold)
+            if (
+                _useHighQualityFormatForHighComplexity
+                && complexity >= _highQualityComplexityThreshold
+            )
             {
                 // High complexity: ASTC 4x4 (8 bpp, highest quality)
                 return TextureFormat.ASTC_4x4;
             }
-            else if (complexity >= _highQualityComplexityThreshold * AnalysisConstants.MediumComplexityRatio)
+            else if (
+                complexity
+                >= _highQualityComplexityThreshold * AnalysisConstants.MediumComplexityRatio
+            )
             {
                 // Medium complexity: ASTC 6x6 (3.56 bpp, balanced)
                 return TextureFormat.ASTC_6x6;

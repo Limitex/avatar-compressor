@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -198,7 +198,11 @@ namespace dev.limitex.avatar.compressor.tests
 
         #region Helper Methods
 
-        private static ProcessedPixelData CreateUniformProcessedData(int width, int height, float value)
+        private static ProcessedPixelData CreateUniformProcessedData(
+            int width,
+            int height,
+            float value
+        )
         {
             int count = width * height;
             Color[] pixels = new Color[count];
@@ -218,7 +222,7 @@ namespace dev.limitex.avatar.compressor.tests
                 Height = height,
                 OpaqueCount = count,
                 IsNormalMap = false,
-                IsEmission = false
+                IsEmission = false,
             };
         }
 
@@ -244,7 +248,7 @@ namespace dev.limitex.avatar.compressor.tests
                 Height = height,
                 OpaqueCount = count,
                 IsNormalMap = false,
-                IsEmission = false
+                IsEmission = false,
             };
         }
 
@@ -271,7 +275,7 @@ namespace dev.limitex.avatar.compressor.tests
                 Height = height,
                 OpaqueCount = count,
                 IsNormalMap = true,
-                IsEmission = false
+                IsEmission = false,
             };
         }
 
@@ -300,7 +304,7 @@ namespace dev.limitex.avatar.compressor.tests
                 Height = height,
                 OpaqueCount = count,
                 IsNormalMap = true,
-                IsEmission = false
+                IsEmission = false,
             };
         }
 

@@ -13,7 +13,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         FilteredByType,
         FrozenSkip,
         RuntimeGenerated,
-        ExcludedPath
+        ExcludedPath,
     }
 
     /// <summary>
@@ -27,7 +27,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public bool IsEmission { get; set; }
         public bool IsProcessed { get; set; } = true;
         public SkipReason SkipReason { get; set; } = SkipReason.None;
-        public List<MaterialTextureReference> References { get; } = new List<MaterialTextureReference>();
+        public List<MaterialTextureReference> References { get; } =
+            new List<MaterialTextureReference>();
     }
 
     /// <summary>

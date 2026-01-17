@@ -32,12 +32,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             foreach (var renderer in renderers)
             {
-                if (renderer == null) continue;
-                if (ComponentUtils.IsEditorOnly(renderer.gameObject)) continue;
+                if (renderer == null)
+                    continue;
+                if (ComponentUtils.IsEditorOnly(renderer.gameObject))
+                    continue;
 
                 foreach (var material in renderer.sharedMaterials)
                 {
-                    if (material == null) continue;
+                    if (material == null)
+                        continue;
 
                     references.Add(MaterialReference.FromRenderer(material, renderer));
                 }
@@ -66,7 +69,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             foreach (var clip in clips)
             {
-                if (clip == null) continue;
+                if (clip == null)
+                    continue;
 
                 var bindings = AnimationUtility.GetObjectReferenceCurveBindings(clip);
                 foreach (var binding in bindings)
@@ -105,8 +109,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     return references;
                 }
 
-                var materials = animatorServices.AnimationIndex.GetPPtrReferencedObjects
-                    .OfType<Material>()
+                var materials = animatorServices
+                    .AnimationIndex.GetPPtrReferencedObjects.OfType<Material>()
                     .Distinct();
 
                 foreach (var material in materials)
@@ -122,7 +126,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             catch (Exception ex)
             {
                 Debug.LogWarning(
-                    $"[MaterialCollector] Failed to collect materials from animations: {ex.Message}");
+                    $"[MaterialCollector] Failed to collect materials from animations: {ex.Message}"
+                );
             }
 
             return references;
@@ -145,11 +150,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             foreach (var component in allComponents)
             {
-                if (component == null) continue;
-                if (ComponentUtils.IsEditorOnly(component.gameObject)) continue;
+                if (component == null)
+                    continue;
+                if (ComponentUtils.IsEditorOnly(component.gameObject))
+                    continue;
 
                 // Skip Renderer components (handled separately)
-                if (component is Renderer) continue;
+                if (component is Renderer)
+                    continue;
 
                 try
                 {
@@ -163,7 +171,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             var obj = iterator.objectReferenceValue;
                             if (obj is Material material && material != null)
                             {
-                                references.Add(MaterialReference.FromComponent(material, component));
+                                references.Add(
+                                    MaterialReference.FromComponent(material, component)
+                                );
                             }
                         }
                     }
@@ -216,23 +226,26 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         /// <param name="references">List of material references</param>
         /// <returns>Distinct materials</returns>
-        public static IEnumerable<Material> GetDistinctMaterials(IEnumerable<MaterialReference> references)
+        public static IEnumerable<Material> GetDistinctMaterials(
+            IEnumerable<MaterialReference> references
+        )
         {
-            return references
-                .Where(r => r?.Material != null)
-                .Select(r => r.Material)
-                .Distinct();
+            return references.Where(r => r?.Material != null).Select(r => r.Material).Distinct();
         }
 
         #region Animation Clip Helpers
 
-        private static List<AnimationClip> GetAllAnimationClips(RuntimeAnimatorController controller)
+        private static List<AnimationClip> GetAllAnimationClips(
+            RuntimeAnimatorController controller
+        )
         {
             var clips = new HashSet<AnimationClip>();
 
             if (controller is AnimatorOverrideController overrideController)
             {
-                var overrides = new List<KeyValuePair<AnimationClip, AnimationClip>>(overrideController.overridesCount);
+                var overrides = new List<KeyValuePair<AnimationClip, AnimationClip>>(
+                    overrideController.overridesCount
+                );
                 overrideController.GetOverrides(overrides);
 
                 foreach (var pair in overrides)
@@ -245,7 +258,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 if (overrideController.runtimeAnimatorController != null)
                 {
-                    foreach (var clip in GetAllAnimationClips(overrideController.runtimeAnimatorController))
+                    foreach (
+                        var clip in GetAllAnimationClips(
+                            overrideController.runtimeAnimatorController
+                        )
+                    )
                     {
                         clips.Add(clip);
                     }
@@ -270,9 +287,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
             return clips.ToList();
         }
 
-        private static void CollectClipsFromStateMachine(AnimatorStateMachine stateMachine, HashSet<AnimationClip> clips)
+        private static void CollectClipsFromStateMachine(
+            AnimatorStateMachine stateMachine,
+            HashSet<AnimationClip> clips
+        )
         {
-            if (stateMachine == null) return;
+            if (stateMachine == null)
+                return;
 
             foreach (var state in stateMachine.states)
             {
@@ -292,9 +313,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
         }
 
-        private static void CollectClipsFromBlendTree(BlendTree blendTree, HashSet<AnimationClip> clips)
+        private static void CollectClipsFromBlendTree(
+            BlendTree blendTree,
+            HashSet<AnimationClip> clips
+        )
         {
-            if (blendTree == null) return;
+            if (blendTree == null)
+                return;
 
             foreach (var child in blendTree.children)
             {

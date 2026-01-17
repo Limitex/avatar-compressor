@@ -19,7 +19,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             var components = ctx.AvatarRootObject.GetComponentsInChildren<TextureCompressor>(true);
 
-            if (components.Length == 0) return;
+            if (components.Length == 0)
+                return;
 
             ValidateComponents(components);
 
@@ -32,7 +33,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var service = new TextureCompressorService(config);
             var (processedTextures, clonedMaterials) = service.CompressWithMappings(
                 materialReferences,
-                config.EnableLogging);
+                config.EnableLogging
+            );
 
             // Update animation curves with replaced materials and textures
             UpdateAnimationReferences(ctx, processedTextures, clonedMaterials);
@@ -42,28 +44,32 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         private static void ValidateComponents(TextureCompressor[] components)
         {
-            if (components == null || components.Length == 0) return;
+            if (components == null || components.Length == 0)
+                return;
 
             // Warn about multiple components
             if (components.Length > 1)
             {
                 Debug.LogWarning(
-                    $"[LAC Texture Compressor] Multiple TextureCompressor components found ({components.Length}). " +
-                    "Only the first component's settings will be used.",
-                    components[0]);
+                    $"[LAC Texture Compressor] Multiple TextureCompressor components found ({components.Length}). "
+                        + "Only the first component's settings will be used.",
+                    components[0]
+                );
             }
 
             // Warn about components not on avatar root
             foreach (var component in components)
             {
-                if (component == null) continue;
+                if (component == null)
+                    continue;
 
                 if (!RuntimeUtil.IsAvatarRoot(component.transform))
                 {
                     Debug.LogWarning(
-                        $"[LAC Texture Compressor] Component on '{component.gameObject.name}' is not on the avatar root. " +
-                        "It is recommended to place the component on the avatar root GameObject.",
-                        component);
+                        $"[LAC Texture Compressor] Component on '{component.gameObject.name}' is not on the avatar root. "
+                            + "It is recommended to place the component on the avatar root GameObject.",
+                        component
+                    );
                 }
             }
         }
@@ -74,12 +80,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private static void UpdateAnimationReferences(
             BuildContext ctx,
             Dictionary<Texture2D, Texture2D> processedTextures,
-            Dictionary<Material, Material> clonedMaterials)
+            Dictionary<Material, Material> clonedMaterials
+        )
         {
             try
             {
                 var animatorServices = ctx.Extension<AnimatorServicesContext>();
-                if (animatorServices?.AnimationIndex == null) return;
+                if (animatorServices?.AnimationIndex == null)
+                    return;
 
                 var animationIndex = animatorServices.AnimationIndex;
 
@@ -96,14 +104,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
             catch (Exception ex)
             {
                 Debug.LogWarning(
-                    $"[LAC Texture Compressor] Failed to update animation references: {ex.Message}. " +
-                    "Some animation curves may reference original materials/textures.");
+                    $"[LAC Texture Compressor] Failed to update animation references: {ex.Message}. "
+                        + "Some animation curves may reference original materials/textures."
+                );
             }
         }
 
         private static void CleanupComponents(TextureCompressor[] components)
         {
-            if (components == null) return;
+            if (components == null)
+                return;
 
             foreach (var component in components)
             {

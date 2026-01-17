@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -17,11 +17,17 @@ namespace dev.limitex.avatar.compressor.tests
                 new Color(1f, 0f, 0f, 1f),
                 new Color(0f, 1f, 0f, 1f),
                 new Color(0f, 0f, 1f, 1f),
-                new Color(1f, 1f, 0f, 1f)
+                new Color(1f, 1f, 0f, 1f),
             };
 
-            AlphaExtractor.ExtractOpaquePixels(pixels, 2, 2,
-                out Color[] opaquePixels, out float[] grayscale, out int opaqueCount);
+            AlphaExtractor.ExtractOpaquePixels(
+                pixels,
+                2,
+                2,
+                out Color[] opaquePixels,
+                out float[] grayscale,
+                out int opaqueCount
+            );
 
             Assert.AreEqual(4, opaqueCount);
             Assert.AreEqual(4, opaquePixels.Length);
@@ -36,11 +42,17 @@ namespace dev.limitex.avatar.compressor.tests
                 new Color(1f, 0f, 0f, 0f),
                 new Color(0f, 1f, 0f, 0.05f),
                 new Color(0f, 0f, 1f, 0f),
-                new Color(1f, 1f, 0f, 0.09f)
+                new Color(1f, 1f, 0f, 0.09f),
             };
 
-            AlphaExtractor.ExtractOpaquePixels(pixels, 2, 2,
-                out Color[] opaquePixels, out float[] grayscale, out int opaqueCount);
+            AlphaExtractor.ExtractOpaquePixels(
+                pixels,
+                2,
+                2,
+                out Color[] opaquePixels,
+                out float[] grayscale,
+                out int opaqueCount
+            );
 
             Assert.AreEqual(0, opaqueCount);
             // All grayscale values should be TransparentMarker (-1)
@@ -55,14 +67,20 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Color[] pixels = new Color[4]
             {
-                new Color(1f, 0f, 0f, 1f),     // Opaque
-                new Color(0f, 1f, 0f, 0.05f),  // Transparent
-                new Color(0f, 0f, 1f, 0.5f),   // Opaque (above threshold)
-                new Color(1f, 1f, 0f, 0f)      // Transparent
+                new Color(1f, 0f, 0f, 1f), // Opaque
+                new Color(0f, 1f, 0f, 0.05f), // Transparent
+                new Color(0f, 0f, 1f, 0.5f), // Opaque (above threshold)
+                new Color(1f, 1f, 0f, 0f), // Transparent
             };
 
-            AlphaExtractor.ExtractOpaquePixels(pixels, 2, 2,
-                out Color[] opaquePixels, out float[] grayscale, out int opaqueCount);
+            AlphaExtractor.ExtractOpaquePixels(
+                pixels,
+                2,
+                2,
+                out Color[] opaquePixels,
+                out float[] grayscale,
+                out int opaqueCount
+            );
 
             Assert.AreEqual(2, opaqueCount);
         }
@@ -72,11 +90,17 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Color[] pixels = new Color[1]
             {
-                new Color(0.5f, 0.5f, 0.5f, 0.1f)  // Exactly at threshold
+                new Color(0.5f, 0.5f, 0.5f, 0.1f), // Exactly at threshold
             };
 
-            AlphaExtractor.ExtractOpaquePixels(pixels, 1, 1,
-                out Color[] opaquePixels, out float[] grayscale, out int opaqueCount);
+            AlphaExtractor.ExtractOpaquePixels(
+                pixels,
+                1,
+                1,
+                out Color[] opaquePixels,
+                out float[] grayscale,
+                out int opaqueCount
+            );
 
             Assert.AreEqual(1, opaqueCount);
         }
@@ -86,11 +110,17 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Color[] pixels = new Color[1]
             {
-                new Color(0.5f, 0.5f, 0.5f, 0.099f)  // Just below threshold
+                new Color(0.5f, 0.5f, 0.5f, 0.099f), // Just below threshold
             };
 
-            AlphaExtractor.ExtractOpaquePixels(pixels, 1, 1,
-                out Color[] opaquePixels, out float[] grayscale, out int opaqueCount);
+            AlphaExtractor.ExtractOpaquePixels(
+                pixels,
+                1,
+                1,
+                out Color[] opaquePixels,
+                out float[] grayscale,
+                out int opaqueCount
+            );
 
             Assert.AreEqual(0, opaqueCount);
         }
@@ -100,20 +130,38 @@ namespace dev.limitex.avatar.compressor.tests
         {
             // Red pixel: grayscale = 1 * 0.2126 = 0.2126
             Color[] redPixel = new Color[1] { new Color(1f, 0f, 0f, 1f) };
-            AlphaExtractor.ExtractOpaquePixels(redPixel, 1, 1,
-                out _, out float[] redGrayscale, out _);
+            AlphaExtractor.ExtractOpaquePixels(
+                redPixel,
+                1,
+                1,
+                out _,
+                out float[] redGrayscale,
+                out _
+            );
             Assert.That(redGrayscale[0], Is.EqualTo(0.2126f).Within(0.001f));
 
             // Green pixel: grayscale = 1 * 0.7152 = 0.7152
             Color[] greenPixel = new Color[1] { new Color(0f, 1f, 0f, 1f) };
-            AlphaExtractor.ExtractOpaquePixels(greenPixel, 1, 1,
-                out _, out float[] greenGrayscale, out _);
+            AlphaExtractor.ExtractOpaquePixels(
+                greenPixel,
+                1,
+                1,
+                out _,
+                out float[] greenGrayscale,
+                out _
+            );
             Assert.That(greenGrayscale[0], Is.EqualTo(0.7152f).Within(0.001f));
 
             // Blue pixel: grayscale = 1 * 0.0722 = 0.0722
             Color[] bluePixel = new Color[1] { new Color(0f, 0f, 1f, 1f) };
-            AlphaExtractor.ExtractOpaquePixels(bluePixel, 1, 1,
-                out _, out float[] blueGrayscale, out _);
+            AlphaExtractor.ExtractOpaquePixels(
+                bluePixel,
+                1,
+                1,
+                out _,
+                out float[] blueGrayscale,
+                out _
+            );
             Assert.That(blueGrayscale[0], Is.EqualTo(0.0722f).Within(0.001f));
         }
 
@@ -122,11 +170,17 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Color[] pixels = new Color[1]
             {
-                new Color(1f, 0f, 0f, 0f)  // Transparent red
+                new Color(1f, 0f, 0f, 0f), // Transparent red
             };
 
-            AlphaExtractor.ExtractOpaquePixels(pixels, 1, 1,
-                out Color[] opaquePixels, out _, out _);
+            AlphaExtractor.ExtractOpaquePixels(
+                pixels,
+                1,
+                1,
+                out Color[] opaquePixels,
+                out _,
+                out _
+            );
 
             Assert.AreEqual(Color.clear, opaquePixels[0]);
         }
@@ -136,8 +190,14 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Color[] pixels = new Color[0];
 
-            AlphaExtractor.ExtractOpaquePixels(pixels, 0, 0,
-                out Color[] opaquePixels, out float[] grayscale, out int opaqueCount);
+            AlphaExtractor.ExtractOpaquePixels(
+                pixels,
+                0,
+                0,
+                out Color[] opaquePixels,
+                out float[] grayscale,
+                out int opaqueCount
+            );
 
             Assert.AreEqual(0, opaqueCount);
             Assert.AreEqual(0, opaquePixels.Length);
@@ -204,19 +264,14 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void ConvertToGrayscale_MultiplePixels_ConvertsAll()
         {
-            Color[] pixels = new Color[3]
-            {
-                Color.red,
-                Color.green,
-                Color.blue
-            };
+            Color[] pixels = new Color[3] { Color.red, Color.green, Color.blue };
 
             float[] grayscale = AlphaExtractor.ConvertToGrayscale(pixels);
 
             Assert.AreEqual(3, grayscale.Length);
-            Assert.That(grayscale[0], Is.EqualTo(0.2126f).Within(0.001f));  // Red
-            Assert.That(grayscale[1], Is.EqualTo(0.7152f).Within(0.001f));  // Green
-            Assert.That(grayscale[2], Is.EqualTo(0.0722f).Within(0.001f));  // Blue
+            Assert.That(grayscale[0], Is.EqualTo(0.2126f).Within(0.001f)); // Red
+            Assert.That(grayscale[1], Is.EqualTo(0.7152f).Within(0.001f)); // Green
+            Assert.That(grayscale[2], Is.EqualTo(0.0722f).Within(0.001f)); // Blue
         }
 
         [Test]
@@ -233,8 +288,8 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Color[] pixels = new Color[2]
             {
-                new Color(0.5f, 0.5f, 0.5f, 1f),   // Fully opaque
-                new Color(0.5f, 0.5f, 0.5f, 0f)    // Fully transparent
+                new Color(0.5f, 0.5f, 0.5f, 1f), // Fully opaque
+                new Color(0.5f, 0.5f, 0.5f, 0f), // Fully transparent
             };
 
             float[] grayscale = AlphaExtractor.ConvertToGrayscale(pixels);

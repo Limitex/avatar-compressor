@@ -16,7 +16,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float highComplexityThreshold,
             float lowComplexityThreshold,
             int minDivisor,
-            int maxDivisor)
+            int maxDivisor
+        )
         {
             _highComplexityThreshold = highComplexityThreshold;
             _lowComplexityThreshold = lowComplexityThreshold;
@@ -47,8 +48,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
             else
             {
-                t = 1f - (complexity - _lowComplexityThreshold) /
-                    (_highComplexityThreshold - _lowComplexityThreshold);
+                t =
+                    1f
+                    - (complexity - _lowComplexityThreshold)
+                        / (_highComplexityThreshold - _lowComplexityThreshold);
             }
 
             float logMin = Mathf.Log(_minDivisor, 2);

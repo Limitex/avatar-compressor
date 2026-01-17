@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using dev.limitex.avatar.compressor.editor.ui;
 using dev.limitex.avatar.compressor;
-using UnityEngine;
+using dev.limitex.avatar.compressor.editor.ui;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
@@ -73,10 +73,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             // Collect additional materials from animations and components
             var additionalMaterialRefs = new List<MaterialReference>();
-            additionalMaterialRefs.AddRange(MaterialCollector.CollectFromAnimator(config.gameObject));
-            additionalMaterialRefs.AddRange(MaterialCollector.CollectFromComponents(config.gameObject));
+            additionalMaterialRefs.AddRange(
+                MaterialCollector.CollectFromAnimator(config.gameObject)
+            );
+            additionalMaterialRefs.AddRange(
+                MaterialCollector.CollectFromComponents(config.gameObject)
+            );
 
-            var additionalMaterials = MaterialCollector.GetDistinctMaterials(additionalMaterialRefs);
+            var additionalMaterials = MaterialCollector.GetDistinctMaterials(
+                additionalMaterialRefs
+            );
             if (additionalMaterials.Any())
             {
                 collector.CollectFromMaterials(additionalMaterials, allTextures, collectAll: true);
@@ -108,9 +114,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 complexityCalc
             );
 
-            var analysisResults = processedTextures.Count > 0
-                ? analyzer.AnalyzeBatch(processedTextures)
-                : new Dictionary<Texture2D, TextureAnalysisResult>();
+            var analysisResults =
+                processedTextures.Count > 0
+                    ? analyzer.AnalyzeBatch(processedTextures)
+                    : new Dictionary<Texture2D, TextureAnalysisResult>();
 
             var processedList = new List<TexturePreviewData>();
             var frozenList = new List<TexturePreviewData>();
@@ -134,7 +141,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 if (info.IsProcessed && analysisResults.TryGetValue(tex, out var analysis))
                 {
                     long originalMemory = MemoryCalculator.CalculateCompressedMemory(
-                        tex.width, tex.height, tex.format, tex.mipmapCount);
+                        tex.width,
+                        tex.height,
+                        tex.format,
+                        tex.mipmapCount
+                    );
                     bool isNormalMap = info.TextureType == "Normal";
                     bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
 
@@ -145,11 +156,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     if (isFrozen && !frozenSettings.Skip)
                     {
                         divisor = frozenSettings.Divisor;
-                        recommendedSize = processor.CalculateNewDimensions(tex.width, tex.height, divisor);
+                        recommendedSize = processor.CalculateNewDimensions(
+                            tex.width,
+                            tex.height,
+                            divisor
+                        );
 
                         if (frozenSettings.Format != FrozenTextureFormat.Auto)
                         {
-                            targetFormat = TextureFormatSelector.ConvertFrozenFormat(frozenSettings.Format);
+                            targetFormat = TextureFormatSelector.ConvertFrozenFormat(
+                                frozenSettings.Format
+                            );
                         }
                         else if (TextureFormatSelector.IsCompressedFormat(tex.format))
                         {
@@ -157,7 +174,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         }
                         else
                         {
-                            targetFormat = formatSelector.PredictFormat(isNormalMap, 0.5f, hasAlpha);
+                            targetFormat = formatSelector.PredictFormat(
+                                isNormalMap,
+                                0.5f,
+                                hasAlpha
+                            );
                         }
                     }
                     else
@@ -171,12 +192,20 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         }
                         else
                         {
-                            targetFormat = formatSelector.PredictFormat(isNormalMap, analysis.NormalizedComplexity, hasAlpha);
+                            targetFormat = formatSelector.PredictFormat(
+                                isNormalMap,
+                                analysis.NormalizedComplexity,
+                                hasAlpha
+                            );
                         }
                     }
 
                     long estimatedMemory = MemoryCalculator.CalculateCompressedMemory(
-                        recommendedSize.x, recommendedSize.y, targetFormat, tex.mipmapCount);
+                        recommendedSize.x,
+                        recommendedSize.y,
+                        targetFormat,
+                        tex.mipmapCount
+                    );
 
                     var previewData = new TexturePreviewData
                     {
@@ -195,30 +224,32 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         PredictedFormat = targetFormat,
                         HasAlpha = hasAlpha,
                         IsFrozen = isFrozen && !frozenSettings.Skip,
-                        FrozenSettings = frozenSettings
+                        FrozenSettings = frozenSettings,
                     };
 
                     if (isFrozen && frozenSettings.Skip)
                     {
-                        skippedList.Add(new TexturePreviewData
-                        {
-                            Texture = tex,
-                            Guid = guid,
-                            Complexity = 0f,
-                            RecommendedDivisor = 1,
-                            OriginalSize = new Vector2Int(tex.width, tex.height),
-                            RecommendedSize = new Vector2Int(tex.width, tex.height),
-                            TextureType = info.TextureType,
-                            IsProcessed = false,
-                            SkipReason = SkipReason.FrozenSkip,
-                            OriginalMemory = originalMemory,
-                            EstimatedMemory = originalMemory,
-                            IsNormalMap = isNormalMap,
-                            PredictedFormat = null,
-                            HasAlpha = false,
-                            IsFrozen = true,
-                            FrozenSettings = frozenSettings
-                        });
+                        skippedList.Add(
+                            new TexturePreviewData
+                            {
+                                Texture = tex,
+                                Guid = guid,
+                                Complexity = 0f,
+                                RecommendedDivisor = 1,
+                                OriginalSize = new Vector2Int(tex.width, tex.height),
+                                RecommendedSize = new Vector2Int(tex.width, tex.height),
+                                TextureType = info.TextureType,
+                                IsProcessed = false,
+                                SkipReason = SkipReason.FrozenSkip,
+                                OriginalMemory = originalMemory,
+                                EstimatedMemory = originalMemory,
+                                IsNormalMap = isNormalMap,
+                                PredictedFormat = null,
+                                HasAlpha = false,
+                                IsFrozen = true,
+                                FrozenSettings = frozenSettings,
+                            }
+                        );
                     }
                     else if (isFrozen)
                     {
@@ -232,27 +263,33 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 else
                 {
                     long originalMemory = MemoryCalculator.CalculateCompressedMemory(
-                        tex.width, tex.height, tex.format, tex.mipmapCount);
+                        tex.width,
+                        tex.height,
+                        tex.format,
+                        tex.mipmapCount
+                    );
 
-                    skippedList.Add(new TexturePreviewData
-                    {
-                        Texture = tex,
-                        Guid = guid,
-                        Complexity = 0f,
-                        RecommendedDivisor = 1,
-                        OriginalSize = new Vector2Int(tex.width, tex.height),
-                        RecommendedSize = new Vector2Int(tex.width, tex.height),
-                        TextureType = info.TextureType,
-                        IsProcessed = false,
-                        SkipReason = info.SkipReason,
-                        OriginalMemory = originalMemory,
-                        EstimatedMemory = originalMemory,
-                        IsNormalMap = info.TextureType == "Normal",
-                        PredictedFormat = null,
-                        HasAlpha = false,
-                        IsFrozen = isFrozen && frozenSettings != null && frozenSettings.Skip,
-                        FrozenSettings = frozenSettings
-                    });
+                    skippedList.Add(
+                        new TexturePreviewData
+                        {
+                            Texture = tex,
+                            Guid = guid,
+                            Complexity = 0f,
+                            RecommendedDivisor = 1,
+                            OriginalSize = new Vector2Int(tex.width, tex.height),
+                            RecommendedSize = new Vector2Int(tex.width, tex.height),
+                            TextureType = info.TextureType,
+                            IsProcessed = false,
+                            SkipReason = info.SkipReason,
+                            OriginalMemory = originalMemory,
+                            EstimatedMemory = originalMemory,
+                            IsNormalMap = info.TextureType == "Normal",
+                            PredictedFormat = null,
+                            HasAlpha = false,
+                            IsFrozen = isFrozen && frozenSettings != null && frozenSettings.Skip,
+                            FrozenSettings = frozenSettings,
+                        }
+                    );
                 }
             }
 
@@ -272,13 +309,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 string.Compare(
                     pathCache.TryGetValue(a.Guid, out var pathA) ? pathA : "",
                     pathCache.TryGetValue(b.Guid, out var pathB) ? pathB : "",
-                    System.StringComparison.Ordinal);
+                    System.StringComparison.Ordinal
+                );
 
             processedList.Sort(pathComparison);
             frozenList.Sort(pathComparison);
             skippedList.Sort(pathComparison);
 
-            var allPreviewData = new List<TexturePreviewData>(processedList.Count + frozenList.Count + skippedList.Count);
+            var allPreviewData = new List<TexturePreviewData>(
+                processedList.Count + frozenList.Count + skippedList.Count
+            );
             allPreviewData.AddRange(processedList);
             allPreviewData.AddRange(frozenList);
             allPreviewData.AddRange(skippedList);

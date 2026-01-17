@@ -1,6 +1,6 @@
 using dev.limitex.avatar.compressor;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
@@ -23,8 +23,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             bool main = GUILayout.Toggle(config.ProcessMainTextures, "Main", GUILayout.Width(70));
             bool normal = GUILayout.Toggle(config.ProcessNormalMaps, "Normal", GUILayout.Width(70));
-            bool emission = GUILayout.Toggle(config.ProcessEmissionMaps, "Emission", GUILayout.Width(80));
-            bool other = GUILayout.Toggle(config.ProcessOtherTextures, "Other", GUILayout.Width(70));
+            bool emission = GUILayout.Toggle(
+                config.ProcessEmissionMaps,
+                "Emission",
+                GUILayout.Width(80)
+            );
+            bool other = GUILayout.Toggle(
+                config.ProcessOtherTextures,
+                "Other",
+                GUILayout.Width(70)
+            );
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -46,12 +54,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         public static void DrawExcludedPaths(TextureCompressor config, ref bool showSection)
         {
             int excludedCount = config.ExcludedPaths.Count;
-            string excludedLabel = excludedCount > 0
-                ? $"Path Exclusions ({excludedCount})"
-                : "Path Exclusions";
+            string excludedLabel =
+                excludedCount > 0 ? $"Path Exclusions ({excludedCount})" : "Path Exclusions";
 
             showSection = EditorGUILayout.Foldout(showSection, excludedLabel, true);
-            if (!showSection) return;
+            if (!showSection)
+                return;
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
@@ -101,7 +109,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             if (config.ExcludedPaths.Count == 0)
             {
-                EditorGUILayout.HelpBox("Textures with paths starting with listed prefixes will be skipped.", MessageType.None);
+                EditorGUILayout.HelpBox(
+                    "Textures with paths starting with listed prefixes will be skipped.",
+                    MessageType.None
+                );
             }
 
             EditorGUILayout.EndVertical();
@@ -112,12 +123,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             var menu = new GenericMenu();
 
             // Empty path option
-            menu.AddItem(new GUIContent("Empty"), false, () =>
-            {
-                Undo.RecordObject(config, "Add Excluded Path");
-                config.ExcludedPaths.Add("");
-                EditorUtility.SetDirty(config);
-            });
+            menu.AddItem(
+                new GUIContent("Empty"),
+                false,
+                () =>
+                {
+                    Undo.RecordObject(config, "Add Excluded Path");
+                    config.ExcludedPaths.Add("");
+                    EditorUtility.SetDirty(config);
+                }
+            );
 
             // Separator and presets
             if (ExcludedPathPresets.Presets.Length > 0)
@@ -134,12 +149,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     else
                     {
                         var presetCopy = preset;
-                        menu.AddItem(new GUIContent(preset.Label), false, () =>
-                        {
-                            Undo.RecordObject(config, $"Add {presetCopy.Label} Excluded Path");
-                            config.ExcludedPaths.Add(presetCopy.Path);
-                            EditorUtility.SetDirty(config);
-                        });
+                        menu.AddItem(
+                            new GUIContent(preset.Label),
+                            false,
+                            () =>
+                            {
+                                Undo.RecordObject(config, $"Add {presetCopy.Label} Excluded Path");
+                                config.ExcludedPaths.Add(presetCopy.Path);
+                                EditorUtility.SetDirty(config);
+                            }
+                        );
                     }
                 }
             }

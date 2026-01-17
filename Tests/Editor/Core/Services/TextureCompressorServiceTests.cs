@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using dev.limitex.avatar.compressor;
+using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using dev.limitex.avatar.compressor;
-using dev.limitex.avatar.compressor.editor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -43,7 +43,10 @@ namespace dev.limitex.avatar.compressor.tests
             // Delete created asset files
             foreach (var path in _createdAssetPaths)
             {
-                if (!string.IsNullOrEmpty(path) && AssetDatabase.LoadAssetAtPath<Object>(path) != null)
+                if (
+                    !string.IsNullOrEmpty(path)
+                    && AssetDatabase.LoadAssetAtPath<Object>(path) != null
+                )
                 {
                     AssetDatabase.DeleteAsset(path);
                 }
@@ -76,12 +79,13 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Constructor_WithDifferentPresets_CreatesService()
         {
-            var presets = new[] {
+            var presets = new[]
+            {
                 CompressorPreset.HighQuality,
                 CompressorPreset.Quality,
                 CompressorPreset.Balanced,
                 CompressorPreset.Aggressive,
-                CompressorPreset.Maximum
+                CompressorPreset.Maximum,
             };
 
             foreach (var preset in presets)
@@ -604,10 +608,13 @@ namespace dev.limitex.avatar.compressor.tests
 
             var references = new List<MaterialReference>
             {
-                MaterialReference.FromAnimation(additionalMaterial, null)
+                MaterialReference.FromAnimation(additionalMaterial, null),
             };
 
-            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(
+                references,
+                false
+            );
 
             Assert.IsNotNull(processedTextures);
             Assert.IsNotNull(clonedMaterials);
@@ -641,7 +648,10 @@ namespace dev.limitex.avatar.compressor.tests
             renderer.sharedMaterial = material;
 
             var references = MaterialCollector.CollectFromRenderers(root);
-            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(
+                references,
+                false
+            );
 
             Assert.IsNotNull(processedTextures);
             Assert.IsNotNull(clonedMaterials);
@@ -670,7 +680,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var references = new List<MaterialReference>
             {
-                MaterialReference.FromAnimation(additionalMaterial, null)
+                MaterialReference.FromAnimation(additionalMaterial, null),
             };
 
             var (_, clonedMaterials) = service.CompressWithMappings(references, false);
@@ -684,7 +694,8 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 _createdObjects.Add(kvp.Value);
                 var tex = kvp.Value.GetTexture("_MainTex") as Texture2D;
-                if (tex != null) _createdObjects.Add(tex);
+                if (tex != null)
+                    _createdObjects.Add(tex);
             }
         }
 
@@ -702,10 +713,13 @@ namespace dev.limitex.avatar.compressor.tests
 
             var references = new List<MaterialReference>
             {
-                MaterialReference.FromAnimation(additionalMaterial, null)
+                MaterialReference.FromAnimation(additionalMaterial, null),
             };
 
-            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(
+                references,
+                false
+            );
 
             var clonedMaterial = clonedMaterials[additionalMaterial];
             var textureOnClonedMaterial = clonedMaterial.GetTexture("_MainTex") as Texture2D;
@@ -748,7 +762,10 @@ namespace dev.limitex.avatar.compressor.tests
             references.AddRange(MaterialCollector.CollectFromRenderers(root));
             references.Add(MaterialReference.FromAnimation(additionalMaterial, null));
 
-            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(
+                references,
+                false
+            );
 
             Assert.AreEqual(2, processedTextures.Count);
             Assert.AreEqual(2, clonedMaterials.Count);
@@ -788,7 +805,10 @@ namespace dev.limitex.avatar.compressor.tests
             references.AddRange(MaterialCollector.CollectFromRenderers(root));
             references.Add(MaterialReference.FromAnimation(additionalMaterial, null));
 
-            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(
+                references,
+                false
+            );
 
             // Same texture should be processed only once
             Assert.AreEqual(1, processedTextures.Count);
@@ -823,7 +843,10 @@ namespace dev.limitex.avatar.compressor.tests
 
             var references = new List<MaterialReference>();
 
-            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(
+                references,
+                false
+            );
 
             Assert.AreEqual(0, processedTextures.Count);
             Assert.AreEqual(0, clonedMaterials.Count);
@@ -842,10 +865,13 @@ namespace dev.limitex.avatar.compressor.tests
 
             var references = new List<MaterialReference>
             {
-                MaterialReference.FromAnimation(additionalMaterial, null)
+                MaterialReference.FromAnimation(additionalMaterial, null),
             };
 
-            var (processedTextures, clonedMaterials) = service.CompressWithMappings(references, false);
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(
+                references,
+                false
+            );
 
             Assert.AreEqual(0, processedTextures.Count);
             Assert.AreEqual(1, clonedMaterials.Count);
@@ -885,7 +911,10 @@ namespace dev.limitex.avatar.compressor.tests
             var serializedTexture = new SerializedObject(newTexture);
             var streamingMipmaps = serializedTexture.FindProperty("m_StreamingMipmaps");
             Assert.IsNotNull(streamingMipmaps, "m_StreamingMipmaps property should exist");
-            Assert.IsTrue(streamingMipmaps.boolValue, "Mipmap streaming should be enabled on compressed texture");
+            Assert.IsTrue(
+                streamingMipmaps.boolValue,
+                "Mipmap streaming should be enabled on compressed texture"
+            );
 
             // Clean up
             _createdObjects.Add(newTexture);
@@ -920,11 +949,17 @@ namespace dev.limitex.avatar.compressor.tests
             // Verify mipmap streaming is enabled on both textures
             var serializedMainTex = new SerializedObject(newMainTex);
             var mainTexStreaming = serializedMainTex.FindProperty("m_StreamingMipmaps");
-            Assert.IsTrue(mainTexStreaming.boolValue, "Main texture should have mipmap streaming enabled");
+            Assert.IsTrue(
+                mainTexStreaming.boolValue,
+                "Main texture should have mipmap streaming enabled"
+            );
 
             var serializedNormalTex = new SerializedObject(newNormalTex);
             var normalTexStreaming = serializedNormalTex.FindProperty("m_StreamingMipmaps");
-            Assert.IsTrue(normalTexStreaming.boolValue, "Normal texture should have mipmap streaming enabled");
+            Assert.IsTrue(
+                normalTexStreaming.boolValue,
+                "Normal texture should have mipmap streaming enabled"
+            );
 
             // Clean up
             _createdObjects.Add(newMainTex);
@@ -964,7 +999,10 @@ namespace dev.limitex.avatar.compressor.tests
             // Verify mipmap streaming is enabled on shared texture
             var serializedTexture = new SerializedObject(newTex);
             var streamingMipmaps = serializedTexture.FindProperty("m_StreamingMipmaps");
-            Assert.IsTrue(streamingMipmaps.boolValue, "Shared compressed texture should have mipmap streaming enabled");
+            Assert.IsTrue(
+                streamingMipmaps.boolValue,
+                "Shared compressed texture should have mipmap streaming enabled"
+            );
 
             // Clean up
             _createdObjects.Add(newTex);
@@ -1012,7 +1050,8 @@ namespace dev.limitex.avatar.compressor.tests
             texture.Apply();
 
             // Save as asset to get a valid asset path
-            string assetPath = $"{TestAssetFolder}/TestTexture_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            string assetPath =
+                $"{TestAssetFolder}/TestTexture_{width}x{height}_{System.Guid.NewGuid():N}.asset";
             AssetDatabase.CreateAsset(texture, assetPath);
             _createdAssetPaths.Add(assetPath);
 

@@ -35,9 +35,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Calculates Sobel gradient magnitude.
         /// Skips transparent pixels (marked with negative values).
         /// </summary>
-        public static float CalculateSobelGradient(float[] grayscale, int width, int height, int opaqueCount)
+        public static float CalculateSobelGradient(
+            float[] grayscale,
+            int width,
+            int height,
+            int opaqueCount
+        )
         {
-            if (opaqueCount == 0) return 0f;
+            if (opaqueCount == 0)
+                return 0f;
 
             float total = 0f;
             int count = 0;
@@ -58,28 +64,38 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     int idxDown = idx + width;
                     int idxDownRight = idx + width + 1;
 
-                    if (idxDownRight >= totalPixels || idxUpLeft < 0) continue;
+                    if (idxDownRight >= totalPixels || idxUpLeft < 0)
+                        continue;
 
                     // Skip if any neighbor is transparent
-                    if (AlphaExtractor.IsTransparent(grayscale[idx]) ||
-                        AlphaExtractor.IsTransparent(grayscale[idxUpLeft]) ||
-                        AlphaExtractor.IsTransparent(grayscale[idxUp]) ||
-                        AlphaExtractor.IsTransparent(grayscale[idxUpRight]) ||
-                        AlphaExtractor.IsTransparent(grayscale[idxLeft]) ||
-                        AlphaExtractor.IsTransparent(grayscale[idxRight]) ||
-                        AlphaExtractor.IsTransparent(grayscale[idxDownLeft]) ||
-                        AlphaExtractor.IsTransparent(grayscale[idxDown]) ||
-                        AlphaExtractor.IsTransparent(grayscale[idxDownRight]))
+                    if (
+                        AlphaExtractor.IsTransparent(grayscale[idx])
+                        || AlphaExtractor.IsTransparent(grayscale[idxUpLeft])
+                        || AlphaExtractor.IsTransparent(grayscale[idxUp])
+                        || AlphaExtractor.IsTransparent(grayscale[idxUpRight])
+                        || AlphaExtractor.IsTransparent(grayscale[idxLeft])
+                        || AlphaExtractor.IsTransparent(grayscale[idxRight])
+                        || AlphaExtractor.IsTransparent(grayscale[idxDownLeft])
+                        || AlphaExtractor.IsTransparent(grayscale[idxDown])
+                        || AlphaExtractor.IsTransparent(grayscale[idxDownRight])
+                    )
                         continue;
 
                     float gx =
-                        -grayscale[idxUpLeft] + grayscale[idxUpRight] +
-                        -2f * grayscale[idxLeft] + 2f * grayscale[idxRight] +
-                        -grayscale[idxDownLeft] + grayscale[idxDownRight];
+                        -grayscale[idxUpLeft]
+                        + grayscale[idxUpRight]
+                        + -2f * grayscale[idxLeft]
+                        + 2f * grayscale[idxRight]
+                        + -grayscale[idxDownLeft]
+                        + grayscale[idxDownRight];
 
                     float gy =
-                        -grayscale[idxUpLeft] - 2f * grayscale[idxUp] - grayscale[idxUpRight] +
-                        grayscale[idxDownLeft] + 2f * grayscale[idxDown] + grayscale[idxDownRight];
+                        -grayscale[idxUpLeft]
+                        - 2f * grayscale[idxUp]
+                        - grayscale[idxUpRight]
+                        + grayscale[idxDownLeft]
+                        + 2f * grayscale[idxDown]
+                        + grayscale[idxDownRight];
 
                     total += Mathf.Sqrt(gx * gx + gy * gy);
                     count++;
@@ -93,9 +109,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Calculates spatial frequency.
         /// Skips transparent pixels (marked with negative values).
         /// </summary>
-        public static float CalculateSpatialFrequency(float[] grayscale, int width, int height, int opaqueCount)
+        public static float CalculateSpatialFrequency(
+            float[] grayscale,
+            int width,
+            int height,
+            int opaqueCount
+        )
         {
-            if (opaqueCount == 0) return 0f;
+            if (opaqueCount == 0)
+                return 0f;
 
             float rowFreq = 0f;
             float colFreq = 0f;
@@ -111,9 +133,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     int idx = y * width + x;
                     int prevIdx = y * width + (x - step);
 
-                    if (idx < totalPixels && prevIdx >= 0 &&
-                        !AlphaExtractor.IsTransparent(grayscale[idx]) &&
-                        !AlphaExtractor.IsTransparent(grayscale[prevIdx]))
+                    if (
+                        idx < totalPixels
+                        && prevIdx >= 0
+                        && !AlphaExtractor.IsTransparent(grayscale[idx])
+                        && !AlphaExtractor.IsTransparent(grayscale[prevIdx])
+                    )
                     {
                         float diff = grayscale[idx] - grayscale[prevIdx];
                         rowFreq += diff * diff;
@@ -129,9 +154,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     int idx = y * width + x;
                     int prevIdx = (y - step) * width + x;
 
-                    if (idx < totalPixels && prevIdx >= 0 &&
-                        !AlphaExtractor.IsTransparent(grayscale[idx]) &&
-                        !AlphaExtractor.IsTransparent(grayscale[prevIdx]))
+                    if (
+                        idx < totalPixels
+                        && prevIdx >= 0
+                        && !AlphaExtractor.IsTransparent(grayscale[idx])
+                        && !AlphaExtractor.IsTransparent(grayscale[prevIdx])
+                    )
                     {
                         float diff = grayscale[idx] - grayscale[prevIdx];
                         colFreq += diff * diff;
@@ -156,31 +184,36 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         public static float CalculateColorVariance(Color[] pixels, int opaqueCount)
         {
-            if (opaqueCount == 0) return 0f;
+            if (opaqueCount == 0)
+                return 0f;
 
             Vector3 mean = Vector3.zero;
             int validCount = 0;
 
             for (int i = 0; i < pixels.Length; i++)
             {
-                if (pixels[i].a < 0.1f) continue;
+                if (pixels[i].a < 0.1f)
+                    continue;
                 mean.x += pixels[i].r;
                 mean.y += pixels[i].g;
                 mean.z += pixels[i].b;
                 validCount++;
             }
 
-            if (validCount == 0) return 0f;
+            if (validCount == 0)
+                return 0f;
             mean /= validCount;
 
             float variance = 0f;
             for (int i = 0; i < pixels.Length; i++)
             {
-                if (pixels[i].a < 0.1f) continue;
+                if (pixels[i].a < 0.1f)
+                    continue;
                 Vector3 diff = new Vector3(
                     pixels[i].r - mean.x,
                     pixels[i].g - mean.y,
-                    pixels[i].b - mean.z);
+                    pixels[i].b - mean.z
+                );
                 variance += diff.sqrMagnitude;
             }
 
@@ -195,14 +228,21 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Calculates DCT high frequency energy ratio.
         /// Skips blocks containing transparent pixels.
         /// </summary>
-        public static float CalculateDctHighFrequencyRatio(float[] grayscale, int width, int height, int opaqueCount)
+        public static float CalculateDctHighFrequencyRatio(
+            float[] grayscale,
+            int width,
+            int height,
+            int opaqueCount
+        )
         {
-            if (opaqueCount == 0) return 0f;
+            if (opaqueCount == 0)
+                return 0f;
 
             int blocksX = width / DctBlockSize;
             int blocksY = height / DctBlockSize;
 
-            if (blocksX == 0 || blocksY == 0) return 0f;
+            if (blocksX == 0 || blocksY == 0)
+                return 0f;
 
             float totalHighFreq = 0f;
             float totalEnergy = 0f;
@@ -234,7 +274,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         }
                     }
 
-                    if (!validBlock) continue;
+                    if (!validBlock)
+                        continue;
 
                     for (int v = 0; v < DctBlockSize; v++)
                     {
@@ -261,7 +302,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         {
                             float energy = dct[v, u] * dct[v, u];
                             totalEnergy += energy;
-                            if (u + v > 2) totalHighFreq += energy;
+                            if (u + v > 2)
+                                totalHighFreq += energy;
                         }
                     }
                 }
@@ -279,9 +321,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Skips transparent pixels.
         /// </summary>
         public static (float contrast, float homogeneity, float energy) CalculateGlcmFeatures(
-            float[] grayscale, int width, int height, int opaqueCount)
+            float[] grayscale,
+            int width,
+            int height,
+            int opaqueCount
+        )
         {
-            if (opaqueCount == 0) return (0f, 1f, 1f);
+            if (opaqueCount == 0)
+                return (0f, 1f, 1f);
 
             int totalPixels = width * height;
             float[,] glcm = new float[GlcmLevels, GlcmLevels];
@@ -295,12 +342,23 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     int idx1 = y * width + x;
                     int idx2 = y * width + x + 1;
 
-                    if (idx1 < totalPixels && idx2 < totalPixels &&
-                        !AlphaExtractor.IsTransparent(grayscale[idx1]) &&
-                        !AlphaExtractor.IsTransparent(grayscale[idx2]))
+                    if (
+                        idx1 < totalPixels
+                        && idx2 < totalPixels
+                        && !AlphaExtractor.IsTransparent(grayscale[idx1])
+                        && !AlphaExtractor.IsTransparent(grayscale[idx2])
+                    )
                     {
-                        int i = Mathf.Clamp((int)(grayscale[idx1] * (GlcmLevels - 1)), 0, GlcmLevels - 1);
-                        int j = Mathf.Clamp((int)(grayscale[idx2] * (GlcmLevels - 1)), 0, GlcmLevels - 1);
+                        int i = Mathf.Clamp(
+                            (int)(grayscale[idx1] * (GlcmLevels - 1)),
+                            0,
+                            GlcmLevels - 1
+                        );
+                        int j = Mathf.Clamp(
+                            (int)(grayscale[idx2] * (GlcmLevels - 1)),
+                            0,
+                            GlcmLevels - 1
+                        );
                         glcm[i, j]++;
                         glcm[j, i]++;
                         pairs += 2;
@@ -316,12 +374,23 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     int idx1 = y * width + x;
                     int idx2 = (y + 1) * width + x;
 
-                    if (idx1 < totalPixels && idx2 < totalPixels &&
-                        !AlphaExtractor.IsTransparent(grayscale[idx1]) &&
-                        !AlphaExtractor.IsTransparent(grayscale[idx2]))
+                    if (
+                        idx1 < totalPixels
+                        && idx2 < totalPixels
+                        && !AlphaExtractor.IsTransparent(grayscale[idx1])
+                        && !AlphaExtractor.IsTransparent(grayscale[idx2])
+                    )
                     {
-                        int i = Mathf.Clamp((int)(grayscale[idx1] * (GlcmLevels - 1)), 0, GlcmLevels - 1);
-                        int j = Mathf.Clamp((int)(grayscale[idx2] * (GlcmLevels - 1)), 0, GlcmLevels - 1);
+                        int i = Mathf.Clamp(
+                            (int)(grayscale[idx1] * (GlcmLevels - 1)),
+                            0,
+                            GlcmLevels - 1
+                        );
+                        int j = Mathf.Clamp(
+                            (int)(grayscale[idx2] * (GlcmLevels - 1)),
+                            0,
+                            GlcmLevels - 1
+                        );
                         glcm[i, j]++;
                         glcm[j, i]++;
                         pairs += 2;
@@ -329,7 +398,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
             }
 
-            if (pairs == 0) return (0f, 1f, 1f);
+            if (pairs == 0)
+                return (0f, 1f, 1f);
 
             for (int i = 0; i < GlcmLevels; i++)
             {
@@ -368,20 +438,27 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         public static float CalculateEntropy(float[] grayscale, int opaqueCount)
         {
-            if (opaqueCount == 0) return 0f;
+            if (opaqueCount == 0)
+                return 0f;
 
             int[] histogram = new int[HistogramBins];
             int validCount = 0;
 
             for (int i = 0; i < grayscale.Length; i++)
             {
-                if (AlphaExtractor.IsTransparent(grayscale[i])) continue;
-                int bin = Mathf.Clamp((int)(grayscale[i] * (HistogramBins - 1)), 0, HistogramBins - 1);
+                if (AlphaExtractor.IsTransparent(grayscale[i]))
+                    continue;
+                int bin = Mathf.Clamp(
+                    (int)(grayscale[i] * (HistogramBins - 1)),
+                    0,
+                    HistogramBins - 1
+                );
                 histogram[bin]++;
                 validCount++;
             }
 
-            if (validCount == 0) return 0f;
+            if (validCount == 0)
+                return 0f;
 
             float entropy = 0f;
             float total = validCount;
@@ -406,9 +483,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Calculates average block variance.
         /// Skips transparent pixels.
         /// </summary>
-        public static float CalculateBlockVariance(float[] grayscale, int width, int height, int opaqueCount, int blockSize)
+        public static float CalculateBlockVariance(
+            float[] grayscale,
+            int width,
+            int height,
+            int opaqueCount,
+            int blockSize
+        )
         {
-            if (opaqueCount == 0) return 0f;
+            if (opaqueCount == 0)
+                return 0f;
 
             float totalVariance = 0f;
             int blockCount = 0;
@@ -437,7 +521,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         }
                     }
 
-                    if (validPixels == 0) continue;
+                    if (validPixels == 0)
+                        continue;
                     blockMean /= validPixels;
 
                     float blockVariance = 0f;
@@ -467,9 +552,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Calculates edge density with sampling.
         /// Skips transparent pixels.
         /// </summary>
-        public static float CalculateEdgeDensity(float[] grayscale, int width, int height, int opaqueCount)
+        public static float CalculateEdgeDensity(
+            float[] grayscale,
+            int width,
+            int height,
+            int opaqueCount
+        )
         {
-            if (opaqueCount == 0) return 0f;
+            if (opaqueCount == 0)
+                return 0f;
 
             float edgeSum = 0f;
             int edgeCount = 0;
@@ -486,15 +577,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     int idxDown = idx + width;
                     int idxUp = idx - width;
 
-                    if (idxDown < totalPixels && idxUp >= 0 &&
-                        !AlphaExtractor.IsTransparent(grayscale[idx]) &&
-                        !AlphaExtractor.IsTransparent(grayscale[idxRight]) &&
-                        !AlphaExtractor.IsTransparent(grayscale[idxLeft]) &&
-                        !AlphaExtractor.IsTransparent(grayscale[idxDown]) &&
-                        !AlphaExtractor.IsTransparent(grayscale[idxUp]))
+                    if (
+                        idxDown < totalPixels
+                        && idxUp >= 0
+                        && !AlphaExtractor.IsTransparent(grayscale[idx])
+                        && !AlphaExtractor.IsTransparent(grayscale[idxRight])
+                        && !AlphaExtractor.IsTransparent(grayscale[idxLeft])
+                        && !AlphaExtractor.IsTransparent(grayscale[idxDown])
+                        && !AlphaExtractor.IsTransparent(grayscale[idxUp])
+                    )
                     {
-                        float grad = Mathf.Abs(grayscale[idxRight] - grayscale[idxLeft]) +
-                                     Mathf.Abs(grayscale[idxDown] - grayscale[idxUp]);
+                        float grad =
+                            Mathf.Abs(grayscale[idxRight] - grayscale[idxLeft])
+                            + Mathf.Abs(grayscale[idxDown] - grayscale[idxUp]);
                         edgeSum += grad;
                         edgeCount++;
                     }
@@ -508,9 +603,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Calculates detail density with adaptive threshold.
         /// Skips transparent pixels.
         /// </summary>
-        public static float CalculateDetailDensity(float[] grayscale, int width, int height, int opaqueCount, float avgVariance)
+        public static float CalculateDetailDensity(
+            float[] grayscale,
+            int width,
+            int height,
+            int opaqueCount,
+            float avgVariance
+        )
         {
-            if (opaqueCount == 0) return 0f;
+            if (opaqueCount == 0)
+                return 0f;
 
             const int blockSize = 16;
             int detailBlocks = 0;
@@ -542,7 +644,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         }
                     }
 
-                    if (validPixels == 0) continue;
+                    if (validPixels == 0)
+                        continue;
                     mean /= validPixels;
 
                     float variance = 0f;
@@ -560,7 +663,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     }
                     variance /= validPixels;
 
-                    if (variance > threshold) detailBlocks++;
+                    if (variance > threshold)
+                        detailBlocks++;
                     totalBlocks++;
                 }
             }

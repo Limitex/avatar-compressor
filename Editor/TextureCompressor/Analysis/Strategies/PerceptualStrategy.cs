@@ -10,37 +10,55 @@ namespace dev.limitex.avatar.compressor.editor.texture
     {
         public TextureComplexityResult Analyze(ProcessedPixelData data)
         {
-            if (data.Width < AnalysisConstants.MinAnalysisDimension ||
-                data.Height < AnalysisConstants.MinAnalysisDimension)
+            if (
+                data.Width < AnalysisConstants.MinAnalysisDimension
+                || data.Height < AnalysisConstants.MinAnalysisDimension
+            )
             {
                 return new TextureComplexityResult(
                     AnalysisConstants.DefaultComplexityScore,
-                    "Texture too small for perceptual analysis");
+                    "Texture too small for perceptual analysis"
+                );
             }
 
             float avgVariance = ImageMath.CalculateBlockVariance(
-                data.Grayscale, data.Width, data.Height, data.OpaqueCount,
-                AnalysisConstants.PerceptualBlockSize);
+                data.Grayscale,
+                data.Width,
+                data.Height,
+                data.OpaqueCount,
+                AnalysisConstants.PerceptualBlockSize
+            );
 
             float avgEdge = ImageMath.CalculateEdgeDensity(
-                data.Grayscale, data.Width, data.Height, data.OpaqueCount);
+                data.Grayscale,
+                data.Width,
+                data.Height,
+                data.OpaqueCount
+            );
 
             float detailDensity = ImageMath.CalculateDetailDensity(
-                data.Grayscale, data.Width, data.Height, data.OpaqueCount, avgVariance);
+                data.Grayscale,
+                data.Width,
+                data.Height,
+                data.OpaqueCount,
+                avgVariance
+            );
 
             float varianceScore = MathUtils.NormalizeWithPercentile(
                 avgVariance,
                 AnalysisConstants.VariancePercentileLow,
-                AnalysisConstants.VariancePercentileHigh);
+                AnalysisConstants.VariancePercentileHigh
+            );
             float edgeScore = MathUtils.NormalizeWithPercentile(
                 avgEdge,
                 AnalysisConstants.EdgePercentileLow,
-                AnalysisConstants.EdgePercentileHigh);
+                AnalysisConstants.EdgePercentileHigh
+            );
 
             float score = Mathf.Clamp01(
-                AnalysisConstants.PerceptualVarianceWeight * varianceScore +
-                AnalysisConstants.PerceptualEdgeWeight * edgeScore +
-                AnalysisConstants.PerceptualDetailWeight * detailDensity
+                AnalysisConstants.PerceptualVarianceWeight * varianceScore
+                    + AnalysisConstants.PerceptualEdgeWeight * edgeScore
+                    + AnalysisConstants.PerceptualDetailWeight * detailDensity
             );
 
             return new TextureComplexityResult(score);

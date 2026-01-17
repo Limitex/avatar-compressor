@@ -13,7 +13,8 @@ namespace dev.limitex.avatar.compressor.editor
         /// </summary>
         public static void SafeDestroy(Object obj)
         {
-            if (obj == null) return;
+            if (obj == null)
+                return;
             Object.DestroyImmediate(obj);
         }
 
@@ -23,12 +24,14 @@ namespace dev.limitex.avatar.compressor.editor
         /// </summary>
         public static bool IsEditorOnly(GameObject obj)
         {
-            if (obj == null) return false;
+            if (obj == null)
+                return false;
 
             var current = obj.transform;
             while (current != null)
             {
-                if (current.CompareTag("EditorOnly")) return true;
+                if (current.CompareTag("EditorOnly"))
+                    return true;
                 current = current.parent;
             }
             return false;

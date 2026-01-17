@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -502,7 +502,7 @@ namespace dev.limitex.avatar.compressor.tests
             var material = CreateMaterial();
             var references = new List<MaterialReference>
             {
-                MaterialReference.FromRenderer(material, null)
+                MaterialReference.FromRenderer(material, null),
             };
 
             var result = MaterialCollector.GetDistinctMaterials(references).ToList();
@@ -519,7 +519,7 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 MaterialReference.FromRenderer(material, null),
                 MaterialReference.FromRenderer(material, null),
-                MaterialReference.FromAnimation(material, null)
+                MaterialReference.FromAnimation(material, null),
             };
 
             var result = MaterialCollector.GetDistinctMaterials(references).ToList();
@@ -538,7 +538,7 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 MaterialReference.FromRenderer(material1, null),
                 MaterialReference.FromAnimation(material2, null),
-                MaterialReference.FromComponent(material3, null)
+                MaterialReference.FromComponent(material3, null),
             };
 
             var result = MaterialCollector.GetDistinctMaterials(references).ToList();
@@ -557,7 +557,7 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 null,
                 MaterialReference.FromRenderer(material, null),
-                null
+                null,
             };
 
             var result = MaterialCollector.GetDistinctMaterials(references).ToList();
@@ -573,7 +573,7 @@ namespace dev.limitex.avatar.compressor.tests
             var references = new List<MaterialReference>
             {
                 new MaterialReference(null, MaterialSourceType.Renderer, null),
-                MaterialReference.FromRenderer(material, null)
+                MaterialReference.FromRenderer(material, null),
             };
 
             var result = MaterialCollector.GetDistinctMaterials(references).ToList();
@@ -593,7 +593,7 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 MaterialReference.FromRenderer(rendererMat, null),
                 MaterialReference.FromAnimation(animationMat, null),
-                MaterialReference.FromComponent(componentMat, null)
+                MaterialReference.FromComponent(componentMat, null),
             };
 
             var result = MaterialCollector.GetDistinctMaterials(references).ToList();
@@ -609,7 +609,7 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 MaterialReference.FromRenderer(material, null),
                 MaterialReference.FromAnimation(material, null),
-                MaterialReference.FromComponent(material, null)
+                MaterialReference.FromComponent(material, null),
             };
 
             var result = MaterialCollector.GetDistinctMaterials(references).ToList();

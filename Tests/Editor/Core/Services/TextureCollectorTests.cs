@@ -1,8 +1,8 @@
 using System.Collections.Generic;
+using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -44,7 +44,10 @@ namespace dev.limitex.avatar.compressor.tests
             // Delete created asset files
             foreach (var path in _createdAssetPaths)
             {
-                if (!string.IsNullOrEmpty(path) && AssetDatabase.LoadAssetAtPath<Object>(path) != null)
+                if (
+                    !string.IsNullOrEmpty(path)
+                    && AssetDatabase.LoadAssetAtPath<Object>(path) != null
+                )
                 {
                     AssetDatabase.DeleteAsset(path);
                 }
@@ -729,7 +732,11 @@ namespace dev.limitex.avatar.compressor.tests
             material.SetTexture("_MainTex", smallTexture);
 
             var textures = new Dictionary<Texture2D, TextureInfo>();
-            collector.CollectFromMaterials(new Material[] { material }, textures, collectAll: false);
+            collector.CollectFromMaterials(
+                new Material[] { material },
+                textures,
+                collectAll: false
+            );
 
             Assert.AreEqual(0, textures.Count);
         }
@@ -743,7 +750,10 @@ namespace dev.limitex.avatar.compressor.tests
 
             var textures = new Dictionary<Texture2D, TextureInfo>();
             // Pass same material multiple times
-            _collector.CollectFromMaterials(new Material[] { material, material, material }, textures);
+            _collector.CollectFromMaterials(
+                new Material[] { material, material, material },
+                textures
+            );
 
             Assert.AreEqual(1, textures.Count);
             // Should have only 1 reference since Distinct() is used
@@ -937,7 +947,11 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Constructor_WithFrozenSkipGuids_AcceptsParameter()
         {
-            var frozenGuids = new[] { "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4", "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5" };
+            var frozenGuids = new[]
+            {
+                "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+                "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+            };
 
             var collector = new TextureCollector(64, 0, true, true, true, true, null, frozenGuids);
 
@@ -958,7 +972,16 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var collector = new TextureCollector(64, 0, true, true, true, true, null, new string[0]);
+                var collector = new TextureCollector(
+                    64,
+                    0,
+                    true,
+                    true,
+                    true,
+                    true,
+                    null,
+                    new string[0]
+                );
             });
         }
 
@@ -967,11 +990,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             // Note: In-memory textures don't have asset GUIDs, so this tests
             // the SkipReason enum value exists and can be assigned
-            var info = new TextureInfo
-            {
-                IsProcessed = false,
-                SkipReason = SkipReason.FrozenSkip
-            };
+            var info = new TextureInfo { IsProcessed = false, SkipReason = SkipReason.FrozenSkip };
 
             Assert.AreEqual(SkipReason.FrozenSkip, info.SkipReason);
             Assert.IsFalse(info.IsProcessed);
@@ -1010,7 +1029,11 @@ namespace dev.limitex.avatar.compressor.tests
             material.SetTexture("_MainTex", runtimeTexture);
 
             var textures = new Dictionary<Texture2D, TextureInfo>();
-            _collector.CollectFromMaterials(new Material[] { material }, textures, collectAll: true);
+            _collector.CollectFromMaterials(
+                new Material[] { material },
+                textures,
+                collectAll: true
+            );
 
             Assert.AreEqual(1, textures.Count);
             Assert.IsTrue(textures.ContainsKey(runtimeTexture));
@@ -1026,7 +1049,11 @@ namespace dev.limitex.avatar.compressor.tests
             material.SetTexture("_MainTex", runtimeTexture);
 
             var textures = new Dictionary<Texture2D, TextureInfo>();
-            _collector.CollectFromMaterials(new Material[] { material }, textures, collectAll: false);
+            _collector.CollectFromMaterials(
+                new Material[] { material },
+                textures,
+                collectAll: false
+            );
 
             Assert.AreEqual(0, textures.Count);
         }
@@ -1041,7 +1068,11 @@ namespace dev.limitex.avatar.compressor.tests
             material.SetTexture("_BumpMap", runtimeTexture);
 
             var textures = new Dictionary<Texture2D, TextureInfo>();
-            _collector.CollectFromMaterials(new Material[] { material }, textures, collectAll: true);
+            _collector.CollectFromMaterials(
+                new Material[] { material },
+                textures,
+                collectAll: true
+            );
 
             Assert.AreEqual(2, textures.Count);
             Assert.IsTrue(textures[assetTexture].IsProcessed);
@@ -1079,7 +1110,8 @@ namespace dev.limitex.avatar.compressor.tests
             texture.Apply();
 
             // Save as asset to get a valid asset path
-            string assetPath = $"{TestAssetFolder}/TestTexture_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            string assetPath =
+                $"{TestAssetFolder}/TestTexture_{width}x{height}_{System.Guid.NewGuid():N}.asset";
             AssetDatabase.CreateAsset(texture, assetPath);
             _createdAssetPaths.Add(assetPath);
 

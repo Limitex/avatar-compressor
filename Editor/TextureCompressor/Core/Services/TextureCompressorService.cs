@@ -43,8 +43,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             // Get frozen skip GUIDs (textures with Skip=true should be excluded from collection)
-            var frozenSkipGuids = config.FrozenTextures
-                .Where(f => f.Skip && !string.IsNullOrEmpty(f.TextureGuid))
+            var frozenSkipGuids = config
+                .FrozenTextures.Where(f => f.Skip && !string.IsNullOrEmpty(f.TextureGuid))
                 .Select(f => f.TextureGuid);
 
             _collector = new TextureCollector(
@@ -119,24 +119,27 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         private void WarnIfNotInBuildContext(GameObject root)
         {
-            if (_buildContextWarningShown) return;
+            if (_buildContextWarningShown)
+                return;
 
             var renderers = root.GetComponentsInChildren<Renderer>(true);
             foreach (var renderer in renderers)
             {
                 foreach (var material in renderer.sharedMaterials)
                 {
-                    if (material == null) continue;
+                    if (material == null)
+                        continue;
 
                     string assetPath = AssetDatabase.GetAssetPath(material);
                     if (!string.IsNullOrEmpty(assetPath))
                     {
                         _buildContextWarningShown = true;
                         Debug.LogWarning(
-                            $"[{Name}] Material '{material.name}' is an asset file ({assetPath}). " +
-                            "This suggests usage outside NDMF build context. " +
-                            "While original asset files will NOT be modified, the Renderer's material " +
-                            "references will be changed. For non-destructive workflow, use the NDMF plugin.");
+                            $"[{Name}] Material '{material.name}' is an asset file ({assetPath}). "
+                                + "This suggests usage outside NDMF build context. "
+                                + "While original asset files will NOT be modified, the Renderer's material "
+                                + "references will be changed. For non-destructive workflow, use the NDMF plugin."
+                        );
                         return;
                     }
                 }
@@ -149,9 +152,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <param name="materialReferences">Material references to process (from Renderers, animations, components, etc.)</param>
         /// <param name="enableLogging">Whether to log progress</param>
         /// <returns>Tuple containing original-to-compressed texture mappings and original-to-cloned material mappings</returns>
-        public (Dictionary<Texture2D, Texture2D> ProcessedTextures, Dictionary<Material, Material> ClonedMaterials) CompressWithMappings(
+        public (
+            Dictionary<Texture2D, Texture2D> ProcessedTextures,
+            Dictionary<Material, Material> ClonedMaterials
+        ) CompressWithMappings(
             IEnumerable<MaterialReference> materialReferences,
-            bool enableLogging)
+            bool enableLogging
+        )
         {
             var referenceList = materialReferences.ToList();
 
@@ -185,7 +192,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 var originalTexture = kvp.Key;
                 var textureInfo = kvp.Value;
 
-                if (processedTextures.ContainsKey(originalTexture)) continue;
+                if (processedTextures.ContainsKey(originalTexture))
+                    continue;
 
                 string assetPath = AssetDatabase.GetAssetPath(originalTexture);
                 string guid = AssetDatabase.AssetPathToGUID(assetPath);
@@ -194,12 +202,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 FrozenTextureFormat? formatOverride = null;
 
                 // Check if texture is frozen (non-skipped frozen textures are still in collection)
-                if (!string.IsNullOrEmpty(guid) && _frozenLookup.TryGetValue(guid, out frozenSettings) && !frozenSettings.Skip)
+                if (
+                    !string.IsNullOrEmpty(guid)
+                    && _frozenLookup.TryGetValue(guid, out frozenSettings)
+                    && !frozenSettings.Skip
+                )
                 {
                     // Use frozen settings instead of analysis
                     int divisor = frozenSettings.Divisor;
                     Vector2Int resolution = _processor.CalculateNewDimensions(
-                        originalTexture.width, originalTexture.height, divisor);
+                        originalTexture.width,
+                        originalTexture.height,
+                        divisor
+                    );
 
                     // Create analysis result with frozen values
                     // Complexity is set to 0.5 as a neutral value for format selection when format is Auto
@@ -208,8 +223,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                     if (enableLogging)
                     {
-                        Debug.Log($"[{Name}] Using frozen settings for '{originalTexture.name}': " +
-                                  $"Divisor={divisor}, Format={frozenSettings.Format}");
+                        Debug.Log(
+                            $"[{Name}] Using frozen settings for '{originalTexture.name}': "
+                                + $"Divisor={divisor}, Format={frozenSettings.Format}"
+                        );
                     }
                 }
                 else
@@ -217,7 +234,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     // Normal analysis path
                     if (!analysisResults.TryGetValue(originalTexture, out analysis))
                     {
-                        Debug.LogWarning($"[{Name}] Skipping texture '{originalTexture.name}': analysis failed");
+                        Debug.LogWarning(
+                            $"[{Name}] Skipping texture '{originalTexture.name}': analysis failed"
+                        );
                         continue;
                     }
                 }
@@ -238,14 +257,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 if (enableLogging)
                 {
-                    var frozenInfo = formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto
-                        ? " [FROZEN]"
-                        : "";
-                    Debug.Log($"[{Name}] {originalTexture.name}: " +
-                              $"{originalTexture.width}x{originalTexture.height} -> " +
-                              $"{resizedTexture.width}x{resizedTexture.height} ({resizedTexture.format}){frozenInfo} " +
-                              $"(Complexity: {analysis.NormalizedComplexity:P0}, " +
-                              $"Divisor: {analysis.RecommendedDivisor}x)");
+                    var frozenInfo =
+                        formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto
+                            ? " [FROZEN]"
+                            : "";
+                    Debug.Log(
+                        $"[{Name}] {originalTexture.name}: "
+                            + $"{originalTexture.width}x{originalTexture.height} -> "
+                            + $"{resizedTexture.width}x{resizedTexture.height} ({resizedTexture.format}){frozenInfo} "
+                            + $"(Complexity: {analysis.NormalizedComplexity:P0}, "
+                            + $"Divisor: {analysis.RecommendedDivisor}x)"
+                    );
                 }
 
                 var compressedTexture = resizedTexture;
@@ -262,8 +284,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     _streamingMipmapsWarningShown = true;
                     Debug.LogWarning(
-                        $"[{Name}] Could not enable streaming mipmaps: " +
-                        "property 'm_StreamingMipmaps' not found. This may indicate a Unity version difference.");
+                        $"[{Name}] Could not enable streaming mipmaps: "
+                            + "property 'm_StreamingMipmaps' not found. This may indicate a Unity version difference."
+                    );
                 }
 
                 // Register the texture replacement in ObjectRegistry so that subsequent NDMF plugins
@@ -289,7 +312,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         private void LogSummary(
             Dictionary<Texture2D, TextureInfo> original,
-            Dictionary<Texture2D, Texture2D> processed)
+            Dictionary<Texture2D, Texture2D> processed
+        )
         {
             long originalSize = 0;
             long compressedSize = 0;
@@ -307,9 +331,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             float savings = originalSize > 0 ? 1f - (float)compressedSize / originalSize : 0f;
 
-            Debug.Log($"[{Name}] Complete: " +
-                      $"{originalSize / 1024f / 1024f:F2}MB -> {compressedSize / 1024f / 1024f:F2}MB " +
-                      $"({savings:P0} reduction)");
+            Debug.Log(
+                $"[{Name}] Complete: "
+                    + $"{originalSize / 1024f / 1024f:F2}MB -> {compressedSize / 1024f / 1024f:F2}MB "
+                    + $"({savings:P0} reduction)"
+            );
         }
     }
 }

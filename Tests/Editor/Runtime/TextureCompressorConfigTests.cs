@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -323,8 +323,10 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void IsFrozen_DifferentGuid_ReturnsFalse()
         {
-            _config.SetFrozenSettings("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1",
-                new FrozenTextureSettings("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1"));
+            _config.SetFrozenSettings(
+                "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1",
+                new FrozenTextureSettings("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1")
+            );
 
             Assert.IsFalse(_config.IsFrozen("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d2"));
         }
@@ -367,8 +369,14 @@ namespace dev.limitex.avatar.compressor.tests
         public void SetFrozenSettings_ExistingGuid_UpdatesSettings()
         {
             var guid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
-            _config.SetFrozenSettings(guid, new FrozenTextureSettings(guid, 2, FrozenTextureFormat.DXT1, false));
-            _config.SetFrozenSettings(guid, new FrozenTextureSettings(guid, 8, FrozenTextureFormat.BC7, true));
+            _config.SetFrozenSettings(
+                guid,
+                new FrozenTextureSettings(guid, 2, FrozenTextureFormat.DXT1, false)
+            );
+            _config.SetFrozenSettings(
+                guid,
+                new FrozenTextureSettings(guid, 8, FrozenTextureFormat.BC7, true)
+            );
 
             Assert.AreEqual(1, _config.FrozenTextures.Count);
             Assert.AreEqual(8, _config.FrozenTextures[0].Divisor);
@@ -391,8 +399,10 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void UnfreezeTexture_NonExistingGuid_DoesNothing()
         {
-            _config.SetFrozenSettings("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1",
-                new FrozenTextureSettings("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1"));
+            _config.SetFrozenSettings(
+                "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1",
+                new FrozenTextureSettings("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1")
+            );
 
             _config.UnfreezeTexture("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d2");
 
@@ -586,15 +596,20 @@ namespace dev.limitex.avatar.compressor.tests
                 CompressorPreset.Balanced,
                 CompressorPreset.Aggressive,
                 CompressorPreset.Maximum,
-                CompressorPreset.Custom
+                CompressorPreset.Custom,
             };
 
             foreach (var preset in presets)
             {
-                Assert.DoesNotThrow(() => _config.ApplyPreset(preset),
-                    $"Failed to apply preset {preset}");
-                Assert.AreEqual(preset, _config.Preset,
-                    $"Preset property not set correctly for {preset}");
+                Assert.DoesNotThrow(
+                    () => _config.ApplyPreset(preset),
+                    $"Failed to apply preset {preset}"
+                );
+                Assert.AreEqual(
+                    preset,
+                    _config.Preset,
+                    $"Preset property not set correctly for {preset}"
+                );
             }
         }
 

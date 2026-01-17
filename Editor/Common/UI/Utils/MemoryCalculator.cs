@@ -10,14 +10,20 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <summary>
         /// Calculates compressed memory size based on format and mipmap count.
         /// </summary>
-        public static long CalculateCompressedMemory(int width, int height, TextureFormat format, int mipmapCount)
+        public static long CalculateCompressedMemory(
+            int width,
+            int height,
+            TextureFormat format,
+            int mipmapCount
+        )
         {
             float bitsPerPixel = GetBitsPerPixel(format);
             long bytes = 0;
             for (int index = 0; index < mipmapCount; ++index)
             {
                 // Each mipmap level is 1/4 the size of previous: (width * height) / 4^index
-                bytes += (long)Mathf.RoundToInt(((width * height) >> (2 * index)) * bitsPerPixel / 8f);
+                bytes += (long)
+                    Mathf.RoundToInt(((width * height) >> (2 * index)) * bitsPerPixel / 8f);
             }
             return bytes;
         }

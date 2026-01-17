@@ -21,7 +21,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 TextureFormat.ASTC_4x4 => "ASTC 4x4",
                 TextureFormat.ASTC_6x6 => "ASTC 6x6",
                 TextureFormat.ASTC_8x8 => "ASTC 8x8",
-                _ => format.ToString()
+                _ => format.ToString(),
             };
         }
 
@@ -39,7 +39,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 TextureFormat.ASTC_4x4 => "8 bpp, highest quality",
                 TextureFormat.ASTC_6x6 => "3.56 bpp, balanced",
                 TextureFormat.ASTC_8x8 => "2 bpp, most efficient",
-                _ => ""
+                _ => "",
             };
         }
 
@@ -65,7 +65,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 TextureFormat.DXT1 => new Color(0.9f, 0.6f, 0.2f),
                 TextureFormat.ASTC_8x8 => new Color(0.9f, 0.6f, 0.2f),
 
-                _ => Color.white
+                _ => Color.white,
             };
         }
     }

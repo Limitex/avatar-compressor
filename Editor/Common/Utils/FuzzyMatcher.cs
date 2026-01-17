@@ -80,10 +80,7 @@ namespace dev.limitex.avatar.compressor.editor
                 {
                     int tmp = R[k];
                     // match | substitution | insertion | deletion
-                    R[k] = ((R[k] << 1) | mask)
-                         & (oldRk1 << 1)
-                         & (R[k - 1] << 1)
-                         & oldRk1;
+                    R[k] = ((R[k] << 1) | mask) & (oldRk1 << 1) & (R[k - 1] << 1) & oldRk1;
                     oldRk1 = tmp;
                 }
 

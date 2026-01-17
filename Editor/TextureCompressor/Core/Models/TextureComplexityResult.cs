@@ -27,7 +27,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 < 0.4f => "Low complexity - suitable for compression",
                 < 0.6f => "Medium complexity - moderate compression recommended",
                 < 0.8f => "High complexity - light compression only",
-                _ => "Very high complexity - minimal compression recommended"
+                _ => "Very high complexity - minimal compression recommended",
             };
         }
 
