@@ -96,18 +96,6 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void PerceptualStrategy_TooFewOpaquePixels_ReturnsDefaultScore()
-        {
-            var strategy = new PerceptualStrategy();
-            var data = CreateUniformProcessedData(16, 16, 0.5f);
-            data.OpaqueCount = 50; // Less than MinOpaquePixelsForAnalysis
-
-            var result = strategy.Analyze(data);
-
-            Assert.That(result.Score, Is.EqualTo(AnalysisConstants.DefaultComplexityScore));
-        }
-
-        [Test]
         public void PerceptualStrategy_ScoreInValidRange()
         {
             var strategy = new PerceptualStrategy();

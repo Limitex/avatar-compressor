@@ -18,31 +18,6 @@ namespace dev.limitex.avatar.compressor.common
         }
 
         /// <summary>
-        /// Destroys all components of type T in the hierarchy.
-        /// </summary>
-        public static void DestroyAllComponents<T>(GameObject root) where T : Component
-        {
-            var components = root.GetComponentsInChildren<T>(true);
-            foreach (var component in components)
-            {
-                SafeDestroy(component);
-            }
-        }
-
-        /// <summary>
-        /// Gets or adds a component to a GameObject.
-        /// </summary>
-        public static T GetOrAddComponent<T>(GameObject obj) where T : Component
-        {
-            var component = obj.GetComponent<T>();
-            if (component == null)
-            {
-                component = obj.AddComponent<T>();
-            }
-            return component;
-        }
-
-        /// <summary>
         /// Checks if a GameObject or any of its parents has the EditorOnly tag.
         /// Objects with EditorOnly tag are stripped from build.
         /// </summary>

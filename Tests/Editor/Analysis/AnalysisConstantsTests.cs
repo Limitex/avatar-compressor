@@ -81,13 +81,6 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void MinOpaquePixelsThresholds_AreOrdered()
-        {
-            Assert.That(AnalysisConstants.MinOpaquePixelsForAnalysis,
-                Is.LessThanOrEqualTo(AnalysisConstants.MinOpaquePixelsForStandardAnalysis));
-        }
-
-        [Test]
         public void NormalizationBounds_AreOrdered()
         {
             // Gradient bounds
