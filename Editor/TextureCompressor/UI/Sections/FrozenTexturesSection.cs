@@ -1,9 +1,9 @@
 using dev.limitex.avatar.compressor.editor.ui;
-using dev.limitex.avatar.compressor.texture;
+using dev.limitex.avatar.compressor;
 using UnityEngine;
 using UnityEditor;
 
-namespace dev.limitex.avatar.compressor.texture.ui
+namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
     /// <summary>
     /// Draws the frozen textures section for manual texture overrides.

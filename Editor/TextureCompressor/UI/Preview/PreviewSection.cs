@@ -1,10 +1,10 @@
 using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.editor.ui;
-using dev.limitex.avatar.compressor.texture;
+using dev.limitex.avatar.compressor;
 using UnityEngine;
 using UnityEditor;
 
-namespace dev.limitex.avatar.compressor.texture.ui
+namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
     /// <summary>
     /// Draws the preview section with texture analysis results.

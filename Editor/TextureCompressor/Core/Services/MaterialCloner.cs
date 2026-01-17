@@ -3,7 +3,7 @@ using System.Linq;
 using nadena.dev.ndmf;
 using UnityEngine;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Service for cloning materials and updating references.

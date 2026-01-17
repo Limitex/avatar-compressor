@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using dev.limitex.avatar.compressor.common;
+using dev.limitex.avatar.compressor.editor;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Service that handles texture compression logic.

@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using dev.limitex.avatar.compressor.editor.ui;
-using dev.limitex.avatar.compressor.texture;
+using dev.limitex.avatar.compressor;
 using UnityEngine;
 using UnityEditor;
 
-namespace dev.limitex.avatar.compressor.texture.ui
+namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
     /// <summary>
     /// Generates preview data for texture compression.

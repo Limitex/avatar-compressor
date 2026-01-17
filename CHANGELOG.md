@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Namespace restructured** - Reorganized namespaces for consistency (**Breaking**)
+  - Editor: `common` → `editor`
+  - Editor: `texture` → `editor.texture`
+  - Editor: `texture.editor` → `editor.texture`
+  - Editor: `texture.ui` → `editor.texture.ui`
+  - Runtime: `texture` → (root namespace)
 - **Editor UI refactored** - Modularized Inspector code for maintainability
 - **Test structure reorganized** - Grouped tests by module (Analysis, Core, UI, etc.)
 

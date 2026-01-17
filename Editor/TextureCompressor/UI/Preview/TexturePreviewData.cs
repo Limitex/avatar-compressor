@@ -1,7 +1,7 @@
-using dev.limitex.avatar.compressor.texture;
+using dev.limitex.avatar.compressor;
 using UnityEngine;
 
-namespace dev.limitex.avatar.compressor.texture.ui
+namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
     /// <summary>
     /// Data class for texture preview display.

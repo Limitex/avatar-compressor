@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using dev.limitex.avatar.compressor.texture;
+using dev.limitex.avatar.compressor;
 
 namespace dev.limitex.avatar.compressor.tests
 {

@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using dev.limitex.avatar.compressor.common;
+using dev.limitex.avatar.compressor.editor;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.animator;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Service for collecting materials from various sources in an avatar hierarchy.

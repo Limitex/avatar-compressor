@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Service for selecting and applying texture compression formats.

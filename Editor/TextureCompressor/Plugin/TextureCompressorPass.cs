@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using dev.limitex.avatar.compressor.common;
+using dev.limitex.avatar.compressor.editor;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.animator;
 using nadena.dev.ndmf.runtime;
 using UnityEngine;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Pass that compresses avatar textures, including those referenced by animations.

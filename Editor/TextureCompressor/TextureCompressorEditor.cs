@@ -1,11 +1,9 @@
-using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.editor.ui;
-using dev.limitex.avatar.compressor.texture;
-using dev.limitex.avatar.compressor.texture.ui;
+using dev.limitex.avatar.compressor.editor.texture.ui;
 using UnityEngine;
 using UnityEditor;
 
-namespace dev.limitex.avatar.compressor.texture.editor
+namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Custom editor for the TextureCompressor component.

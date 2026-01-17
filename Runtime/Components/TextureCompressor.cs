@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using VRC.SDKBase;
 
-namespace dev.limitex.avatar.compressor.texture
+namespace dev.limitex.avatar.compressor
 {
     [DisallowMultipleComponent]
     [AddComponentMenu("Avatar Compressor/LAC Texture Compressor")]

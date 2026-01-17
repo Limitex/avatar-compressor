@@ -1,9 +1,9 @@
 using dev.limitex.avatar.compressor.editor.ui;
-using dev.limitex.avatar.compressor.texture;
+using dev.limitex.avatar.compressor;
 using UnityEditor;
 using UnityEngine;
 
-namespace dev.limitex.avatar.compressor.texture.ui
+namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
     /// <summary>
     /// Draws the preset selection section.
