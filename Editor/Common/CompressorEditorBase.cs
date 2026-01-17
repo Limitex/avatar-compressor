@@ -1,7 +1,7 @@
 using dev.limitex.avatar.compressor.editor.ui;
 using nadena.dev.ndmf.runtime;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor
 {
@@ -42,14 +42,16 @@ namespace dev.limitex.avatar.compressor.editor
         private void DrawAvatarRootWarningIfNeeded()
         {
             var component = target as Component;
-            if (component == null) return;
+            if (component == null)
+                return;
 
             if (!RuntimeUtil.IsAvatarRoot(component.transform))
             {
                 EditorGUILayout.HelpBox(
-                    "This component should be placed on the avatar root GameObject. " +
-                    "While it will still work, placing it on the avatar root is recommended.",
-                    MessageType.Warning);
+                    "This component should be placed on the avatar root GameObject. "
+                        + "While it will still work, placing it on the avatar root is recommended.",
+                    MessageType.Warning
+                );
                 EditorGUILayout.Space(5);
             }
         }

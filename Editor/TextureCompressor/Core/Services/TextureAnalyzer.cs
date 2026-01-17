@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -22,9 +22,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float highAccuracyWeight,
             float perceptualWeight,
             TextureProcessor processor,
-            ComplexityCalculator complexityCalc)
+            ComplexityCalculator complexityCalc
+        )
         {
-            _standardAnalyzer = AnalyzerFactory.Create(strategy, fastWeight, highAccuracyWeight, perceptualWeight);
+            _standardAnalyzer = AnalyzerFactory.Create(
+                strategy,
+                fastWeight,
+                highAccuracyWeight,
+                perceptualWeight
+            );
             _normalMapAnalyzer = AnalyzerFactory.CreateNormalMapAnalyzer();
             _processor = processor;
             _complexityCalc = complexityCalc;
@@ -34,9 +40,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Analyzes a batch of textures in parallel.
         /// </summary>
         public Dictionary<Texture2D, TextureAnalysisResult> AnalyzeBatch(
-            Dictionary<Texture2D, TextureInfo> textures)
+            Dictionary<Texture2D, TextureInfo> textures
+        )
         {
-            var pixelDataList = new List<(Texture2D Texture, TexturePixelData Data, ITextureComplexityAnalyzer Analyzer)>();
+            var pixelDataList =
+                new List<(
+                    Texture2D Texture,
+                    TexturePixelData Data,
+                    ITextureComplexityAnalyzer Analyzer
+                )>();
 
             foreach (var kvp in textures)
             {
@@ -44,7 +56,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 var info = kvp.Value;
                 var pixels = _processor.GetReadablePixels(texture);
 
-                if (pixels.Length == 0) continue;
+                if (pixels.Length == 0)
+                    continue;
 
                 var data = new TexturePixelData
                 {
@@ -53,7 +66,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     Width = texture.width,
                     Height = texture.height,
                     IsNormalMap = info.IsNormalMap,
-                    IsEmission = info.IsEmission
+                    IsEmission = info.IsEmission,
                 };
 
                 var analyzer = info.IsNormalMap ? _normalMapAnalyzer : _standardAnalyzer;
@@ -62,11 +75,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             var results = new ConcurrentDictionary<Texture2D, TextureAnalysisResult>();
 
-            Parallel.ForEach(pixelDataList, item =>
-            {
-                var result = AnalyzeSingle(item.Data, item.Analyzer);
-                results[item.Texture] = result;
-            });
+            Parallel.ForEach(
+                pixelDataList,
+                item =>
+                {
+                    var result = AnalyzeSingle(item.Data, item.Analyzer);
+                    results[item.Texture] = result;
+                }
+            );
 
             var output = new Dictionary<Texture2D, TextureAnalysisResult>();
             foreach (var kvp in results)
@@ -81,10 +97,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         private TextureAnalysisResult AnalyzeSingle(
             TexturePixelData data,
-            ITextureComplexityAnalyzer analyzer)
+            ITextureComplexityAnalyzer analyzer
+        )
         {
-            PixelSampler.SampleIfNeeded(data.Pixels, data.Width, data.Height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                data.Pixels,
+                data.Width,
+                data.Height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             TextureComplexityResult complexityResult;
             int totalSampledPixels = sampledWidth * sampledHeight;
@@ -100,22 +123,29 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     Height = sampledHeight,
                     OpaqueCount = totalSampledPixels,
                     IsNormalMap = true,
-                    IsEmission = false
+                    IsEmission = false,
                 };
                 complexityResult = analyzer.Analyze(processedData);
             }
             else
             {
                 // Extract opaque pixels while preserving 2D structure
-                AlphaExtractor.ExtractOpaquePixels(sampledPixels, sampledWidth, sampledHeight,
-                    out Color[] opaquePixels, out float[] grayscale, out int opaqueCount);
+                AlphaExtractor.ExtractOpaquePixels(
+                    sampledPixels,
+                    sampledWidth,
+                    sampledHeight,
+                    out Color[] opaquePixels,
+                    out float[] grayscale,
+                    out int opaqueCount
+                );
 
                 if (opaqueCount < AnalysisConstants.MinOpaquePixelsForStandardAnalysis)
                 {
                     // Too few opaque pixels for meaningful analysis
                     complexityResult = new TextureComplexityResult(
                         AnalysisConstants.DefaultComplexityScore * 0.2f,
-                        "Too few opaque pixels for analysis");
+                        "Too few opaque pixels for analysis"
+                    );
                 }
                 else
                 {
@@ -127,7 +157,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         Height = sampledHeight,
                         OpaqueCount = opaqueCount,
                         IsNormalMap = false,
-                        IsEmission = data.IsEmission
+                        IsEmission = data.IsEmission,
                     };
                     complexityResult = analyzer.Analyze(processedData);
 
@@ -136,14 +166,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         // Emission maps get a 10% quality boost
                         complexityResult = new TextureComplexityResult(
                             Mathf.Clamp01(complexityResult.Score / 0.9f),
-                            complexityResult.Summary + " (emission boost applied)");
+                            complexityResult.Summary + " (emission boost applied)"
+                        );
                     }
                 }
             }
 
             float complexity = Mathf.Clamp01(complexityResult.Score);
             int divisor = _complexityCalc.CalculateRecommendedDivisor(complexity);
-            Vector2Int resolution = _processor.CalculateNewDimensions(data.Width, data.Height, divisor);
+            Vector2Int resolution = _processor.CalculateNewDimensions(
+                data.Width,
+                data.Height,
+                divisor
+            );
 
             return new TextureAnalysisResult(complexity, divisor, resolution);
         }

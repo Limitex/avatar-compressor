@@ -11,29 +11,38 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public TextureComplexityResult Analyze(ProcessedPixelData data)
         {
             float dctRatio = ImageMath.CalculateDctHighFrequencyRatio(
-                data.Grayscale, data.Width, data.Height, data.OpaqueCount);
+                data.Grayscale,
+                data.Width,
+                data.Height,
+                data.OpaqueCount
+            );
 
             var glcm = ImageMath.CalculateGlcmFeatures(
-                data.Grayscale, data.Width, data.Height, data.OpaqueCount);
+                data.Grayscale,
+                data.Width,
+                data.Height,
+                data.OpaqueCount
+            );
 
-            float entropy = ImageMath.CalculateEntropy(
-                data.Grayscale, data.OpaqueCount);
+            float entropy = ImageMath.CalculateEntropy(data.Grayscale, data.OpaqueCount);
 
             float normalizedEntropy = MathUtils.NormalizeWithPercentile(
                 entropy,
                 AnalysisConstants.EntropyPercentileLow,
-                AnalysisConstants.EntropyPercentileHigh);
+                AnalysisConstants.EntropyPercentileHigh
+            );
             float normalizedContrast = MathUtils.NormalizeWithPercentile(
                 glcm.contrast,
                 AnalysisConstants.ContrastPercentileLow,
-                AnalysisConstants.ContrastPercentileHigh);
+                AnalysisConstants.ContrastPercentileHigh
+            );
 
             float score = Mathf.Clamp01(
-                AnalysisConstants.HighAccuracyDctWeight * dctRatio +
-                AnalysisConstants.HighAccuracyContrastWeight * normalizedContrast +
-                AnalysisConstants.HighAccuracyHomogeneityWeight * (1f - glcm.homogeneity) +
-                AnalysisConstants.HighAccuracyEnergyWeight * (1f - Mathf.Sqrt(glcm.energy)) +
-                AnalysisConstants.HighAccuracyEntropyWeight * normalizedEntropy
+                AnalysisConstants.HighAccuracyDctWeight * dctRatio
+                    + AnalysisConstants.HighAccuracyContrastWeight * normalizedContrast
+                    + AnalysisConstants.HighAccuracyHomogeneityWeight * (1f - glcm.homogeneity)
+                    + AnalysisConstants.HighAccuracyEnergyWeight * (1f - Mathf.Sqrt(glcm.energy))
+                    + AnalysisConstants.HighAccuracyEntropyWeight * normalizedEntropy
             );
 
             return new TextureComplexityResult(score);

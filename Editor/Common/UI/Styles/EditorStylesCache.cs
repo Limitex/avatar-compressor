@@ -1,5 +1,5 @@
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.ui
 {
@@ -32,10 +32,11 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <summary>
         /// Centered mini label style.
         /// </summary>
-        public static GUIStyle CenteredLabel => _centeredLabel ??= new GUIStyle(EditorStyles.miniLabel)
-        {
-            alignment = TextAnchor.MiddleCenter
-        };
+        public static GUIStyle CenteredLabel =>
+            _centeredLabel ??= new GUIStyle(EditorStyles.miniLabel)
+            {
+                alignment = TextAnchor.MiddleCenter,
+            };
 
         /// <summary>
         /// Link style for clickable text (no underline, uses GUI.color for coloring).
@@ -45,28 +46,31 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <summary>
         /// Placeholder text style (italic, gray).
         /// </summary>
-        public static GUIStyle PlaceholderStyle => _placeholderStyle ??= new GUIStyle(EditorStyles.label)
-        {
-            fontStyle = FontStyle.Italic,
-            normal = { textColor = new Color(0.5f, 0.5f, 0.5f) }
-        };
+        public static GUIStyle PlaceholderStyle =>
+            _placeholderStyle ??= new GUIStyle(EditorStyles.label)
+            {
+                fontStyle = FontStyle.Italic,
+                normal = { textColor = new Color(0.5f, 0.5f, 0.5f) },
+            };
 
         /// <summary>
         /// Hit count style (right-aligned mini label).
         /// </summary>
-        public static GUIStyle HitCountStyle => _hitCountStyle ??= new GUIStyle(EditorStyles.miniLabel)
-        {
-            alignment = TextAnchor.MiddleRight
-        };
+        public static GUIStyle HitCountStyle =>
+            _hitCountStyle ??= new GUIStyle(EditorStyles.miniLabel)
+            {
+                alignment = TextAnchor.MiddleRight,
+            };
 
         /// <summary>
         /// Hidden count style (right-aligned, gray mini label).
         /// </summary>
-        public static GUIStyle HiddenCountStyle => _hiddenCountStyle ??= new GUIStyle(EditorStyles.miniLabel)
-        {
-            alignment = TextAnchor.MiddleRight,
-            normal = { textColor = new Color(0.6f, 0.6f, 0.6f) }
-        };
+        public static GUIStyle HiddenCountStyle =>
+            _hiddenCountStyle ??= new GUIStyle(EditorStyles.miniLabel)
+            {
+                alignment = TextAnchor.MiddleRight,
+                normal = { textColor = new Color(0.6f, 0.6f, 0.6f) },
+            };
 
         /// <summary>
         /// Creates a button style with optional bold font.
@@ -76,7 +80,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
             return new GUIStyle(GUI.skin.button)
             {
                 fontStyle = isSelected ? FontStyle.Bold : FontStyle.Normal,
-                fixedHeight = height
+                fixedHeight = height,
             };
         }
     }

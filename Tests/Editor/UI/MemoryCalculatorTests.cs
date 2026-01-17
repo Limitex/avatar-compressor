@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor.editor.ui;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.ui;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -107,7 +107,12 @@ namespace dev.limitex.avatar.compressor.tests
         {
             // 1024x1024 texture, DXT1 (4 bpp), 1 mipmap
             // Expected: (1024 * 1024) * 4 / 8 = 524288 bytes
-            var result = MemoryCalculator.CalculateCompressedMemory(1024, 1024, TextureFormat.DXT1, 1);
+            var result = MemoryCalculator.CalculateCompressedMemory(
+                1024,
+                1024,
+                TextureFormat.DXT1,
+                1
+            );
 
             Assert.That(result, Is.EqualTo(524288));
         }
@@ -120,8 +125,18 @@ namespace dev.limitex.avatar.compressor.tests
             // Mip 1: 128x128 = 8192 bytes
             // Mip 2: 64x64 = 2048 bytes
             // Total should be greater than single mipmap
-            var singleMip = MemoryCalculator.CalculateCompressedMemory(256, 256, TextureFormat.DXT1, 1);
-            var multiMip = MemoryCalculator.CalculateCompressedMemory(256, 256, TextureFormat.DXT1, 3);
+            var singleMip = MemoryCalculator.CalculateCompressedMemory(
+                256,
+                256,
+                TextureFormat.DXT1,
+                1
+            );
+            var multiMip = MemoryCalculator.CalculateCompressedMemory(
+                256,
+                256,
+                TextureFormat.DXT1,
+                3
+            );
 
             Assert.That(multiMip, Is.GreaterThan(singleMip));
         }
@@ -129,7 +144,12 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void CalculateCompressedMemory_ZeroMipmaps_ReturnsZero()
         {
-            var result = MemoryCalculator.CalculateCompressedMemory(1024, 1024, TextureFormat.DXT1, 0);
+            var result = MemoryCalculator.CalculateCompressedMemory(
+                1024,
+                1024,
+                TextureFormat.DXT1,
+                0
+            );
 
             Assert.That(result, Is.EqualTo(0));
         }
@@ -139,7 +159,12 @@ namespace dev.limitex.avatar.compressor.tests
         {
             // 64x64 texture, RGBA32 (32 bpp), 1 mipmap
             // Expected: (64 * 64) * 32 / 8 = 16384 bytes
-            var result = MemoryCalculator.CalculateCompressedMemory(64, 64, TextureFormat.RGBA32, 1);
+            var result = MemoryCalculator.CalculateCompressedMemory(
+                64,
+                64,
+                TextureFormat.RGBA32,
+                1
+            );
 
             Assert.That(result, Is.EqualTo(16384));
         }
@@ -148,8 +173,18 @@ namespace dev.limitex.avatar.compressor.tests
         public void CalculateCompressedMemory_HigherBpp_UsesMoreMemory()
         {
             // Same size, different formats
-            var dxt1Memory = MemoryCalculator.CalculateCompressedMemory(512, 512, TextureFormat.DXT1, 1);
-            var bc7Memory = MemoryCalculator.CalculateCompressedMemory(512, 512, TextureFormat.BC7, 1);
+            var dxt1Memory = MemoryCalculator.CalculateCompressedMemory(
+                512,
+                512,
+                TextureFormat.DXT1,
+                1
+            );
+            var bc7Memory = MemoryCalculator.CalculateCompressedMemory(
+                512,
+                512,
+                TextureFormat.BC7,
+                1
+            );
 
             Assert.That(bc7Memory, Is.GreaterThan(dxt1Memory));
         }
@@ -157,8 +192,18 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void CalculateCompressedMemory_LargerTexture_UsesMoreMemory()
         {
-            var smallMemory = MemoryCalculator.CalculateCompressedMemory(256, 256, TextureFormat.DXT1, 1);
-            var largeMemory = MemoryCalculator.CalculateCompressedMemory(512, 512, TextureFormat.DXT1, 1);
+            var smallMemory = MemoryCalculator.CalculateCompressedMemory(
+                256,
+                256,
+                TextureFormat.DXT1,
+                1
+            );
+            var largeMemory = MemoryCalculator.CalculateCompressedMemory(
+                512,
+                512,
+                TextureFormat.DXT1,
+                1
+            );
 
             Assert.That(largeMemory, Is.EqualTo(smallMemory * 4));
         }
@@ -168,7 +213,12 @@ namespace dev.limitex.avatar.compressor.tests
         {
             // 1024x512 texture, DXT1 (4 bpp), 1 mipmap
             // Expected: (1024 * 512) * 4 / 8 = 262144 bytes
-            var result = MemoryCalculator.CalculateCompressedMemory(1024, 512, TextureFormat.DXT1, 1);
+            var result = MemoryCalculator.CalculateCompressedMemory(
+                1024,
+                512,
+                TextureFormat.DXT1,
+                1
+            );
 
             Assert.That(result, Is.EqualTo(262144));
         }

@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using dev.limitex.avatar.compressor.editor.texture;
+using NUnit.Framework;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -33,9 +33,10 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void FastStrategyWeights_SumToOne()
         {
-            float sum = AnalysisConstants.FastGradientWeight +
-                        AnalysisConstants.FastSpatialFrequencyWeight +
-                        AnalysisConstants.FastColorVarianceWeight;
+            float sum =
+                AnalysisConstants.FastGradientWeight
+                + AnalysisConstants.FastSpatialFrequencyWeight
+                + AnalysisConstants.FastColorVarianceWeight;
 
             Assert.That(sum, Is.EqualTo(1f).Within(0.001f));
         }
@@ -43,11 +44,12 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void HighAccuracyStrategyWeights_SumToOne()
         {
-            float sum = AnalysisConstants.HighAccuracyDctWeight +
-                        AnalysisConstants.HighAccuracyContrastWeight +
-                        AnalysisConstants.HighAccuracyHomogeneityWeight +
-                        AnalysisConstants.HighAccuracyEnergyWeight +
-                        AnalysisConstants.HighAccuracyEntropyWeight;
+            float sum =
+                AnalysisConstants.HighAccuracyDctWeight
+                + AnalysisConstants.HighAccuracyContrastWeight
+                + AnalysisConstants.HighAccuracyHomogeneityWeight
+                + AnalysisConstants.HighAccuracyEnergyWeight
+                + AnalysisConstants.HighAccuracyEntropyWeight;
 
             Assert.That(sum, Is.EqualTo(1f).Within(0.001f));
         }
@@ -55,9 +57,10 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void PerceptualStrategyWeights_SumToOne()
         {
-            float sum = AnalysisConstants.PerceptualVarianceWeight +
-                        AnalysisConstants.PerceptualEdgeWeight +
-                        AnalysisConstants.PerceptualDetailWeight;
+            float sum =
+                AnalysisConstants.PerceptualVarianceWeight
+                + AnalysisConstants.PerceptualEdgeWeight
+                + AnalysisConstants.PerceptualDetailWeight;
 
             Assert.That(sum, Is.EqualTo(1f).Within(0.001f));
         }
@@ -84,32 +87,46 @@ namespace dev.limitex.avatar.compressor.tests
         public void NormalizationBounds_AreOrdered()
         {
             // Gradient bounds
-            Assert.That(AnalysisConstants.GradientPercentileLow,
-                Is.LessThan(AnalysisConstants.GradientPercentileHigh));
+            Assert.That(
+                AnalysisConstants.GradientPercentileLow,
+                Is.LessThan(AnalysisConstants.GradientPercentileHigh)
+            );
 
             // Spatial frequency bounds
-            Assert.That(AnalysisConstants.SpatialFreqPercentileLow,
-                Is.LessThan(AnalysisConstants.SpatialFreqPercentileHigh));
+            Assert.That(
+                AnalysisConstants.SpatialFreqPercentileLow,
+                Is.LessThan(AnalysisConstants.SpatialFreqPercentileHigh)
+            );
 
             // Color variance bounds
-            Assert.That(AnalysisConstants.ColorVariancePercentileLow,
-                Is.LessThan(AnalysisConstants.ColorVariancePercentileHigh));
+            Assert.That(
+                AnalysisConstants.ColorVariancePercentileLow,
+                Is.LessThan(AnalysisConstants.ColorVariancePercentileHigh)
+            );
 
             // Entropy bounds
-            Assert.That(AnalysisConstants.EntropyPercentileLow,
-                Is.LessThan(AnalysisConstants.EntropyPercentileHigh));
+            Assert.That(
+                AnalysisConstants.EntropyPercentileLow,
+                Is.LessThan(AnalysisConstants.EntropyPercentileHigh)
+            );
 
             // Contrast bounds
-            Assert.That(AnalysisConstants.ContrastPercentileLow,
-                Is.LessThan(AnalysisConstants.ContrastPercentileHigh));
+            Assert.That(
+                AnalysisConstants.ContrastPercentileLow,
+                Is.LessThan(AnalysisConstants.ContrastPercentileHigh)
+            );
 
             // Variance bounds
-            Assert.That(AnalysisConstants.VariancePercentileLow,
-                Is.LessThan(AnalysisConstants.VariancePercentileHigh));
+            Assert.That(
+                AnalysisConstants.VariancePercentileLow,
+                Is.LessThan(AnalysisConstants.VariancePercentileHigh)
+            );
 
             // Edge bounds
-            Assert.That(AnalysisConstants.EdgePercentileLow,
-                Is.LessThan(AnalysisConstants.EdgePercentileHigh));
+            Assert.That(
+                AnalysisConstants.EdgePercentileLow,
+                Is.LessThan(AnalysisConstants.EdgePercentileHigh)
+            );
         }
 
         [Test]
@@ -128,9 +145,10 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void CombinedDefaultWeights_SumToOne()
         {
-            float sum = AnalysisConstants.CombinedDefaultFastWeight +
-                        AnalysisConstants.CombinedDefaultHighAccuracyWeight +
-                        AnalysisConstants.CombinedDefaultPerceptualWeight;
+            float sum =
+                AnalysisConstants.CombinedDefaultFastWeight
+                + AnalysisConstants.CombinedDefaultHighAccuracyWeight
+                + AnalysisConstants.CombinedDefaultPerceptualWeight;
 
             Assert.That(sum, Is.EqualTo(1f).Within(0.001f));
         }
@@ -139,8 +157,14 @@ namespace dev.limitex.avatar.compressor.tests
         public void CombinedDefaultWeights_ArePositive()
         {
             Assert.That(AnalysisConstants.CombinedDefaultFastWeight, Is.GreaterThanOrEqualTo(0f));
-            Assert.That(AnalysisConstants.CombinedDefaultHighAccuracyWeight, Is.GreaterThanOrEqualTo(0f));
-            Assert.That(AnalysisConstants.CombinedDefaultPerceptualWeight, Is.GreaterThanOrEqualTo(0f));
+            Assert.That(
+                AnalysisConstants.CombinedDefaultHighAccuracyWeight,
+                Is.GreaterThanOrEqualTo(0f)
+            );
+            Assert.That(
+                AnalysisConstants.CombinedDefaultPerceptualWeight,
+                Is.GreaterThanOrEqualTo(0f)
+            );
         }
 
         private static bool IsPowerOfTwo(int x)

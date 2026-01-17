@@ -1,7 +1,7 @@
-using NUnit.Framework;
-using UnityEngine;
 using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor.texture.ui;
+using NUnit.Framework;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -211,7 +211,9 @@ namespace dev.limitex.avatar.compressor.tests
         {
             int hash1 = PreviewGenerator.ComputeSettingsHash(_config);
 
-            _config.FrozenTextures.Add(new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false));
+            _config.FrozenTextures.Add(
+                new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false)
+            );
             int hash2 = PreviewGenerator.ComputeSettingsHash(_config);
 
             Assert.That(hash1, Is.Not.EqualTo(hash2));
@@ -220,11 +222,15 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void ComputeSettingsHash_DifferentFrozenTextureDivisor_ReturnsDifferentHash()
         {
-            _config.FrozenTextures.Add(new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false));
+            _config.FrozenTextures.Add(
+                new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false)
+            );
             int hash1 = PreviewGenerator.ComputeSettingsHash(_config);
 
             _config.FrozenTextures.Clear();
-            _config.FrozenTextures.Add(new FrozenTextureSettings("test-guid", 4, FrozenTextureFormat.Auto, false));
+            _config.FrozenTextures.Add(
+                new FrozenTextureSettings("test-guid", 4, FrozenTextureFormat.Auto, false)
+            );
             int hash2 = PreviewGenerator.ComputeSettingsHash(_config);
 
             Assert.That(hash1, Is.Not.EqualTo(hash2));

@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using dev.limitex.avatar.compressor.editor.texture;
+using NUnit.Framework;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -85,8 +85,11 @@ namespace dev.limitex.avatar.compressor.tests
             for (float c = 0f; c <= 1f; c += 0.1f)
             {
                 int divisor = _calculator.CalculateRecommendedDivisor(c);
-                Assert.That(IsPowerOfTwo(divisor), Is.True,
-                    $"Divisor {divisor} for complexity {c} is not a power of 2");
+                Assert.That(
+                    IsPowerOfTwo(divisor),
+                    Is.True,
+                    $"Divisor {divisor} for complexity {c} is not a power of 2"
+                );
             }
         }
 

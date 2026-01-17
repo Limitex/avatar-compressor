@@ -8,14 +8,14 @@ namespace dev.limitex.avatar.compressor
     /// </summary>
     public enum FrozenTextureFormat
     {
-        Auto,       // Use automatic format selection
-        DXT1,       // RGB only, 4 bpp (Desktop)
-        DXT5,       // RGBA, 8 bpp (Desktop)
-        BC5,        // Normal maps, 8 bpp (Desktop)
-        BC7,        // Highest quality, 8 bpp (Desktop)
-        ASTC_4x4,   // Mobile highest quality, 8 bpp
-        ASTC_6x6,   // Mobile balanced, 3.56 bpp
-        ASTC_8x8    // Mobile efficient, 2 bpp
+        Auto, // Use automatic format selection
+        DXT1, // RGB only, 4 bpp (Desktop)
+        DXT5, // RGBA, 8 bpp (Desktop)
+        BC5, // Normal maps, 8 bpp (Desktop)
+        BC7, // Highest quality, 8 bpp (Desktop)
+        ASTC_4x4, // Mobile highest quality, 8 bpp
+        ASTC_6x6, // Mobile balanced, 3.56 bpp
+        ASTC_8x8, // Mobile efficient, 2 bpp
     }
 
     /// <summary>
@@ -46,16 +46,19 @@ namespace dev.limitex.avatar.compressor
         /// </summary>
         public bool Skip = false;
 
-        public FrozenTextureSettings()
-        {
-        }
+        public FrozenTextureSettings() { }
 
         public FrozenTextureSettings(string textureGuid)
         {
             TextureGuid = textureGuid;
         }
 
-        public FrozenTextureSettings(string textureGuid, int divisor, FrozenTextureFormat format, bool skip)
+        public FrozenTextureSettings(
+            string textureGuid,
+            int divisor,
+            FrozenTextureFormat format,
+            bool skip
+        )
         {
             TextureGuid = textureGuid;
             Divisor = divisor;

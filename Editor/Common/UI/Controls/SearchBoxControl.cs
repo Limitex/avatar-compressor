@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.ui
 {
@@ -72,7 +72,11 @@ namespace dev.limitex.avatar.compressor.editor.ui
             {
                 var placeholderRect = textFieldRect;
                 placeholderRect.x += 3;
-                EditorGUI.LabelField(placeholderRect, "Search textures...", EditorStylesCache.PlaceholderStyle);
+                EditorGUI.LabelField(
+                    placeholderRect,
+                    "Search textures...",
+                    EditorStylesCache.PlaceholderStyle
+                );
             }
 
             // Clear button
@@ -95,7 +99,11 @@ namespace dev.limitex.avatar.compressor.editor.ui
 
                 // Fuzzy search toggle
                 EditorGUI.BeginChangeCheck();
-                var newUseFuzzySearch = EditorGUILayout.ToggleLeft("Fuzzy", UseFuzzySearch, GUILayout.Width(55));
+                var newUseFuzzySearch = EditorGUILayout.ToggleLeft(
+                    "Fuzzy",
+                    UseFuzzySearch,
+                    GUILayout.Width(55)
+                );
                 if (EditorGUI.EndChangeCheck())
                 {
                     UseFuzzySearch = newUseFuzzySearch;
@@ -124,7 +132,8 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <param name="previewHits">Number of preview texture matches.</param>
         public void DrawHitCount(int totalHits, int frozenHits, int previewHits)
         {
-            if (string.IsNullOrEmpty(SearchText)) return;
+            if (string.IsNullOrEmpty(SearchText))
+                return;
 
             string hitText = totalHits == 1 ? "1 hit" : $"{totalHits} hits";
             if (frozenHits > 0 || previewHits > 0)
@@ -173,7 +182,8 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <returns>True if item matches or no search is active.</returns>
         public bool IsMatch(int index, int itemCount, Func<int, bool> matchFunction)
         {
-            if (!IsSearching) return true;
+            if (!IsSearching)
+                return true;
 
             UpdateCache(itemCount, matchFunction);
             return _cachedMatchIndices?.Contains(index) ?? false;
@@ -187,7 +197,8 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <returns>Number of matching items.</returns>
         public int CountMatches(int itemCount, Func<int, bool> matchFunction)
         {
-            if (!IsSearching) return itemCount;
+            if (!IsSearching)
+                return itemCount;
 
             UpdateCache(itemCount, matchFunction);
             return _cachedMatchIndices?.Count ?? 0;
@@ -200,8 +211,10 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <returns>True if text matches search.</returns>
         public bool MatchesSearch(string text)
         {
-            if (string.IsNullOrEmpty(text)) return false;
-            if (!IsSearching) return true;
+            if (string.IsNullOrEmpty(text))
+                return false;
+            if (!IsSearching)
+                return true;
 
             if (UseFuzzySearch)
             {
@@ -220,7 +233,8 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <returns>True if any text matches search.</returns>
         public bool MatchesSearchAny(params string[] texts)
         {
-            if (!IsSearching) return true;
+            if (!IsSearching)
+                return true;
 
             foreach (var text in texts)
             {
@@ -233,11 +247,13 @@ namespace dev.limitex.avatar.compressor.editor.ui
         private void UpdateCache(int itemCount, Func<int, bool> matchFunction)
         {
             // Check if cache is valid
-            if (_cachedSearchText == SearchText &&
-                _cachedUseFuzzySearch == UseFuzzySearch &&
-                _cachedItemCount == itemCount &&
-                _matchFunction == matchFunction &&
-                _cachedMatchIndices != null)
+            if (
+                _cachedSearchText == SearchText
+                && _cachedUseFuzzySearch == UseFuzzySearch
+                && _cachedItemCount == itemCount
+                && _matchFunction == matchFunction
+                && _cachedMatchIndices != null
+            )
             {
                 return;
             }

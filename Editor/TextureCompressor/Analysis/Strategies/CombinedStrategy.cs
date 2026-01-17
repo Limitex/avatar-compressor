@@ -39,14 +39,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 return new TextureComplexityResult(
                     Mathf.Clamp01((fast + highAcc + perceptual) / 3f),
-                    "Combined analysis with equal weights (all weights were zero)");
+                    "Combined analysis with equal weights (all weights were zero)"
+                );
             }
 
-            float combined = (
-                fast * _fastWeight +
-                highAcc * _highAccuracyWeight +
-                perceptual * _perceptualWeight
-            ) / totalWeight;
+            float combined =
+                (
+                    fast * _fastWeight
+                    + highAcc * _highAccuracyWeight
+                    + perceptual * _perceptualWeight
+                ) / totalWeight;
 
             return new TextureComplexityResult(Mathf.Clamp01(combined));
         }

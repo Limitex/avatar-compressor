@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -100,7 +100,10 @@ namespace dev.limitex.avatar.compressor.tests
         {
             // Default paths are set from ExcludedPathPresets.GetDefaultPaths()
             Assert.That(_config.ExcludedPaths, Is.Not.Null);
-            Assert.That(_config.ExcludedPaths.Count, Is.EqualTo(ExcludedPathPresets.Presets.Length));
+            Assert.That(
+                _config.ExcludedPaths.Count,
+                Is.EqualTo(ExcludedPathPresets.Presets.Length)
+            );
         }
 
         [Test]
@@ -192,8 +195,11 @@ namespace dev.limitex.avatar.compressor.tests
         {
             foreach (var preset in ExcludedPathPresets.Presets)
             {
-                Assert.That(preset.Label, Is.Not.Null.And.Not.Empty,
-                    "All presets should have a label");
+                Assert.That(
+                    preset.Label,
+                    Is.Not.Null.And.Not.Empty,
+                    "All presets should have a label"
+                );
             }
         }
 
@@ -202,8 +208,11 @@ namespace dev.limitex.avatar.compressor.tests
         {
             foreach (var preset in ExcludedPathPresets.Presets)
             {
-                Assert.That(preset.Path, Is.Not.Null.And.Not.Empty,
-                    $"Preset '{preset.Label}' should have a path");
+                Assert.That(
+                    preset.Path,
+                    Is.Not.Null.And.Not.Empty,
+                    $"Preset '{preset.Label}' should have a path"
+                );
             }
         }
 
@@ -212,9 +221,11 @@ namespace dev.limitex.avatar.compressor.tests
         {
             foreach (var preset in ExcludedPathPresets.Presets)
             {
-                Assert.That(preset.Path.StartsWith("Assets/") || preset.Path.StartsWith("Packages/"),
+                Assert.That(
+                    preset.Path.StartsWith("Assets/") || preset.Path.StartsWith("Packages/"),
                     Is.True,
-                    $"Preset path '{preset.Path}' should start with Assets/ or Packages/");
+                    $"Preset path '{preset.Path}' should start with Assets/ or Packages/"
+                );
             }
         }
 

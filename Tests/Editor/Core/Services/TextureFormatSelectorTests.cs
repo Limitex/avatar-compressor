@@ -1,7 +1,7 @@
-using NUnit.Framework;
-using UnityEngine;
 using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor.texture;
+using NUnit.Framework;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -16,9 +16,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: true, complexity: 0.5f, hasAlpha: false);
+            var format = selector.PredictFormat(
+                isNormalMap: true,
+                complexity: 0.5f,
+                hasAlpha: false
+            );
 
             Assert.AreEqual(TextureFormat.BC5, format);
         }
@@ -29,10 +34,15 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             // Normal maps with alpha should use BC7 to preserve the alpha channel
-            var format = selector.PredictFormat(isNormalMap: true, complexity: 0.5f, hasAlpha: true);
+            var format = selector.PredictFormat(
+                isNormalMap: true,
+                complexity: 0.5f,
+                hasAlpha: true
+            );
 
             Assert.AreEqual(TextureFormat.BC7, format);
         }
@@ -43,9 +53,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.8f, hasAlpha: false);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.8f,
+                hasAlpha: false
+            );
 
             Assert.AreEqual(TextureFormat.BC7, format);
         }
@@ -56,9 +71,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.3f, hasAlpha: true);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.3f,
+                hasAlpha: true
+            );
 
             Assert.AreEqual(TextureFormat.DXT5, format);
         }
@@ -69,9 +89,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.3f, hasAlpha: false);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.3f,
+                hasAlpha: false
+            );
 
             Assert.AreEqual(TextureFormat.DXT1, format);
         }
@@ -82,9 +107,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: false,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.9f, hasAlpha: false);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.9f,
+                hasAlpha: false
+            );
 
             Assert.AreEqual(TextureFormat.DXT1, format);
         }
@@ -95,9 +125,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.9f, hasAlpha: true);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.9f,
+                hasAlpha: true
+            );
 
             Assert.AreEqual(TextureFormat.BC7, format);
         }
@@ -112,9 +147,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Mobile,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: true, complexity: 0.5f, hasAlpha: false);
+            var format = selector.PredictFormat(
+                isNormalMap: true,
+                complexity: 0.5f,
+                hasAlpha: false
+            );
 
             Assert.AreEqual(TextureFormat.ASTC_4x4, format);
         }
@@ -125,9 +165,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Mobile,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.8f, hasAlpha: true);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.8f,
+                hasAlpha: true
+            );
 
             Assert.AreEqual(TextureFormat.ASTC_4x4, format);
         }
@@ -138,9 +183,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Mobile,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.3f, hasAlpha: true);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.3f,
+                hasAlpha: true
+            );
 
             Assert.AreEqual(TextureFormat.ASTC_6x6, format);
         }
@@ -151,9 +201,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Mobile,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.8f, hasAlpha: false);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.8f,
+                hasAlpha: false
+            );
 
             Assert.AreEqual(TextureFormat.ASTC_4x4, format);
         }
@@ -164,11 +219,16 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Mobile,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             // Medium complexity: >= threshold * MediumComplexityRatio && < threshold
             // 0.7 * 0.5 = 0.35, so 0.5 is medium
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.5f, hasAlpha: false);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.5f,
+                hasAlpha: false
+            );
 
             Assert.AreEqual(TextureFormat.ASTC_6x6, format);
         }
@@ -179,10 +239,15 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Mobile,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             // Low complexity: < threshold * MediumComplexityRatio = 0.35
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.2f, hasAlpha: false);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.2f,
+                hasAlpha: false
+            );
 
             Assert.AreEqual(TextureFormat.ASTC_8x8, format);
         }
@@ -193,13 +258,21 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Mobile,
                 useHighQualityFormatForHighComplexity: false,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             // With high quality disabled, even high complexity should use larger block size
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.9f, hasAlpha: false);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.9f,
+                hasAlpha: false
+            );
 
             // Should still use complexity-based selection but without the high quality ASTC_4x4
-            Assert.That(format, Is.EqualTo(TextureFormat.ASTC_6x6).Or.EqualTo(TextureFormat.ASTC_8x8));
+            Assert.That(
+                format,
+                Is.EqualTo(TextureFormat.ASTC_6x6).Or.EqualTo(TextureFormat.ASTC_8x8)
+            );
         }
 
         #endregion
@@ -212,9 +285,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.7f, hasAlpha: false);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.7f,
+                hasAlpha: false
+            );
 
             Assert.AreEqual(TextureFormat.BC7, format);
         }
@@ -225,9 +303,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.69f, hasAlpha: false);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.69f,
+                hasAlpha: false
+            );
 
             Assert.AreEqual(TextureFormat.DXT1, format);
         }
@@ -238,9 +321,14 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.5f);
+                highQualityComplexityThreshold: 0.5f
+            );
 
-            var format = selector.PredictFormat(isNormalMap: false, complexity: 0.5f, hasAlpha: false);
+            var format = selector.PredictFormat(
+                isNormalMap: false,
+                complexity: 0.5f,
+                hasAlpha: false
+            );
 
             Assert.AreEqual(TextureFormat.BC7, format);
         }
@@ -409,7 +497,8 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Mobile,
                 useHighQualityFormatForHighComplexity: false,
-                highQualityComplexityThreshold: 0.5f);
+                highQualityComplexityThreshold: 0.5f
+            );
 
             Assert.IsNotNull(selector);
         }
@@ -449,15 +538,25 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateOpaqueTexture(64, 64);
             var originalFormat = texture.format;
 
-            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: false, complexity: 0.3f);
+            bool result = selector.CompressTexture(
+                texture,
+                originalFormat,
+                isNormalMap: false,
+                complexity: 0.3f
+            );
 
             Assert.IsTrue(result, "Compression should return true when format changes");
-            Assert.AreEqual(TextureFormat.DXT1, texture.format, "Opaque low complexity texture should compress to DXT1");
+            Assert.AreEqual(
+                TextureFormat.DXT1,
+                texture.format,
+                "Opaque low complexity texture should compress to DXT1"
+            );
 
             Object.DestroyImmediate(texture);
         }
@@ -468,15 +567,25 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateTextureWithAlpha(64, 64);
             var originalFormat = texture.format;
 
-            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: false, complexity: 0.3f);
+            bool result = selector.CompressTexture(
+                texture,
+                originalFormat,
+                isNormalMap: false,
+                complexity: 0.3f
+            );
 
             Assert.IsTrue(result, "Compression should return true when format changes");
-            Assert.AreEqual(TextureFormat.DXT5, texture.format, "Texture with alpha should compress to DXT5");
+            Assert.AreEqual(
+                TextureFormat.DXT5,
+                texture.format,
+                "Texture with alpha should compress to DXT5"
+            );
 
             Object.DestroyImmediate(texture);
         }
@@ -487,15 +596,25 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateOpaqueTexture(64, 64);
             var originalFormat = texture.format;
 
-            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: false, complexity: 0.8f);
+            bool result = selector.CompressTexture(
+                texture,
+                originalFormat,
+                isNormalMap: false,
+                complexity: 0.8f
+            );
 
             Assert.IsTrue(result, "Compression should return true when format changes");
-            Assert.AreEqual(TextureFormat.BC7, texture.format, "High complexity texture should compress to BC7");
+            Assert.AreEqual(
+                TextureFormat.BC7,
+                texture.format,
+                "High complexity texture should compress to BC7"
+            );
 
             Object.DestroyImmediate(texture);
         }
@@ -506,12 +625,18 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateOpaqueTexture(64, 64);
             var originalFormat = texture.format;
 
-            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: true, complexity: 0.5f);
+            bool result = selector.CompressTexture(
+                texture,
+                originalFormat,
+                isNormalMap: true,
+                complexity: 0.5f
+            );
 
             Assert.IsTrue(result, "Compression should return true when format changes");
             Assert.AreEqual(TextureFormat.BC5, texture.format, "Normal map should compress to BC5");
@@ -525,15 +650,25 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateTextureWithAlpha(64, 64);
             var originalFormat = texture.format;
 
-            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: true, complexity: 0.5f);
+            bool result = selector.CompressTexture(
+                texture,
+                originalFormat,
+                isNormalMap: true,
+                complexity: 0.5f
+            );
 
             Assert.IsTrue(result, "Compression should return true when format changes");
-            Assert.AreEqual(TextureFormat.BC7, texture.format, "Normal map with alpha should compress to BC7 to preserve alpha");
+            Assert.AreEqual(
+                TextureFormat.BC7,
+                texture.format,
+                "Normal map with alpha should compress to BC7 to preserve alpha"
+            );
 
             Object.DestroyImmediate(texture);
         }
@@ -544,17 +679,31 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             // First compress to get a DXT1 texture
             var texture = CreateOpaqueTexture(64, 64);
-            selector.CompressTexture(texture, TextureFormat.RGBA32, isNormalMap: false, complexity: 0.3f);
+            selector.CompressTexture(
+                texture,
+                TextureFormat.RGBA32,
+                isNormalMap: false,
+                complexity: 0.3f
+            );
             Assert.AreEqual(TextureFormat.DXT1, texture.format);
 
             // Try to compress again - should return false since already in target format
-            bool result = selector.CompressTexture(texture, TextureFormat.RGBA32, isNormalMap: false, complexity: 0.3f);
+            bool result = selector.CompressTexture(
+                texture,
+                TextureFormat.RGBA32,
+                isNormalMap: false,
+                complexity: 0.3f
+            );
 
-            Assert.IsFalse(result, "Compression should return false when texture is already in target format");
+            Assert.IsFalse(
+                result,
+                "Compression should return false when texture is already in target format"
+            );
 
             Object.DestroyImmediate(texture);
         }
@@ -565,18 +714,32 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             // Create and compress to BC7
             var texture = CreateOpaqueTexture(64, 64);
-            selector.CompressTexture(texture, TextureFormat.RGBA32, isNormalMap: false, complexity: 0.9f);
+            selector.CompressTexture(
+                texture,
+                TextureFormat.RGBA32,
+                isNormalMap: false,
+                complexity: 0.9f
+            );
             Assert.AreEqual(TextureFormat.BC7, texture.format);
 
             // Now call CompressTexture with sourceFormat as BC7 (already compressed)
             // It should try to preserve BC7, and since texture is already BC7, return false
-            bool result = selector.CompressTexture(texture, TextureFormat.BC7, isNormalMap: false, complexity: 0.3f);
+            bool result = selector.CompressTexture(
+                texture,
+                TextureFormat.BC7,
+                isNormalMap: false,
+                complexity: 0.3f
+            );
 
-            Assert.IsFalse(result, "Should return false when source is compressed and texture already matches");
+            Assert.IsFalse(
+                result,
+                "Should return false when source is compressed and texture already matches"
+            );
             Assert.AreEqual(TextureFormat.BC7, texture.format, "Format should remain BC7");
 
             Object.DestroyImmediate(texture);
@@ -588,15 +751,25 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Mobile,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateOpaqueTexture(64, 64);
             var originalFormat = texture.format;
 
-            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: false, complexity: 0.2f);
+            bool result = selector.CompressTexture(
+                texture,
+                originalFormat,
+                isNormalMap: false,
+                complexity: 0.2f
+            );
 
             Assert.IsTrue(result, "Compression should return true when format changes");
-            Assert.AreEqual(TextureFormat.ASTC_8x8, texture.format, "Low complexity mobile texture should compress to ASTC_8x8");
+            Assert.AreEqual(
+                TextureFormat.ASTC_8x8,
+                texture.format,
+                "Low complexity mobile texture should compress to ASTC_8x8"
+            );
 
             Object.DestroyImmediate(texture);
         }
@@ -607,15 +780,25 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Mobile,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateOpaqueTexture(64, 64);
             var originalFormat = texture.format;
 
-            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: false, complexity: 0.8f);
+            bool result = selector.CompressTexture(
+                texture,
+                originalFormat,
+                isNormalMap: false,
+                complexity: 0.8f
+            );
 
             Assert.IsTrue(result, "Compression should return true when format changes");
-            Assert.AreEqual(TextureFormat.ASTC_4x4, texture.format, "High complexity mobile texture should compress to ASTC_4x4");
+            Assert.AreEqual(
+                TextureFormat.ASTC_4x4,
+                texture.format,
+                "High complexity mobile texture should compress to ASTC_4x4"
+            );
 
             Object.DestroyImmediate(texture);
         }
@@ -626,15 +809,25 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Mobile,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateOpaqueTexture(64, 64);
             var originalFormat = texture.format;
 
-            bool result = selector.CompressTexture(texture, originalFormat, isNormalMap: true, complexity: 0.5f);
+            bool result = selector.CompressTexture(
+                texture,
+                originalFormat,
+                isNormalMap: true,
+                complexity: 0.5f
+            );
 
             Assert.IsTrue(result, "Compression should return true when format changes");
-            Assert.AreEqual(TextureFormat.ASTC_4x4, texture.format, "Mobile normal map should compress to ASTC_4x4");
+            Assert.AreEqual(
+                TextureFormat.ASTC_4x4,
+                texture.format,
+                "Mobile normal map should compress to ASTC_4x4"
+            );
 
             Object.DestroyImmediate(texture);
         }
@@ -718,15 +911,20 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateOpaqueTexture(64, 64);
             var originalFormat = texture.format;
 
             // Low complexity would normally result in DXT1, but we override to BC7
             bool result = selector.CompressTexture(
-                texture, originalFormat, isNormalMap: false, complexity: 0.3f,
-                formatOverride: FrozenTextureFormat.BC7);
+                texture,
+                originalFormat,
+                isNormalMap: false,
+                complexity: 0.3f,
+                formatOverride: FrozenTextureFormat.BC7
+            );
 
             Assert.IsTrue(result);
             Assert.AreEqual(TextureFormat.BC7, texture.format);
@@ -740,15 +938,20 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateOpaqueTexture(64, 64);
             var originalFormat = texture.format;
 
             // Opaque texture would normally use DXT1, but we override to DXT5
             bool result = selector.CompressTexture(
-                texture, originalFormat, isNormalMap: false, complexity: 0.3f,
-                formatOverride: FrozenTextureFormat.DXT5);
+                texture,
+                originalFormat,
+                isNormalMap: false,
+                complexity: 0.3f,
+                formatOverride: FrozenTextureFormat.DXT5
+            );
 
             Assert.IsTrue(result);
             Assert.AreEqual(TextureFormat.DXT5, texture.format);
@@ -762,15 +965,20 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateOpaqueTexture(64, 64);
             var originalFormat = texture.format;
 
             // Auto should fall through to normal format selection
             bool result = selector.CompressTexture(
-                texture, originalFormat, isNormalMap: false, complexity: 0.3f,
-                formatOverride: FrozenTextureFormat.Auto);
+                texture,
+                originalFormat,
+                isNormalMap: false,
+                complexity: 0.3f,
+                formatOverride: FrozenTextureFormat.Auto
+            );
 
             Assert.IsTrue(result);
             Assert.AreEqual(TextureFormat.DXT1, texture.format);
@@ -784,14 +992,19 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateOpaqueTexture(64, 64);
             var originalFormat = texture.format;
 
             bool result = selector.CompressTexture(
-                texture, originalFormat, isNormalMap: false, complexity: 0.3f,
-                formatOverride: null);
+                texture,
+                originalFormat,
+                isNormalMap: false,
+                complexity: 0.3f,
+                formatOverride: null
+            );
 
             Assert.IsTrue(result);
             Assert.AreEqual(TextureFormat.DXT1, texture.format);
@@ -805,15 +1018,20 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateOpaqueTexture(64, 64);
             var originalFormat = texture.format;
 
             // Normal map would normally use BC5, but we override to DXT1
             bool result = selector.CompressTexture(
-                texture, originalFormat, isNormalMap: true, complexity: 0.5f,
-                formatOverride: FrozenTextureFormat.DXT1);
+                texture,
+                originalFormat,
+                isNormalMap: true,
+                complexity: 0.5f,
+                formatOverride: FrozenTextureFormat.DXT1
+            );
 
             Assert.IsTrue(result);
             Assert.AreEqual(TextureFormat.DXT1, texture.format);
@@ -827,15 +1045,20 @@ namespace dev.limitex.avatar.compressor.tests
             var selector = new TextureFormatSelector(
                 CompressionPlatform.Desktop,
                 useHighQualityFormatForHighComplexity: true,
-                highQualityComplexityThreshold: 0.7f);
+                highQualityComplexityThreshold: 0.7f
+            );
 
             var texture = CreateOpaqueTexture(64, 64);
             var originalFormat = texture.format;
 
             // Force ASTC format even on Desktop platform
             bool result = selector.CompressTexture(
-                texture, originalFormat, isNormalMap: false, complexity: 0.5f,
-                formatOverride: FrozenTextureFormat.ASTC_4x4);
+                texture,
+                originalFormat,
+                isNormalMap: false,
+                complexity: 0.5f,
+                formatOverride: FrozenTextureFormat.ASTC_4x4
+            );
 
             Assert.IsTrue(result);
             Assert.AreEqual(TextureFormat.ASTC_4x4, texture.format);

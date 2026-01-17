@@ -1,5 +1,5 @@
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.ui
 {
@@ -20,10 +20,23 @@ namespace dev.limitex.avatar.compressor.editor.ui
             GUI.enabled = true;
 
             var preview = texture != null ? AssetPreview.GetAssetPreview(texture) : null;
-            var thumbnailContent = new GUIContent(preview ?? Texture2D.whiteTexture, "Click to highlight in Project");
-            var thumbnailStyle = new GUIStyle(GUI.skin.label) { padding = new RectOffset(0, 0, 0, 0) };
+            var thumbnailContent = new GUIContent(
+                preview ?? Texture2D.whiteTexture,
+                "Click to highlight in Project"
+            );
+            var thumbnailStyle = new GUIStyle(GUI.skin.label)
+            {
+                padding = new RectOffset(0, 0, 0, 0),
+            };
 
-            if (GUILayout.Button(thumbnailContent, thumbnailStyle, GUILayout.Width(size), GUILayout.Height(size)))
+            if (
+                GUILayout.Button(
+                    thumbnailContent,
+                    thumbnailStyle,
+                    GUILayout.Width(size),
+                    GUILayout.Height(size)
+                )
+            )
             {
                 if (texture != null)
                 {

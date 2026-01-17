@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using dev.limitex.avatar.compressor;
+using NUnit.Framework;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -68,8 +68,16 @@ namespace dev.limitex.avatar.compressor.tests
         {
             foreach (var preset in ExcludedPathPresets.Presets)
             {
-                Assert.That(preset.Label, Is.Not.Null.And.Not.Empty, "Preset label should not be null or empty");
-                Assert.That(preset.Path, Is.Not.Null.And.Not.Empty, "Preset path should not be null or empty");
+                Assert.That(
+                    preset.Label,
+                    Is.Not.Null.And.Not.Empty,
+                    "Preset label should not be null or empty"
+                );
+                Assert.That(
+                    preset.Path,
+                    Is.Not.Null.And.Not.Empty,
+                    "Preset path should not be null or empty"
+                );
             }
         }
 
@@ -78,7 +86,11 @@ namespace dev.limitex.avatar.compressor.tests
         {
             foreach (var preset in ExcludedPathPresets.Presets)
             {
-                Assert.That(preset.Path, Does.EndWith("/"), $"Path '{preset.Path}' should end with '/'");
+                Assert.That(
+                    preset.Path,
+                    Does.EndWith("/"),
+                    $"Path '{preset.Path}' should end with '/'"
+                );
             }
         }
 

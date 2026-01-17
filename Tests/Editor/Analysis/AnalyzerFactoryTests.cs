@@ -1,7 +1,7 @@
 using System;
-using NUnit.Framework;
 using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor.texture;
+using NUnit.Framework;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -75,7 +75,8 @@ namespace dev.limitex.avatar.compressor.tests
                 AnalysisStrategyType.Combined,
                 fastWeight: 0.5f,
                 highAccuracyWeight: 0.3f,
-                perceptualWeight: 0.2f);
+                perceptualWeight: 0.2f
+            );
 
             Assert.IsNotNull(analyzer);
             Assert.IsInstanceOf<CombinedStrategy>(analyzer);
@@ -88,7 +89,8 @@ namespace dev.limitex.avatar.compressor.tests
                 AnalysisStrategyType.Combined,
                 fastWeight: 0f,
                 highAccuracyWeight: 1f,
-                perceptualWeight: 0f);
+                perceptualWeight: 0f
+            );
 
             Assert.IsNotNull(analyzer);
             Assert.IsInstanceOf<CombinedStrategy>(analyzer);
@@ -101,7 +103,8 @@ namespace dev.limitex.avatar.compressor.tests
                 AnalysisStrategyType.Combined,
                 fastWeight: 0f,
                 highAccuracyWeight: 0f,
-                perceptualWeight: 0f);
+                perceptualWeight: 0f
+            );
 
             Assert.IsNotNull(analyzer);
             Assert.IsInstanceOf<CombinedStrategy>(analyzer);
@@ -118,7 +121,8 @@ namespace dev.limitex.avatar.compressor.tests
                 AnalysisStrategyType.Fast,
                 fastWeight: 0.9f,
                 highAccuracyWeight: 0.05f,
-                perceptualWeight: 0.05f);
+                perceptualWeight: 0.05f
+            );
 
             Assert.IsNotNull(analyzer);
             Assert.IsInstanceOf<FastAnalysisStrategy>(analyzer);
@@ -131,7 +135,8 @@ namespace dev.limitex.avatar.compressor.tests
                 AnalysisStrategyType.HighAccuracy,
                 fastWeight: 0.1f,
                 highAccuracyWeight: 0.8f,
-                perceptualWeight: 0.1f);
+                perceptualWeight: 0.1f
+            );
 
             Assert.IsNotNull(analyzer);
             Assert.IsInstanceOf<HighAccuracyStrategy>(analyzer);
@@ -144,7 +149,8 @@ namespace dev.limitex.avatar.compressor.tests
                 AnalysisStrategyType.Perceptual,
                 fastWeight: 0.2f,
                 highAccuracyWeight: 0.2f,
-                perceptualWeight: 0.6f);
+                perceptualWeight: 0.6f
+            );
 
             Assert.IsNotNull(analyzer);
             Assert.IsInstanceOf<PerceptualStrategy>(analyzer);
@@ -216,7 +222,7 @@ namespace dev.limitex.avatar.compressor.tests
                 AnalyzerFactory.Create(AnalysisStrategyType.HighAccuracy),
                 AnalyzerFactory.Create(AnalysisStrategyType.Perceptual),
                 AnalyzerFactory.Create(AnalysisStrategyType.Combined),
-                AnalyzerFactory.CreateNormalMapAnalyzer()
+                AnalyzerFactory.CreateNormalMapAnalyzer(),
             };
 
             foreach (var strategy in strategies)

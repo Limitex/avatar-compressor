@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor.editor;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor;
 
 namespace dev.limitex.avatar.compressor.tests
 {

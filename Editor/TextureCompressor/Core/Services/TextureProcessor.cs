@@ -31,9 +31,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public Texture2D Resize(Texture2D source, TextureAnalysisResult analysis)
         {
             Texture2D result;
-            if (analysis.RecommendedDivisor <= 1 &&
-                source.width <= _maxResolution &&
-                source.height <= _maxResolution)
+            if (
+                analysis.RecommendedDivisor <= 1
+                && source.width <= _maxResolution
+                && source.height <= _maxResolution
+            )
             {
                 // Even when copying, ensure dimensions are multiples of 4 for DXT/BC compression
                 int width = EnsureMultipleOf4(source.width);
@@ -50,7 +52,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
             else
             {
-                result = ResizeTo(source, analysis.RecommendedResolution.x, analysis.RecommendedResolution.y);
+                result = ResizeTo(
+                    source,
+                    analysis.RecommendedResolution.x,
+                    analysis.RecommendedResolution.y
+                );
             }
 
             return result;
@@ -105,7 +111,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             lock (RenderTextureLock)
             {
-                RenderTexture rt = RenderTexture.GetTemporary(newWidth, newHeight, 0, RenderTextureFormat.ARGB32);
+                RenderTexture rt = RenderTexture.GetTemporary(
+                    newWidth,
+                    newHeight,
+                    0,
+                    RenderTextureFormat.ARGB32
+                );
                 rt.filterMode = FilterMode.Bilinear;
 
                 RenderTexture previous = RenderTexture.active;
@@ -113,7 +124,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 Graphics.Blit(source, rt);
 
                 // Preserve mipmap setting from source texture
-                Texture2D result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, source.mipmapCount > 1);
+                Texture2D result = new Texture2D(
+                    newWidth,
+                    newHeight,
+                    TextureFormat.RGBA32,
+                    source.mipmapCount > 1
+                );
                 result.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
                 result.Apply(source.mipmapCount > 1);
 
@@ -159,7 +175,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
                 catch (System.Exception e)
                 {
-                    Debug.LogWarning($"[TextureCompressor] Failed to read pixels from readable texture: {e.Message}");
+                    Debug.LogWarning(
+                        $"[TextureCompressor] Failed to read pixels from readable texture: {e.Message}"
+                    );
                     return new Color[0];
                 }
             }
@@ -174,11 +192,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 try
                 {
                     rt = RenderTexture.GetTemporary(
-                        texture.width, texture.height, 0, RenderTextureFormat.ARGB32);
+                        texture.width,
+                        texture.height,
+                        0,
+                        RenderTextureFormat.ARGB32
+                    );
 
                     if (rt == null)
                     {
-                        Debug.LogWarning("[TextureCompressor] Failed to create temporary RenderTexture");
+                        Debug.LogWarning(
+                            "[TextureCompressor] Failed to create temporary RenderTexture"
+                        );
                         return new Color[0];
                     }
 
@@ -186,7 +210,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     RenderTexture.active = rt;
 
                     // Preserve mipmap setting from source texture
-                    readable = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, texture.mipmapCount > 1);
+                    readable = new Texture2D(
+                        texture.width,
+                        texture.height,
+                        TextureFormat.RGBA32,
+                        texture.mipmapCount > 1
+                    );
                     readable.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
                     readable.Apply(texture.mipmapCount > 1);
 
@@ -194,7 +223,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
                 catch (System.Exception e)
                 {
-                    Debug.LogWarning($"[TextureCompressor] Failed to read pixels from texture '{texture.name}': {e.Message}");
+                    Debug.LogWarning(
+                        $"[TextureCompressor] Failed to read pixels from texture '{texture.name}': {e.Message}"
+                    );
                     return new Color[0];
                 }
                 finally

@@ -11,31 +11,41 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public TextureComplexityResult Analyze(ProcessedPixelData data)
         {
             float gradient = ImageMath.CalculateSobelGradient(
-                data.Grayscale, data.Width, data.Height, data.OpaqueCount);
+                data.Grayscale,
+                data.Width,
+                data.Height,
+                data.OpaqueCount
+            );
 
             float spatialFreq = ImageMath.CalculateSpatialFrequency(
-                data.Grayscale, data.Width, data.Height, data.OpaqueCount);
+                data.Grayscale,
+                data.Width,
+                data.Height,
+                data.OpaqueCount
+            );
 
-            float colorVar = ImageMath.CalculateColorVariance(
-                data.OpaquePixels, data.OpaqueCount);
+            float colorVar = ImageMath.CalculateColorVariance(data.OpaquePixels, data.OpaqueCount);
 
             float normalizedGradient = MathUtils.NormalizeWithPercentile(
                 gradient,
                 AnalysisConstants.GradientPercentileLow,
-                AnalysisConstants.GradientPercentileHigh);
+                AnalysisConstants.GradientPercentileHigh
+            );
             float normalizedSpatialFreq = MathUtils.NormalizeWithPercentile(
                 spatialFreq,
                 AnalysisConstants.SpatialFreqPercentileLow,
-                AnalysisConstants.SpatialFreqPercentileHigh);
+                AnalysisConstants.SpatialFreqPercentileHigh
+            );
             float normalizedColorVar = MathUtils.NormalizeWithPercentile(
                 colorVar,
                 AnalysisConstants.ColorVariancePercentileLow,
-                AnalysisConstants.ColorVariancePercentileHigh);
+                AnalysisConstants.ColorVariancePercentileHigh
+            );
 
             float score = Mathf.Clamp01(
-                AnalysisConstants.FastGradientWeight * normalizedGradient +
-                AnalysisConstants.FastSpatialFrequencyWeight * normalizedSpatialFreq +
-                AnalysisConstants.FastColorVarianceWeight * normalizedColorVar
+                AnalysisConstants.FastGradientWeight * normalizedGradient
+                    + AnalysisConstants.FastSpatialFrequencyWeight * normalizedSpatialFreq
+                    + AnalysisConstants.FastColorVarianceWeight * normalizedColorVar
             );
 
             return new TextureComplexityResult(score);

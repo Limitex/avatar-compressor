@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using NUnit.Framework;
-using UnityEngine;
 using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor.texture;
+using NUnit.Framework;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -26,9 +26,12 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             Assert.IsNotNull(analyzer);
         }
@@ -38,9 +41,12 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.HighAccuracy,
-                0f, 1f, 0f,
+                0f,
+                1f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             Assert.IsNotNull(analyzer);
         }
@@ -50,9 +56,12 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Perceptual,
-                0f, 0f, 1f,
+                0f,
+                0f,
+                1f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             Assert.IsNotNull(analyzer);
         }
@@ -62,9 +71,12 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Combined,
-                1f, 1f, 1f,
+                1f,
+                1f,
+                1f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             Assert.IsNotNull(analyzer);
         }
@@ -74,9 +86,12 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Combined,
-                0f, 0f, 0f,
+                0f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             Assert.IsNotNull(analyzer);
         }
@@ -90,9 +105,12 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var textures = new Dictionary<Texture2D, TextureInfo>();
             var result = analyzer.AnalyzeBatch(textures);
@@ -106,14 +124,20 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var texture = CreateTestTexture(64, 64);
             var textures = new Dictionary<Texture2D, TextureInfo>
             {
-                { texture, new TextureInfo { IsNormalMap = false, IsEmission = false } }
+                {
+                    texture,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
             };
 
             var result = analyzer.AnalyzeBatch(textures);
@@ -129,9 +153,12 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var texture1 = CreateTestTexture(64, 64);
             var texture2 = CreateTestTexture(128, 128);
@@ -139,9 +166,18 @@ namespace dev.limitex.avatar.compressor.tests
 
             var textures = new Dictionary<Texture2D, TextureInfo>
             {
-                { texture1, new TextureInfo { IsNormalMap = false, IsEmission = false } },
-                { texture2, new TextureInfo { IsNormalMap = false, IsEmission = false } },
-                { texture3, new TextureInfo { IsNormalMap = false, IsEmission = false } }
+                {
+                    texture1,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
+                {
+                    texture2,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
+                {
+                    texture3,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
             };
 
             var result = analyzer.AnalyzeBatch(textures);
@@ -161,14 +197,20 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var texture = CreateFlatNormalMapTexture(64, 64);
             var textures = new Dictionary<Texture2D, TextureInfo>
             {
-                { texture, new TextureInfo { IsNormalMap = true, IsEmission = false } }
+                {
+                    texture,
+                    new TextureInfo { IsNormalMap = true, IsEmission = false }
+                },
             };
 
             var result = analyzer.AnalyzeBatch(textures);
@@ -186,28 +228,39 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var textureNormal = CreateTestTexture(64, 64);
             var textureEmission = CreateTestTexture(64, 64);
 
             var texturesNormal = new Dictionary<Texture2D, TextureInfo>
             {
-                { textureNormal, new TextureInfo { IsNormalMap = false, IsEmission = false } }
+                {
+                    textureNormal,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
             };
             var texturesEmission = new Dictionary<Texture2D, TextureInfo>
             {
-                { textureEmission, new TextureInfo { IsNormalMap = false, IsEmission = true } }
+                {
+                    textureEmission,
+                    new TextureInfo { IsNormalMap = false, IsEmission = true }
+                },
             };
 
             var resultNormal = analyzer.AnalyzeBatch(texturesNormal);
             var resultEmission = analyzer.AnalyzeBatch(texturesEmission);
 
             // Emission should have lower or equal complexity due to 10% boost
-            Assert.That(resultEmission[textureEmission].NormalizedComplexity,
-                Is.LessThanOrEqualTo(resultNormal[textureNormal].NormalizedComplexity));
+            Assert.That(
+                resultEmission[textureEmission].NormalizedComplexity,
+                Is.LessThanOrEqualTo(resultNormal[textureNormal].NormalizedComplexity)
+            );
 
             Object.DestroyImmediate(textureNormal);
             Object.DestroyImmediate(textureEmission);
@@ -218,9 +271,12 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var mainTex = CreateTestTexture(64, 64);
             var normalTex = CreateFlatNormalMapTexture(64, 64);
@@ -228,9 +284,18 @@ namespace dev.limitex.avatar.compressor.tests
 
             var textures = new Dictionary<Texture2D, TextureInfo>
             {
-                { mainTex, new TextureInfo { IsNormalMap = false, IsEmission = false } },
-                { normalTex, new TextureInfo { IsNormalMap = true, IsEmission = false } },
-                { emissionTex, new TextureInfo { IsNormalMap = false, IsEmission = true } }
+                {
+                    mainTex,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
+                {
+                    normalTex,
+                    new TextureInfo { IsNormalMap = true, IsEmission = false }
+                },
+                {
+                    emissionTex,
+                    new TextureInfo { IsNormalMap = false, IsEmission = true }
+                },
             };
 
             var result = analyzer.AnalyzeBatch(textures);
@@ -251,14 +316,20 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var texture = CreateNoiseTexture(64, 64, 42);
             var textures = new Dictionary<Texture2D, TextureInfo>
             {
-                { texture, new TextureInfo { IsNormalMap = false, IsEmission = false } }
+                {
+                    texture,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
             };
 
             var result = analyzer.AnalyzeBatch(textures);
@@ -273,14 +344,20 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var texture = CreateNoiseTexture(64, 64, 42);
             var textures = new Dictionary<Texture2D, TextureInfo>
             {
-                { texture, new TextureInfo { IsNormalMap = false, IsEmission = false } }
+                {
+                    texture,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
             };
 
             var result = analyzer.AnalyzeBatch(textures);
@@ -296,14 +373,20 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var texture = CreateNoiseTexture(128, 128, 42);
             var textures = new Dictionary<Texture2D, TextureInfo>
             {
-                { texture, new TextureInfo { IsNormalMap = false, IsEmission = false } }
+                {
+                    texture,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
             };
 
             var result = analyzer.AnalyzeBatch(textures);
@@ -321,14 +404,20 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var texture = CreateUniformTexture(64, 64, Color.gray);
             var textures = new Dictionary<Texture2D, TextureInfo>
             {
-                { texture, new TextureInfo { IsNormalMap = false, IsEmission = false } }
+                {
+                    texture,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
             };
 
             var result = analyzer.AnalyzeBatch(textures);
@@ -343,14 +432,20 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzer = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var texture = CreateNoiseTexture(64, 64, 42);
             var textures = new Dictionary<Texture2D, TextureInfo>
             {
-                { texture, new TextureInfo { IsNormalMap = false, IsEmission = false } }
+                {
+                    texture,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
             };
 
             var result = analyzer.AnalyzeBatch(textures);
@@ -369,20 +464,29 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var analyzerFast = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
-                1f, 0f, 0f,
+                1f,
+                0f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var analyzerHighAccuracy = new TextureAnalyzer(
                 AnalysisStrategyType.HighAccuracy,
-                0f, 1f, 0f,
+                0f,
+                1f,
+                0f,
                 _processor,
-                _complexityCalc);
+                _complexityCalc
+            );
 
             var texture = CreateNoiseTexture(64, 64, 42);
             var textures = new Dictionary<Texture2D, TextureInfo>
             {
-                { texture, new TextureInfo { IsNormalMap = false, IsEmission = false } }
+                {
+                    texture,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
             };
 
             var resultFast = analyzerFast.AnalyzeBatch(textures);

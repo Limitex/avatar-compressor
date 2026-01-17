@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -134,11 +134,15 @@ namespace dev.limitex.avatar.compressor.tests
         {
             foreach (CompressorPreset preset in System.Enum.GetValues(typeof(CompressorPreset)))
             {
-                if (preset == CompressorPreset.Custom) continue;
+                if (preset == CompressorPreset.Custom)
+                    continue;
 
                 _config.ApplyPreset(preset);
-                Assert.That(_config.MinDivisor, Is.GreaterThanOrEqualTo(1),
-                    $"Preset {preset} should have MinDivisor >= 1");
+                Assert.That(
+                    _config.MinDivisor,
+                    Is.GreaterThanOrEqualTo(1),
+                    $"Preset {preset} should have MinDivisor >= 1"
+                );
             }
         }
 
@@ -147,11 +151,15 @@ namespace dev.limitex.avatar.compressor.tests
         {
             foreach (CompressorPreset preset in System.Enum.GetValues(typeof(CompressorPreset)))
             {
-                if (preset == CompressorPreset.Custom) continue;
+                if (preset == CompressorPreset.Custom)
+                    continue;
 
                 _config.ApplyPreset(preset);
-                Assert.That(_config.MaxDivisor, Is.GreaterThanOrEqualTo(_config.MinDivisor),
-                    $"Preset {preset} should have MaxDivisor >= MinDivisor");
+                Assert.That(
+                    _config.MaxDivisor,
+                    Is.GreaterThanOrEqualTo(_config.MinDivisor),
+                    $"Preset {preset} should have MaxDivisor >= MinDivisor"
+                );
             }
         }
 
@@ -160,11 +168,15 @@ namespace dev.limitex.avatar.compressor.tests
         {
             foreach (CompressorPreset preset in System.Enum.GetValues(typeof(CompressorPreset)))
             {
-                if (preset == CompressorPreset.Custom) continue;
+                if (preset == CompressorPreset.Custom)
+                    continue;
 
                 _config.ApplyPreset(preset);
-                Assert.That(_config.MinResolution, Is.GreaterThan(0),
-                    $"Preset {preset} should have MinResolution > 0");
+                Assert.That(
+                    _config.MinResolution,
+                    Is.GreaterThan(0),
+                    $"Preset {preset} should have MinResolution > 0"
+                );
             }
         }
 
@@ -173,11 +185,15 @@ namespace dev.limitex.avatar.compressor.tests
         {
             foreach (CompressorPreset preset in System.Enum.GetValues(typeof(CompressorPreset)))
             {
-                if (preset == CompressorPreset.Custom) continue;
+                if (preset == CompressorPreset.Custom)
+                    continue;
 
                 _config.ApplyPreset(preset);
-                Assert.That(_config.MaxResolution, Is.GreaterThanOrEqualTo(_config.MinResolution),
-                    $"Preset {preset} should have MaxResolution >= MinResolution");
+                Assert.That(
+                    _config.MaxResolution,
+                    Is.GreaterThanOrEqualTo(_config.MinResolution),
+                    $"Preset {preset} should have MaxResolution >= MinResolution"
+                );
             }
         }
 
@@ -186,15 +202,25 @@ namespace dev.limitex.avatar.compressor.tests
         {
             foreach (CompressorPreset preset in System.Enum.GetValues(typeof(CompressorPreset)))
             {
-                if (preset == CompressorPreset.Custom) continue;
+                if (preset == CompressorPreset.Custom)
+                    continue;
 
                 _config.ApplyPreset(preset);
-                Assert.That(_config.LowComplexityThreshold, Is.GreaterThanOrEqualTo(0f),
-                    $"Preset {preset} LowComplexityThreshold should be >= 0");
-                Assert.That(_config.HighComplexityThreshold, Is.LessThanOrEqualTo(1f),
-                    $"Preset {preset} HighComplexityThreshold should be <= 1");
-                Assert.That(_config.HighComplexityThreshold, Is.GreaterThanOrEqualTo(_config.LowComplexityThreshold),
-                    $"Preset {preset} HighComplexityThreshold should be >= LowComplexityThreshold");
+                Assert.That(
+                    _config.LowComplexityThreshold,
+                    Is.GreaterThanOrEqualTo(0f),
+                    $"Preset {preset} LowComplexityThreshold should be >= 0"
+                );
+                Assert.That(
+                    _config.HighComplexityThreshold,
+                    Is.LessThanOrEqualTo(1f),
+                    $"Preset {preset} HighComplexityThreshold should be <= 1"
+                );
+                Assert.That(
+                    _config.HighComplexityThreshold,
+                    Is.GreaterThanOrEqualTo(_config.LowComplexityThreshold),
+                    $"Preset {preset} HighComplexityThreshold should be >= LowComplexityThreshold"
+                );
             }
         }
 

@@ -1,5 +1,5 @@
-using dev.limitex.avatar.compressor.editor.ui;
 using dev.limitex.avatar.compressor;
+using dev.limitex.avatar.compressor.editor.ui;
 using UnityEditor;
 using UnityEngine;
 
@@ -31,19 +31,61 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         private static void DrawPresetButtons(TextureCompressor config)
         {
             EditorGUILayout.BeginHorizontal();
-            DrawPresetButton(config, CompressorPreset.HighQuality, "High Quality", "Highest quality\nMinimal compression", PresetColors.HighQuality);
-            DrawPresetButton(config, CompressorPreset.Quality, "Quality", "Good quality\nLight compression", PresetColors.Quality);
-            DrawPresetButton(config, CompressorPreset.Balanced, "Balanced", "Balance of\nquality and size", PresetColors.Balanced);
+            DrawPresetButton(
+                config,
+                CompressorPreset.HighQuality,
+                "High Quality",
+                "Highest quality\nMinimal compression",
+                PresetColors.HighQuality
+            );
+            DrawPresetButton(
+                config,
+                CompressorPreset.Quality,
+                "Quality",
+                "Good quality\nLight compression",
+                PresetColors.Quality
+            );
+            DrawPresetButton(
+                config,
+                CompressorPreset.Balanced,
+                "Balanced",
+                "Balance of\nquality and size",
+                PresetColors.Balanced
+            );
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
-            DrawPresetButton(config, CompressorPreset.Aggressive, "Aggressive", "Smaller file size\nSome quality loss", PresetColors.Aggressive);
-            DrawPresetButton(config, CompressorPreset.Maximum, "Maximum", "Smallest size\nNoticeable quality loss", PresetColors.Maximum);
-            DrawPresetButton(config, CompressorPreset.Custom, "Custom", "Manual\nconfiguration", PresetColors.Custom);
+            DrawPresetButton(
+                config,
+                CompressorPreset.Aggressive,
+                "Aggressive",
+                "Smaller file size\nSome quality loss",
+                PresetColors.Aggressive
+            );
+            DrawPresetButton(
+                config,
+                CompressorPreset.Maximum,
+                "Maximum",
+                "Smallest size\nNoticeable quality loss",
+                PresetColors.Maximum
+            );
+            DrawPresetButton(
+                config,
+                CompressorPreset.Custom,
+                "Custom",
+                "Manual\nconfiguration",
+                PresetColors.Custom
+            );
             EditorGUILayout.EndHorizontal();
         }
 
-        private static void DrawPresetButton(TextureCompressor config, CompressorPreset preset, string label, string tooltip, Color color)
+        private static void DrawPresetButton(
+            TextureCompressor config,
+            CompressorPreset preset,
+            string label,
+            string tooltip,
+            Color color
+        )
         {
             bool isSelected = config.Preset == preset;
 
@@ -63,43 +105,49 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             switch (preset)
             {
                 case CompressorPreset.HighQuality:
-                    description = "High Quality Mode: Maximum quality preservation with minimal compression. " +
-                                  "Only very simple textures (solid colors) will be slightly compressed. " +
-                                  "Best for showcase avatars or when VRAM is not a concern.";
+                    description =
+                        "High Quality Mode: Maximum quality preservation with minimal compression. "
+                        + "Only very simple textures (solid colors) will be slightly compressed. "
+                        + "Best for showcase avatars or when VRAM is not a concern.";
                     messageType = MessageType.Info;
                     break;
 
                 case CompressorPreset.Quality:
-                    description = "Quality Mode: Preserves texture detail as much as possible. " +
-                                  "Only low-complexity textures (solid colors, simple gradients) will be compressed. " +
-                                  "Best for avatars where visual quality is the priority.";
+                    description =
+                        "Quality Mode: Preserves texture detail as much as possible. "
+                        + "Only low-complexity textures (solid colors, simple gradients) will be compressed. "
+                        + "Best for avatars where visual quality is the priority.";
                     messageType = MessageType.Info;
                     break;
 
                 case CompressorPreset.Balanced:
-                    description = "Balanced Mode: Good compromise between quality and VRAM savings. " +
-                                  "Detailed textures are preserved, while simpler textures are compressed. " +
-                                  "Recommended for most use cases.";
+                    description =
+                        "Balanced Mode: Good compromise between quality and VRAM savings. "
+                        + "Detailed textures are preserved, while simpler textures are compressed. "
+                        + "Recommended for most use cases.";
                     messageType = MessageType.Info;
                     break;
 
                 case CompressorPreset.Aggressive:
-                    description = "Aggressive Mode: Prioritizes smaller file size over quality. " +
-                                  "Most textures will be compressed to some degree. " +
-                                  "Good for Quest avatars or when VRAM is limited.";
+                    description =
+                        "Aggressive Mode: Prioritizes smaller file size over quality. "
+                        + "Most textures will be compressed to some degree. "
+                        + "Good for Quest avatars or when VRAM is limited.";
                     messageType = MessageType.Warning;
                     break;
 
                 case CompressorPreset.Maximum:
-                    description = "Maximum Compression: Compresses all textures as much as possible. " +
-                                  "Significant quality loss may occur. " +
-                                  "Use only when file size is critical.";
+                    description =
+                        "Maximum Compression: Compresses all textures as much as possible. "
+                        + "Significant quality loss may occur. "
+                        + "Use only when file size is critical.";
                     messageType = MessageType.Warning;
                     break;
 
                 case CompressorPreset.Custom:
-                    description = "Custom Mode: Full control over all compression settings. " +
-                                  "Configure each parameter manually for fine-tuned results.";
+                    description =
+                        "Custom Mode: Full control over all compression settings. "
+                        + "Configure each parameter manually for fine-tuned results.";
                     messageType = MessageType.Info;
                     break;
 
@@ -118,9 +166,15 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorDrawUtils.DrawSectionHeader("Current Settings Summary");
 
             EditorGUILayout.LabelField($"Strategy: {config.Strategy}");
-            EditorGUILayout.LabelField($"Divisor Range: {config.MinDivisor}x - {config.MaxDivisor}x");
-            EditorGUILayout.LabelField($"Resolution Range: {config.MinResolution}px - {config.MaxResolution}px");
-            EditorGUILayout.LabelField($"Complexity Thresholds: {config.LowComplexityThreshold:P0} - {config.HighComplexityThreshold:P0}");
+            EditorGUILayout.LabelField(
+                $"Divisor Range: {config.MinDivisor}x - {config.MaxDivisor}x"
+            );
+            EditorGUILayout.LabelField(
+                $"Resolution Range: {config.MinResolution}px - {config.MaxResolution}px"
+            );
+            EditorGUILayout.LabelField(
+                $"Complexity Thresholds: {config.LowComplexityThreshold:P0} - {config.HighComplexityThreshold:P0}"
+            );
 
             EditorGUILayout.EndVertical();
         }

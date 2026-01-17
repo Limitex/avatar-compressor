@@ -15,8 +15,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Extracts opaque pixels while preserving 2D structure.
         /// Transparent pixels are marked with TransparentMarker (-1) in grayscale array.
         /// </summary>
-        public static void ExtractOpaquePixels(Color[] pixels, int width, int height,
-            out Color[] opaquePixels, out float[] grayscale, out int opaqueCount)
+        public static void ExtractOpaquePixels(
+            Color[] pixels,
+            int width,
+            int height,
+            out Color[] opaquePixels,
+            out float[] grayscale,
+            out int opaqueCount
+        )
         {
             opaquePixels = new Color[pixels.Length];
             grayscale = new float[pixels.Length];
@@ -27,9 +33,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (pixels[i].a >= AlphaThreshold)
                 {
                     opaquePixels[i] = pixels[i];
-                    grayscale[i] = pixels[i].r * 0.2126f +
-                                   pixels[i].g * 0.7152f +
-                                   pixels[i].b * 0.0722f;
+                    grayscale[i] =
+                        pixels[i].r * 0.2126f + pixels[i].g * 0.7152f + pixels[i].b * 0.0722f;
                     opaqueCount++;
                 }
                 else
@@ -56,9 +61,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float[] grayscale = new float[pixels.Length];
             for (int i = 0; i < pixels.Length; i++)
             {
-                grayscale[i] = pixels[i].r * 0.2126f +
-                               pixels[i].g * 0.7152f +
-                               pixels[i].b * 0.0722f;
+                grayscale[i] =
+                    pixels[i].r * 0.2126f + pixels[i].g * 0.7152f + pixels[i].b * 0.0722f;
             }
             return grayscale;
         }
