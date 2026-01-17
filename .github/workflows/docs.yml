@@ -2,7 +2,8 @@ name: Deploy Docs
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
     paths:
       - 'Documentation~/avatar-compressor-docs/**'
   workflow_dispatch:

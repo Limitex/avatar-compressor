@@ -2,11 +2,13 @@ name: CI Docs
 
 on:
   pull_request:
-    branches: ["main"]
+    branches:
+      - main
     paths:
       - "Documentation~/avatar-compressor-docs/**"
   push:
-    branches: ["main"]
+    branches:
+      - main
     paths:
       - "Documentation~/avatar-compressor-docs/**"
 
