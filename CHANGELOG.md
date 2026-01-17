@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Unit tests** - Added tests for UI components and data models
 
+### Fixed
+
+- **Emission map quality boost** - Fixed calculation that was incorrectly reducing quality instead of boosting it
+
 ## [v0.4.0] - 2026-01-16
 
 ### Added
