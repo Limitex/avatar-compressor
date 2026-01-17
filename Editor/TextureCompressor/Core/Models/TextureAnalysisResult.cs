@@ -26,9 +26,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
         // IAnalysisResult implementation
         public float Score => NormalizedComplexity;
 
-        public string Summary => $"Complexity: {(int)(NormalizedComplexity * 100)}%, " +
-                                 $"Divisor: {RecommendedDivisor}x, " +
-                                 $"Target: {RecommendedResolution.x}x{RecommendedResolution.y}";
+        public string Summary =>
+            $"Complexity: {(int)(NormalizedComplexity * 100)}%, "
+            + $"Divisor: {RecommendedDivisor}x, "
+            + $"Target: {RecommendedResolution.x}x{RecommendedResolution.y}";
 
         public TextureAnalysisResult(float complexity, int divisor, Vector2Int resolution)
         {

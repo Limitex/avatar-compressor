@@ -1,8 +1,8 @@
+using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.editor.ui;
-using dev.limitex.avatar.compressor;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
@@ -35,13 +35,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 if (isOutdated)
                 {
-                    EditorGUILayout.HelpBox("Preview is outdated. Settings or target object have changed since the preview was generated. Click 'Preview Compression Results' to refresh.", MessageType.Warning);
+                    EditorGUILayout.HelpBox(
+                        "Preview is outdated. Settings or target object have changed since the preview was generated. Click 'Preview Compression Results' to refresh.",
+                        MessageType.Warning
+                    );
                 }
                 DrawPreview(config, search);
             }
             else if (_showPreview && (_previewData == null || _previewData.Length == 0))
             {
-                EditorGUILayout.HelpBox("No textures found matching the current filter settings.", MessageType.Info);
+                EditorGUILayout.HelpBox(
+                    "No textures found matching the current filter settings.",
+                    MessageType.Info
+                );
 
                 if (GUILayout.Button("Close"))
                 {
@@ -82,7 +88,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             int filteredCount = isSearching ? CountPreviewMatches(search) : totalCount;
 
             // Build header text
-            string frozenInfo = _generator.FrozenCount > 0 ? $", {_generator.FrozenCount} frozen" : "";
+            string frozenInfo =
+                _generator.FrozenCount > 0 ? $", {_generator.FrozenCount} frozen" : "";
             string headerText;
             if (isSearching && filteredCount != totalCount)
             {
@@ -90,7 +97,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
             else
             {
-                headerText = $"Preview ({_generator.ProcessedCount} to compress{frozenInfo}, {_generator.SkippedCount} skipped)";
+                headerText =
+                    $"Preview ({_generator.ProcessedCount} to compress{frozenInfo}, {_generator.SkippedCount} skipped)";
             }
             EditorGUILayout.LabelField(headerText, EditorStyles.boldLabel);
 
@@ -110,12 +118,18 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Original:", GUILayout.Width(60));
-            EditorGUILayout.LabelField(MemoryCalculator.FormatBytes(totalOriginal), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(
+                MemoryCalculator.FormatBytes(totalOriginal),
+                EditorStyles.boldLabel
+            );
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("After:", GUILayout.Width(60));
-            EditorGUILayout.LabelField(MemoryCalculator.FormatBytes(totalAfter), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(
+                MemoryCalculator.FormatBytes(totalAfter),
+                EditorStyles.boldLabel
+            );
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
@@ -123,7 +137,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             Color originalColor = GUI.color;
             GUI.color = Color.green;
             long savedBytes = totalOriginal - totalAfter;
-            EditorGUILayout.LabelField($"{savings:P0} (-{MemoryCalculator.FormatBytes(savedBytes)})", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(
+                $"{savings:P0} (-{MemoryCalculator.FormatBytes(savedBytes)})",
+                EditorStyles.boldLabel
+            );
             GUI.color = originalColor;
             EditorGUILayout.EndHorizontal();
 
@@ -139,7 +156,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 EditorGUILayout.Space(5);
 
-                _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUILayout.MaxHeight(300));
+                _scrollPosition = EditorGUILayout.BeginScrollView(
+                    _scrollPosition,
+                    GUILayout.MaxHeight(300)
+                );
 
                 bool hasDrawnProcessedHeader = false;
                 bool hasDrawnFrozenHeader = false;
@@ -163,7 +183,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     if (data.IsProcessed && data.IsFrozen && !hasDrawnFrozenHeader)
                     {
                         EditorGUILayout.Space(10);
-                        EditorGUILayout.LabelField("Frozen Textures (Manual Override)", EditorStyles.boldLabel);
+                        EditorGUILayout.LabelField(
+                            "Frozen Textures (Manual Override)",
+                            EditorStyles.boldLabel
+                        );
                         hasDrawnFrozenHeader = true;
                     }
 
@@ -195,7 +218,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
-        private void DrawPreviewEntry(TextureCompressor config, TexturePreviewData data, SearchBoxControl search)
+        private void DrawPreviewEntry(
+            TextureCompressor config,
+            TexturePreviewData data,
+            SearchBoxControl search
+        )
         {
             bool isSkipped = !data.IsProcessed;
             bool isFrozenNow = !data.IsFrozen && config.IsFrozen(data.Guid);
@@ -237,7 +264,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     if (GUILayout.Button("Freeze", GUILayout.Width(70)))
                     {
                         Undo.RecordObject(config, "Freeze Texture");
-                        var frozenSettings = new FrozenTextureSettings(data.Guid, data.RecommendedDivisor, FrozenTextureFormat.Auto, false);
+                        var frozenSettings = new FrozenTextureSettings(
+                            data.Guid,
+                            data.RecommendedDivisor,
+                            FrozenTextureFormat.Auto,
+                            false
+                        );
                         config.SetFrozenSettings(data.Guid, frozenSettings);
                         EditorUtility.SetDirty(config);
                         search.InvalidateCache();
@@ -285,11 +317,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             string manualIndicator = data.IsFrozen ? " (manual)" : "";
             if (data.RecommendedDivisor > 1)
             {
-                sizeText = $"{data.OriginalSize.x}x{data.OriginalSize.y} \u2192 {data.RecommendedSize.x}x{data.RecommendedSize.y} (\u00f7{data.RecommendedDivisor}){manualIndicator}";
+                sizeText =
+                    $"{data.OriginalSize.x}x{data.OriginalSize.y} \u2192 {data.RecommendedSize.x}x{data.RecommendedSize.y} (\u00f7{data.RecommendedDivisor}){manualIndicator}";
             }
             else
             {
-                sizeText = $"{data.OriginalSize.x}x{data.OriginalSize.y} (unchanged){manualIndicator}";
+                sizeText =
+                    $"{data.OriginalSize.x}x{data.OriginalSize.y} (unchanged){manualIndicator}";
             }
             EditorGUILayout.LabelField(sizeText);
             EditorGUILayout.EndHorizontal();
@@ -301,7 +335,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 string formatName = TextureFormatUtils.GetDisplayName(data.PredictedFormat.Value);
                 string formatInfo = TextureFormatUtils.GetInfo(data.PredictedFormat.Value);
-                if (data.IsFrozen && data.FrozenSettings != null && data.FrozenSettings.Format != FrozenTextureFormat.Auto)
+                if (
+                    data.IsFrozen
+                    && data.FrozenSettings != null
+                    && data.FrozenSettings.Format != FrozenTextureFormat.Auto
+                )
                 {
                     formatInfo += " (manual)";
                 }
@@ -336,7 +374,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 SkipReason.FrozenSkip => "User frozen (skipped)",
                 SkipReason.RuntimeGenerated => "Runtime generated",
                 SkipReason.ExcludedPath => "Excluded by path",
-                _ => "Skipped"
+                _ => "Skipped",
             };
             EditorGUILayout.LabelField(reasonText, EditorStyles.miniLabel);
             EditorGUILayout.EndHorizontal();
@@ -344,7 +382,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private int CountPreviewMatches(SearchBoxControl search)
         {
-            if (_previewData == null) return 0;
+            if (_previewData == null)
+                return 0;
 
             int count = 0;
             foreach (var data in _previewData)

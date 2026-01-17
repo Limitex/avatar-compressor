@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -103,7 +103,7 @@ namespace dev.limitex.avatar.compressor.tests
                 Width = 64,
                 Height = 64,
                 IsNormalMap = true,
-                IsEmission = false
+                IsEmission = false,
             };
             var copy = original;
 
@@ -244,7 +244,7 @@ namespace dev.limitex.avatar.compressor.tests
                 Height = 64,
                 OpaqueCount = 64 * 64,
                 IsNormalMap = false,
-                IsEmission = true
+                IsEmission = true,
             };
 
             Assert.That(data.OpaquePixels.Length, Is.EqualTo(64 * 64));
@@ -274,7 +274,7 @@ namespace dev.limitex.avatar.compressor.tests
                 Height = 1,
                 OpaqueCount = 1,
                 IsNormalMap = true,
-                IsEmission = false
+                IsEmission = false,
             };
             var copy = original;
 

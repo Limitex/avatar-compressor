@@ -9,10 +9,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
     {
         /// <summary>Material is referenced by a Renderer component.</summary>
         Renderer,
+
         /// <summary>Material is referenced by an animation (e.g., MaterialSwap).</summary>
         Animation,
+
         /// <summary>Material is referenced by a component (e.g., MA MaterialSetter).</summary>
-        Component
+        Component,
     }
 
     /// <summary>
@@ -45,7 +47,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public MaterialReference(
             Material material,
             MaterialSourceType sourceType,
-            Object sourceObject)
+            Object sourceObject
+        )
         {
             Material = material;
             SourceType = sourceType;

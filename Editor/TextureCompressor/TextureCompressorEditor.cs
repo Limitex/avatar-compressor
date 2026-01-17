@@ -1,7 +1,7 @@
-using dev.limitex.avatar.compressor.editor.ui;
 using dev.limitex.avatar.compressor.editor.texture.ui;
-using UnityEngine;
+using dev.limitex.avatar.compressor.editor.ui;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
 {
@@ -45,7 +45,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             EditorGUILayout.Space(10);
 
             // Enable logging
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("EnableLogging"), new GUIContent("Enable Logging"));
+            EditorGUILayout.PropertyField(
+                serializedObject.FindProperty("EnableLogging"),
+                new GUIContent("Enable Logging")
+            );
             EditorGUILayout.Space(10);
 
             // Excluded paths
@@ -57,7 +60,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
             EditorGUILayout.Space(10);
 
             // Frozen textures
-            FrozenTexturesSection.Draw(config, _searchBox, ref _showFrozenSection, ref _frozenScrollPosition);
+            FrozenTexturesSection.Draw(
+                config,
+                _searchBox,
+                ref _showFrozenSection,
+                ref _frozenScrollPosition
+            );
             EditorGUILayout.Space(15);
 
             // Preview section

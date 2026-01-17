@@ -1,5 +1,5 @@
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.ui
 {
@@ -21,7 +21,10 @@ namespace dev.limitex.avatar.compressor.editor.ui
             // Gray text (line 1)
             var savedColor = GUI.color;
             GUI.color = new Color(0.6f, 0.6f, 0.6f);
-            EditorGUILayout.LabelField("Bugs? Ideas? Let us know! Stars appreciated.", EditorStylesCache.CenteredLabel);
+            EditorGUILayout.LabelField(
+                "Bugs? Ideas? Let us know! Stars appreciated.",
+                EditorStylesCache.CenteredLabel
+            );
             GUI.color = savedColor;
 
             // Clickable link (line 2)

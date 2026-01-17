@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -17,7 +17,12 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 16;
             float[] grayscale = CreateUniformGrayscale(width, height, 0.5f);
 
-            float gradient = ImageMath.CalculateSobelGradient(grayscale, width, height, width * height);
+            float gradient = ImageMath.CalculateSobelGradient(
+                grayscale,
+                width,
+                height,
+                width * height
+            );
 
             Assert.That(gradient, Is.EqualTo(0f).Within(0.001f));
         }
@@ -30,7 +35,12 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 16;
             float[] grayscale = CreateVerticalEdgeGrayscale(width, height);
 
-            float gradient = ImageMath.CalculateSobelGradient(grayscale, width, height, width * height);
+            float gradient = ImageMath.CalculateSobelGradient(
+                grayscale,
+                width,
+                height,
+                width * height
+            );
 
             Assert.That(gradient, Is.GreaterThan(0f));
         }
@@ -53,7 +63,12 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 16;
             float[] grayscale = CreateUniformGrayscale(width, height, 0.5f);
 
-            float frequency = ImageMath.CalculateSpatialFrequency(grayscale, width, height, width * height);
+            float frequency = ImageMath.CalculateSpatialFrequency(
+                grayscale,
+                width,
+                height,
+                width * height
+            );
 
             Assert.That(frequency, Is.EqualTo(0f).Within(0.001f));
         }
@@ -65,7 +80,12 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 16;
             float[] grayscale = CreateCheckerboardGrayscale(width, height);
 
-            float frequency = ImageMath.CalculateSpatialFrequency(grayscale, width, height, width * height);
+            float frequency = ImageMath.CalculateSpatialFrequency(
+                grayscale,
+                width,
+                height,
+                width * height
+            );
 
             Assert.That(frequency, Is.GreaterThan(0f));
         }
@@ -133,7 +153,12 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 32;
             float[] grayscale = CreateUniformGrayscale(width, height, 0.5f);
 
-            float ratio = ImageMath.CalculateDctHighFrequencyRatio(grayscale, width, height, width * height);
+            float ratio = ImageMath.CalculateDctHighFrequencyRatio(
+                grayscale,
+                width,
+                height,
+                width * height
+            );
 
             // Uniform image should have low high-frequency content
             Assert.That(ratio, Is.LessThan(0.2f));
@@ -146,7 +171,12 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 32;
             float[] grayscale = CreateNoiseGrayscale(width, height, 42);
 
-            float ratio = ImageMath.CalculateDctHighFrequencyRatio(grayscale, width, height, width * height);
+            float ratio = ImageMath.CalculateDctHighFrequencyRatio(
+                grayscale,
+                width,
+                height,
+                width * height
+            );
 
             // Noise image should have high high-frequency content
             Assert.That(ratio, Is.GreaterThan(0.2f));
@@ -173,7 +203,11 @@ namespace dev.limitex.avatar.compressor.tests
             float[] grayscale = CreateUniformGrayscale(width, height, 0.5f);
 
             var (contrast, homogeneity, energy) = ImageMath.CalculateGlcmFeatures(
-                grayscale, width, height, width * height);
+                grayscale,
+                width,
+                height,
+                width * height
+            );
 
             // Uniform image: low contrast, high homogeneity, high energy
             Assert.That(contrast, Is.LessThan(1f));
@@ -185,7 +219,11 @@ namespace dev.limitex.avatar.compressor.tests
         public void CalculateGlcmFeatures_EmptyImage_ReturnsDefaults()
         {
             var (contrast, homogeneity, energy) = ImageMath.CalculateGlcmFeatures(
-                new float[0], 0, 0, 0);
+                new float[0],
+                0,
+                0,
+                0
+            );
 
             Assert.AreEqual(0f, contrast);
             Assert.AreEqual(1f, homogeneity);
@@ -242,7 +280,13 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 32;
             float[] grayscale = CreateUniformGrayscale(width, height, 0.5f);
 
-            float variance = ImageMath.CalculateBlockVariance(grayscale, width, height, width * height, 8);
+            float variance = ImageMath.CalculateBlockVariance(
+                grayscale,
+                width,
+                height,
+                width * height,
+                8
+            );
 
             Assert.That(variance, Is.EqualTo(0f).Within(0.001f));
         }
@@ -254,7 +298,13 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 32;
             float[] grayscale = CreateNoiseGrayscale(width, height, 42);
 
-            float variance = ImageMath.CalculateBlockVariance(grayscale, width, height, width * height, 8);
+            float variance = ImageMath.CalculateBlockVariance(
+                grayscale,
+                width,
+                height,
+                width * height,
+                8
+            );
 
             Assert.That(variance, Is.GreaterThan(0f));
         }

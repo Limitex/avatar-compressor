@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -399,7 +399,7 @@ namespace dev.limitex.avatar.compressor.tests
             var animationMaterial = CreateMaterial("AnimationMaterial");
             var references = new List<MaterialReference>
             {
-                MaterialReference.FromAnimation(animationMaterial, null)
+                MaterialReference.FromAnimation(animationMaterial, null),
             };
 
             var result = MaterialCloner.CloneAndReplace(references);
@@ -440,7 +440,7 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 MaterialReference.FromAnimation(material, null),
                 MaterialReference.FromAnimation(material, null),
-                MaterialReference.FromComponent(material, null)
+                MaterialReference.FromComponent(material, null),
             };
 
             var result = MaterialCloner.CloneAndReplace(references);

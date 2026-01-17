@@ -12,8 +12,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <summary>
         /// Samples pixels if the texture exceeds the maximum sample size.
         /// </summary>
-        public static void SampleIfNeeded(Color[] pixels, int width, int height,
-            out Color[] sampledPixels, out int sampledWidth, out int sampledHeight)
+        public static void SampleIfNeeded(
+            Color[] pixels,
+            int width,
+            int height,
+            out Color[] sampledPixels,
+            out int sampledWidth,
+            out int sampledHeight
+        )
         {
             int totalPixels = width * height;
 

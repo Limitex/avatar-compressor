@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor.editor.texture.ui;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.texture.ui;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -68,7 +68,7 @@ namespace dev.limitex.avatar.compressor.tests
                 PresetColors.Balanced,
                 PresetColors.Aggressive,
                 PresetColors.Maximum,
-                PresetColors.Custom
+                PresetColors.Custom,
             };
 
             foreach (var color in colors)
@@ -89,15 +89,18 @@ namespace dev.limitex.avatar.compressor.tests
                 PresetColors.Balanced,
                 PresetColors.Aggressive,
                 PresetColors.Maximum,
-                PresetColors.Custom
+                PresetColors.Custom,
             };
 
             for (int i = 0; i < colors.Length; i++)
             {
                 for (int j = i + 1; j < colors.Length; j++)
                 {
-                    Assert.That(colors[i], Is.Not.EqualTo(colors[j]),
-                        $"Colors at index {i} and {j} should be distinct");
+                    Assert.That(
+                        colors[i],
+                        Is.Not.EqualTo(colors[j]),
+                        $"Colors at index {i} and {j} should be distinct"
+                    );
                 }
             }
         }
@@ -113,7 +116,7 @@ namespace dev.limitex.avatar.compressor.tests
                 PresetColors.Balanced,
                 PresetColors.Aggressive,
                 PresetColors.Maximum,
-                PresetColors.Custom
+                PresetColors.Custom,
             };
 
             foreach (var color in colors)
@@ -130,10 +133,16 @@ namespace dev.limitex.avatar.compressor.tests
         public void ColorProgression_HighQualityToMaximum_GreenToRed()
         {
             // Visual progression from safe (green) to warning (red)
-            Assert.That(PresetColors.HighQuality.g, Is.GreaterThan(PresetColors.Maximum.g),
-                "High quality should be more green than Maximum");
-            Assert.That(PresetColors.Maximum.r, Is.GreaterThan(PresetColors.HighQuality.r),
-                "Maximum should be more red than High quality");
+            Assert.That(
+                PresetColors.HighQuality.g,
+                Is.GreaterThan(PresetColors.Maximum.g),
+                "High quality should be more green than Maximum"
+            );
+            Assert.That(
+                PresetColors.Maximum.r,
+                Is.GreaterThan(PresetColors.HighQuality.r),
+                "Maximum should be more red than High quality"
+            );
         }
 
         #endregion

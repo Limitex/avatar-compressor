@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -172,10 +172,16 @@ namespace dev.limitex.avatar.compressor.tests
                 foreach (int div in divisors)
                 {
                     var result = resizerNoPow2.CalculateNewDimensions(size, size, div);
-                    Assert.AreEqual(0, result.x % 4,
-                        $"Size {size} with divisor {div}: Width {result.x} is not multiple of 4");
-                    Assert.AreEqual(0, result.y % 4,
-                        $"Size {size} with divisor {div}: Height {result.y} is not multiple of 4");
+                    Assert.AreEqual(
+                        0,
+                        result.x % 4,
+                        $"Size {size} with divisor {div}: Width {result.x} is not multiple of 4"
+                    );
+                    Assert.AreEqual(
+                        0,
+                        result.y % 4,
+                        $"Size {size} with divisor {div}: Height {result.y} is not multiple of 4"
+                    );
                 }
             }
         }
@@ -202,10 +208,16 @@ namespace dev.limitex.avatar.compressor.tests
             foreach (int div in divisors)
             {
                 var result = _processor.CalculateNewDimensions(1024, 1024, div);
-                Assert.That(IsPowerOfTwo(result.x), Is.True,
-                    $"Divisor {div}: Width {result.x} is not power of 2");
-                Assert.That(IsPowerOfTwo(result.y), Is.True,
-                    $"Divisor {div}: Height {result.y} is not power of 2");
+                Assert.That(
+                    IsPowerOfTwo(result.x),
+                    Is.True,
+                    $"Divisor {div}: Width {result.x} is not power of 2"
+                );
+                Assert.That(
+                    IsPowerOfTwo(result.y),
+                    Is.True,
+                    $"Divisor {div}: Height {result.y} is not power of 2"
+                );
             }
         }
 
@@ -263,7 +275,8 @@ namespace dev.limitex.avatar.compressor.tests
             var processor = new TextureProcessor(
                 minResolution: 64,
                 maxResolution: 1024,
-                forcePowerOfTwo: false);
+                forcePowerOfTwo: false
+            );
 
             Assert.IsNotNull(processor);
         }
@@ -276,14 +289,17 @@ namespace dev.limitex.avatar.compressor.tests
         public void ResizeTo_WithMipmaps_PreservesMipmaps()
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
-            
+
             var result = _processor.ResizeTo(sourceTexture, 256, 256);
-            
+
             Assert.IsNotNull(result);
             Assert.AreEqual(256, result.width);
             Assert.AreEqual(256, result.height);
-            Assert.IsTrue(result.mipmapCount > 1, "Result should have mipmaps when source has mipmaps");
-            
+            Assert.IsTrue(
+                result.mipmapCount > 1,
+                "Result should have mipmaps when source has mipmaps"
+            );
+
             Object.DestroyImmediate(sourceTexture);
             Object.DestroyImmediate(result);
         }
@@ -292,14 +308,18 @@ namespace dev.limitex.avatar.compressor.tests
         public void ResizeTo_WithoutMipmaps_DoesNotAddMipmaps()
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
-            
+
             var result = _processor.ResizeTo(sourceTexture, 256, 256);
-            
+
             Assert.IsNotNull(result);
             Assert.AreEqual(256, result.height);
             Assert.AreEqual(256, result.width);
-            Assert.AreEqual(1, result.mipmapCount, "Result should not have mipmaps when source doesn't have mipmaps");
-            
+            Assert.AreEqual(
+                1,
+                result.mipmapCount,
+                "Result should not have mipmaps when source doesn't have mipmaps"
+            );
+
             Object.DestroyImmediate(sourceTexture);
             Object.DestroyImmediate(result);
         }
@@ -312,14 +332,14 @@ namespace dev.limitex.avatar.compressor.tests
             sourceTexture.wrapModeV = TextureWrapMode.Clamp;
             sourceTexture.filterMode = FilterMode.Trilinear;
             sourceTexture.anisoLevel = 4;
-            
+
             var result = _processor.ResizeTo(sourceTexture, 256, 256);
-            
+
             Assert.AreEqual(TextureWrapMode.Repeat, result.wrapModeU);
             Assert.AreEqual(TextureWrapMode.Clamp, result.wrapModeV);
             Assert.AreEqual(FilterMode.Trilinear, result.filterMode);
             Assert.AreEqual(4, result.anisoLevel);
-            
+
             Object.DestroyImmediate(sourceTexture);
             Object.DestroyImmediate(result);
         }
@@ -328,14 +348,14 @@ namespace dev.limitex.avatar.compressor.tests
         public void Copy_PreservesMipmaps()
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
-            
+
             var result = _processor.Copy(sourceTexture);
-            
+
             Assert.IsNotNull(result);
             Assert.AreEqual(512, result.width);
             Assert.AreEqual(512, result.height);
             Assert.IsTrue(result.mipmapCount > 1, "Copied texture should preserve mipmaps");
-            
+
             Object.DestroyImmediate(sourceTexture);
             Object.DestroyImmediate(result);
         }
@@ -344,12 +364,16 @@ namespace dev.limitex.avatar.compressor.tests
         public void Copy_WithoutMipmaps_DoesNotAddMipmaps()
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
-            
+
             var result = _processor.Copy(sourceTexture);
-            
+
             Assert.IsNotNull(result);
-            Assert.AreEqual(1, result.mipmapCount, "Copied texture should not have mipmaps when source doesn't have them");
-            
+            Assert.AreEqual(
+                1,
+                result.mipmapCount,
+                "Copied texture should not have mipmaps when source doesn't have them"
+            );
+
             Object.DestroyImmediate(sourceTexture);
             Object.DestroyImmediate(result);
         }
@@ -358,13 +382,16 @@ namespace dev.limitex.avatar.compressor.tests
         public void ResizeTo_SameDimensions_PreservesMipmaps()
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
-            
+
             var result = _processor.ResizeTo(sourceTexture, 512, 512);
-            
+
             Assert.AreEqual(512, result.width);
             Assert.AreEqual(512, result.height);
-            Assert.IsTrue(result.mipmapCount > 1, "Should preserve mipmaps even when not actually resizing");
-            
+            Assert.IsTrue(
+                result.mipmapCount > 1,
+                "Should preserve mipmaps even when not actually resizing"
+            );
+
             Object.DestroyImmediate(sourceTexture);
             Object.DestroyImmediate(result);
         }
@@ -411,8 +438,11 @@ namespace dev.limitex.avatar.compressor.tests
 
             var result = _processor.Resize(source, analysis);
 
-            Assert.AreEqual(TextureFormat.RGBA32, result.format,
-                "Resize should return uncompressed RGBA32 format (compression is handled separately)");
+            Assert.AreEqual(
+                TextureFormat.RGBA32,
+                result.format,
+                "Resize should return uncompressed RGBA32 format (compression is handled separately)"
+            );
 
             Object.DestroyImmediate(source);
             Object.DestroyImmediate(result);
@@ -459,8 +489,16 @@ namespace dev.limitex.avatar.compressor.tests
 
             var result = processorNoPow2.Resize(source, analysis);
 
-            Assert.AreEqual(0, result.width % 4, "Width should be multiple of 4 for DXT/BC compression compatibility");
-            Assert.AreEqual(0, result.height % 4, "Height should be multiple of 4 for DXT/BC compression compatibility");
+            Assert.AreEqual(
+                0,
+                result.width % 4,
+                "Width should be multiple of 4 for DXT/BC compression compatibility"
+            );
+            Assert.AreEqual(
+                0,
+                result.height % 4,
+                "Height should be multiple of 4 for DXT/BC compression compatibility"
+            );
 
             Object.DestroyImmediate(source);
             Object.DestroyImmediate(result);
@@ -499,8 +537,15 @@ namespace dev.limitex.avatar.compressor.tests
             var resultWithMips = _processor.Resize(sourceWithMips, analysis);
             var resultWithoutMips = _processor.Resize(sourceWithoutMips, analysis);
 
-            Assert.IsTrue(resultWithMips.mipmapCount > 1, "Should preserve mipmaps when source has mipmaps");
-            Assert.AreEqual(1, resultWithoutMips.mipmapCount, "Should not add mipmaps when source has none");
+            Assert.IsTrue(
+                resultWithMips.mipmapCount > 1,
+                "Should preserve mipmaps when source has mipmaps"
+            );
+            Assert.AreEqual(
+                1,
+                resultWithoutMips.mipmapCount,
+                "Should not add mipmaps when source has none"
+            );
 
             Object.DestroyImmediate(sourceWithMips);
             Object.DestroyImmediate(sourceWithoutMips);

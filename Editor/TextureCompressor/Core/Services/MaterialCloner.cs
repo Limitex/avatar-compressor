@@ -15,7 +15,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         /// <param name="references">Material references to process</param>
         /// <returns>Dictionary mapping original materials to cloned materials</returns>
-        public static Dictionary<Material, Material> CloneAndReplace(IEnumerable<MaterialReference> references)
+        public static Dictionary<Material, Material> CloneAndReplace(
+            IEnumerable<MaterialReference> references
+        )
         {
             var clonedMaterials = new Dictionary<Material, Material>();
             var referenceList = references.ToList();
@@ -23,7 +25,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // First pass: clone all unique materials
             foreach (var reference in referenceList)
             {
-                if (reference?.Material == null) continue;
+                if (reference?.Material == null)
+                    continue;
                 GetOrCloneMaterial(reference.Material, clonedMaterials);
             }
 
@@ -35,17 +38,23 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         private static void UpdateRendererReferences(
             IEnumerable<MaterialReference> references,
-            Dictionary<Material, Material> clonedMaterials)
+            Dictionary<Material, Material> clonedMaterials
+        )
         {
             // Group references by Renderer for efficient batch updates
             var rendererGroups = references
-                .Where(r => r != null && r.SourceType == MaterialSourceType.Renderer && r.SourceObject is Renderer)
+                .Where(r =>
+                    r != null
+                    && r.SourceType == MaterialSourceType.Renderer
+                    && r.SourceObject is Renderer
+                )
                 .GroupBy(r => (Renderer)r.SourceObject);
 
             foreach (var group in rendererGroups)
             {
                 var renderer = group.Key;
-                if (renderer == null) continue;
+                if (renderer == null)
+                    continue;
 
                 var originalMaterials = renderer.sharedMaterials;
                 var newMaterials = new Material[originalMaterials.Length];
@@ -54,7 +63,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 for (int i = 0; i < originalMaterials.Length; i++)
                 {
                     var originalMat = originalMaterials[i];
-                    if (originalMat != null && clonedMaterials.TryGetValue(originalMat, out var clonedMat))
+                    if (
+                        originalMat != null
+                        && clonedMaterials.TryGetValue(originalMat, out var clonedMat)
+                    )
                     {
                         newMaterials[i] = clonedMat;
                         hasChanges = true;
@@ -74,7 +86,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         private static Material GetOrCloneMaterial(
             Material originalMat,
-            Dictionary<Material, Material> clonedMaterials)
+            Dictionary<Material, Material> clonedMaterials
+        )
         {
             if (clonedMaterials.TryGetValue(originalMat, out var clonedMat))
             {

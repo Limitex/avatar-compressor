@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using dev.limitex.avatar.compressor.editor;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
 {
@@ -13,18 +13,31 @@ namespace dev.limitex.avatar.compressor.editor.texture
     {
         private static readonly HashSet<string> MainTextureProperties = new HashSet<string>
         {
-            "_MainTex", "_BaseMap", "_BaseColorMap", "_Albedo", "_AlbedoMap",
-            "_Diffuse", "_DiffuseMap", "_Color", "_ColorMap"
+            "_MainTex",
+            "_BaseMap",
+            "_BaseColorMap",
+            "_Albedo",
+            "_AlbedoMap",
+            "_Diffuse",
+            "_DiffuseMap",
+            "_Color",
+            "_ColorMap",
         };
 
         private static readonly HashSet<string> NormalMapProperties = new HashSet<string>
         {
-            "_BumpMap", "_NormalMap", "_Normal", "_DetailNormalMap"
+            "_BumpMap",
+            "_NormalMap",
+            "_Normal",
+            "_DetailNormalMap",
         };
 
         private static readonly HashSet<string> EmissionProperties = new HashSet<string>
         {
-            "_EmissionMap", "_EmissiveMap", "_Emission", "_EmissiveColor"
+            "_EmissionMap",
+            "_EmissiveMap",
+            "_Emission",
+            "_EmissiveColor",
         };
 
         private readonly int _minSourceSize;
@@ -44,7 +57,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             bool processEmissionMaps,
             bool processOtherTextures,
             IEnumerable<string> excludedPathPrefixes = null,
-            IEnumerable<string> frozenSkipGuids = null)
+            IEnumerable<string> frozenSkipGuids = null
+        )
         {
             _minSourceSize = minSourceSize;
             _skipIfSmallerThan = skipIfSmallerThan;
@@ -52,12 +66,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
             _processNormalMaps = processNormalMaps;
             _processEmissionMaps = processEmissionMaps;
             _processOtherTextures = processOtherTextures;
-            _excludedPathPrefixes = excludedPathPrefixes != null
-                ? new List<string>(excludedPathPrefixes.Where(p => !string.IsNullOrWhiteSpace(p)))
-                : new List<string>();
-            _frozenSkipGuids = frozenSkipGuids != null
-                ? new HashSet<string>(frozenSkipGuids)
-                : new HashSet<string>();
+            _excludedPathPrefixes =
+                excludedPathPrefixes != null
+                    ? new List<string>(
+                        excludedPathPrefixes.Where(p => !string.IsNullOrWhiteSpace(p))
+                    )
+                    : new List<string>();
+            _frozenSkipGuids =
+                frozenSkipGuids != null
+                    ? new HashSet<string>(frozenSkipGuids)
+                    : new HashSet<string>();
         }
 
         /// <summary>
@@ -85,12 +103,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
             foreach (var renderer in renderers)
             {
                 // Skip EditorOnly tagged objects (stripped from build)
-                if (ComponentUtils.IsEditorOnly(renderer.gameObject)) continue;
+                if (ComponentUtils.IsEditorOnly(renderer.gameObject))
+                    continue;
 
                 var materials = renderer.sharedMaterials;
                 foreach (var material in materials)
                 {
-                    if (material == null) continue;
+                    if (material == null)
+                        continue;
                     CollectFromMaterial(material, renderer, textures, collectAll);
                 }
             }
@@ -108,13 +128,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public void CollectFromMaterials(
             IEnumerable<Material> materials,
             Dictionary<Texture2D, TextureInfo> textures,
-            bool collectAll = false)
+            bool collectAll = false
+        )
         {
-            if (materials == null || textures == null) return;
+            if (materials == null || textures == null)
+                return;
 
             foreach (var material in materials.Distinct())
             {
-                if (material == null) continue;
+                if (material == null)
+                    continue;
                 CollectFromMaterial(material, null, textures, collectAll);
             }
         }
@@ -123,7 +146,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             Material material,
             Renderer renderer,
             Dictionary<Texture2D, TextureInfo> textures,
-            bool collectAll = false)
+            bool collectAll = false
+        )
         {
             var shader = material.shader;
             int propertyCount = ShaderUtil.GetPropertyCount(shader);
@@ -136,7 +160,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 string propertyName = ShaderUtil.GetPropertyName(shader, i);
                 var texture = material.GetTexture(propertyName) as Texture2D;
 
-                if (texture == null) continue;
+                if (texture == null)
+                    continue;
 
                 string textureType = GetTextureType(propertyName);
                 bool isNormalMap = NormalMapProperties.Contains(propertyName);
@@ -144,7 +169,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 var processResult = GetProcessResult(texture, propertyName);
 
-                if (!collectAll && !processResult.shouldProcess) continue;
+                if (!collectAll && !processResult.shouldProcess)
+                    continue;
 
                 if (!textures.TryGetValue(texture, out var info))
                 {
@@ -155,7 +181,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         IsNormalMap = isNormalMap,
                         IsEmission = isEmission,
                         IsProcessed = processResult.shouldProcess,
-                        SkipReason = processResult.skipReason
+                        SkipReason = processResult.skipReason,
                     };
                     textures[texture] = info;
                 }
@@ -183,16 +209,21 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     }
                 }
 
-                info.References.Add(new MaterialTextureReference
-                {
-                    Material = material,
-                    PropertyName = propertyName,
-                    Renderer = renderer
-                });
+                info.References.Add(
+                    new MaterialTextureReference
+                    {
+                        Material = material,
+                        PropertyName = propertyName,
+                        Renderer = renderer,
+                    }
+                );
             }
         }
 
-        private (bool shouldProcess, SkipReason skipReason) GetProcessResult(Texture2D texture, string propertyName)
+        private (bool shouldProcess, SkipReason skipReason) GetProcessResult(
+            Texture2D texture,
+            string propertyName
+        )
         {
             string assetPath = AssetDatabase.GetAssetPath(texture);
 
@@ -215,8 +246,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 return (false, SkipReason.FrozenSkip);
 
             int maxDim = Mathf.Max(texture.width, texture.height);
-            if (maxDim < _minSourceSize) return (false, SkipReason.TooSmall);
-            if (maxDim <= _skipIfSmallerThan) return (false, SkipReason.TooSmall);
+            if (maxDim < _minSourceSize)
+                return (false, SkipReason.TooSmall);
+            if (maxDim <= _skipIfSmallerThan)
+                return (false, SkipReason.TooSmall);
 
             bool shouldProcess;
             if (MainTextureProperties.Contains(propertyName))
@@ -233,9 +266,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         private string GetTextureType(string propertyName)
         {
-            if (MainTextureProperties.Contains(propertyName)) return "Main";
-            if (NormalMapProperties.Contains(propertyName)) return "Normal";
-            if (EmissionProperties.Contains(propertyName)) return "Emission";
+            if (MainTextureProperties.Contains(propertyName))
+                return "Main";
+            if (NormalMapProperties.Contains(propertyName))
+                return "Normal";
+            if (EmissionProperties.Contains(propertyName))
+                return "Emission";
             return "Other";
         }
     }

@@ -11,10 +11,16 @@ namespace dev.limitex.avatar.compressor.editor
         /// Normalizes a value using expected percentile range.
         /// Values below lowPercentile return 0, above highPercentile return 1.
         /// </summary>
-        public static float NormalizeWithPercentile(float value, float lowPercentile, float highPercentile)
+        public static float NormalizeWithPercentile(
+            float value,
+            float lowPercentile,
+            float highPercentile
+        )
         {
-            if (value <= lowPercentile) return 0f;
-            if (value >= highPercentile) return 1f;
+            if (value <= lowPercentile)
+                return 0f;
+            if (value >= highPercentile)
+                return 1f;
             return (value - lowPercentile) / (highPercentile - lowPercentile);
         }
     }

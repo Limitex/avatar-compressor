@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor.editor.texture.ui;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.texture.ui;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -213,7 +213,7 @@ namespace dev.limitex.avatar.compressor.tests
                 TextureFormat.BC7,
                 TextureFormat.ASTC_4x4,
                 TextureFormat.ASTC_6x6,
-                TextureFormat.ASTC_8x8
+                TextureFormat.ASTC_8x8,
             };
 
             foreach (var format in formats)
@@ -221,7 +221,11 @@ namespace dev.limitex.avatar.compressor.tests
                 var color = TextureFormatUtils.GetColor(format);
 
                 Assert.That(color.r, Is.InRange(0f, 1f), $"Red channel out of range for {format}");
-                Assert.That(color.g, Is.InRange(0f, 1f), $"Green channel out of range for {format}");
+                Assert.That(
+                    color.g,
+                    Is.InRange(0f, 1f),
+                    $"Green channel out of range for {format}"
+                );
                 Assert.That(color.b, Is.InRange(0f, 1f), $"Blue channel out of range for {format}");
             }
         }

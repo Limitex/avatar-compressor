@@ -1,5 +1,5 @@
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.ui
 {
@@ -21,9 +21,17 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// </summary>
         public static void DrawProgressBar(float value, float width, float height, Color fillColor)
         {
-            Rect progressRect = EditorGUILayout.GetControlRect(GUILayout.Width(width), GUILayout.Height(height));
+            Rect progressRect = EditorGUILayout.GetControlRect(
+                GUILayout.Width(width),
+                GUILayout.Height(height)
+            );
             EditorGUI.DrawRect(progressRect, new Color(0.2f, 0.2f, 0.2f));
-            Rect filledRect = new Rect(progressRect.x, progressRect.y, progressRect.width * value, progressRect.height);
+            Rect filledRect = new Rect(
+                progressRect.x,
+                progressRect.y,
+                progressRect.width * value,
+                progressRect.height
+            );
             EditorGUI.DrawRect(filledRect, fillColor);
         }
 
@@ -47,7 +55,13 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <param name="isSelected">Whether the button is currently selected.</param>
         /// <param name="height">Button height.</param>
         /// <returns>True if clicked.</returns>
-        public static bool DrawColoredButton(string label, string tooltip, Color color, bool isSelected, float height = 40f)
+        public static bool DrawColoredButton(
+            string label,
+            string tooltip,
+            Color color,
+            bool isSelected,
+            float height = 40f
+        )
         {
             var style = EditorStylesCache.CreateButtonStyle(isSelected, height);
 
@@ -57,7 +71,11 @@ namespace dev.limitex.avatar.compressor.editor.ui
                 GUI.backgroundColor = color;
             }
 
-            bool clicked = GUILayout.Button(new GUIContent(label, tooltip), style, GUILayout.ExpandWidth(true));
+            bool clicked = GUILayout.Button(
+                new GUIContent(label, tooltip),
+                style,
+                GUILayout.ExpandWidth(true)
+            );
 
             GUI.backgroundColor = originalBg;
 

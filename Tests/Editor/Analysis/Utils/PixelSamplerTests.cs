@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -16,8 +16,14 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 64;
             Color[] pixels = CreateUniformPixels(width, height, Color.red);
 
-            PixelSampler.SampleIfNeeded(pixels, width, height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                pixels,
+                width,
+                height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             Assert.AreSame(pixels, sampledPixels);
             Assert.AreEqual(width, sampledWidth);
@@ -32,8 +38,14 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 512;
             Color[] pixels = CreateUniformPixels(width, height, Color.blue);
 
-            PixelSampler.SampleIfNeeded(pixels, width, height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                pixels,
+                width,
+                height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             Assert.AreSame(pixels, sampledPixels);
             Assert.AreEqual(width, sampledWidth);
@@ -47,8 +59,14 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 256;
             Color[] pixels = CreateUniformPixels(width, height, Color.green);
 
-            PixelSampler.SampleIfNeeded(pixels, width, height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                pixels,
+                width,
+                height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             Assert.AreSame(pixels, sampledPixels);
             Assert.AreEqual(width, sampledWidth);
@@ -66,8 +84,14 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 1024;
             Color[] pixels = CreateUniformPixels(width, height, Color.white);
 
-            PixelSampler.SampleIfNeeded(pixels, width, height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                pixels,
+                width,
+                height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             Assert.AreNotSame(pixels, sampledPixels);
             Assert.Less(sampledWidth, width);
@@ -82,8 +106,14 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 1024;
             Color[] pixels = CreateUniformPixels(width, height, Color.white);
 
-            PixelSampler.SampleIfNeeded(pixels, width, height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                pixels,
+                width,
+                height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             float originalRatio = (float)width / height;
             float sampledRatio = (float)sampledWidth / sampledHeight;
@@ -100,8 +130,14 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 4096;
             Color[] pixels = CreateUniformPixels(width, height, Color.white);
 
-            PixelSampler.SampleIfNeeded(pixels, width, height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                pixels,
+                width,
+                height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             Assert.GreaterOrEqual(sampledWidth, AnalysisConstants.MinSampledDimension);
             Assert.GreaterOrEqual(sampledHeight, AnalysisConstants.MinSampledDimension);
@@ -114,8 +150,14 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 1024;
             Color[] pixels = CreateUniformPixels(width, height, Color.red);
 
-            PixelSampler.SampleIfNeeded(pixels, width, height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                pixels,
+                width,
+                height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             Assert.AreEqual(sampledWidth * sampledHeight, sampledPixels.Length);
         }
@@ -128,8 +170,14 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 512;
             Color[] pixels = CreateUniformPixels(width, height, Color.cyan);
 
-            PixelSampler.SampleIfNeeded(pixels, width, height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                pixels,
+                width,
+                height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             Assert.AreNotSame(pixels, sampledPixels);
         }
@@ -156,8 +204,14 @@ namespace dev.limitex.avatar.compressor.tests
                 }
             }
 
-            PixelSampler.SampleIfNeeded(pixels, width, height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                pixels,
+                width,
+                height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             // Top-left corner should be close to (0, 0, 0)
             Color topLeft = sampledPixels[0];
@@ -178,8 +232,14 @@ namespace dev.limitex.avatar.compressor.tests
             Color testColor = new Color(0.5f, 0.3f, 0.7f, 1f);
             Color[] pixels = CreateUniformPixels(width, height, testColor);
 
-            PixelSampler.SampleIfNeeded(pixels, width, height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                pixels,
+                width,
+                height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             // All sampled pixels should be the same color
             foreach (Color pixel in sampledPixels)
@@ -199,8 +259,14 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 512;
             Color[] pixels = CreateUniformPixels(width, height, Color.magenta);
 
-            PixelSampler.SampleIfNeeded(pixels, width, height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                pixels,
+                width,
+                height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             Assert.AreNotSame(pixels, sampledPixels);
             Assert.LessOrEqual(sampledWidth * sampledHeight, AnalysisConstants.MaxSampledPixels);
@@ -213,8 +279,14 @@ namespace dev.limitex.avatar.compressor.tests
             int height = 2048;
             Color[] pixels = CreateUniformPixels(width, height, Color.yellow);
 
-            PixelSampler.SampleIfNeeded(pixels, width, height,
-                out Color[] sampledPixels, out int sampledWidth, out int sampledHeight);
+            PixelSampler.SampleIfNeeded(
+                pixels,
+                width,
+                height,
+                out Color[] sampledPixels,
+                out int sampledWidth,
+                out int sampledHeight
+            );
 
             Assert.AreNotSame(pixels, sampledPixels);
             Assert.LessOrEqual(sampledWidth * sampledHeight, AnalysisConstants.MaxSampledPixels);

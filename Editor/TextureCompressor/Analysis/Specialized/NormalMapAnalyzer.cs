@@ -11,13 +11,18 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public TextureComplexityResult Analyze(ProcessedPixelData data)
         {
             float score = CalculateNormalMapComplexity(data.OpaquePixels, data.Width, data.Height);
-            return new TextureComplexityResult(score, "Normal map complexity based on vector variation");
+            return new TextureComplexityResult(
+                score,
+                "Normal map complexity based on vector variation"
+            );
         }
 
         private float CalculateNormalMapComplexity(Color[] pixels, int width, int height)
         {
-            if (width < AnalysisConstants.MinNormalMapDimension ||
-                height < AnalysisConstants.MinNormalMapDimension)
+            if (
+                width < AnalysisConstants.MinNormalMapDimension
+                || height < AnalysisConstants.MinNormalMapDimension
+            )
             {
                 return AnalysisConstants.DefaultComplexityScore;
             }
@@ -40,7 +45,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     int idxDown = idx + width;
                     int idxUp = idx - width;
 
-                    if (idxDown >= pixels.Length || idxUp < 0) continue;
+                    if (idxDown >= pixels.Length || idxUp < 0)
+                        continue;
 
                     Vector3 n0 = DecodeNormal(pixels[idx]);
                     Vector3 n1 = DecodeNormal(pixels[idxRight]);
@@ -66,11 +72,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         private Vector3 DecodeNormal(Color c)
         {
-            Vector3 n = new Vector3(
-                c.r * 2f - 1f,
-                c.g * 2f - 1f,
-                c.b * 2f - 1f
-            );
+            Vector3 n = new Vector3(c.r * 2f - 1f, c.g * 2f - 1f, c.b * 2f - 1f);
             return n.normalized;
         }
     }

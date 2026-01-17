@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using NUnit.Framework;
-using UnityEditor;
-using UnityEngine;
 using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.editor.texture;
+using NUnit.Framework;
+using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -31,7 +31,10 @@ namespace dev.limitex.avatar.compressor.tests
             _rootObjects = new List<GameObject>();
             _createdAssetPaths = new List<string>();
             _standardShader = Shader.Find("Standard");
-            Assert.IsNotNull(_standardShader, "Standard shader not found. Tests require Unity Editor environment.");
+            Assert.IsNotNull(
+                _standardShader,
+                "Standard shader not found. Tests require Unity Editor environment."
+            );
 
             // Ensure test folder exists
             if (!AssetDatabase.IsValidFolder(TestAssetFolder))
@@ -46,7 +49,8 @@ namespace dev.limitex.avatar.compressor.tests
             // Clean up compressed materials and textures created by the compression service
             foreach (var root in _rootObjects)
             {
-                if (root == null) continue;
+                if (root == null)
+                    continue;
                 CleanupCompressedAssets(root);
             }
 
@@ -64,7 +68,10 @@ namespace dev.limitex.avatar.compressor.tests
             // Delete created asset files
             foreach (var path in _createdAssetPaths)
             {
-                if (!string.IsNullOrEmpty(path) && AssetDatabase.LoadAssetAtPath<Object>(path) != null)
+                if (
+                    !string.IsNullOrEmpty(path)
+                    && AssetDatabase.LoadAssetAtPath<Object>(path) != null
+                )
                 {
                     AssetDatabase.DeleteAsset(path);
                 }
@@ -87,10 +94,12 @@ namespace dev.limitex.avatar.compressor.tests
             var renderers = root.GetComponentsInChildren<Renderer>(true);
             foreach (var renderer in renderers)
             {
-                if (renderer == null) continue;
+                if (renderer == null)
+                    continue;
                 foreach (var mat in renderer.sharedMaterials)
                 {
-                    if (mat == null || _createdObjects.Contains(mat)) continue;
+                    if (mat == null || _createdObjects.Contains(mat))
+                        continue;
 
                     // Destroy compressed textures on cloned materials
                     DestroyCompressedTextures(mat);
@@ -109,14 +118,17 @@ namespace dev.limitex.avatar.compressor.tests
                     continue;
 
                 var tex = mat.GetTexture(shader.GetPropertyName(i));
-                if (tex == null) continue;
+                if (tex == null)
+                    continue;
 
                 // Skip if it's an asset (has asset path) - only destroy runtime-created textures
                 string assetPath = AssetDatabase.GetAssetPath(tex);
-                if (!string.IsNullOrEmpty(assetPath)) continue;
+                if (!string.IsNullOrEmpty(assetPath))
+                    continue;
 
                 // Skip if it's in our created objects list
-                if (_createdObjects.Contains(tex)) continue;
+                if (_createdObjects.Contains(tex))
+                    continue;
 
                 Object.DestroyImmediate(tex);
             }
@@ -146,8 +158,11 @@ namespace dev.limitex.avatar.compressor.tests
             AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture);
 
             // Original material instance should still have the original texture
-            Assert.AreEqual(textureBeforeCompress, originalMaterial.GetTexture("_MainTex"),
-                "Original material's texture reference should not be changed");
+            Assert.AreEqual(
+                textureBeforeCompress,
+                originalMaterial.GetTexture("_MainTex"),
+                "Original material's texture reference should not be changed"
+            );
         }
 
         [Test]
@@ -170,8 +185,11 @@ namespace dev.limitex.avatar.compressor.tests
             // Verify compression was performed
             AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture);
 
-            Assert.AreEqual(originalShader, originalMaterial.shader,
-                "Original material's shader should not be changed");
+            Assert.AreEqual(
+                originalShader,
+                originalMaterial.shader,
+                "Original material's shader should not be changed"
+            );
         }
 
         [Test]
@@ -195,8 +213,11 @@ namespace dev.limitex.avatar.compressor.tests
             // Verify compression was performed
             AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture);
 
-            Assert.AreEqual(originalColor, originalMaterial.color,
-                "Original material's color should not be changed");
+            Assert.AreEqual(
+                originalColor,
+                originalMaterial.color,
+                "Original material's color should not be changed"
+            );
         }
 
         [Test]
@@ -217,8 +238,11 @@ namespace dev.limitex.avatar.compressor.tests
             // Verify compression was performed
             AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture);
 
-            Assert.AreEqual("MyTestMaterial", originalMaterial.name,
-                "Original material's name should not be changed");
+            Assert.AreEqual(
+                "MyTestMaterial",
+                originalMaterial.name,
+                "Original material's name should not be changed"
+            );
         }
 
         [Test]
@@ -242,8 +266,11 @@ namespace dev.limitex.avatar.compressor.tests
             // Verify compression was performed
             AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture);
 
-            Assert.AreEqual(originalRenderQueue, originalMaterial.renderQueue,
-                "Original material's render queue should not be changed");
+            Assert.AreEqual(
+                originalRenderQueue,
+                originalMaterial.renderQueue,
+                "Original material's render queue should not be changed"
+            );
         }
 
         #endregion
@@ -273,8 +300,11 @@ namespace dev.limitex.avatar.compressor.tests
 
             // Verify original texture pixels are unchanged
             var pixelsAfterCompress = originalTexture.GetPixels();
-            CollectionAssert.AreEqual(originalPixels, pixelsAfterCompress,
-                "Original texture pixels should not be changed");
+            CollectionAssert.AreEqual(
+                originalPixels,
+                pixelsAfterCompress,
+                "Original texture pixels should not be changed"
+            );
         }
 
         [Test]
@@ -298,10 +328,16 @@ namespace dev.limitex.avatar.compressor.tests
             // Verify compression was performed
             AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture);
 
-            Assert.AreEqual(originalWidth, originalTexture.width,
-                "Original texture width should not be changed");
-            Assert.AreEqual(originalHeight, originalTexture.height,
-                "Original texture height should not be changed");
+            Assert.AreEqual(
+                originalWidth,
+                originalTexture.width,
+                "Original texture width should not be changed"
+            );
+            Assert.AreEqual(
+                originalHeight,
+                originalTexture.height,
+                "Original texture height should not be changed"
+            );
         }
 
         [Test]
@@ -323,8 +359,11 @@ namespace dev.limitex.avatar.compressor.tests
             // Verify compression was performed
             AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture);
 
-            Assert.AreEqual("MyOriginalTexture", originalTexture.name,
-                "Original texture name should not be changed");
+            Assert.AreEqual(
+                "MyOriginalTexture",
+                originalTexture.name,
+                "Original texture name should not be changed"
+            );
         }
 
         [Test]
@@ -347,8 +386,11 @@ namespace dev.limitex.avatar.compressor.tests
             // Verify compression was performed
             AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture);
 
-            Assert.AreEqual(originalFormat, originalTexture.format,
-                "Original texture format should not be changed");
+            Assert.AreEqual(
+                originalFormat,
+                originalTexture.format,
+                "Original texture format should not be changed"
+            );
         }
 
         #endregion
@@ -380,8 +422,11 @@ namespace dev.limitex.avatar.compressor.tests
             service.Compress(root, false);
 
             // Verify compression was performed
-            Assert.AreNotSame(originalMaterial, renderer.sharedMaterial,
-                "Renderer should use cloned material after compression");
+            Assert.AreNotSame(
+                originalMaterial,
+                renderer.sharedMaterial,
+                "Renderer should use cloned material after compression"
+            );
 
             // Verify all original textures are unchanged
             Assert.AreEqual("MainTexture", mainTexture.name);
@@ -390,10 +435,16 @@ namespace dev.limitex.avatar.compressor.tests
             var mainPixelsAfter = mainTexture.GetPixels();
             var normalPixelsAfter = normalTexture.GetPixels();
 
-            CollectionAssert.AreEqual(mainPixels, mainPixelsAfter,
-                "Main texture pixels should not be changed");
-            CollectionAssert.AreEqual(normalPixels, normalPixelsAfter,
-                "Normal texture pixels should not be changed");
+            CollectionAssert.AreEqual(
+                mainPixels,
+                mainPixelsAfter,
+                "Main texture pixels should not be changed"
+            );
+            CollectionAssert.AreEqual(
+                normalPixels,
+                normalPixelsAfter,
+                "Normal texture pixels should not be changed"
+            );
         }
 
         [Test]
@@ -427,19 +478,37 @@ namespace dev.limitex.avatar.compressor.tests
             service.Compress(root, false);
 
             // Verify compression was performed on both renderers
-            Assert.AreNotSame(material1, renderer1.sharedMaterial,
-                "Renderer1 should use cloned material after compression");
-            Assert.AreNotSame(material2, renderer2.sharedMaterial,
-                "Renderer2 should use cloned material after compression");
+            Assert.AreNotSame(
+                material1,
+                renderer1.sharedMaterial,
+                "Renderer1 should use cloned material after compression"
+            );
+            Assert.AreNotSame(
+                material2,
+                renderer2.sharedMaterial,
+                "Renderer2 should use cloned material after compression"
+            );
 
-            Assert.AreEqual("SharedTexture", sharedTexture.name,
-                "Original shared texture name should not be changed");
-            Assert.AreEqual(originalWidth, sharedTexture.width,
-                "Original shared texture width should not be changed");
-            Assert.AreEqual(originalHeight, sharedTexture.height,
-                "Original shared texture height should not be changed");
-            CollectionAssert.AreEqual(originalPixels, sharedTexture.GetPixels(),
-                "Original shared texture pixels should not be changed");
+            Assert.AreEqual(
+                "SharedTexture",
+                sharedTexture.name,
+                "Original shared texture name should not be changed"
+            );
+            Assert.AreEqual(
+                originalWidth,
+                sharedTexture.width,
+                "Original shared texture width should not be changed"
+            );
+            Assert.AreEqual(
+                originalHeight,
+                sharedTexture.height,
+                "Original shared texture height should not be changed"
+            );
+            CollectionAssert.AreEqual(
+                originalPixels,
+                sharedTexture.GetPixels(),
+                "Original shared texture pixels should not be changed"
+            );
         }
 
         #endregion
@@ -476,10 +545,16 @@ namespace dev.limitex.avatar.compressor.tests
             AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture);
 
             // Original material should still reference original texture
-            Assert.AreEqual(materialTextureRef, originalMaterial.GetTexture("_MainTex"),
-                "Original material in deep hierarchy should still reference original texture");
-            CollectionAssert.AreEqual(originalPixels, originalTexture.GetPixels(),
-                "Original texture in deep hierarchy should have unchanged pixels");
+            Assert.AreEqual(
+                materialTextureRef,
+                originalMaterial.GetTexture("_MainTex"),
+                "Original material in deep hierarchy should still reference original texture"
+            );
+            CollectionAssert.AreEqual(
+                originalPixels,
+                originalTexture.GetPixels(),
+                "Original texture in deep hierarchy should have unchanged pixels"
+            );
         }
 
         [Test]
@@ -507,10 +582,16 @@ namespace dev.limitex.avatar.compressor.tests
             // Verify compression was performed (inactive objects should also be processed)
             AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture);
 
-            Assert.AreEqual(materialTextureRef, originalMaterial.GetTexture("_MainTex"),
-                "Original material on inactive GameObject should still reference original texture");
-            CollectionAssert.AreEqual(originalPixels, originalTexture.GetPixels(),
-                "Original texture on inactive GameObject should have unchanged pixels");
+            Assert.AreEqual(
+                materialTextureRef,
+                originalMaterial.GetTexture("_MainTex"),
+                "Original material on inactive GameObject should still reference original texture"
+            );
+            CollectionAssert.AreEqual(
+                originalPixels,
+                originalTexture.GetPixels(),
+                "Original texture on inactive GameObject should have unchanged pixels"
+            );
         }
 
         #endregion
@@ -533,10 +614,16 @@ namespace dev.limitex.avatar.compressor.tests
             service.Compress(root, false);
 
             // Renderer should now use a cloned material, not the original
-            Assert.AreNotSame(originalMaterial, renderer.sharedMaterial,
-                "Renderer should use cloned material, not original");
-            Assert.That(renderer.sharedMaterial.name, Does.Contain(CloneSuffix),
-                $"Cloned material should have '{CloneSuffix}' suffix");
+            Assert.AreNotSame(
+                originalMaterial,
+                renderer.sharedMaterial,
+                "Renderer should use cloned material, not original"
+            );
+            Assert.That(
+                renderer.sharedMaterial.name,
+                Does.Contain(CloneSuffix),
+                $"Cloned material should have '{CloneSuffix}' suffix"
+            );
         }
 
         [Test]
@@ -559,10 +646,16 @@ namespace dev.limitex.avatar.compressor.tests
             var textureOnClone = clonedMaterial.GetTexture("_MainTex") as Texture2D;
 
             Assert.IsNotNull(textureOnClone);
-            Assert.AreNotSame(originalTexture, textureOnClone,
-                "Cloned material should use compressed texture, not original");
-            Assert.That(textureOnClone.name, Does.Contain(CompressedSuffix),
-                $"Compressed texture should have '{CompressedSuffix}' suffix");
+            Assert.AreNotSame(
+                originalTexture,
+                textureOnClone,
+                "Cloned material should use compressed texture, not original"
+            );
+            Assert.That(
+                textureOnClone.name,
+                Does.Contain(CompressedSuffix),
+                $"Compressed texture should have '{CompressedSuffix}' suffix"
+            );
         }
 
         [Test]
@@ -585,10 +678,16 @@ namespace dev.limitex.avatar.compressor.tests
             renderer.sharedMaterial = originalMaterial;
 
             // Verify restoration
-            Assert.AreEqual(originalMaterial, renderer.sharedMaterial,
-                "Original material should be restorable");
-            Assert.AreEqual(originalTexture, renderer.sharedMaterial.GetTexture("_MainTex"),
-                "Original texture should be accessible after restoration");
+            Assert.AreEqual(
+                originalMaterial,
+                renderer.sharedMaterial,
+                "Original material should be restorable"
+            );
+            Assert.AreEqual(
+                originalTexture,
+                renderer.sharedMaterial.GetTexture("_MainTex"),
+                "Original texture should be accessible after restoration"
+            );
         }
 
         #endregion
@@ -607,13 +706,15 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var config = CreateConfig();
             // Add frozen settings to config (won't match runtime textures due to no asset GUID)
-            config.FrozenTextures.Add(new FrozenTextureSettings
-            {
-                TextureGuid = "00000000000000000000000000000001",
-                Divisor = 2,
-                Format = FrozenTextureFormat.DXT5,
-                Skip = false
-            });
+            config.FrozenTextures.Add(
+                new FrozenTextureSettings
+                {
+                    TextureGuid = "00000000000000000000000000000001",
+                    Divisor = 2,
+                    Format = FrozenTextureFormat.DXT5,
+                    Skip = false,
+                }
+            );
             var service = new TextureCompressorService(config);
 
             var root = CreateRootGameObject("Root");
@@ -631,8 +732,11 @@ namespace dev.limitex.avatar.compressor.tests
             AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture);
 
             // Original texture should remain unchanged
-            CollectionAssert.AreEqual(originalPixels, originalTexture.GetPixels(),
-                "Original texture should remain unchanged when frozen settings exist in config");
+            CollectionAssert.AreEqual(
+                originalPixels,
+                originalTexture.GetPixels(),
+                "Original texture should remain unchanged when frozen settings exist in config"
+            );
         }
 
         /// <summary>
@@ -643,11 +747,13 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var config = CreateConfig();
             // Add frozen skip settings (dummy GUID that won't match any real texture)
-            config.FrozenTextures.Add(new FrozenTextureSettings
-            {
-                TextureGuid = "00000000000000000000000000000002",
-                Skip = true
-            });
+            config.FrozenTextures.Add(
+                new FrozenTextureSettings
+                {
+                    TextureGuid = "00000000000000000000000000000002",
+                    Skip = true,
+                }
+            );
             var service = new TextureCompressorService(config);
 
             var root = CreateRootGameObject("Root");
@@ -662,12 +768,18 @@ namespace dev.limitex.avatar.compressor.tests
             service.Compress(root, false);
 
             // Material should be cloned regardless of frozen settings
-            Assert.AreNotSame(originalMaterial, renderer.sharedMaterial,
-                "Material should be cloned even with frozen skip settings in config");
+            Assert.AreNotSame(
+                originalMaterial,
+                renderer.sharedMaterial,
+                "Material should be cloned even with frozen skip settings in config"
+            );
 
             // Original texture should remain unchanged
-            CollectionAssert.AreEqual(originalPixels, originalTexture.GetPixels(),
-                "Original texture should remain unchanged");
+            CollectionAssert.AreEqual(
+                originalPixels,
+                originalTexture.GetPixels(),
+                "Original texture should remain unchanged"
+            );
         }
 
         #endregion
@@ -695,10 +807,16 @@ namespace dev.limitex.avatar.compressor.tests
             // Verify compression was performed
             AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture);
 
-            Assert.AreEqual(materialTextureRef, originalMaterial.GetTexture("_MainTex"),
-                "Original material on SkinnedMeshRenderer should still reference original texture");
-            CollectionAssert.AreEqual(originalPixels, originalTexture.GetPixels(),
-                "Original texture on SkinnedMeshRenderer should have unchanged pixels");
+            Assert.AreEqual(
+                materialTextureRef,
+                originalMaterial.GetTexture("_MainTex"),
+                "Original material on SkinnedMeshRenderer should still reference original texture"
+            );
+            CollectionAssert.AreEqual(
+                originalPixels,
+                originalTexture.GetPixels(),
+                "Original texture on SkinnedMeshRenderer should have unchanged pixels"
+            );
         }
 
         [Test]
@@ -735,10 +853,16 @@ namespace dev.limitex.avatar.compressor.tests
             AssertCompressionWasPerformed(meshRenderer, meshMaterial, meshTexture);
             AssertCompressionWasPerformed(skinnedRenderer, skinnedMaterial, skinnedTexture);
 
-            CollectionAssert.AreEqual(meshPixels, meshTexture.GetPixels(),
-                "Original MeshRenderer texture should have unchanged pixels");
-            CollectionAssert.AreEqual(skinnedPixels, skinnedTexture.GetPixels(),
-                "Original SkinnedMeshRenderer texture should have unchanged pixels");
+            CollectionAssert.AreEqual(
+                meshPixels,
+                meshTexture.GetPixels(),
+                "Original MeshRenderer texture should have unchanged pixels"
+            );
+            CollectionAssert.AreEqual(
+                skinnedPixels,
+                skinnedTexture.GetPixels(),
+                "Original SkinnedMeshRenderer texture should have unchanged pixels"
+            );
         }
 
         #endregion
@@ -772,15 +896,29 @@ namespace dev.limitex.avatar.compressor.tests
 
             // Verify material cloning was performed (texture compression may be skipped
             // depending on preset's MinSourceSize setting)
-            AssertCompressionWasPerformed(renderer, originalMaterial, originalTexture, verifyTextureCompression: false);
+            AssertCompressionWasPerformed(
+                renderer,
+                originalMaterial,
+                originalTexture,
+                verifyTextureCompression: false
+            );
 
             // Verify original assets are unchanged
-            Assert.AreEqual(originalWidth, originalTexture.width,
-                $"Original texture width should not change with {preset} preset");
-            Assert.AreEqual(originalHeight, originalTexture.height,
-                $"Original texture height should not change with {preset} preset");
-            CollectionAssert.AreEqual(originalPixels, originalTexture.GetPixels(),
-                $"Original texture pixels should not change with {preset} preset");
+            Assert.AreEqual(
+                originalWidth,
+                originalTexture.width,
+                $"Original texture width should not change with {preset} preset"
+            );
+            Assert.AreEqual(
+                originalHeight,
+                originalTexture.height,
+                $"Original texture height should not change with {preset} preset"
+            );
+            CollectionAssert.AreEqual(
+                originalPixels,
+                originalTexture.GetPixels(),
+                $"Original texture pixels should not change with {preset} preset"
+            );
         }
 
         #endregion
@@ -799,18 +937,28 @@ namespace dev.limitex.avatar.compressor.tests
             // Material has no texture set
             renderer.sharedMaterial = originalMaterial;
 
-            Assert.DoesNotThrow(() => service.Compress(root, false),
-                "Compression should not throw when material has no texture");
+            Assert.DoesNotThrow(
+                () => service.Compress(root, false),
+                "Compression should not throw when material has no texture"
+            );
 
             // Material should still be cloned
-            Assert.AreNotSame(originalMaterial, renderer.sharedMaterial,
-                "Material should be cloned even without texture");
-            Assert.That(renderer.sharedMaterial.name, Does.Contain(CloneSuffix),
-                $"Cloned material should have '{CloneSuffix}' suffix");
+            Assert.AreNotSame(
+                originalMaterial,
+                renderer.sharedMaterial,
+                "Material should be cloned even without texture"
+            );
+            Assert.That(
+                renderer.sharedMaterial.name,
+                Does.Contain(CloneSuffix),
+                $"Cloned material should have '{CloneSuffix}' suffix"
+            );
 
             // Cloned material should also have null texture
-            Assert.IsNull(renderer.sharedMaterial.GetTexture("_MainTex"),
-                "Cloned material should have null texture like original");
+            Assert.IsNull(
+                renderer.sharedMaterial.GetTexture("_MainTex"),
+                "Cloned material should have null texture like original"
+            );
         }
 
         [Test]
@@ -823,12 +971,16 @@ namespace dev.limitex.avatar.compressor.tests
             var renderer = root.AddComponent<MeshRenderer>();
             renderer.sharedMaterial = null;
 
-            Assert.DoesNotThrow(() => service.Compress(root, false),
-                "Compression should not throw when renderer has null material");
+            Assert.DoesNotThrow(
+                () => service.Compress(root, false),
+                "Compression should not throw when renderer has null material"
+            );
 
             // Renderer should still have null material
-            Assert.IsNull(renderer.sharedMaterial,
-                "Renderer with null material should remain null after compression");
+            Assert.IsNull(
+                renderer.sharedMaterial,
+                "Renderer with null material should remain null after compression"
+            );
         }
 
         [Test]
@@ -841,12 +993,17 @@ namespace dev.limitex.avatar.compressor.tests
             var renderer = root.AddComponent<MeshRenderer>();
             renderer.sharedMaterials = new Material[0];
 
-            Assert.DoesNotThrow(() => service.Compress(root, false),
-                "Compression should not throw when renderer has empty material array");
+            Assert.DoesNotThrow(
+                () => service.Compress(root, false),
+                "Compression should not throw when renderer has empty material array"
+            );
 
             // Material array should remain empty
-            Assert.AreEqual(0, renderer.sharedMaterials.Length,
-                "Empty material array should remain empty after compression");
+            Assert.AreEqual(
+                0,
+                renderer.sharedMaterials.Length,
+                "Empty material array should remain empty after compression"
+            );
         }
 
         [Test]
@@ -866,8 +1023,10 @@ namespace dev.limitex.avatar.compressor.tests
 
             var originalPixels = originalTexture.GetPixels();
 
-            Assert.DoesNotThrow(() => service.Compress(root, false),
-                "Compression should not throw when material array contains null elements");
+            Assert.DoesNotThrow(
+                () => service.Compress(root, false),
+                "Compression should not throw when material array contains null elements"
+            );
 
             // Verify array structure is preserved
             var materials = renderer.sharedMaterials;
@@ -877,14 +1036,19 @@ namespace dev.limitex.avatar.compressor.tests
 
             // Non-null material should be cloned
             Assert.IsNotNull(materials[1], "Non-null material should not become null");
-            Assert.AreNotSame(originalMaterial, materials[1],
-                "Non-null material should be cloned");
-            Assert.That(materials[1].name, Does.Contain(CloneSuffix),
-                $"Cloned material should have '{CloneSuffix}' suffix");
+            Assert.AreNotSame(originalMaterial, materials[1], "Non-null material should be cloned");
+            Assert.That(
+                materials[1].name,
+                Does.Contain(CloneSuffix),
+                $"Cloned material should have '{CloneSuffix}' suffix"
+            );
 
             // Verify original texture is unchanged
-            CollectionAssert.AreEqual(originalPixels, originalTexture.GetPixels(),
-                "Original texture should remain unchanged when material array contains null elements");
+            CollectionAssert.AreEqual(
+                originalPixels,
+                originalTexture.GetPixels(),
+                "Original texture should remain unchanged when material array contains null elements"
+            );
         }
 
         [Test]
@@ -896,12 +1060,17 @@ namespace dev.limitex.avatar.compressor.tests
             var root = CreateRootGameObject("Root");
             // No renderer attached
 
-            Assert.DoesNotThrow(() => service.Compress(root, false),
-                "Compression should not throw when there are no renderers");
+            Assert.DoesNotThrow(
+                () => service.Compress(root, false),
+                "Compression should not throw when there are no renderers"
+            );
 
             // Root should remain unchanged
-            Assert.AreEqual(0, root.GetComponentsInChildren<Renderer>(true).Length,
-                "No renderers should be added after compression");
+            Assert.AreEqual(
+                0,
+                root.GetComponentsInChildren<Renderer>(true).Length,
+                "No renderers should be added after compression"
+            );
         }
 
         [Test]
@@ -924,19 +1093,31 @@ namespace dev.limitex.avatar.compressor.tests
             service.Compress(root, false);
 
             // Material should be cloned
-            Assert.AreNotSame(originalMaterial, renderer.sharedMaterial,
-                "Material should be cloned even when texture is at SkipIfSmallerThan boundary");
-            Assert.That(renderer.sharedMaterial.name, Does.Contain(CloneSuffix),
-                $"Cloned material should have '{CloneSuffix}' suffix");
+            Assert.AreNotSame(
+                originalMaterial,
+                renderer.sharedMaterial,
+                "Material should be cloned even when texture is at SkipIfSmallerThan boundary"
+            );
+            Assert.That(
+                renderer.sharedMaterial.name,
+                Does.Contain(CloneSuffix),
+                $"Cloned material should have '{CloneSuffix}' suffix"
+            );
 
             // Texture should NOT be compressed (at boundary, uses <=)
             var textureOnClone = renderer.sharedMaterial.GetTexture("_MainTex");
-            Assert.AreSame(originalTexture, textureOnClone,
-                "Cloned material should reference original texture when at SkipIfSmallerThan boundary");
+            Assert.AreSame(
+                originalTexture,
+                textureOnClone,
+                "Cloned material should reference original texture when at SkipIfSmallerThan boundary"
+            );
 
             // Original texture should remain unchanged
-            CollectionAssert.AreEqual(originalPixels, originalTexture.GetPixels(),
-                "Original texture at SkipIfSmallerThan boundary should remain unchanged");
+            CollectionAssert.AreEqual(
+                originalPixels,
+                originalTexture.GetPixels(),
+                "Original texture at SkipIfSmallerThan boundary should remain unchanged"
+            );
         }
 
         [Test]
@@ -980,19 +1161,31 @@ namespace dev.limitex.avatar.compressor.tests
             service.Compress(root, false);
 
             // Material should still be cloned (MaterialCloner runs unconditionally)
-            Assert.AreNotSame(originalMaterial, renderer.sharedMaterial,
-                "Material should be cloned even when texture is below min size");
-            Assert.That(renderer.sharedMaterial.name, Does.Contain(CloneSuffix),
-                $"Cloned material should have '{CloneSuffix}' suffix");
+            Assert.AreNotSame(
+                originalMaterial,
+                renderer.sharedMaterial,
+                "Material should be cloned even when texture is below min size"
+            );
+            Assert.That(
+                renderer.sharedMaterial.name,
+                Does.Contain(CloneSuffix),
+                $"Cloned material should have '{CloneSuffix}' suffix"
+            );
 
             // But texture should NOT be compressed (kept as original reference)
             var textureOnClone = renderer.sharedMaterial.GetTexture("_MainTex");
-            Assert.AreSame(originalTexture, textureOnClone,
-                "Cloned material should reference original texture when below min size");
+            Assert.AreSame(
+                originalTexture,
+                textureOnClone,
+                "Cloned material should reference original texture when below min size"
+            );
 
             // Original texture should remain unchanged
-            CollectionAssert.AreEqual(originalPixels, originalTexture.GetPixels(),
-                "Original texture below min size should remain unchanged");
+            CollectionAssert.AreEqual(
+                originalPixels,
+                originalTexture.GetPixels(),
+                "Original texture below min size should remain unchanged"
+            );
         }
 
         #endregion
@@ -1052,7 +1245,8 @@ namespace dev.limitex.avatar.compressor.tests
             texture.Apply();
 
             // Save as asset to get a valid asset path
-            string assetPath = $"{TestAssetFolder}/TestTexture_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            string assetPath =
+                $"{TestAssetFolder}/TestTexture_{width}x{height}_{System.Guid.NewGuid():N}.asset";
             AssetDatabase.CreateAsset(texture, assetPath);
             _createdAssetPaths.Add(assetPath);
 
@@ -1067,22 +1261,39 @@ namespace dev.limitex.avatar.compressor.tests
         /// Note: Texture compression may be skipped based on preset settings (e.g., MinSourceSize),
         /// so we only verify texture compression when explicitly requested.
         /// </summary>
-        private void AssertCompressionWasPerformed(Renderer renderer, Material originalMaterial, Texture2D originalTexture, bool verifyTextureCompression = true)
+        private void AssertCompressionWasPerformed(
+            Renderer renderer,
+            Material originalMaterial,
+            Texture2D originalTexture,
+            bool verifyTextureCompression = true
+        )
         {
-            Assert.AreNotSame(originalMaterial, renderer.sharedMaterial,
-                "Renderer should use cloned material after compression");
-            Assert.That(renderer.sharedMaterial.name, Does.Contain(CloneSuffix),
-                $"Cloned material should have '{CloneSuffix}' suffix");
+            Assert.AreNotSame(
+                originalMaterial,
+                renderer.sharedMaterial,
+                "Renderer should use cloned material after compression"
+            );
+            Assert.That(
+                renderer.sharedMaterial.name,
+                Does.Contain(CloneSuffix),
+                $"Cloned material should have '{CloneSuffix}' suffix"
+            );
 
             if (verifyTextureCompression)
             {
                 var textureOnClone = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
                 if (textureOnClone != null)
                 {
-                    Assert.AreNotSame(originalTexture, textureOnClone,
-                        "Cloned material should use compressed texture, not original");
-                    Assert.That(textureOnClone.name, Does.Contain(CompressedSuffix),
-                        $"Compressed texture should have '{CompressedSuffix}' suffix");
+                    Assert.AreNotSame(
+                        originalTexture,
+                        textureOnClone,
+                        "Cloned material should use compressed texture, not original"
+                    );
+                    Assert.That(
+                        textureOnClone.name,
+                        Does.Contain(CompressedSuffix),
+                        $"Compressed texture should have '{CompressedSuffix}' suffix"
+                    );
                 }
             }
         }

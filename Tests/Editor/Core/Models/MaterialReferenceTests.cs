@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor.editor.texture;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -40,7 +40,8 @@ namespace dev.limitex.avatar.compressor.tests
             var reference = new MaterialReference(
                 material,
                 MaterialSourceType.Renderer,
-                sourceObject);
+                sourceObject
+            );
 
             Assert.AreEqual(material, reference.Material);
             Assert.AreEqual(MaterialSourceType.Renderer, reference.SourceType);
@@ -52,10 +53,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var sourceObject = CreateGameObject("SourceObject");
 
-            var reference = new MaterialReference(
-                null,
-                MaterialSourceType.Component,
-                sourceObject);
+            var reference = new MaterialReference(null, MaterialSourceType.Component, sourceObject);
 
             Assert.IsNull(reference.Material);
         }
@@ -65,10 +63,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var material = CreateMaterial();
 
-            var reference = new MaterialReference(
-                material,
-                MaterialSourceType.Animation,
-                null);
+            var reference = new MaterialReference(material, MaterialSourceType.Animation, null);
 
             Assert.IsNull(reference.SourceObject);
         }
@@ -181,19 +176,25 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void MaterialSourceType_RendererValue_IsDefined()
         {
-            Assert.That(System.Enum.IsDefined(typeof(MaterialSourceType), MaterialSourceType.Renderer));
+            Assert.That(
+                System.Enum.IsDefined(typeof(MaterialSourceType), MaterialSourceType.Renderer)
+            );
         }
 
         [Test]
         public void MaterialSourceType_AnimationValue_IsDefined()
         {
-            Assert.That(System.Enum.IsDefined(typeof(MaterialSourceType), MaterialSourceType.Animation));
+            Assert.That(
+                System.Enum.IsDefined(typeof(MaterialSourceType), MaterialSourceType.Animation)
+            );
         }
 
         [Test]
         public void MaterialSourceType_ComponentValue_IsDefined()
         {
-            Assert.That(System.Enum.IsDefined(typeof(MaterialSourceType), MaterialSourceType.Component));
+            Assert.That(
+                System.Enum.IsDefined(typeof(MaterialSourceType), MaterialSourceType.Component)
+            );
         }
 
         [Test]

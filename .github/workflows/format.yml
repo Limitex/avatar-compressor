@@ -1,0 +1,28 @@
+name: Format Check
+
+on:
+  push:
+  pull_request_target:
+  workflow_dispatch:
+
+jobs:
+  format:
+    name: CSharpier Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dotnet tools
+        run: dotnet tool restore
+
+      - name: Check formatting
+        run: dotnet csharpier check .

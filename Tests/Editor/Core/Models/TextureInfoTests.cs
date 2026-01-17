@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using dev.limitex.avatar.compressor.editor.texture;
+using NUnit.Framework;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -180,7 +180,7 @@ namespace dev.limitex.avatar.compressor.tests
                 SkipReason.FilteredByType,
                 SkipReason.FrozenSkip,
                 SkipReason.RuntimeGenerated,
-                SkipReason.ExcludedPath
+                SkipReason.ExcludedPath,
             };
 
             var uniqueValues = new System.Collections.Generic.HashSet<SkipReason>(values);

@@ -1,6 +1,6 @@
+using dev.limitex.avatar.compressor;
 using NUnit.Framework;
 using UnityEngine;
-using dev.limitex.avatar.compressor;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -48,7 +48,12 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void SetFrozenSettings_AddsNewEntry()
         {
-            var settings = new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false);
+            var settings = new FrozenTextureSettings(
+                "test-guid",
+                2,
+                FrozenTextureFormat.Auto,
+                false
+            );
 
             _config.SetFrozenSettings("test-guid", settings);
 
@@ -58,7 +63,12 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void SetFrozenSettings_IsFrozenReturnsTrue()
         {
-            var settings = new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false);
+            var settings = new FrozenTextureSettings(
+                "test-guid",
+                2,
+                FrozenTextureFormat.Auto,
+                false
+            );
 
             _config.SetFrozenSettings("test-guid", settings);
 
@@ -68,8 +78,18 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void SetFrozenSettings_UpdatesExistingEntry()
         {
-            var settings1 = new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false);
-            var settings2 = new FrozenTextureSettings("test-guid", 4, FrozenTextureFormat.BC7, false);
+            var settings1 = new FrozenTextureSettings(
+                "test-guid",
+                2,
+                FrozenTextureFormat.Auto,
+                false
+            );
+            var settings2 = new FrozenTextureSettings(
+                "test-guid",
+                4,
+                FrozenTextureFormat.BC7,
+                false
+            );
 
             _config.SetFrozenSettings("test-guid", settings1);
             _config.SetFrozenSettings("test-guid", settings2);
@@ -81,9 +101,18 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void SetFrozenSettings_MultipleDifferentTextures_WorksCorrectly()
         {
-            _config.SetFrozenSettings("guid-1", new FrozenTextureSettings("guid-1", 2, FrozenTextureFormat.Auto, false));
-            _config.SetFrozenSettings("guid-2", new FrozenTextureSettings("guid-2", 4, FrozenTextureFormat.Auto, false));
-            _config.SetFrozenSettings("guid-3", new FrozenTextureSettings("guid-3", 8, FrozenTextureFormat.Auto, false));
+            _config.SetFrozenSettings(
+                "guid-1",
+                new FrozenTextureSettings("guid-1", 2, FrozenTextureFormat.Auto, false)
+            );
+            _config.SetFrozenSettings(
+                "guid-2",
+                new FrozenTextureSettings("guid-2", 4, FrozenTextureFormat.Auto, false)
+            );
+            _config.SetFrozenSettings(
+                "guid-3",
+                new FrozenTextureSettings("guid-3", 8, FrozenTextureFormat.Auto, false)
+            );
 
             Assert.That(_config.FrozenTextures.Count, Is.EqualTo(3));
             Assert.That(_config.IsFrozen("guid-1"), Is.True);
@@ -98,7 +127,12 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void UnfreezeTexture_RemovesEntry()
         {
-            var settings = new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false);
+            var settings = new FrozenTextureSettings(
+                "test-guid",
+                2,
+                FrozenTextureFormat.Auto,
+                false
+            );
             _config.SetFrozenSettings("test-guid", settings);
 
             _config.UnfreezeTexture("test-guid");
@@ -109,7 +143,12 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void UnfreezeTexture_IsFrozenReturnsFalse()
         {
-            var settings = new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false);
+            var settings = new FrozenTextureSettings(
+                "test-guid",
+                2,
+                FrozenTextureFormat.Auto,
+                false
+            );
             _config.SetFrozenSettings("test-guid", settings);
 
             _config.UnfreezeTexture("test-guid");
@@ -126,8 +165,14 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void UnfreezeTexture_OnlyRemovesTargetEntry()
         {
-            _config.SetFrozenSettings("guid-1", new FrozenTextureSettings("guid-1", 2, FrozenTextureFormat.Auto, false));
-            _config.SetFrozenSettings("guid-2", new FrozenTextureSettings("guid-2", 4, FrozenTextureFormat.Auto, false));
+            _config.SetFrozenSettings(
+                "guid-1",
+                new FrozenTextureSettings("guid-1", 2, FrozenTextureFormat.Auto, false)
+            );
+            _config.SetFrozenSettings(
+                "guid-2",
+                new FrozenTextureSettings("guid-2", 4, FrozenTextureFormat.Auto, false)
+            );
 
             _config.UnfreezeTexture("guid-1");
 
@@ -143,7 +188,12 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void FrozenSettings_DivisorCanBeModified()
         {
-            var settings = new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false);
+            var settings = new FrozenTextureSettings(
+                "test-guid",
+                2,
+                FrozenTextureFormat.Auto,
+                false
+            );
             _config.SetFrozenSettings("test-guid", settings);
 
             var frozen = _config.GetFrozenSettings("test-guid");
@@ -155,19 +205,32 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void FrozenSettings_FormatCanBeModified()
         {
-            var settings = new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false);
+            var settings = new FrozenTextureSettings(
+                "test-guid",
+                2,
+                FrozenTextureFormat.Auto,
+                false
+            );
             _config.SetFrozenSettings("test-guid", settings);
 
             var frozen = _config.GetFrozenSettings("test-guid");
             frozen.Format = FrozenTextureFormat.BC7;
 
-            Assert.That(_config.GetFrozenSettings("test-guid").Format, Is.EqualTo(FrozenTextureFormat.BC7));
+            Assert.That(
+                _config.GetFrozenSettings("test-guid").Format,
+                Is.EqualTo(FrozenTextureFormat.BC7)
+            );
         }
 
         [Test]
         public void FrozenSettings_SkipCanBeModified()
         {
-            var settings = new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false);
+            var settings = new FrozenTextureSettings(
+                "test-guid",
+                2,
+                FrozenTextureFormat.Auto,
+                false
+            );
             _config.SetFrozenSettings("test-guid", settings);
 
             var frozen = _config.GetFrozenSettings("test-guid");
@@ -183,7 +246,12 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void GetFrozenSettings_ExistingGuid_ReturnsSettings()
         {
-            var settings = new FrozenTextureSettings("test-guid", 4, FrozenTextureFormat.DXT5, true);
+            var settings = new FrozenTextureSettings(
+                "test-guid",
+                4,
+                FrozenTextureFormat.DXT5,
+                true
+            );
             _config.SetFrozenSettings("test-guid", settings);
 
             var result = _config.GetFrozenSettings("test-guid");
@@ -227,20 +295,31 @@ namespace dev.limitex.avatar.compressor.tests
 
             foreach (int divisor in validDivisors)
             {
-                var settings = new FrozenTextureSettings($"guid-{divisor}", divisor, FrozenTextureFormat.Auto, false);
-                Assert.DoesNotThrow(() => _config.SetFrozenSettings($"guid-{divisor}", settings),
-                    $"Divisor {divisor} should be valid");
+                var settings = new FrozenTextureSettings(
+                    $"guid-{divisor}",
+                    divisor,
+                    FrozenTextureFormat.Auto,
+                    false
+                );
+                Assert.DoesNotThrow(
+                    () => _config.SetFrozenSettings($"guid-{divisor}", settings),
+                    $"Divisor {divisor} should be valid"
+                );
             }
         }
 
         [Test]
         public void FrozenTextures_AllFormats_Valid()
         {
-            foreach (FrozenTextureFormat format in System.Enum.GetValues(typeof(FrozenTextureFormat)))
+            foreach (
+                FrozenTextureFormat format in System.Enum.GetValues(typeof(FrozenTextureFormat))
+            )
             {
                 var settings = new FrozenTextureSettings($"guid-{format}", 2, format, false);
-                Assert.DoesNotThrow(() => _config.SetFrozenSettings($"guid-{format}", settings),
-                    $"Format {format} should be valid");
+                Assert.DoesNotThrow(
+                    () => _config.SetFrozenSettings($"guid-{format}", settings),
+                    $"Format {format} should be valid"
+                );
             }
         }
 

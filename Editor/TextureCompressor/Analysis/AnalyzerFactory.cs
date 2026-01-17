@@ -14,7 +14,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             AnalysisStrategyType type,
             float fastWeight = AnalysisConstants.CombinedDefaultFastWeight,
             float highAccuracyWeight = AnalysisConstants.CombinedDefaultHighAccuracyWeight,
-            float perceptualWeight = AnalysisConstants.CombinedDefaultPerceptualWeight)
+            float perceptualWeight = AnalysisConstants.CombinedDefaultPerceptualWeight
+        )
         {
             switch (type)
             {

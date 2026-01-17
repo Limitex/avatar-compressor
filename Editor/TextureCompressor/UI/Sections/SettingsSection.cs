@@ -1,5 +1,5 @@
-using dev.limitex.avatar.compressor.editor.ui;
 using dev.limitex.avatar.compressor;
+using dev.limitex.avatar.compressor.editor.ui;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,7 +13,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// <summary>
         /// Draws custom settings when in Custom preset mode, or advanced settings foldout otherwise.
         /// </summary>
-        public static void Draw(TextureCompressor config, SerializedObject serializedObject, ref bool showAdvanced)
+        public static void Draw(
+            TextureCompressor config,
+            SerializedObject serializedObject,
+            ref bool showAdvanced
+        )
         {
             if (config.Preset == CompressorPreset.Custom)
             {
@@ -21,7 +25,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
             else
             {
-                showAdvanced = EditorGUILayout.Foldout(showAdvanced, "Advanced Settings (Read Only)", true);
+                showAdvanced = EditorGUILayout.Foldout(
+                    showAdvanced,
+                    "Advanced Settings (Read Only)",
+                    true
+                );
                 if (showAdvanced)
                 {
                     EditorGUI.BeginDisabledGroup(true);
@@ -31,9 +39,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
-        private static void DrawAllSettings(TextureCompressor config, SerializedObject serializedObject, bool compactMode)
+        private static void DrawAllSettings(
+            TextureCompressor config,
+            SerializedObject serializedObject,
+            bool compactMode
+        )
         {
-            if (compactMode) EditorGUI.indentLevel++;
+            if (compactMode)
+                EditorGUI.indentLevel++;
 
             // Analysis Strategy
             DrawSectionHeader("Analysis Strategy", compactMode);
@@ -41,19 +54,41 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             if (config.Strategy == AnalysisStrategyType.Combined)
             {
-                if (!compactMode) EditorGUI.indentLevel++;
+                if (!compactMode)
+                    EditorGUI.indentLevel++;
                 DrawProperty(serializedObject, "FastWeight", "Fast Weight", compactMode);
-                DrawProperty(serializedObject, "HighAccuracyWeight", "High Accuracy Weight", compactMode);
-                DrawProperty(serializedObject, "PerceptualWeight", "Perceptual Weight", compactMode);
-                if (!compactMode) EditorGUI.indentLevel--;
+                DrawProperty(
+                    serializedObject,
+                    "HighAccuracyWeight",
+                    "High Accuracy Weight",
+                    compactMode
+                );
+                DrawProperty(
+                    serializedObject,
+                    "PerceptualWeight",
+                    "Perceptual Weight",
+                    compactMode
+                );
+                if (!compactMode)
+                    EditorGUI.indentLevel--;
             }
 
             DrawSectionSpacing(compactMode);
 
             // Complexity Thresholds
             DrawSectionHeader("Complexity Thresholds", compactMode);
-            DrawProperty(serializedObject, "HighComplexityThreshold", "High (Keep Detail)", compactMode);
-            DrawProperty(serializedObject, "LowComplexityThreshold", "Low (Compress More)", compactMode);
+            DrawProperty(
+                serializedObject,
+                "HighComplexityThreshold",
+                "High (Keep Detail)",
+                compactMode
+            );
+            DrawProperty(
+                serializedObject,
+                "LowComplexityThreshold",
+                "Low (Compress More)",
+                compactMode
+            );
 
             DrawSectionSpacing(compactMode);
 
@@ -70,14 +105,20 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
             else
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("ForcePowerOfTwo"), new GUIContent("Force Power of 2",
-                    "When enabled, dimensions are rounded to nearest power of 2.\n" +
-                    "When disabled, dimensions are rounded to nearest multiple of 4.\n" +
-                    "Note: All output dimensions are always multiples of 4 for DXT/BC compression compatibility."));
+                EditorGUILayout.PropertyField(
+                    serializedObject.FindProperty("ForcePowerOfTwo"),
+                    new GUIContent(
+                        "Force Power of 2",
+                        "When enabled, dimensions are rounded to nearest power of 2.\n"
+                            + "When disabled, dimensions are rounded to nearest multiple of 4.\n"
+                            + "Note: All output dimensions are always multiples of 4 for DXT/BC compression compatibility."
+                    )
+                );
                 EditorGUILayout.HelpBox(
-                    "Output dimensions are always multiples of 4 for DXT/BC compression compatibility. " +
-                    "Example: 150x150 becomes 152x152.",
-                    MessageType.Info);
+                    "Output dimensions are always multiples of 4 for DXT/BC compression compatibility. "
+                        + "Example: 150x150 becomes 152x152.",
+                    MessageType.Info
+                );
             }
 
             DrawSectionSpacing(compactMode);
@@ -85,7 +126,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             // Size Filters
             DrawSectionHeader("Size Filters", compactMode);
             DrawProperty(serializedObject, "MinSourceSize", "Min Source Size", compactMode);
-            DrawProperty(serializedObject, "SkipIfSmallerThan", "Skip If Smaller Than", compactMode);
+            DrawProperty(
+                serializedObject,
+                "SkipIfSmallerThan",
+                "Skip If Smaller Than",
+                compactMode
+            );
 
             DrawSectionSpacing(compactMode);
 
@@ -95,15 +141,23 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             if (compactMode)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("UseHighQualityFormatForHighComplexity"));
+                EditorGUILayout.PropertyField(
+                    serializedObject.FindProperty("UseHighQualityFormatForHighComplexity")
+                );
             }
             else
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("UseHighQualityFormatForHighComplexity"),
-                    new GUIContent("High Quality for Complex", "Use BC7/ASTC_4x4 for high complexity textures (uses Complexity Threshold)"));
+                EditorGUILayout.PropertyField(
+                    serializedObject.FindProperty("UseHighQualityFormatForHighComplexity"),
+                    new GUIContent(
+                        "High Quality for Complex",
+                        "Use BC7/ASTC_4x4 for high complexity textures (uses Complexity Threshold)"
+                    )
+                );
             }
 
-            if (compactMode) EditorGUI.indentLevel--;
+            if (compactMode)
+                EditorGUI.indentLevel--;
         }
 
         private static void DrawSectionHeader(string label, bool compactMode)
@@ -122,7 +176,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
-        private static void DrawProperty(SerializedObject serializedObject, string propertyName, string label, bool compactMode)
+        private static void DrawProperty(
+            SerializedObject serializedObject,
+            string propertyName,
+            string label,
+            bool compactMode
+        )
         {
             if (compactMode)
             {
@@ -130,7 +189,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
             else
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty(propertyName), new GUIContent(label));
+                EditorGUILayout.PropertyField(
+                    serializedObject.FindProperty(propertyName),
+                    new GUIContent(label)
+                );
             }
         }
     }
