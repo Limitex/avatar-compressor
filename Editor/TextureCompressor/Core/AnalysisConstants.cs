@@ -51,11 +51,6 @@ namespace dev.limitex.avatar.compressor.texture
         public const int MinAnalysisDimension = 8;
 
         /// <summary>
-        /// Minimum opaque pixel count for meaningful analysis.
-        /// </summary>
-        public const int MinOpaquePixelsForAnalysis = 64;
-
-        /// <summary>
         /// Minimum opaque pixel count for standard analysis.
         /// Below this threshold, textures are considered too sparse.
         /// </summary>

@@ -11,8 +11,7 @@ namespace dev.limitex.avatar.compressor.texture
         public TextureComplexityResult Analyze(ProcessedPixelData data)
         {
             if (data.Width < AnalysisConstants.MinAnalysisDimension ||
-                data.Height < AnalysisConstants.MinAnalysisDimension ||
-                data.OpaqueCount < AnalysisConstants.MinOpaquePixelsForAnalysis)
+                data.Height < AnalysisConstants.MinAnalysisDimension)
             {
                 return new TextureComplexityResult(
                     AnalysisConstants.DefaultComplexityScore,
