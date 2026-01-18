@@ -15,7 +15,7 @@ export default async function Layout({
   const source = getSource(locale);
 
   return (
-    <DocsLayout tree={source.getPageTree()} {...baseOptions(locale)}>
+    <DocsLayout tree={source.getPageTree()} {...baseOptions(locale)} links={[]}>
       {children}
     </DocsLayout>
   );
