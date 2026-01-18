@@ -7,7 +7,9 @@ import {
   Gauge,
   HardDrive,
   Eye,
+  Github,
 } from 'lucide-react';
+import { BoothIcon } from '@/components/booth-icon';
 import { getLocale, i18n, type Locale } from '@/lib/i18n';
 
 export function generateStaticParams() {
@@ -210,6 +212,7 @@ function HeroSection({ lang, t }: { lang: Locale; t: Translations }) {
             target="_blank"
             rel="noopener noreferrer"
           >
+            <Github size={18} />
             {t.viewOnGitHub}
           </Link>
           <Link
@@ -218,6 +221,7 @@ function HeroSection({ lang, t }: { lang: Locale; t: Translations }) {
             target="_blank"
             rel="noopener noreferrer"
           >
+            <BoothIcon />
             {t.viewOnBooth}
           </Link>
         </div>
