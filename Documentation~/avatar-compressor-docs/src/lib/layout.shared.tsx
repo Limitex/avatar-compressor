@@ -22,7 +22,7 @@ export function baseOptions(lang: Locale): BaseLayoutProps {
         type: 'icon',
         text: 'Booth',
         icon: <BoothIcon />,
-        url: 'https://booth.pm/ja/items/7856254',
+        url: 'https://ltx.booth.pm/items/7856254',
       },
     ],
     i18n: {
