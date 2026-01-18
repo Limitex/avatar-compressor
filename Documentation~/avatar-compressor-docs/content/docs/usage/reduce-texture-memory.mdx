@@ -1,0 +1,134 @@
+---
+title: Reduce Texture Memory
+description: Learn how to reduce your avatar's texture memory usage
+icon: Gauge
+---
+
+This tutorial shows you how to reduce your avatar's texture memory usage using the Texture Compressor component.
+
+## Quick Start
+
+<Steps>
+<Step>
+### Add the Component
+
+1. Select your avatar's root GameObject (the one with VRC Avatar Descriptor)
+2. Click **Add Component** in the Inspector
+3. Search for "LAC" and add **LAC Texture Compressor**
+
+</Step>
+
+<Step>
+### Choose a Preset
+
+<Tabs items={['Quality', 'Balanced', 'Aggressive']}>
+<Tab value="Quality">
+**For PC avatars where you want minimal quality loss.**
+
+- VRAM Reduction: 20-40%
+- Quality Impact: Minimal
+- Best for: Showcase avatars, detailed textures
+
+</Tab>
+<Tab value="Balanced">
+**Good balance between quality and file size. (Recommended)**
+
+- VRAM Reduction: 40-60%
+- Quality Impact: Slight
+- Best for: Most avatars
+
+</Tab>
+<Tab value="Aggressive">
+**Strong compression for Quest avatars or limited VRAM.**
+
+- VRAM Reduction: 60-80%
+- Quality Impact: Noticeable
+- Best for: Quest avatars, performance-critical situations
+
+</Tab>
+</Tabs>
+
+<Callout type="info">
+For your first time, start with **Balanced**. You can always adjust later.
+</Callout>
+</Step>
+
+<Step>
+### Preview Results
+
+Click **Preview Compression Results** in the Inspector to see what will happen:
+
+| Metric         | Description                                    |
+| -------------- | ---------------------------------------------- |
+| **Complexity** | Higher (closer to 1.0) = more detailed texture |
+| **Size**       | Original resolution → new resolution           |
+| **Format**     | Compression format that will be applied        |
+
+</Step>
+
+<Step>
+### Fine-tune (Optional)
+
+If you see a texture that needs special treatment, click the **Freeze** button:
+
+| Setting              | Use When                              |
+| -------------------- | ------------------------------------- |
+| **Skip compression** | Keep the texture completely unchanged |
+| **Divisor**          | Manually control resolution reduction |
+| **Format**           | Override the compression format       |
+
+<Callout type="warn">
+Consider freezing these textures:
+- Face textures with fine details
+- Textures with small text or logos
+- Emission maps with gradient effects
+
+</Callout>
+</Step>
+
+<Step>
+### Build and Compare
+
+1. Build your avatar normally through VRChat SDK
+2. Check the new **Download Size** and **VRAM** values
+3. Upload to VRChat and test in-game
+
+</Step>
+</Steps>
+
+## Troubleshooting
+
+<Accordions>
+<Accordion title="Textures look blurry">
+- Use a less aggressive preset (e.g., Quality instead of Balanced)
+- Freeze specific textures that look bad
+- Increase the **Min Resolution** in Custom preset
+
+</Accordion>
+
+<Accordion title="Not enough compression">
+- Try a more aggressive preset
+- Disable **Process Normal Maps** if normals don't need compression
+- Lower the **High Complexity Threshold** in Custom preset
+
+</Accordion>
+
+<Accordion title="Some textures aren't being processed">
+Check if they're being skipped due to:
+- Size filters (texture is too small)
+- Type filters (texture type is disabled)
+- Path exclusions (asset path matches exclusion pattern)
+
+</Accordion>
+</Accordions>
+
+## Next Steps
+
+<Cards>
+  <Card
+    title="Texture Compressor Reference"
+    href="../../components/texture-compressor"
+  >
+    Learn about all available settings and options.
+  </Card>
+</Cards>

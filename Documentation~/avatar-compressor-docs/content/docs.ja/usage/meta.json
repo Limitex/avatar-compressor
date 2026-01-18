@@ -1,0 +1,6 @@
+{
+  "title": "基本的な使い方",
+  "icon": "GraduationCap",
+  "defaultOpen": true,
+  "pages": ["reduce-texture-memory"]
+}

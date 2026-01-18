@@ -1,0 +1,134 @@
+---
+title: テクスチャメモリを削減する
+description: アバターのテクスチャメモリ使用量を削減する方法を学ぶ
+icon: Gauge
+---
+
+このチュートリアルでは、Texture Compressor コンポーネントを使用してアバターのテクスチャメモリ使用量を削減する方法を説明します。
+
+## クイックスタート
+
+<Steps>
+<Step>
+### コンポーネントを追加
+
+1. アバターのルート GameObject（VRC Avatar Descriptor があるもの）を選択
+2. Inspector で **Add Component** をクリック
+3. 「LAC」で検索し、**LAC Texture Compressor** を追加
+
+</Step>
+
+<Step>
+### プリセットを選択
+
+<Tabs items={['Quality', 'Balanced', 'Aggressive']}>
+<Tab value="Quality">
+**品質低下を最小限にしたい PC アバター向け。**
+
+- VRAM 削減率: 20-40%
+- 品質への影響: 最小限
+- 最適な用途: ショーケースアバター、詳細なテクスチャ
+
+</Tab>
+<Tab value="Balanced">
+**品質とファイルサイズのバランスが良い。（推奨）**
+
+- VRAM 削減率: 40-60%
+- 品質への影響: わずか
+- 最適な用途: ほとんどのアバター
+
+</Tab>
+<Tab value="Aggressive">
+**Quest アバターや VRAM 制限向けの強い圧縮。**
+
+- VRAM 削減率: 60-80%
+- 品質への影響: 目立つ
+- 最適な用途: Quest アバター、パフォーマンス重視の状況
+
+</Tab>
+</Tabs>
+
+<Callout type="info">
+初めての場合は **Balanced** から始めましょう。後で調整できます。
+</Callout>
+</Step>
+
+<Step>
+### 結果をプレビュー
+
+Inspector で **Preview Compression Results** をクリックして、何が起こるか確認します：
+
+| メトリック     | 説明                                  |
+| -------------- | ------------------------------------- |
+| **Complexity** | 高いほど（1.0に近い）詳細なテクスチャ |
+| **Size**       | 元の解像度 → 新しい解像度             |
+| **Format**     | 適用される圧縮フォーマット            |
+
+</Step>
+
+<Step>
+### 調整（オプション）
+
+特別な扱いが必要なテクスチャがある場合は、**Freeze** ボタンをクリック：
+
+| 設定                 | 使用するタイミング               |
+| -------------------- | -------------------------------- |
+| **Skip compression** | テクスチャを完全に変更せずに保持 |
+| **Divisor**          | 解像度の縮小率を手動で制御       |
+| **Format**           | 圧縮フォーマットをオーバーライド |
+
+<Callout type="warn">
+以下のテクスチャは凍結を検討してください：
+- 細かいディテールのある顔のテクスチャ
+- 小さな文字やロゴのあるテクスチャ
+- グラデーション効果のあるエミッションマップ
+
+</Callout>
+</Step>
+
+<Step>
+### ビルドして比較
+
+1. VRChat SDK から通常通りアバターをビルド
+2. 新しい **Download Size** と **VRAM** の値を確認
+3. VRChat にアップロードしてゲーム内でテスト
+
+</Step>
+</Steps>
+
+## トラブルシューティング
+
+<Accordions>
+<Accordion title="テクスチャがぼやけて見える">
+- より軽いプリセットを使用（例：Balanced の代わりに Quality）
+- 見た目が悪い特定のテクスチャを凍結
+- Custom プリセットで **Min Resolution** を上げる
+
+</Accordion>
+
+<Accordion title="圧縮が十分でない">
+- より強いプリセットを試す
+- ノーマルマップの圧縮が不要な場合は **Process Normal Maps** を無効化
+- Custom プリセットで **High Complexity Threshold** を下げる
+
+</Accordion>
+
+<Accordion title="一部のテクスチャが処理されない">
+以下の理由でスキップされていないか確認：
+- サイズフィルター（テクスチャが小さすぎる）
+- タイプフィルター（テクスチャタイプが無効）
+- パス除外（アセットパスが除外パターンに一致）
+
+</Accordion>
+</Accordions>
+
+## 次のステップ
+
+<Cards>
+  <Card
+    title="Texture Compressor リファレンス"
+    href="../../components/texture-compressor"
+  >
+    すべての設定とオプションについて学ぶ。
+  </Card>
+</Cards>
