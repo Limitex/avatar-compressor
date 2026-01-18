@@ -1,5 +1,6 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { i18n, type Locale } from './i18n';
+import { BoothIcon } from '@/components/booth-icon';
 
 export function baseOptions(lang: Locale): BaseLayoutProps {
   const t = {
@@ -16,6 +17,12 @@ export function baseOptions(lang: Locale): BaseLayoutProps {
       {
         text: t[lang].docs,
         url: `/${lang}/docs`,
+      },
+      {
+        type: 'icon',
+        text: 'Booth',
+        icon: <BoothIcon />,
+        url: 'https://booth.pm/ja/items/7856254',
       },
     ],
     i18n: {

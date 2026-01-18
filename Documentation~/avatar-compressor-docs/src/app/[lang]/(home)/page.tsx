@@ -20,6 +20,7 @@ type Translations = {
   heroDescriptionSub: string;
   getStarted: string;
   viewOnGitHub: string;
+  viewOnBooth: string;
   vramReduction: string;
   originalFiles: string;
   setup: string;
@@ -42,6 +43,7 @@ const translations: Record<Locale, Translations> = {
     heroDescriptionSub: 'Non-destructive compression powered by NDMF.',
     getStarted: 'Get Started',
     viewOnGitHub: 'View on GitHub',
+    viewOnBooth: 'View on Booth',
     vramReduction: 'VRAM Reduction',
     originalFiles: 'Original Files Modified',
     setup: 'Setup',
@@ -91,6 +93,7 @@ const translations: Record<Locale, Translations> = {
     heroDescriptionSub: 'NDMFによる非破壊圧縮。',
     getStarted: 'はじめる',
     viewOnGitHub: 'GitHubで見る',
+    viewOnBooth: 'Boothで見る',
     vramReduction: 'VRAM削減',
     originalFiles: '元ファイル変更なし',
     setup: 'セットアップ',
@@ -208,6 +211,14 @@ function HeroSection({ lang, t }: { lang: Locale; t: Translations }) {
             rel="noopener noreferrer"
           >
             {t.viewOnGitHub}
+          </Link>
+          <Link
+            href="https://ltx.booth.pm/items/7856254"
+            className="inline-flex items-center justify-center gap-2 no-underline px-8 py-4 rounded-xl font-semibold text-slate-700 dark:text-white bg-white/60 dark:bg-transparent border border-slate-300 dark:border-white/20 hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] hover:bg-white dark:hover:bg-[var(--accent-cyan)]/5 transition-all duration-300 backdrop-blur-sm"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t.viewOnBooth}
           </Link>
         </div>
 
