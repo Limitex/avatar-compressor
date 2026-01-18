@@ -97,7 +97,7 @@ const translations: Record<Locale, Translations> = {
     vramReduction: 'VRAM削減',
     originalFiles: '元ファイル変更なし',
     setup: 'セットアップ',
-    whyTitle: 'なぜAvatar Compressor？',
+    whyTitle: 'LAC: Avatar Compressorの特長',
     whyDescription: 'ワークフローを尊重した圧縮',
     features: [
       {
@@ -131,7 +131,7 @@ const translations: Record<Locale, Translations> = {
         description: '最適化されたアバターは、よりスムーズなVRChat体験に貢献します',
       },
     ],
-    ctaTitle: '圧縮する準備はできましたか？',
+    ctaTitle: '今すぐ試す',
     ctaDescription: '数分で始められます。パッケージマネージャーにリポジトリを追加して、最適化を開始しましょう。',
     installationGuide: 'インストールガイド',
     footerBy: 'Avatar Compressor by',
