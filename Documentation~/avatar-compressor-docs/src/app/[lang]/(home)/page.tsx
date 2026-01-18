@@ -7,7 +7,9 @@ import {
   Gauge,
   HardDrive,
   Eye,
+  Github,
 } from 'lucide-react';
+import { BoothIcon } from '@/components/booth-icon';
 import { getLocale, i18n, type Locale } from '@/lib/i18n';
 
 export function generateStaticParams() {
@@ -20,6 +22,7 @@ type Translations = {
   heroDescriptionSub: string;
   getStarted: string;
   viewOnGitHub: string;
+  viewOnBooth: string;
   vramReduction: string;
   originalFiles: string;
   setup: string;
@@ -42,6 +45,7 @@ const translations: Record<Locale, Translations> = {
     heroDescriptionSub: 'Non-destructive compression powered by NDMF.',
     getStarted: 'Get Started',
     viewOnGitHub: 'View on GitHub',
+    viewOnBooth: 'View on Booth',
     vramReduction: 'VRAM Reduction',
     originalFiles: 'Original Files Modified',
     setup: 'Setup',
@@ -91,10 +95,11 @@ const translations: Record<Locale, Translations> = {
     heroDescriptionSub: 'NDMFによる非破壊圧縮。',
     getStarted: 'はじめる',
     viewOnGitHub: 'GitHubで見る',
+    viewOnBooth: 'Boothで見る',
     vramReduction: 'VRAM削減',
     originalFiles: '元ファイル変更なし',
     setup: 'セットアップ',
-    whyTitle: 'なぜAvatar Compressor？',
+    whyTitle: 'LAC: Avatar Compressorの特長',
     whyDescription: 'ワークフローを尊重した圧縮',
     features: [
       {
@@ -128,7 +133,7 @@ const translations: Record<Locale, Translations> = {
         description: '最適化されたアバターは、よりスムーズなVRChat体験に貢献します',
       },
     ],
-    ctaTitle: '圧縮する準備はできましたか？',
+    ctaTitle: '今すぐ試す',
     ctaDescription: '数分で始められます。パッケージマネージャーにリポジトリを追加して、最適化を開始しましょう。',
     installationGuide: 'インストールガイド',
     footerBy: 'Avatar Compressor by',
@@ -207,7 +212,17 @@ function HeroSection({ lang, t }: { lang: Locale; t: Translations }) {
             target="_blank"
             rel="noopener noreferrer"
           >
+            <Github size={18} />
             {t.viewOnGitHub}
+          </Link>
+          <Link
+            href="https://ltx.booth.pm/items/7856254"
+            className="inline-flex items-center justify-center gap-2 no-underline px-8 py-4 rounded-xl font-semibold text-slate-700 dark:text-white bg-white/60 dark:bg-transparent border border-slate-300 dark:border-white/20 hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] hover:bg-white dark:hover:bg-[var(--accent-cyan)]/5 transition-all duration-300 backdrop-blur-sm"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <BoothIcon />
+            {t.viewOnBooth}
           </Link>
         </div>
 

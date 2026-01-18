@@ -1,5 +1,5 @@
 ---
-title: Texture Compressor
+title: LAC Texture Compressor
 description: Complexity-based texture compression component
 ---
 
@@ -53,10 +53,12 @@ Build your avatar normally through VRChat SDK. The component automatically:
 <Tab value="HighQuality">
 **Minimal compression for showcase avatars.**
 
-| Setting          | Value          |
-| ---------------- | -------------- |
-| Divisor Range    | 1x - 2x        |
-| Resolution Range | 256px - 2048px |
+| Setting              | Value          |
+| -------------------- | -------------- |
+| Divisor Range        | 1x - 2x        |
+| Resolution Range     | 256px - 2048px |
+| Min Source Size      | 1024px         |
+| Skip If Smaller Than | 512px          |
 
 Best for avatars where visual quality is the top priority.
 
@@ -64,10 +66,12 @@ Best for avatars where visual quality is the top priority.
 <Tab value="Quality">
 **Prioritizes visual quality while allowing moderate compression.**
 
-| Setting          | Value          |
-| ---------------- | -------------- |
-| Divisor Range    | 1x - 4x        |
-| Resolution Range | 128px - 2048px |
+| Setting              | Value          |
+| -------------------- | -------------- |
+| Divisor Range        | 1x - 4x        |
+| Resolution Range     | 128px - 2048px |
+| Min Source Size      | 512px          |
+| Skip If Smaller Than | 256px          |
 
 Good for PC avatars where you want to maintain quality but reduce some file size.
 
@@ -75,10 +79,12 @@ Good for PC avatars where you want to maintain quality but reduce some file size
 <Tab value="Balanced">
 **Good balance between quality and file size. (Recommended)**
 
-| Setting          | Value         |
-| ---------------- | ------------- |
-| Divisor Range    | 1x - 8x       |
-| Resolution Range | 64px - 2048px |
+| Setting              | Value         |
+| -------------------- | ------------- |
+| Divisor Range        | 1x - 8x       |
+| Resolution Range     | 64px - 2048px |
+| Min Source Size      | 256px         |
+| Skip If Smaller Than | 128px         |
 
 Recommended for most avatars. Provides significant file size reduction while maintaining good visual quality.
 
@@ -86,10 +92,12 @@ Recommended for most avatars. Provides significant file size reduction while mai
 <Tab value="Aggressive">
 **Strong compression for Quest avatars or limited VRAM.**
 
-| Setting          | Value         |
-| ---------------- | ------------- |
-| Divisor Range    | 2x - 8x       |
-| Resolution Range | 32px - 2048px |
+| Setting              | Value         |
+| -------------------- | ------------- |
+| Divisor Range        | 2x - 8x       |
+| Resolution Range     | 32px - 2048px |
+| Min Source Size      | 128px         |
+| Skip If Smaller Than | 64px          |
 
 Use this for Quest avatars or when you need to significantly reduce VRAM usage.
 
@@ -97,10 +105,12 @@ Use this for Quest avatars or when you need to significantly reduce VRAM usage.
 <Tab value="Maximum">
 **Maximum file size reduction.**
 
-| Setting          | Value         |
-| ---------------- | ------------- |
-| Divisor Range    | 2x - 16x      |
-| Resolution Range | 32px - 2048px |
+| Setting              | Value         |
+| -------------------- | ------------- |
+| Divisor Range        | 2x - 16x      |
+| Resolution Range     | 32px - 2048px |
+| Min Source Size      | 64px          |
+| Skip If Smaller Than | 32px          |
 
 <Callout type="warn">This preset may noticeably affect visual quality.</Callout>
 
@@ -139,9 +149,33 @@ Control which texture types are processed:
   processing, and textures at or below 128px are completely skipped.
 </Callout>
 
+### Path Exclusions
+
+Textures from specific asset paths can be excluded from compression. This is useful for:
+
+- Excluding textures from tools that generate temporary assets
+- Preserving textures from specific packages that shouldn't be modified
+
+By default, the following paths are excluded:
+
+| Path                         | Description        |
+| ---------------------------- | ------------------ |
+| `Packages/com.vrcfury.temp/` | VRCFury temp files |
+
+You can add custom path prefixes in the component inspector under **Path Exclusions**. Any texture whose asset path starts with one of these prefixes will be skipped.
+
 ## Preview
 
 Click **Preview Compression Results** in the Inspector to see compression analysis before building.
+
+### Search and Filter
+
+Use the search box at the top of the preview to filter textures by name:
+
+- **Standard search**: Type any part of the texture name to filter the list (case-insensitive)
+- **Fuzzy search**: Click the "Fuzzy" button to enable fuzzy matching, which allows up to 1 character tolerance for typos
+
+When searching, the section headers show filtered counts (e.g., "Preview (3/10 shown)") and hidden texture counts.
 
 ### Summary
 
@@ -158,11 +192,17 @@ The preview shows total size statistics:
 
 For each texture, the preview displays:
 
+- **Texture thumbnail** - Click to highlight the texture in the Project window
 - **Texture name and type** (Main, Normal, Emission, Other)
 - **Complexity score** (0.0 - 1.0) with visual progress bar
 - **Size change** - Original resolution → Recommended resolution (with divisor)
 - **Predicted format** - Expected compression format (e.g., BC7, DXT5, ASTC_4x4)
 - **Freeze button** - Click to freeze the texture with manual override settings (see [Frozen Textures](#frozen-textures))
+
+<Callout type="info">
+  Clicking on a texture thumbnail is a quick way to locate and select the
+  texture asset in your Project window.
+</Callout>
 
 ### Complexity Score Interpretation
 
@@ -181,6 +221,8 @@ Textures that won't be processed are shown separately with skip reasons:
 - **Too small**: Texture is smaller than the minimum size threshold
 - **Filtered by type**: Texture type is disabled in filters
 - **User frozen (skipped)**: Texture is frozen with "Skip compression" enabled
+- **Runtime generated**: Texture has no asset path (dynamically created during build)
+- **Excluded path**: Texture's asset path matches a path exclusion pattern
 
 <Callout type="info">
   The preview does not update automatically. If settings change after generating
@@ -286,7 +328,7 @@ Textures between these thresholds receive interpolated compression.
 | Setting | Description |
 | ------- | ----------- |
 | **Min Divisor** | Minimum scale factor (1 = no reduction) |
-| **Max Divisor** | Maximum scale factor (8 = 1/8 size) |
+| **Max Divisor** | Maximum scale factor (e.g., 16 = 1/16 size) |
 | **Min Resolution** | Textures won't be scaled below this |
 | **Max Resolution** | Textures won't exceed this |
 </Accordion>
@@ -332,7 +374,8 @@ Platform-specific texture compression format selection.
 ## Compatibility
 
 <Callout type="info">
-  Texture Compressor runs during the NDMF Transforming phase, before Modular
-  Avatar and Avatar Optimizer. This ensures textures are compressed before other
-  tools process the avatar.
+  Texture Compressor runs during the NDMF Optimizing phase, after Modular Avatar
+  but before TexTransTool and Avatar Optimizer. This ensures proper integration
+  with avatar setup tools while optimizing textures before final avatar
+  optimization.
 </Callout>

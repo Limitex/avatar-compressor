@@ -1,4 +1,12 @@
 {
   "title": "ドキュメント",
-  "pages": ["index", "installation", "---コンポーネント---", "...components"]
+  "pages": [
+    "---はじめに---",
+    "installation",
+    "index",
+    "---チュートリアル---",
+    "usage",
+    "---References---",
+    "components"
+  ]
 }
