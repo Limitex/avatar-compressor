@@ -83,9 +83,9 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 CompressorPreset.HighQuality,
                 CompressorPreset.Quality,
-                CompressorPreset.Standard,
                 CompressorPreset.Balanced,
                 CompressorPreset.Aggressive,
+                CompressorPreset.Maximum,
             };
 
             foreach (var preset in presets)

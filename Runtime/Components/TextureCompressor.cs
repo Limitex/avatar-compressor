@@ -10,7 +10,7 @@ namespace dev.limitex.avatar.compressor
     {
         [Header("Preset")]
         [Tooltip("Quick preset selection for common use cases")]
-        public CompressorPreset Preset = CompressorPreset.Standard;
+        public CompressorPreset Preset = CompressorPreset.Balanced;
 
         [Header("Analysis Strategy")]
         [Tooltip("Complexity analysis method")]
@@ -184,14 +184,14 @@ namespace dev.limitex.avatar.compressor
                 case CompressorPreset.Quality:
                     ApplyQualityPreset();
                     break;
-                case CompressorPreset.Standard:
-                    ApplyStandardPreset();
-                    break;
                 case CompressorPreset.Balanced:
                     ApplyBalancedPreset();
                     break;
                 case CompressorPreset.Aggressive:
                     ApplyAggressivePreset();
+                    break;
+                case CompressorPreset.Maximum:
+                    ApplyMaximumPreset();
                     break;
                 case CompressorPreset.Custom:
                     break;
@@ -244,38 +244,15 @@ namespace dev.limitex.avatar.compressor
             UseHighQualityFormatForHighComplexity = true;
         }
 
-        private void ApplyStandardPreset()
+        private void ApplyBalancedPreset()
         {
             Strategy = AnalysisStrategyType.Combined;
             FastWeight = 0.3f;
             HighAccuracyWeight = 0.5f;
             PerceptualWeight = 0.2f;
-            HighComplexityThreshold = 0.6f;
+            HighComplexityThreshold = 0.7f;
             LowComplexityThreshold = 0.2f;
             MinDivisor = 1;
-            MaxDivisor = 4;
-            MaxResolution = 2048;
-            MinResolution = 64;
-            ForcePowerOfTwo = true;
-            ProcessMainTextures = true;
-            ProcessNormalMaps = true;
-            ProcessEmissionMaps = true;
-            ProcessOtherTextures = true;
-            MinSourceSize = 256;
-            SkipIfSmallerThan = 128;
-            TargetPlatform = CompressionPlatform.Auto;
-            UseHighQualityFormatForHighComplexity = true;
-        }
-
-        private void ApplyBalancedPreset()
-        {
-            Strategy = AnalysisStrategyType.Fast;
-            FastWeight = 0.5f;
-            HighAccuracyWeight = 0.3f;
-            PerceptualWeight = 0.2f;
-            HighComplexityThreshold = 0.7f;
-            LowComplexityThreshold = 0.25f;
-            MinDivisor = 2;
             MaxDivisor = 8;
             MaxResolution = 2048;
             MinResolution = 64;
@@ -287,7 +264,7 @@ namespace dev.limitex.avatar.compressor
             MinSourceSize = 256;
             SkipIfSmallerThan = 128;
             TargetPlatform = CompressionPlatform.Auto;
-            UseHighQualityFormatForHighComplexity = false;
+            UseHighQualityFormatForHighComplexity = true;
         }
 
         private void ApplyAggressivePreset()
@@ -312,15 +289,38 @@ namespace dev.limitex.avatar.compressor
             TargetPlatform = CompressionPlatform.Auto;
             UseHighQualityFormatForHighComplexity = false;
         }
+
+        private void ApplyMaximumPreset()
+        {
+            Strategy = AnalysisStrategyType.Fast;
+            FastWeight = 0.6f;
+            HighAccuracyWeight = 0.3f;
+            PerceptualWeight = 0.1f;
+            HighComplexityThreshold = 0.9f;
+            LowComplexityThreshold = 0.4f;
+            MinDivisor = 2;
+            MaxDivisor = 16;
+            MaxResolution = 2048;
+            MinResolution = 32;
+            ForcePowerOfTwo = true;
+            ProcessMainTextures = true;
+            ProcessNormalMaps = true;
+            ProcessEmissionMaps = true;
+            ProcessOtherTextures = true;
+            MinSourceSize = 64;
+            SkipIfSmallerThan = 32;
+            TargetPlatform = CompressionPlatform.Auto;
+            UseHighQualityFormatForHighComplexity = false;
+        }
     }
 
     public enum CompressorPreset
     {
         HighQuality,
         Quality,
-        Standard,
         Balanced,
         Aggressive,
+        Maximum,
         Custom,
     }
 

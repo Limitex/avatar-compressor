@@ -49,23 +49,11 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void ApplyPreset_Standard_SetsCorrectValues()
-        {
-            _config.ApplyPreset(CompressorPreset.Standard);
-
-            Assert.That(_config.Preset, Is.EqualTo(CompressorPreset.Standard));
-            Assert.That(_config.MinDivisor, Is.EqualTo(1));
-            Assert.That(_config.MaxDivisor, Is.EqualTo(4));
-        }
-
-        [Test]
         public void ApplyPreset_Balanced_SetsCorrectValues()
         {
             _config.ApplyPreset(CompressorPreset.Balanced);
 
             Assert.That(_config.Preset, Is.EqualTo(CompressorPreset.Balanced));
-            Assert.That(_config.MinDivisor, Is.EqualTo(2));
-            Assert.That(_config.MaxDivisor, Is.EqualTo(8));
         }
 
         [Test]
@@ -74,6 +62,14 @@ namespace dev.limitex.avatar.compressor.tests
             _config.ApplyPreset(CompressorPreset.Aggressive);
 
             Assert.That(_config.Preset, Is.EqualTo(CompressorPreset.Aggressive));
+        }
+
+        [Test]
+        public void ApplyPreset_Maximum_SetsCorrectValues()
+        {
+            _config.ApplyPreset(CompressorPreset.Maximum);
+
+            Assert.That(_config.Preset, Is.EqualTo(CompressorPreset.Maximum));
             Assert.That(_config.MaxDivisor, Is.GreaterThanOrEqualTo(8));
         }
 

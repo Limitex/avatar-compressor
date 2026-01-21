@@ -58,10 +58,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             GUILayout.Space(ButtonSpacing);
             DrawPresetButton(
                 config,
-                CompressorPreset.Standard,
-                "Standard",
+                CompressorPreset.Balanced,
+                "Balanced",
                 "Balance of\nquality and size",
-                PresetColors.Standard,
+                PresetColors.Balanced,
                 buttonWidth
             );
             EditorGUILayout.EndHorizontal();
@@ -71,19 +71,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.BeginHorizontal();
             DrawPresetButton(
                 config,
-                CompressorPreset.Balanced,
-                "Balanced",
+                CompressorPreset.Aggressive,
+                "Aggressive",
                 "Smaller file size\nSome quality loss",
-                PresetColors.Balanced,
+                PresetColors.Aggressive,
                 buttonWidth
             );
             GUILayout.Space(ButtonSpacing);
             DrawPresetButton(
                 config,
-                CompressorPreset.Aggressive,
-                "Aggressive",
+                CompressorPreset.Maximum,
+                "Maximum",
                 "Smallest size\nNoticeable quality loss",
-                PresetColors.Aggressive,
+                PresetColors.Maximum,
                 buttonWidth
             );
             GUILayout.Space(ButtonSpacing);
@@ -126,10 +126,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 case CompressorPreset.HighQuality:
                     description =
-                        "High Quality Mode: Maximum quality preservation. "
-                        + "Warning: Minimal compression - VRAM savings will be limited. "
-                        + "Best for showcase avatars where visual quality is critical.";
-                    messageType = MessageType.Warning;
+                        "High Quality Mode: Maximum quality preservation with minimal compression. "
+                        + "Only very simple textures (solid colors) will be slightly compressed. "
+                        + "Best for showcase avatars or when VRAM is not a concern.";
+                    messageType = MessageType.Info;
                     break;
 
                 case CompressorPreset.Quality:
@@ -140,25 +140,25 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     messageType = MessageType.Info;
                     break;
 
-                case CompressorPreset.Standard:
+                case CompressorPreset.Balanced:
                     description =
-                        "Standard Mode: Good compromise between quality and VRAM savings. "
+                        "Balanced Mode: Good compromise between quality and VRAM savings. "
                         + "Detailed textures are preserved, while simpler textures are compressed. "
                         + "Recommended for most use cases.";
                     messageType = MessageType.Info;
                     break;
 
-                case CompressorPreset.Balanced:
-                    description =
-                        "Balanced Mode: Reduces file size while maintaining acceptable quality. "
-                        + "Most textures will be compressed to some degree. "
-                        + "Good for Quest avatars or when VRAM is limited.";
-                    messageType = MessageType.Info;
-                    break;
-
                 case CompressorPreset.Aggressive:
                     description =
-                        "Aggressive Mode: Compresses all textures as much as possible. "
+                        "Aggressive Mode: Prioritizes smaller file size over quality. "
+                        + "Most textures will be compressed to some degree. "
+                        + "Good for Quest avatars or when VRAM is limited.";
+                    messageType = MessageType.Warning;
+                    break;
+
+                case CompressorPreset.Maximum:
+                    description =
+                        "Maximum Compression: Compresses all textures as much as possible. "
                         + "Significant quality loss may occur. "
                         + "Use only when file size is critical.";
                     messageType = MessageType.Warning;

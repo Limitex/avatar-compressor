@@ -78,47 +78,25 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void ApplyPreset_Standard_SetsCorrectValues()
-        {
-            _config.ApplyPreset(CompressorPreset.Standard);
-
-            Assert.AreEqual(CompressorPreset.Standard, _config.Preset);
-            Assert.AreEqual(AnalysisStrategyType.Combined, _config.Strategy);
-            Assert.AreEqual(0.3f, _config.FastWeight, 0.001f);
-            Assert.AreEqual(0.5f, _config.HighAccuracyWeight, 0.001f);
-            Assert.AreEqual(0.2f, _config.PerceptualWeight, 0.001f);
-            Assert.AreEqual(0.6f, _config.HighComplexityThreshold, 0.001f);
-            Assert.AreEqual(0.2f, _config.LowComplexityThreshold, 0.001f);
-            Assert.AreEqual(1, _config.MinDivisor);
-            Assert.AreEqual(4, _config.MaxDivisor);
-            Assert.AreEqual(2048, _config.MaxResolution);
-            Assert.AreEqual(64, _config.MinResolution);
-            Assert.IsTrue(_config.ForcePowerOfTwo);
-            Assert.AreEqual(256, _config.MinSourceSize);
-            Assert.AreEqual(128, _config.SkipIfSmallerThan);
-            Assert.IsTrue(_config.UseHighQualityFormatForHighComplexity);
-        }
-
-        [Test]
         public void ApplyPreset_Balanced_SetsCorrectValues()
         {
             _config.ApplyPreset(CompressorPreset.Balanced);
 
             Assert.AreEqual(CompressorPreset.Balanced, _config.Preset);
-            Assert.AreEqual(AnalysisStrategyType.Fast, _config.Strategy);
-            Assert.AreEqual(0.5f, _config.FastWeight, 0.001f);
-            Assert.AreEqual(0.3f, _config.HighAccuracyWeight, 0.001f);
+            Assert.AreEqual(AnalysisStrategyType.Combined, _config.Strategy);
+            Assert.AreEqual(0.3f, _config.FastWeight, 0.001f);
+            Assert.AreEqual(0.5f, _config.HighAccuracyWeight, 0.001f);
             Assert.AreEqual(0.2f, _config.PerceptualWeight, 0.001f);
             Assert.AreEqual(0.7f, _config.HighComplexityThreshold, 0.001f);
-            Assert.AreEqual(0.25f, _config.LowComplexityThreshold, 0.001f);
-            Assert.AreEqual(2, _config.MinDivisor);
+            Assert.AreEqual(0.2f, _config.LowComplexityThreshold, 0.001f);
+            Assert.AreEqual(1, _config.MinDivisor);
             Assert.AreEqual(8, _config.MaxDivisor);
             Assert.AreEqual(2048, _config.MaxResolution);
             Assert.AreEqual(64, _config.MinResolution);
             Assert.IsTrue(_config.ForcePowerOfTwo);
             Assert.AreEqual(256, _config.MinSourceSize);
             Assert.AreEqual(128, _config.SkipIfSmallerThan);
-            Assert.IsFalse(_config.UseHighQualityFormatForHighComplexity);
+            Assert.IsTrue(_config.UseHighQualityFormatForHighComplexity);
         }
 
         [Test]
@@ -140,6 +118,28 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.IsTrue(_config.ForcePowerOfTwo);
             Assert.AreEqual(128, _config.MinSourceSize);
             Assert.AreEqual(64, _config.SkipIfSmallerThan);
+            Assert.IsFalse(_config.UseHighQualityFormatForHighComplexity);
+        }
+
+        [Test]
+        public void ApplyPreset_Maximum_SetsCorrectValues()
+        {
+            _config.ApplyPreset(CompressorPreset.Maximum);
+
+            Assert.AreEqual(CompressorPreset.Maximum, _config.Preset);
+            Assert.AreEqual(AnalysisStrategyType.Fast, _config.Strategy);
+            Assert.AreEqual(0.6f, _config.FastWeight, 0.001f);
+            Assert.AreEqual(0.3f, _config.HighAccuracyWeight, 0.001f);
+            Assert.AreEqual(0.1f, _config.PerceptualWeight, 0.001f);
+            Assert.AreEqual(0.9f, _config.HighComplexityThreshold, 0.001f);
+            Assert.AreEqual(0.4f, _config.LowComplexityThreshold, 0.001f);
+            Assert.AreEqual(2, _config.MinDivisor);
+            Assert.AreEqual(16, _config.MaxDivisor);
+            Assert.AreEqual(2048, _config.MaxResolution);
+            Assert.AreEqual(32, _config.MinResolution);
+            Assert.IsTrue(_config.ForcePowerOfTwo);
+            Assert.AreEqual(64, _config.MinSourceSize);
+            Assert.AreEqual(32, _config.SkipIfSmallerThan);
             Assert.IsFalse(_config.UseHighQualityFormatForHighComplexity);
         }
 
@@ -173,15 +173,15 @@ namespace dev.limitex.avatar.compressor.tests
             _config.ApplyPreset(CompressorPreset.Quality);
             int qualityMaxDivisor = _config.MaxDivisor;
 
-            _config.ApplyPreset(CompressorPreset.Standard);
-            int standardMaxDivisor = _config.MaxDivisor;
+            _config.ApplyPreset(CompressorPreset.Balanced);
+            int balancedMaxDivisor = _config.MaxDivisor;
 
-            _config.ApplyPreset(CompressorPreset.Aggressive);
-            int aggressiveMaxDivisor = _config.MaxDivisor;
+            _config.ApplyPreset(CompressorPreset.Maximum);
+            int maximumMaxDivisor = _config.MaxDivisor;
 
             Assert.That(highQualityMaxDivisor, Is.LessThanOrEqualTo(qualityMaxDivisor));
-            Assert.That(qualityMaxDivisor, Is.LessThanOrEqualTo(standardMaxDivisor));
-            Assert.That(standardMaxDivisor, Is.LessThanOrEqualTo(aggressiveMaxDivisor));
+            Assert.That(qualityMaxDivisor, Is.LessThanOrEqualTo(balancedMaxDivisor));
+            Assert.That(balancedMaxDivisor, Is.LessThanOrEqualTo(maximumMaxDivisor));
         }
 
         [Test]
@@ -193,15 +193,15 @@ namespace dev.limitex.avatar.compressor.tests
             _config.ApplyPreset(CompressorPreset.Quality);
             int qualityMinRes = _config.MinResolution;
 
-            _config.ApplyPreset(CompressorPreset.Standard);
-            int standardMinRes = _config.MinResolution;
+            _config.ApplyPreset(CompressorPreset.Balanced);
+            int balancedMinRes = _config.MinResolution;
 
-            _config.ApplyPreset(CompressorPreset.Aggressive);
-            int aggressiveMinRes = _config.MinResolution;
+            _config.ApplyPreset(CompressorPreset.Maximum);
+            int maximumMinRes = _config.MinResolution;
 
             Assert.That(highQualityMinRes, Is.GreaterThanOrEqualTo(qualityMinRes));
-            Assert.That(qualityMinRes, Is.GreaterThanOrEqualTo(standardMinRes));
-            Assert.That(standardMinRes, Is.GreaterThanOrEqualTo(aggressiveMinRes));
+            Assert.That(qualityMinRes, Is.GreaterThanOrEqualTo(balancedMinRes));
+            Assert.That(balancedMinRes, Is.GreaterThanOrEqualTo(maximumMinRes));
         }
 
         [Test]
@@ -210,14 +210,14 @@ namespace dev.limitex.avatar.compressor.tests
             _config.ApplyPreset(CompressorPreset.HighQuality);
             float highQualityThreshold = _config.HighComplexityThreshold;
 
-            _config.ApplyPreset(CompressorPreset.Standard);
-            float standardThreshold = _config.HighComplexityThreshold;
+            _config.ApplyPreset(CompressorPreset.Balanced);
+            float balancedThreshold = _config.HighComplexityThreshold;
 
-            _config.ApplyPreset(CompressorPreset.Aggressive);
-            float aggressiveThreshold = _config.HighComplexityThreshold;
+            _config.ApplyPreset(CompressorPreset.Maximum);
+            float maximumThreshold = _config.HighComplexityThreshold;
 
-            Assert.That(highQualityThreshold, Is.LessThanOrEqualTo(standardThreshold));
-            Assert.That(standardThreshold, Is.LessThanOrEqualTo(aggressiveThreshold));
+            Assert.That(highQualityThreshold, Is.LessThanOrEqualTo(balancedThreshold));
+            Assert.That(balancedThreshold, Is.LessThanOrEqualTo(maximumThreshold));
         }
 
         #endregion
@@ -225,9 +225,9 @@ namespace dev.limitex.avatar.compressor.tests
         #region Default Values Tests
 
         [Test]
-        public void DefaultValues_PresetIsStandard()
+        public void DefaultValues_PresetIsBalanced()
         {
-            Assert.AreEqual(CompressorPreset.Standard, _config.Preset);
+            Assert.AreEqual(CompressorPreset.Balanced, _config.Preset);
         }
 
         [Test]
@@ -274,9 +274,9 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.That(values, Contains.Item(CompressorPreset.HighQuality));
             Assert.That(values, Contains.Item(CompressorPreset.Quality));
-            Assert.That(values, Contains.Item(CompressorPreset.Standard));
             Assert.That(values, Contains.Item(CompressorPreset.Balanced));
             Assert.That(values, Contains.Item(CompressorPreset.Aggressive));
+            Assert.That(values, Contains.Item(CompressorPreset.Maximum));
             Assert.That(values, Contains.Item(CompressorPreset.Custom));
         }
 
@@ -577,8 +577,8 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void ApplyPreset_SwitchingBetweenPresets_OverwritesPreviousValues()
         {
-            _config.ApplyPreset(CompressorPreset.Aggressive);
-            Assert.AreEqual(8, _config.MaxDivisor);
+            _config.ApplyPreset(CompressorPreset.Maximum);
+            Assert.AreEqual(16, _config.MaxDivisor);
             Assert.IsFalse(_config.UseHighQualityFormatForHighComplexity);
 
             _config.ApplyPreset(CompressorPreset.HighQuality);
@@ -593,9 +593,9 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 CompressorPreset.HighQuality,
                 CompressorPreset.Quality,
-                CompressorPreset.Standard,
                 CompressorPreset.Balanced,
                 CompressorPreset.Aggressive,
+                CompressorPreset.Maximum,
                 CompressorPreset.Custom,
             };
 
