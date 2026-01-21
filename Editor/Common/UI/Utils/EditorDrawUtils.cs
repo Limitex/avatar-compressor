@@ -54,13 +54,15 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <param name="color">Background color when selected.</param>
         /// <param name="isSelected">Whether the button is currently selected.</param>
         /// <param name="height">Button height.</param>
+        /// <param name="width">Button width. If 0 or negative, uses ExpandWidth.</param>
         /// <returns>True if clicked.</returns>
         public static bool DrawColoredButton(
             string label,
             string tooltip,
             Color color,
             bool isSelected,
-            float height = 40f
+            float height = 40f,
+            float width = 0f
         )
         {
             var style = EditorStylesCache.CreateButtonStyle(isSelected, height);
@@ -71,11 +73,9 @@ namespace dev.limitex.avatar.compressor.editor.ui
                 GUI.backgroundColor = color;
             }
 
-            bool clicked = GUILayout.Button(
-                new GUIContent(label, tooltip),
-                style,
-                GUILayout.ExpandWidth(true)
-            );
+            GUILayoutOption widthOption =
+                width > 0f ? GUILayout.Width(width) : GUILayout.ExpandWidth(true);
+            bool clicked = GUILayout.Button(new GUIContent(label, tooltip), style, widthOption);
 
             GUI.backgroundColor = originalBg;
 

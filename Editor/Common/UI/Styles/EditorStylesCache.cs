@@ -81,6 +81,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
             {
                 fontStyle = isSelected ? FontStyle.Bold : FontStyle.Normal,
                 fixedHeight = height,
+                margin = new RectOffset(0, 0, 0, 0),
             };
         }
     }
