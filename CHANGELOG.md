@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Preset button layout** - Fixed uneven spacing of preset selection buttons in Editor UI
+  - Buttons now evenly distributed across available width
+  - Consistent spacing between buttons using calculated widths
 - **Emission map quality boost** - Fixed calculation that was incorrectly reducing quality instead of boosting it
 
 ## [v0.4.0] - 2026-01-16

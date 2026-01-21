@@ -28,31 +28,45 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
+        private const int ButtonsPerRow = 3;
+        private const float ButtonSpacing = 2f;
+
         private static void DrawPresetButtons(TextureCompressor config)
         {
+            float availableWidth = EditorGUIUtility.currentViewWidth - 20f;
+            float buttonWidth =
+                (availableWidth - ButtonSpacing * (ButtonsPerRow - 1)) / ButtonsPerRow;
+
             EditorGUILayout.BeginHorizontal();
             DrawPresetButton(
                 config,
                 CompressorPreset.HighQuality,
                 "High Quality",
                 "Highest quality\nMinimal compression",
-                PresetColors.HighQuality
+                PresetColors.HighQuality,
+                buttonWidth
             );
+            GUILayout.Space(ButtonSpacing);
             DrawPresetButton(
                 config,
                 CompressorPreset.Quality,
                 "Quality",
                 "Good quality\nLight compression",
-                PresetColors.Quality
+                PresetColors.Quality,
+                buttonWidth
             );
+            GUILayout.Space(ButtonSpacing);
             DrawPresetButton(
                 config,
                 CompressorPreset.Balanced,
                 "Balanced",
                 "Balance of\nquality and size",
-                PresetColors.Balanced
+                PresetColors.Balanced,
+                buttonWidth
             );
             EditorGUILayout.EndHorizontal();
+
+            GUILayout.Space(ButtonSpacing);
 
             EditorGUILayout.BeginHorizontal();
             DrawPresetButton(
@@ -60,21 +74,26 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 CompressorPreset.Aggressive,
                 "Aggressive",
                 "Smaller file size\nSome quality loss",
-                PresetColors.Aggressive
+                PresetColors.Aggressive,
+                buttonWidth
             );
+            GUILayout.Space(ButtonSpacing);
             DrawPresetButton(
                 config,
                 CompressorPreset.Maximum,
                 "Maximum",
                 "Smallest size\nNoticeable quality loss",
-                PresetColors.Maximum
+                PresetColors.Maximum,
+                buttonWidth
             );
+            GUILayout.Space(ButtonSpacing);
             DrawPresetButton(
                 config,
                 CompressorPreset.Custom,
                 "Custom",
                 "Manual\nconfiguration",
-                PresetColors.Custom
+                PresetColors.Custom,
+                buttonWidth
             );
             EditorGUILayout.EndHorizontal();
         }
@@ -84,12 +103,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             CompressorPreset preset,
             string label,
             string tooltip,
-            Color color
+            Color color,
+            float width
         )
         {
             bool isSelected = config.Preset == preset;
 
-            if (EditorDrawUtils.DrawColoredButton(label, tooltip, color, isSelected))
+            if (EditorDrawUtils.DrawColoredButton(label, tooltip, color, isSelected, width: width))
             {
                 Undo.RecordObject(config, "Change Compressor Preset");
                 config.ApplyPreset(preset);
