@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Preset rebalancing** - Rebalanced presets toward quality preservation (**Breaking**)
+  - Removed `Maximum` preset (too aggressive for most use cases)
+  - Added `Standard` preset as new default (replaces `Balanced`)
+  - `Balanced` preset renamed and tuned for moderate compression (previously `Aggressive`)
+  - `Aggressive` preset now represents maximum compression (previously `Maximum`)
+  - All presets shifted one step toward quality preservation
 - **Namespace restructured** - Reorganized namespaces for consistency (**Breaking**)
   - Editor: `common` → `editor`
   - Editor: `texture` → `editor.texture`
