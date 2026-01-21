@@ -871,9 +871,9 @@ namespace dev.limitex.avatar.compressor.tests
 
         [TestCase(CompressorPreset.HighQuality)]
         [TestCase(CompressorPreset.Quality)]
+        [TestCase(CompressorPreset.Standard)]
         [TestCase(CompressorPreset.Balanced)]
         [TestCase(CompressorPreset.Aggressive)]
-        [TestCase(CompressorPreset.Maximum)]
         public void Compress_WithPreset_OriginalAssetsRemainUnchanged(CompressorPreset preset)
         {
             var root = CreateRootGameObject($"Root_{preset}");

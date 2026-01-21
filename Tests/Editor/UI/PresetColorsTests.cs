@@ -24,26 +24,26 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void Balanced_IsBluish()
+        public void Standard_IsBluish()
         {
-            // Balanced should be blue-ish
-            Assert.That(PresetColors.Balanced.b, Is.GreaterThan(PresetColors.Balanced.r));
+            // Standard should be blue-ish
+            Assert.That(PresetColors.Standard.b, Is.GreaterThan(PresetColors.Standard.r));
         }
 
         [Test]
-        public void Aggressive_IsYellowOrange()
+        public void Balanced_IsYellowOrange()
         {
-            // Aggressive should be yellow/orange (high R and G)
-            Assert.That(PresetColors.Aggressive.r, Is.GreaterThan(0.5f));
-            Assert.That(PresetColors.Aggressive.g, Is.GreaterThan(0.5f));
+            // Balanced should be yellow/orange (high R and G)
+            Assert.That(PresetColors.Balanced.r, Is.GreaterThan(0.5f));
+            Assert.That(PresetColors.Balanced.g, Is.GreaterThan(0.5f));
         }
 
         [Test]
-        public void Maximum_IsReddish()
+        public void Aggressive_IsReddish()
         {
-            // Maximum should be red-ish (warning color)
-            Assert.That(PresetColors.Maximum.r, Is.GreaterThan(PresetColors.Maximum.g));
-            Assert.That(PresetColors.Maximum.r, Is.GreaterThan(PresetColors.Maximum.b));
+            // Aggressive should be red-ish (warning color)
+            Assert.That(PresetColors.Aggressive.r, Is.GreaterThan(PresetColors.Aggressive.g));
+            Assert.That(PresetColors.Aggressive.r, Is.GreaterThan(PresetColors.Aggressive.b));
         }
 
         [Test]
@@ -65,9 +65,9 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 PresetColors.HighQuality,
                 PresetColors.Quality,
+                PresetColors.Standard,
                 PresetColors.Balanced,
                 PresetColors.Aggressive,
-                PresetColors.Maximum,
                 PresetColors.Custom,
             };
 
@@ -86,9 +86,9 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 PresetColors.HighQuality,
                 PresetColors.Quality,
+                PresetColors.Standard,
                 PresetColors.Balanced,
                 PresetColors.Aggressive,
-                PresetColors.Maximum,
                 PresetColors.Custom,
             };
 
@@ -113,9 +113,9 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 PresetColors.HighQuality,
                 PresetColors.Quality,
+                PresetColors.Standard,
                 PresetColors.Balanced,
                 PresetColors.Aggressive,
-                PresetColors.Maximum,
                 PresetColors.Custom,
             };
 
@@ -130,18 +130,18 @@ namespace dev.limitex.avatar.compressor.tests
         #region Visual Hierarchy Tests
 
         [Test]
-        public void ColorProgression_HighQualityToMaximum_GreenToRed()
+        public void ColorProgression_HighQualityToAggressive_GreenToRed()
         {
             // Visual progression from safe (green) to warning (red)
             Assert.That(
                 PresetColors.HighQuality.g,
-                Is.GreaterThan(PresetColors.Maximum.g),
-                "High quality should be more green than Maximum"
+                Is.GreaterThan(PresetColors.Aggressive.g),
+                "High quality should be more green than Aggressive"
             );
             Assert.That(
-                PresetColors.Maximum.r,
+                PresetColors.Aggressive.r,
                 Is.GreaterThan(PresetColors.HighQuality.r),
-                "Maximum should be more red than High quality"
+                "Aggressive should be more red than High quality"
             );
         }
 
