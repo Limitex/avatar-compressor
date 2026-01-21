@@ -46,6 +46,8 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(_config.Preset, Is.EqualTo(CompressorPreset.Quality));
             Assert.That(_config.MinDivisor, Is.EqualTo(1));
             Assert.That(_config.MaxDivisor, Is.EqualTo(4));
+            Assert.That(_config.MinResolution, Is.EqualTo(128));
+            Assert.That(_config.HighComplexityThreshold, Is.EqualTo(0.5f).Within(0.001f));
         }
 
         [Test]
@@ -56,6 +58,8 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(_config.Preset, Is.EqualTo(CompressorPreset.Standard));
             Assert.That(_config.MinDivisor, Is.EqualTo(1));
             Assert.That(_config.MaxDivisor, Is.EqualTo(4));
+            Assert.That(_config.MinResolution, Is.EqualTo(64));
+            Assert.That(_config.HighComplexityThreshold, Is.EqualTo(0.6f).Within(0.001f));
         }
 
         [Test]
@@ -66,6 +70,8 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(_config.Preset, Is.EqualTo(CompressorPreset.Balanced));
             Assert.That(_config.MinDivisor, Is.EqualTo(2));
             Assert.That(_config.MaxDivisor, Is.EqualTo(8));
+            Assert.That(_config.MinResolution, Is.EqualTo(64));
+            Assert.That(_config.HighComplexityThreshold, Is.EqualTo(0.7f).Within(0.001f));
         }
 
         [Test]
@@ -74,7 +80,10 @@ namespace dev.limitex.avatar.compressor.tests
             _config.ApplyPreset(CompressorPreset.Aggressive);
 
             Assert.That(_config.Preset, Is.EqualTo(CompressorPreset.Aggressive));
-            Assert.That(_config.MaxDivisor, Is.GreaterThanOrEqualTo(8));
+            Assert.That(_config.MinDivisor, Is.EqualTo(2));
+            Assert.That(_config.MaxDivisor, Is.EqualTo(8));
+            Assert.That(_config.MinResolution, Is.EqualTo(32));
+            Assert.That(_config.HighComplexityThreshold, Is.EqualTo(0.8f).Within(0.001f));
         }
 
         [Test]
@@ -97,15 +106,15 @@ namespace dev.limitex.avatar.compressor.tests
         #region Preset Switching Tests
 
         [Test]
-        public void SwitchPreset_FromBalancedToAggressive_UpdatesMinDivisor()
+        public void SwitchPreset_FromBalancedToAggressive_UpdatesMinResolution()
         {
-            // Balanced has MinDivisor=1, Aggressive has MinDivisor=2
+            // Balanced has MinResolution=64, Aggressive has MinResolution=32
             _config.ApplyPreset(CompressorPreset.Balanced);
-            int balancedMinDivisor = _config.MinDivisor;
+            int balancedMinResolution = _config.MinResolution;
 
             _config.ApplyPreset(CompressorPreset.Aggressive);
 
-            Assert.That(_config.MinDivisor, Is.GreaterThan(balancedMinDivisor));
+            Assert.That(_config.MinResolution, Is.LessThan(balancedMinResolution));
         }
 
         [Test]
