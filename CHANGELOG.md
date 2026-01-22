@@ -7,8 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Custom Preset Asset** - ScriptableObject-based preset system for reusable custom settings
+  - Create presets via Assets menu or "+" button in Inspector
+  - Save current settings to linked preset with sync indicator (Modified/Synced)
+  - Discard local changes and reload from preset
+  - Unlink preset while keeping current settings
+  - Auto-apply preset settings when switching to Custom mode with linked asset
+  - Presets can be shared across multiple avatars and projects
+  - Unit tests for preset operations (ApplyTo, CopyFrom, MatchesSettings)
+
 ### Changed
 
+- **Settings UI simplified** - Removed section headers from custom settings for cleaner layout
 - **Namespace restructured** - Reorganized namespaces for consistency (**Breaking**)
   - Editor: `common` → `editor`
   - Editor: `texture` → `editor.texture`
@@ -17,10 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Runtime: `texture` → (root namespace)
 - **Editor UI refactored** - Modularized Inspector code for maintainability
 - **Test structure reorganized** - Grouped tests by module (Analysis, Core, UI, etc.)
-
-### Added
-
-- **Unit tests** - Added tests for UI components and data models
 
 ### Fixed
 
