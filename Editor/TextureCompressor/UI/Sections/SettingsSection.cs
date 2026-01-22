@@ -49,7 +49,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 EditorGUI.indentLevel++;
 
             // Analysis Strategy
-            DrawSectionHeader("Analysis Strategy", compactMode);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("Strategy"));
 
             if (config.Strategy == AnalysisStrategyType.Combined)
@@ -76,7 +75,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawSectionSpacing(compactMode);
 
             // Complexity Thresholds
-            DrawSectionHeader("Complexity Thresholds", compactMode);
             DrawProperty(
                 serializedObject,
                 "HighComplexityThreshold",
@@ -93,7 +91,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawSectionSpacing(compactMode);
 
             // Resolution Settings
-            DrawSectionHeader("Resolution Settings", compactMode);
             DrawProperty(serializedObject, "MinDivisor", "Min Divisor", compactMode);
             DrawProperty(serializedObject, "MaxDivisor", "Max Divisor", compactMode);
             DrawProperty(serializedObject, "MaxResolution", "Max Resolution", compactMode);
@@ -124,7 +121,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawSectionSpacing(compactMode);
 
             // Size Filters
-            DrawSectionHeader("Size Filters", compactMode);
             DrawProperty(serializedObject, "MinSourceSize", "Min Source Size", compactMode);
             DrawProperty(
                 serializedObject,
@@ -136,7 +132,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawSectionSpacing(compactMode);
 
             // Compression Format
-            DrawSectionHeader("Compression Format", compactMode);
             DrawProperty(serializedObject, "TargetPlatform", "Target Platform", compactMode);
 
             if (compactMode)
@@ -158,14 +153,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             if (compactMode)
                 EditorGUI.indentLevel--;
-        }
-
-        private static void DrawSectionHeader(string label, bool compactMode)
-        {
-            if (!compactMode)
-            {
-                EditorDrawUtils.DrawSectionHeader(label);
-            }
         }
 
         private static void DrawSectionSpacing(bool compactMode)
