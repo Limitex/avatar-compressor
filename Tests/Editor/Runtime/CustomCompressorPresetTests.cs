@@ -48,10 +48,6 @@ namespace dev.limitex.avatar.compressor.tests
             _preset.MaxResolution = 1024;
             _preset.MinResolution = 64;
             _preset.ForcePowerOfTwo = false;
-            _preset.ProcessMainTextures = false;
-            _preset.ProcessNormalMaps = false;
-            _preset.ProcessEmissionMaps = false;
-            _preset.ProcessOtherTextures = false;
             _preset.MinSourceSize = 512;
             _preset.SkipIfSmallerThan = 256;
             _preset.TargetPlatform = CompressionPlatform.Mobile;
@@ -70,10 +66,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(_config.MaxResolution, Is.EqualTo(1024));
             Assert.That(_config.MinResolution, Is.EqualTo(64));
             Assert.That(_config.ForcePowerOfTwo, Is.False);
-            Assert.That(_config.ProcessMainTextures, Is.False);
-            Assert.That(_config.ProcessNormalMaps, Is.False);
-            Assert.That(_config.ProcessEmissionMaps, Is.False);
-            Assert.That(_config.ProcessOtherTextures, Is.False);
             Assert.That(_config.MinSourceSize, Is.EqualTo(512));
             Assert.That(_config.SkipIfSmallerThan, Is.EqualTo(256));
             Assert.That(_config.TargetPlatform, Is.EqualTo(CompressionPlatform.Mobile));
@@ -109,10 +101,6 @@ namespace dev.limitex.avatar.compressor.tests
             _config.MaxResolution = 4096;
             _config.MinResolution = 128;
             _config.ForcePowerOfTwo = true;
-            _config.ProcessMainTextures = true;
-            _config.ProcessNormalMaps = false;
-            _config.ProcessEmissionMaps = true;
-            _config.ProcessOtherTextures = false;
             _config.MinSourceSize = 1024;
             _config.SkipIfSmallerThan = 512;
             _config.TargetPlatform = CompressionPlatform.Desktop;
@@ -131,10 +119,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(_preset.MaxResolution, Is.EqualTo(4096));
             Assert.That(_preset.MinResolution, Is.EqualTo(128));
             Assert.That(_preset.ForcePowerOfTwo, Is.True);
-            Assert.That(_preset.ProcessMainTextures, Is.True);
-            Assert.That(_preset.ProcessNormalMaps, Is.False);
-            Assert.That(_preset.ProcessEmissionMaps, Is.True);
-            Assert.That(_preset.ProcessOtherTextures, Is.False);
             Assert.That(_preset.MinSourceSize, Is.EqualTo(1024));
             Assert.That(_preset.SkipIfSmallerThan, Is.EqualTo(512));
             Assert.That(_preset.TargetPlatform, Is.EqualTo(CompressionPlatform.Desktop));
@@ -213,7 +197,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void MatchesSettings_DifferentBoolSetting_ReturnsFalse()
         {
             _preset.CopyFrom(_config);
-            _config.ProcessNormalMaps = !_preset.ProcessNormalMaps;
+            _config.ForcePowerOfTwo = !_preset.ForcePowerOfTwo;
 
             Assert.That(_preset.MatchesSettings(_config), Is.False);
         }

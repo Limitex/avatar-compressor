@@ -54,19 +54,6 @@ namespace dev.limitex.avatar.compressor
         [Tooltip("Force output to power of 2 dimensions")]
         public bool ForcePowerOfTwo = true;
 
-        [Header("Texture Filters")]
-        [Tooltip("Process main textures (_MainTex, _BaseMap, etc.)")]
-        public bool ProcessMainTextures = true;
-
-        [Tooltip("Process normal maps")]
-        public bool ProcessNormalMaps = true;
-
-        [Tooltip("Process emission textures")]
-        public bool ProcessEmissionMaps = true;
-
-        [Tooltip("Process other textures (metallic, roughness, etc.)")]
-        public bool ProcessOtherTextures = true;
-
         [Header("Size Filters")]
         [Tooltip("Only process textures larger than this size")]
         public int MinSourceSize = 256;
@@ -99,10 +86,6 @@ namespace dev.limitex.avatar.compressor
             compressor.MaxResolution = MaxResolution;
             compressor.MinResolution = MinResolution;
             compressor.ForcePowerOfTwo = ForcePowerOfTwo;
-            compressor.ProcessMainTextures = ProcessMainTextures;
-            compressor.ProcessNormalMaps = ProcessNormalMaps;
-            compressor.ProcessEmissionMaps = ProcessEmissionMaps;
-            compressor.ProcessOtherTextures = ProcessOtherTextures;
             compressor.MinSourceSize = MinSourceSize;
             compressor.SkipIfSmallerThan = SkipIfSmallerThan;
             compressor.TargetPlatform = TargetPlatform;
@@ -126,10 +109,6 @@ namespace dev.limitex.avatar.compressor
             MaxResolution = compressor.MaxResolution;
             MinResolution = compressor.MinResolution;
             ForcePowerOfTwo = compressor.ForcePowerOfTwo;
-            ProcessMainTextures = compressor.ProcessMainTextures;
-            ProcessNormalMaps = compressor.ProcessNormalMaps;
-            ProcessEmissionMaps = compressor.ProcessEmissionMaps;
-            ProcessOtherTextures = compressor.ProcessOtherTextures;
             MinSourceSize = compressor.MinSourceSize;
             SkipIfSmallerThan = compressor.SkipIfSmallerThan;
             TargetPlatform = compressor.TargetPlatform;
@@ -153,10 +132,6 @@ namespace dev.limitex.avatar.compressor
                 && MaxResolution == compressor.MaxResolution
                 && MinResolution == compressor.MinResolution
                 && ForcePowerOfTwo == compressor.ForcePowerOfTwo
-                && ProcessMainTextures == compressor.ProcessMainTextures
-                && ProcessNormalMaps == compressor.ProcessNormalMaps
-                && ProcessEmissionMaps == compressor.ProcessEmissionMaps
-                && ProcessOtherTextures == compressor.ProcessOtherTextures
                 && MinSourceSize == compressor.MinSourceSize
                 && SkipIfSmallerThan == compressor.SkipIfSmallerThan
                 && TargetPlatform == compressor.TargetPlatform
