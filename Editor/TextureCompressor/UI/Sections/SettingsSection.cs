@@ -49,23 +49,36 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 EditorGUI.indentLevel++;
 
             // Analysis Strategy
-            DrawSectionHeader("Analysis Strategy", compactMode);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("Strategy"));
+            DrawPropertyWithModifiedIndicator(
+                config,
+                serializedObject,
+                nameof(TextureCompressor.Strategy),
+                "Strategy",
+                compactMode
+            );
 
             if (config.Strategy == AnalysisStrategyType.Combined)
             {
                 if (!compactMode)
                     EditorGUI.indentLevel++;
-                DrawProperty(serializedObject, "FastWeight", "Fast Weight", compactMode);
-                DrawProperty(
+                DrawPropertyWithModifiedIndicator(
+                    config,
                     serializedObject,
-                    "HighAccuracyWeight",
+                    nameof(TextureCompressor.FastWeight),
+                    "Fast Weight",
+                    compactMode
+                );
+                DrawPropertyWithModifiedIndicator(
+                    config,
+                    serializedObject,
+                    nameof(TextureCompressor.HighAccuracyWeight),
                     "High Accuracy Weight",
                     compactMode
                 );
-                DrawProperty(
+                DrawPropertyWithModifiedIndicator(
+                    config,
                     serializedObject,
-                    "PerceptualWeight",
+                    nameof(TextureCompressor.PerceptualWeight),
                     "Perceptual Weight",
                     compactMode
                 );
@@ -76,16 +89,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawSectionSpacing(compactMode);
 
             // Complexity Thresholds
-            DrawSectionHeader("Complexity Thresholds", compactMode);
-            DrawProperty(
+            DrawPropertyWithModifiedIndicator(
+                config,
                 serializedObject,
-                "HighComplexityThreshold",
+                nameof(TextureCompressor.HighComplexityThreshold),
                 "High (Keep Detail)",
                 compactMode
             );
-            DrawProperty(
+            DrawPropertyWithModifiedIndicator(
+                config,
                 serializedObject,
-                "LowComplexityThreshold",
+                nameof(TextureCompressor.LowComplexityThreshold),
                 "Low (Compress More)",
                 compactMode
             );
@@ -93,27 +107,47 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawSectionSpacing(compactMode);
 
             // Resolution Settings
-            DrawSectionHeader("Resolution Settings", compactMode);
-            DrawProperty(serializedObject, "MinDivisor", "Min Divisor", compactMode);
-            DrawProperty(serializedObject, "MaxDivisor", "Max Divisor", compactMode);
-            DrawProperty(serializedObject, "MaxResolution", "Max Resolution", compactMode);
-            DrawProperty(serializedObject, "MinResolution", "Min Resolution", compactMode);
+            DrawPropertyWithModifiedIndicator(
+                config,
+                serializedObject,
+                nameof(TextureCompressor.MinDivisor),
+                "Min Divisor",
+                compactMode
+            );
+            DrawPropertyWithModifiedIndicator(
+                config,
+                serializedObject,
+                nameof(TextureCompressor.MaxDivisor),
+                "Max Divisor",
+                compactMode
+            );
+            DrawPropertyWithModifiedIndicator(
+                config,
+                serializedObject,
+                nameof(TextureCompressor.MaxResolution),
+                "Max Resolution",
+                compactMode
+            );
+            DrawPropertyWithModifiedIndicator(
+                config,
+                serializedObject,
+                nameof(TextureCompressor.MinResolution),
+                "Min Resolution",
+                compactMode
+            );
 
-            if (compactMode)
+            DrawPropertyWithModifiedIndicator(
+                config,
+                serializedObject,
+                nameof(TextureCompressor.ForcePowerOfTwo),
+                "Force Power of 2",
+                compactMode,
+                "When enabled, dimensions are rounded to nearest power of 2.\n"
+                    + "When disabled, dimensions are rounded to nearest multiple of 4.\n"
+                    + "Note: All output dimensions are always multiples of 4 for DXT/BC compression compatibility."
+            );
+            if (!compactMode)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("ForcePowerOfTwo"));
-            }
-            else
-            {
-                EditorGUILayout.PropertyField(
-                    serializedObject.FindProperty("ForcePowerOfTwo"),
-                    new GUIContent(
-                        "Force Power of 2",
-                        "When enabled, dimensions are rounded to nearest power of 2.\n"
-                            + "When disabled, dimensions are rounded to nearest multiple of 4.\n"
-                            + "Note: All output dimensions are always multiples of 4 for DXT/BC compression compatibility."
-                    )
-                );
                 EditorGUILayout.HelpBox(
                     "Output dimensions are always multiples of 4 for DXT/BC compression compatibility. "
                         + "Example: 150x150 becomes 152x152.",
@@ -124,11 +158,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawSectionSpacing(compactMode);
 
             // Size Filters
-            DrawSectionHeader("Size Filters", compactMode);
-            DrawProperty(serializedObject, "MinSourceSize", "Min Source Size", compactMode);
-            DrawProperty(
+            DrawPropertyWithModifiedIndicator(
+                config,
                 serializedObject,
-                "SkipIfSmallerThan",
+                nameof(TextureCompressor.MinSourceSize),
+                "Min Source Size",
+                compactMode
+            );
+            DrawPropertyWithModifiedIndicator(
+                config,
+                serializedObject,
+                nameof(TextureCompressor.SkipIfSmallerThan),
                 "Skip If Smaller Than",
                 compactMode
             );
@@ -136,36 +176,25 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawSectionSpacing(compactMode);
 
             // Compression Format
-            DrawSectionHeader("Compression Format", compactMode);
-            DrawProperty(serializedObject, "TargetPlatform", "Target Platform", compactMode);
+            DrawPropertyWithModifiedIndicator(
+                config,
+                serializedObject,
+                nameof(TextureCompressor.TargetPlatform),
+                "Target Platform",
+                compactMode
+            );
 
-            if (compactMode)
-            {
-                EditorGUILayout.PropertyField(
-                    serializedObject.FindProperty("UseHighQualityFormatForHighComplexity")
-                );
-            }
-            else
-            {
-                EditorGUILayout.PropertyField(
-                    serializedObject.FindProperty("UseHighQualityFormatForHighComplexity"),
-                    new GUIContent(
-                        "High Quality for Complex",
-                        "Use BC7/ASTC_4x4 for high complexity textures (uses Complexity Threshold)"
-                    )
-                );
-            }
+            DrawPropertyWithModifiedIndicator(
+                config,
+                serializedObject,
+                nameof(TextureCompressor.UseHighQualityFormatForHighComplexity),
+                "High Quality for Complex",
+                compactMode,
+                "Use BC7/ASTC_4x4 for high complexity textures (uses Complexity Threshold)"
+            );
 
             if (compactMode)
                 EditorGUI.indentLevel--;
-        }
-
-        private static void DrawSectionHeader(string label, bool compactMode)
-        {
-            if (!compactMode)
-            {
-                EditorDrawUtils.DrawSectionHeader(label);
-            }
         }
 
         private static void DrawSectionSpacing(bool compactMode)
@@ -176,11 +205,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
-        private static void DrawProperty(
+        private static void DrawPropertyWithModifiedIndicator(
+            TextureCompressor config,
             SerializedObject serializedObject,
             string propertyName,
             string label,
-            bool compactMode
+            bool compactMode,
+            string tooltip = null
         )
         {
             if (compactMode)
@@ -189,11 +220,37 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
             else
             {
+                bool isModified = IsFieldModified(config, propertyName);
+                string displayLabel = label ?? propertyName;
+                if (isModified)
+                {
+                    displayLabel = displayLabel + " *";
+                }
+
+                var originalColor = GUI.contentColor;
+                if (isModified)
+                {
+                    GUI.contentColor = EditorStylesCache.ModifiedStatusStyle.normal.textColor;
+                }
+
                 EditorGUILayout.PropertyField(
                     serializedObject.FindProperty(propertyName),
-                    new GUIContent(label)
+                    new GUIContent(displayLabel, tooltip)
                 );
+
+                GUI.contentColor = originalColor;
             }
+        }
+
+        private static bool IsFieldModified(TextureCompressor config, string fieldName)
+        {
+            if (config.Preset != CompressorPreset.Custom)
+                return false;
+
+            if (config.CustomPresetAsset == null)
+                return false;
+
+            return config.CustomPresetAsset.IsFieldModified(fieldName, config);
         }
     }
 }

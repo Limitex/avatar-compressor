@@ -15,6 +15,8 @@ namespace dev.limitex.avatar.compressor.editor.ui
         private static GUIStyle _placeholderStyle;
         private static GUIStyle _hitCountStyle;
         private static GUIStyle _hiddenCountStyle;
+        private static GUIStyle _modifiedStatusStyle;
+        private static GUIStyle _syncedStatusStyle;
 
         /// <summary>
         /// Clears all cached styles on domain reload to prevent stale references.
@@ -27,6 +29,8 @@ namespace dev.limitex.avatar.compressor.editor.ui
             _placeholderStyle = null;
             _hitCountStyle = null;
             _hiddenCountStyle = null;
+            _modifiedStatusStyle = null;
+            _syncedStatusStyle = null;
         }
 
         /// <summary>
@@ -84,5 +88,23 @@ namespace dev.limitex.avatar.compressor.editor.ui
                 margin = new RectOffset(0, 0, 0, 0),
             };
         }
+
+        /// <summary>
+        /// Modified status style (orange mini label for unsaved changes).
+        /// </summary>
+        public static GUIStyle ModifiedStatusStyle =>
+            _modifiedStatusStyle ??= new GUIStyle(EditorStyles.miniLabel)
+            {
+                normal = { textColor = new Color(1f, 0.6f, 0.2f) },
+            };
+
+        /// <summary>
+        /// Synced status style (green mini label for saved state).
+        /// </summary>
+        public static GUIStyle SyncedStatusStyle =>
+            _syncedStatusStyle ??= new GUIStyle(EditorStyles.miniLabel)
+            {
+                normal = { textColor = new Color(0.4f, 0.8f, 0.4f) },
+            };
     }
 }

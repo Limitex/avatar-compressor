@@ -12,6 +12,9 @@ namespace dev.limitex.avatar.compressor
         [Tooltip("Quick preset selection for common use cases")]
         public CompressorPreset Preset = CompressorPreset.Balanced;
 
+        [Tooltip("Custom preset asset for saving and loading custom settings")]
+        public CustomCompressorPreset CustomPresetAsset;
+
         [Header("Analysis Strategy")]
         [Tooltip("Complexity analysis method")]
         public AnalysisStrategyType Strategy = AnalysisStrategyType.Combined;
@@ -194,6 +197,7 @@ namespace dev.limitex.avatar.compressor
                     ApplyMaximumPreset();
                     break;
                 case CompressorPreset.Custom:
+                    ApplyCustomPreset();
                     break;
             }
         }
@@ -311,6 +315,14 @@ namespace dev.limitex.avatar.compressor
             SkipIfSmallerThan = 32;
             TargetPlatform = CompressionPlatform.Auto;
             UseHighQualityFormatForHighComplexity = false;
+        }
+
+        private void ApplyCustomPreset()
+        {
+            if (CustomPresetAsset != null)
+            {
+                CustomPresetAsset.ApplyTo(this);
+            }
         }
     }
 
