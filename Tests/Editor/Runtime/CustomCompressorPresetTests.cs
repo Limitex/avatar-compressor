@@ -217,7 +217,8 @@ namespace dev.limitex.avatar.compressor.tests
         {
             _preset.CopyFrom(_config);
             // Very small difference should still match due to Mathf.Approximately
-            _config.FastWeight = _preset.FastWeight + 0.000001f;
+            // Tolerance is max(1e-6 * max(|a|, |b|), Epsilon * 8), so use a smaller delta
+            _config.FastWeight = _preset.FastWeight + 0.0000001f;
 
             Assert.That(_preset.MatchesSettings(_config), Is.True);
         }
