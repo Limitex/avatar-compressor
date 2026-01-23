@@ -13,6 +13,16 @@ namespace dev.limitex.avatar.compressor
     )]
     public class CustomCompressorPreset : ScriptableObject
     {
+        [Header("Menu Settings")]
+        [Tooltip(
+            "Path in the Custom preset menu (e.g., 'Quest' or 'PC/High Detail'). Empty = not shown in menu."
+        )]
+        public string MenuPath = "";
+
+        [Tooltip("Description shown when this preset is selected")]
+        [TextArea(2, 4)]
+        public string Description = "";
+
         [Header("Analysis Strategy")]
         [Tooltip("Complexity analysis method")]
         public AnalysisStrategyType Strategy = AnalysisStrategyType.Combined;

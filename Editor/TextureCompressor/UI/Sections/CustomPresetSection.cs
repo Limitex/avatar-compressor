@@ -32,6 +32,64 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (config.Preset != CompressorPreset.Custom)
                 return;
 
+            // Use-only mode: preset is assigned and not in edit mode
+            if (config.IsInUseOnlyMode)
+            {
+                DrawUseOnlyMode(config);
+            }
+            else
+            {
+                DrawEditMode(config);
+            }
+        }
+
+        /// <summary>
+        /// Draws the use-only mode UI (read-only display of selected preset).
+        /// </summary>
+        private static void DrawUseOnlyMode(TextureCompressor config)
+        {
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            EditorDrawUtils.DrawSectionHeader("Custom Preset (Use Only)");
+            EditorGUILayout.Space(4);
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUI.BeginDisabledGroup(true);
+            EditorGUILayout.ObjectField(
+                config.CustomPresetAsset,
+                typeof(CustomCompressorPreset),
+                false
+            );
+            EditorGUI.EndDisabledGroup();
+
+            if (GUILayout.Button("Edit", GUILayout.Width(50)))
+            {
+                Undo.RecordObject(config, "Switch to Edit Mode");
+                config.SwitchToCustomEditMode();
+                EditorUtility.SetDirty(config);
+            }
+            EditorGUILayout.EndHorizontal();
+
+            if (
+                config.CustomPresetAsset != null
+                && !string.IsNullOrEmpty(config.CustomPresetAsset.Description)
+            )
+            {
+                EditorGUILayout.Space(4);
+                EditorGUILayout.HelpBox(config.CustomPresetAsset.Description, MessageType.Info);
+            }
+
+            EditorGUILayout.Space(4);
+            PresetSection.DrawSettingsSummary(config, "Settings Summary");
+
+            EditorGUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Draws the edit mode UI (full editing capabilities).
+        /// </summary>
+        private static void DrawEditMode(TextureCompressor config)
+        {
             var pendingAction = PendingAction.None;
             CustomCompressorPreset pendingNewPreset = null;
 
@@ -252,6 +310,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             var newPreset = ScriptableObject.CreateInstance<CustomCompressorPreset>();
             newPreset.CopyFrom(config);
+
+            string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+            newPreset.MenuPath = fileName;
 
             AssetDatabase.CreateAsset(newPreset, path);
             AssetDatabase.SaveAssets();

@@ -15,6 +15,10 @@ namespace dev.limitex.avatar.compressor
         [Tooltip("Custom preset asset for saving and loading custom settings")]
         public CustomCompressorPreset CustomPresetAsset;
 
+        [HideInInspector]
+        [Tooltip("When true, the user has explicitly chosen to edit custom settings manually")]
+        public bool IsInCustomEditMode = false;
+
         [Header("Analysis Strategy")]
         [Tooltip("Complexity analysis method")]
         public AnalysisStrategyType Strategy = AnalysisStrategyType.Combined;
@@ -324,6 +328,38 @@ namespace dev.limitex.avatar.compressor
                 CustomPresetAsset.ApplyTo(this);
             }
         }
+
+        /// <summary>
+        /// Applies a custom preset and exits edit mode (use-only mode).
+        /// </summary>
+        public void ApplyCustomPreset(CustomCompressorPreset preset)
+        {
+            if (preset == null)
+            {
+                Debug.LogWarning("[TextureCompressor] Cannot apply null preset.");
+                return;
+            }
+
+            Preset = CompressorPreset.Custom;
+            CustomPresetAsset = preset;
+            IsInCustomEditMode = false;
+            preset.ApplyTo(this);
+        }
+
+        /// <summary>
+        /// Switches to custom edit mode, allowing manual configuration.
+        /// </summary>
+        public void SwitchToCustomEditMode()
+        {
+            Preset = CompressorPreset.Custom;
+            IsInCustomEditMode = true;
+        }
+
+        /// <summary>
+        /// Checks if the custom preset is in use-only mode (not editing).
+        /// Use-only mode is active when a preset is assigned and edit mode is not enabled.
+        /// </summary>
+        public bool IsInUseOnlyMode => CustomPresetAsset != null && !IsInCustomEditMode;
     }
 
     public enum CompressorPreset
