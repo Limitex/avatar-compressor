@@ -138,5 +138,48 @@ namespace dev.limitex.avatar.compressor
                 && UseHighQualityFormatForHighComplexity
                     == compressor.UseHighQualityFormatForHighComplexity;
         }
+
+        /// <summary>
+        /// Checks if a specific field differs from the compressor's current value.
+        /// </summary>
+        /// <param name="fieldName">The field name (property name on TextureCompressor)</param>
+        /// <param name="compressor">The compressor to compare against</param>
+        /// <returns>True if the field value differs from the preset</returns>
+        public bool IsFieldModified(string fieldName, TextureCompressor compressor)
+        {
+            return fieldName switch
+            {
+                nameof(Strategy) => Strategy != compressor.Strategy,
+                nameof(FastWeight) => !Mathf.Approximately(FastWeight, compressor.FastWeight),
+                nameof(HighAccuracyWeight) => !Mathf.Approximately(
+                    HighAccuracyWeight,
+                    compressor.HighAccuracyWeight
+                ),
+                nameof(PerceptualWeight) => !Mathf.Approximately(
+                    PerceptualWeight,
+                    compressor.PerceptualWeight
+                ),
+                nameof(HighComplexityThreshold) => !Mathf.Approximately(
+                    HighComplexityThreshold,
+                    compressor.HighComplexityThreshold
+                ),
+                nameof(LowComplexityThreshold) => !Mathf.Approximately(
+                    LowComplexityThreshold,
+                    compressor.LowComplexityThreshold
+                ),
+                nameof(MinDivisor) => MinDivisor != compressor.MinDivisor,
+                nameof(MaxDivisor) => MaxDivisor != compressor.MaxDivisor,
+                nameof(MaxResolution) => MaxResolution != compressor.MaxResolution,
+                nameof(MinResolution) => MinResolution != compressor.MinResolution,
+                nameof(ForcePowerOfTwo) => ForcePowerOfTwo != compressor.ForcePowerOfTwo,
+                nameof(MinSourceSize) => MinSourceSize != compressor.MinSourceSize,
+                nameof(SkipIfSmallerThan) => SkipIfSmallerThan != compressor.SkipIfSmallerThan,
+                nameof(TargetPlatform) => TargetPlatform != compressor.TargetPlatform,
+                nameof(UseHighQualityFormatForHighComplexity) =>
+                    UseHighQualityFormatForHighComplexity
+                        != compressor.UseHighQualityFormatForHighComplexity,
+                _ => false,
+            };
+        }
     }
 }

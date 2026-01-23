@@ -49,7 +49,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             // Enable logging
             EditorGUILayout.PropertyField(
-                serializedObject.FindProperty("EnableLogging"),
+                serializedObject.FindProperty(nameof(TextureCompressor.EnableLogging)),
                 new GUIContent("Enable Logging")
             );
             EditorGUILayout.Space(10);

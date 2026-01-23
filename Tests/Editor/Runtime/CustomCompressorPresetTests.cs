@@ -347,5 +347,167 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         #endregion
+
+        #region IsFieldModified Tests
+
+        [Test]
+        public void IsFieldModified_IdenticalSettings_ReturnsFalse()
+        {
+            _preset.CopyFrom(_config);
+
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.Strategy), _config),
+                Is.False
+            );
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.FastWeight), _config),
+                Is.False
+            );
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.MaxDivisor), _config),
+                Is.False
+            );
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.ForcePowerOfTwo), _config),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsFieldModified_DifferentStrategy_ReturnsTrue()
+        {
+            _preset.CopyFrom(_config);
+            _config.Strategy = AnalysisStrategyType.Perceptual;
+
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.Strategy), _config),
+                Is.True
+            );
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.MaxDivisor), _config),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsFieldModified_DifferentFloatWeight_ReturnsTrue()
+        {
+            _preset.CopyFrom(_config);
+            _config.FastWeight = _preset.FastWeight + 0.1f;
+
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.FastWeight), _config),
+                Is.True
+            );
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.HighAccuracyWeight), _config),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsFieldModified_DifferentIntValue_ReturnsTrue()
+        {
+            _preset.CopyFrom(_config);
+            _config.MaxDivisor = _preset.MaxDivisor + 2;
+
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.MaxDivisor), _config),
+                Is.True
+            );
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.MinDivisor), _config),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsFieldModified_DifferentBoolValue_ReturnsTrue()
+        {
+            _preset.CopyFrom(_config);
+            _config.ForcePowerOfTwo = !_preset.ForcePowerOfTwo;
+
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.ForcePowerOfTwo), _config),
+                Is.True
+            );
+            Assert.That(
+                _preset.IsFieldModified(
+                    nameof(CustomCompressorPreset.UseHighQualityFormatForHighComplexity),
+                    _config
+                ),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsFieldModified_DifferentEnumValue_ReturnsTrue()
+        {
+            _preset.CopyFrom(_config);
+            _config.TargetPlatform = CompressionPlatform.Mobile;
+            _preset.TargetPlatform = CompressionPlatform.Desktop;
+
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.TargetPlatform), _config),
+                Is.True
+            );
+        }
+
+        [Test]
+        public void IsFieldModified_SmallFloatDifference_UsesApproximateComparison()
+        {
+            _preset.CopyFrom(_config);
+            _config.FastWeight = _preset.FastWeight + 0.0000001f;
+
+            Assert.That(
+                _preset.IsFieldModified(nameof(CustomCompressorPreset.FastWeight), _config),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsFieldModified_UnknownField_ReturnsFalse()
+        {
+            _preset.CopyFrom(_config);
+
+            Assert.That(_preset.IsFieldModified("UnknownField", _config), Is.False);
+        }
+
+        [Test]
+        public void IsFieldModified_AllFields_Supported()
+        {
+            _preset.CopyFrom(_config);
+
+            // All supported fields should return false when identical
+            string[] allFields =
+            {
+                nameof(CustomCompressorPreset.Strategy),
+                nameof(CustomCompressorPreset.FastWeight),
+                nameof(CustomCompressorPreset.HighAccuracyWeight),
+                nameof(CustomCompressorPreset.PerceptualWeight),
+                nameof(CustomCompressorPreset.HighComplexityThreshold),
+                nameof(CustomCompressorPreset.LowComplexityThreshold),
+                nameof(CustomCompressorPreset.MinDivisor),
+                nameof(CustomCompressorPreset.MaxDivisor),
+                nameof(CustomCompressorPreset.MaxResolution),
+                nameof(CustomCompressorPreset.MinResolution),
+                nameof(CustomCompressorPreset.ForcePowerOfTwo),
+                nameof(CustomCompressorPreset.MinSourceSize),
+                nameof(CustomCompressorPreset.SkipIfSmallerThan),
+                nameof(CustomCompressorPreset.TargetPlatform),
+                nameof(CustomCompressorPreset.UseHighQualityFormatForHighComplexity),
+            };
+
+            foreach (var field in allFields)
+            {
+                Assert.That(
+                    _preset.IsFieldModified(field, _config),
+                    Is.False,
+                    $"Field {field} should not be modified"
+                );
+            }
+        }
+
+        #endregion
     }
 }
