@@ -53,46 +53,39 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorDrawUtils.DrawSectionHeader("Custom Preset (Use Only)");
             EditorGUILayout.Space(4);
 
-            EditorGUILayout.BeginHorizontal();
-            EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.ObjectField(
-                config.CustomPresetAsset,
-                typeof(CustomTextureCompressorPreset),
-                false
-            );
-            EditorGUI.EndDisabledGroup();
+            var restriction = CustomPresetEditorState.GetEditRestriction(config);
 
-            bool isLocked = CustomPresetEditorState.RequiresUnlinkToEdit(config);
-            if (isLocked)
+            EditorGUILayout.BeginHorizontal();
+            if (restriction.IsBuiltIn)
+            {
+                EditorGUILayout.LabelField(
+                    $"{config.CustomPresetAsset.name} (Built-in)",
+                    EditorStyles.boldLabel
+                );
+            }
+            else
+            {
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.ObjectField(
+                    config.CustomPresetAsset,
+                    typeof(CustomTextureCompressorPreset),
+                    false
+                );
+                EditorGUI.EndDisabledGroup();
+            }
+
+            if (restriction.RequiresUnlink)
             {
                 var lockIcon = EditorGUIUtility.IconContent("IN LockButton on");
-                lockIcon.tooltip = "This preset is locked";
+                lockIcon.tooltip = restriction.IsBuiltIn
+                    ? "This preset is built-in"
+                    : "This preset is locked";
                 GUILayout.Label(lockIcon, GUILayout.Width(18), GUILayout.Height(18));
             }
 
             if (GUILayout.Button("Edit", GUILayout.Width(50)))
             {
-                if (isLocked)
-                {
-                    bool confirmed = EditorUtility.DisplayDialog(
-                        "Preset Locked",
-                        "This preset is locked.\n\n"
-                            + "To edit the settings directly, unlock the preset by disabling the 'Lock' option in the preset asset.\n\n"
-                            + "Alternatively, you can unlink the preset and edit the settings manually.",
-                        "Unlink and Edit",
-                        "Cancel"
-                    );
-                    if (confirmed)
-                    {
-                        Undo.RecordObject(config, "Unlink Preset and Edit");
-                        CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(config);
-                        EditorUtility.SetDirty(config);
-                    }
-                }
-                else
-                {
-                    CustomPresetEditorState.SwitchToEditMode(config);
-                }
+                CustomPresetEditTransition.TryEnterEditMode(config);
             }
             EditorGUILayout.EndHorizontal();
 

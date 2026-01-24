@@ -141,9 +141,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             // Edit Mode button
             bool isEditMode =
                 config.CustomPresetAsset == null || CustomPresetEditorState.IsInEditMode(config);
-            bool requiresUnlink = CustomPresetEditorState.RequiresUnlinkToEdit(config);
+            var restriction = CustomPresetEditorState.GetEditRestriction(config);
 
-            string tooltip = requiresUnlink
+            string tooltip = restriction.RequiresUnlink
                 ? "Unlink preset and edit settings manually"
                 : "Manually configure compression settings";
 
@@ -158,27 +158,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 )
             )
             {
-                if (requiresUnlink)
-                {
-                    bool confirmed = EditorUtility.DisplayDialog(
-                        "Unlink Preset",
-                        "This preset is locked and cannot be edited directly.\n\n"
-                            + "Do you want to unlink the preset and edit the settings manually?\n"
-                            + "(Current settings will be preserved)",
-                        "Unlink and Edit",
-                        "Cancel"
-                    );
-                    if (confirmed)
-                    {
-                        Undo.RecordObject(config, "Unlink Preset and Edit");
-                        CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(config);
-                        EditorUtility.SetDirty(config);
-                    }
-                }
-                else
-                {
-                    CustomPresetEditorState.SwitchToEditMode(config);
-                }
+                CustomPresetEditTransition.TryEnterEditMode(config);
             }
 
             GUILayout.Space(ButtonSpacing);

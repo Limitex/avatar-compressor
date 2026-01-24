@@ -1,8 +1,33 @@
 using dev.limitex.avatar.compressor;
-using dev.limitex.avatar.compressor.editor;
+using UnityEditor;
 
 namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
+    /// <summary>
+    /// Information about editing restrictions for a preset.
+    /// </summary>
+    public readonly struct EditRestrictionInfo
+    {
+        public bool IsLocked { get; }
+        public bool IsBuiltIn { get; }
+
+        /// <summary>
+        /// Returns true if the preset can be edited directly without unlinking.
+        /// </summary>
+        public bool CanDirectEdit => !IsLocked && !IsBuiltIn;
+
+        /// <summary>
+        /// Returns true if the preset requires unlinking to edit.
+        /// </summary>
+        public bool RequiresUnlink => IsLocked || IsBuiltIn;
+
+        public EditRestrictionInfo(bool isLocked, bool isBuiltIn)
+        {
+            IsLocked = isLocked;
+            IsBuiltIn = isBuiltIn;
+        }
+    }
+
     /// <summary>
     /// Manages editor-only state for custom preset mode.
     /// State resets on domain reload; objects with presets default to use-only mode.
@@ -92,26 +117,52 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         }
 
         /// <summary>
-        /// Checks if the config has a locked preset that requires unlinking to edit.
+        /// Gets the editing restriction information for the config's preset.
         /// </summary>
-        public static bool RequiresUnlinkToEdit(TextureCompressor config)
+        public static EditRestrictionInfo GetEditRestriction(TextureCompressor config)
         {
-            if (config == null)
+            if (config?.CustomPresetAsset == null)
+                return new EditRestrictionInfo(false, false);
+
+            bool isLocked = config.CustomPresetAsset.Lock;
+            bool isBuiltIn = IsBuiltInPreset(config.CustomPresetAsset);
+
+            return new EditRestrictionInfo(isLocked, isBuiltIn);
+        }
+
+        private static UnityEditor.PackageManager.PackageInfo _packageInfo;
+
+        /// <summary>
+        /// Checks if the preset is a built-in preset (located within the package).
+        /// Returns false if running outside of a package context (e.g., during development).
+        /// </summary>
+        private static bool IsBuiltInPreset(CustomTextureCompressorPreset preset)
+        {
+            if (preset == null)
                 return false;
 
-            return config.CustomPresetAsset != null && config.CustomPresetAsset.Lock;
+            _packageInfo ??= UnityEditor.PackageManager.PackageInfo.FindForAssembly(
+                typeof(CustomPresetEditorState).Assembly
+            );
+
+            // When not installed as a package, all presets are considered user presets
+            if (_packageInfo == null)
+                return false;
+
+            var path = AssetDatabase.GetAssetPath(preset);
+            return path.StartsWith(_packageInfo.assetPath);
         }
 
         /// <summary>
         /// Switches the config to edit mode.
-        /// Does nothing if the preset is locked (caller should check RequiresUnlinkToEdit first).
+        /// Does nothing if the preset requires unlinking (caller should check GetEditRestriction first).
         /// </summary>
         public static void SwitchToEditMode(TextureCompressor config)
         {
             if (config == null)
                 return;
 
-            if (RequiresUnlinkToEdit(config))
+            if (GetEditRestriction(config).RequiresUnlink)
                 return;
 
             SetEditMode(config, true);

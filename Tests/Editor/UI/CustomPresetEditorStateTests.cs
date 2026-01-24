@@ -272,42 +272,6 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region RequiresUnlinkToEdit Tests
-
-        [Test]
-        public void RequiresUnlinkToEdit_WithNullConfig_ReturnsFalse()
-        {
-            Assert.That(CustomPresetEditorState.RequiresUnlinkToEdit(null), Is.False);
-        }
-
-        [Test]
-        public void RequiresUnlinkToEdit_WithNoPreset_ReturnsFalse()
-        {
-            _config.CustomPresetAsset = null;
-
-            Assert.That(CustomPresetEditorState.RequiresUnlinkToEdit(_config), Is.False);
-        }
-
-        [Test]
-        public void RequiresUnlinkToEdit_WithUnlockedPreset_ReturnsFalse()
-        {
-            _preset.Lock = false;
-            _config.CustomPresetAsset = _preset;
-
-            Assert.That(CustomPresetEditorState.RequiresUnlinkToEdit(_config), Is.False);
-        }
-
-        [Test]
-        public void RequiresUnlinkToEdit_WithLockedPreset_ReturnsTrue()
-        {
-            _preset.Lock = true;
-            _config.CustomPresetAsset = _preset;
-
-            Assert.That(CustomPresetEditorState.RequiresUnlinkToEdit(_config), Is.True);
-        }
-
-        #endregion
-
         #region UnlinkPresetAndSwitchToEditMode Tests
 
         [Test]
