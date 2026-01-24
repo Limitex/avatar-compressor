@@ -192,12 +192,12 @@ namespace dev.limitex.avatar.compressor.tests
             _mockTime = 6.0;
             _cache.Set(5, "value5");
 
-            Assert.That(_cache.ContainsKey(1), Is.True, "Key 1 should not be evicted (was accessed)");
             Assert.That(
-                _cache.ContainsKey(2),
-                Is.False,
-                "Key 2 should be evicted (became oldest)"
+                _cache.ContainsKey(1),
+                Is.True,
+                "Key 1 should not be evicted (was accessed)"
             );
+            Assert.That(_cache.ContainsKey(2), Is.False, "Key 2 should be evicted (became oldest)");
             Assert.That(_cache.ContainsKey(5), Is.True, "New entry should exist");
         }
 
