@@ -89,17 +89,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
             EditorGUILayout.EndHorizontal();
 
-            if (
-                config.CustomPresetAsset != null
-                && !string.IsNullOrEmpty(config.CustomPresetAsset.Description)
-            )
-            {
-                EditorGUILayout.Space(4);
-                EditorGUILayout.HelpBox(config.CustomPresetAsset.Description, MessageType.Info);
-            }
-
             EditorGUILayout.Space(4);
-            PresetSection.DrawSettingsSummary(config, "Settings Summary");
+            DrawPresetSummary(config);
 
             EditorGUILayout.EndVertical();
         }
@@ -353,6 +344,30 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             Undo.RecordObject(config, "Unlink Custom Preset");
             config.CustomPresetAsset = null;
             EditorUtility.SetDirty(config);
+        }
+
+        /// <summary>
+        /// Draws a summary of the preset including description and settings.
+        /// </summary>
+        private static void DrawPresetSummary(TextureCompressor config)
+        {
+            // Description
+            if (
+                config.CustomPresetAsset != null
+                && !string.IsNullOrEmpty(config.CustomPresetAsset.Description)
+            )
+            {
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                EditorGUILayout.LabelField("Description", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(
+                    config.CustomPresetAsset.Description,
+                    EditorStyles.wordWrappedLabel
+                );
+                EditorGUILayout.EndVertical();
+            }
+
+            // Settings Summary
+            PresetSection.DrawSettingsSummary(config, "Settings Summary");
         }
     }
 }
