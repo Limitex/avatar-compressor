@@ -10,14 +10,14 @@ namespace dev.limitex.avatar.compressor.tests
     {
         private GameObject _gameObject;
         private TextureCompressor _config;
-        private CustomCompressorPreset _preset;
+        private CustomTextureCompressorPreset _preset;
 
         [SetUp]
         public void SetUp()
         {
             _gameObject = new GameObject("TestCompressor");
             _config = _gameObject.AddComponent<TextureCompressor>();
-            _preset = ScriptableObject.CreateInstance<CustomCompressorPreset>();
+            _preset = ScriptableObject.CreateInstance<CustomTextureCompressorPreset>();
         }
 
         [TearDown]

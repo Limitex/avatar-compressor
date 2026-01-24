@@ -9,18 +9,18 @@ namespace dev.limitex.avatar.compressor.tests
     [TestFixture]
     public class CustomPresetScannerTests
     {
-        private CustomCompressorPreset _presetWithMenuPath;
-        private CustomCompressorPreset _presetWithoutMenuPath;
+        private CustomTextureCompressorPreset _presetWithMenuPath;
+        private CustomTextureCompressorPreset _presetWithoutMenuPath;
 
         [SetUp]
         public void SetUp()
         {
             CustomPresetScanner.ClearCache();
 
-            _presetWithMenuPath = ScriptableObject.CreateInstance<CustomCompressorPreset>();
+            _presetWithMenuPath = ScriptableObject.CreateInstance<CustomTextureCompressorPreset>();
             _presetWithMenuPath.MenuPath = "Test/Preset";
 
-            _presetWithoutMenuPath = ScriptableObject.CreateInstance<CustomCompressorPreset>();
+            _presetWithoutMenuPath = ScriptableObject.CreateInstance<CustomTextureCompressorPreset>();
             _presetWithoutMenuPath.MenuPath = "";
         }
 
@@ -47,7 +47,7 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(result, Is.Not.Null);
             Assert.That(
                 result,
-                Is.InstanceOf<System.Collections.Generic.List<CustomCompressorPreset>>()
+                Is.InstanceOf<System.Collections.Generic.List<CustomTextureCompressorPreset>>()
             );
         }
 

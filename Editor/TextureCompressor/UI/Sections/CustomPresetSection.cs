@@ -57,7 +57,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.ObjectField(
                 config.CustomPresetAsset,
-                typeof(CustomCompressorPreset),
+                typeof(CustomTextureCompressorPreset),
                 false
             );
             EditorGUI.EndDisabledGroup();
@@ -89,7 +89,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         private static void DrawEditMode(TextureCompressor config)
         {
             var pendingAction = PendingAction.None;
-            CustomCompressorPreset pendingNewPreset = null;
+            CustomTextureCompressorPreset pendingNewPreset = null;
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
@@ -112,16 +112,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         private static void DrawPresetField(
             TextureCompressor config,
             ref PendingAction pendingAction,
-            ref CustomCompressorPreset pendingNewPreset
+            ref CustomTextureCompressorPreset pendingNewPreset
         )
         {
             EditorGUILayout.BeginHorizontal();
 
             EditorGUI.BeginChangeCheck();
-            var newPreset = (CustomCompressorPreset)
+            var newPreset = (CustomTextureCompressorPreset)
                 EditorGUILayout.ObjectField(
                     config.CustomPresetAsset,
-                    typeof(CustomCompressorPreset),
+                    typeof(CustomTextureCompressorPreset),
                     false
                 );
 
@@ -231,7 +231,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         private static void ExecuteAction(
             PendingAction action,
             TextureCompressor config,
-            CustomCompressorPreset newPreset
+            CustomTextureCompressorPreset newPreset
         )
         {
             switch (action)
@@ -254,7 +254,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
-        private static void ChangePreset(TextureCompressor config, CustomCompressorPreset newPreset)
+        private static void ChangePreset(TextureCompressor config, CustomTextureCompressorPreset newPreset)
         {
             Undo.RecordObject(config, "Change Custom Preset");
             config.CustomPresetAsset = newPreset;
@@ -294,9 +294,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private static void CreateNewPreset(TextureCompressor config)
         {
-            string defaultName = "NewCompressorPreset";
+            string defaultName = "NewTextureCompressorPreset";
             string path = EditorUtility.SaveFilePanelInProject(
-                "Create New Compressor Preset",
+                "Create New Texture Compressor Preset",
                 defaultName,
                 PresetFileExtension,
                 "Choose a location to save the new preset",
@@ -306,7 +306,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (string.IsNullOrEmpty(path))
                 return;
 
-            var newPreset = ScriptableObject.CreateInstance<CustomCompressorPreset>();
+            var newPreset = ScriptableObject.CreateInstance<CustomTextureCompressorPreset>();
             newPreset.CopyFrom(config);
 
             // Default MenuPath to filename for immediate menu visibility

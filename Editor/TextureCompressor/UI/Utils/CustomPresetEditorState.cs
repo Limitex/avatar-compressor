@@ -107,7 +107,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// </summary>
         public static void ApplyPresetAndSwitchToUseOnly(
             TextureCompressor config,
-            CustomCompressorPreset preset
+            CustomTextureCompressorPreset preset
         )
         {
             if (config == null || preset == null)

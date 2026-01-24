@@ -6,35 +6,35 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
     /// <summary>
-    /// Scans for CustomCompressorPreset assets with MenuPath and builds hierarchical menus.
+    /// Scans for CustomTextureCompressorPreset assets with MenuPath and builds hierarchical menus.
     /// </summary>
     public static class CustomPresetScanner
     {
-        private static List<CustomCompressorPreset> _cachedPresets;
+        private static List<CustomTextureCompressorPreset> _cachedPresets;
         private static double _cacheTime;
         private const double CacheValiditySeconds = 2.0;
 
         /// <summary>
-        /// Gets all CustomCompressorPreset assets that have a non-empty MenuPath.
+        /// Gets all CustomTextureCompressorPreset assets that have a non-empty MenuPath.
         /// Results are cached for performance.
         /// </summary>
-        public static List<CustomCompressorPreset> GetMenuPresets()
+        public static List<CustomTextureCompressorPreset> GetMenuPresets()
         {
             double currentTime = EditorApplication.timeSinceStartup;
 
             if (_cachedPresets != null && (currentTime - _cacheTime) < CacheValiditySeconds)
             {
-                return new List<CustomCompressorPreset>(_cachedPresets);
+                return new List<CustomTextureCompressorPreset>(_cachedPresets);
             }
 
-            var presets = new List<CustomCompressorPreset>();
+            var presets = new List<CustomTextureCompressorPreset>();
 
-            string[] guids = AssetDatabase.FindAssets("t:CustomCompressorPreset");
+            string[] guids = AssetDatabase.FindAssets("t:CustomTextureCompressorPreset");
 
             foreach (string guid in guids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                var preset = AssetDatabase.LoadAssetAtPath<CustomCompressorPreset>(path);
+                var preset = AssetDatabase.LoadAssetAtPath<CustomTextureCompressorPreset>(path);
 
                 if (preset != null && !string.IsNullOrEmpty(preset.MenuPath))
                 {
@@ -50,7 +50,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             _cachedPresets = presets;
             _cacheTime = currentTime;
 
-            return new List<CustomCompressorPreset>(presets);
+            return new List<CustomTextureCompressorPreset>(presets);
         }
 
         /// <summary>
@@ -68,8 +68,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// <param name="onPresetSelected">Callback when a preset is selected from the menu.</param>
         /// <returns>A configured GenericMenu ready to be shown.</returns>
         public static GenericMenu BuildPresetMenu(
-            CustomCompressorPreset currentPreset,
-            Action<CustomCompressorPreset> onPresetSelected
+            CustomTextureCompressorPreset currentPreset,
+            Action<CustomTextureCompressorPreset> onPresetSelected
         )
         {
             var menu = new GenericMenu();
@@ -90,9 +90,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private static void AddPresetsToMenu(
             GenericMenu menu,
-            List<CustomCompressorPreset> presets,
-            CustomCompressorPreset currentPreset,
-            Action<CustomCompressorPreset> onPresetSelected
+            List<CustomTextureCompressorPreset> presets,
+            CustomTextureCompressorPreset currentPreset,
+            Action<CustomTextureCompressorPreset> onPresetSelected
         )
         {
             foreach (var preset in presets)

@@ -5,18 +5,18 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class CustomCompressorPresetTests
+    public class CustomTextureCompressorPresetTests
     {
         private GameObject _testObject;
         private TextureCompressor _config;
-        private CustomCompressorPreset _preset;
+        private CustomTextureCompressorPreset _preset;
 
         [SetUp]
         public void SetUp()
         {
             _testObject = new GameObject("TestAvatar");
             _config = _testObject.AddComponent<TextureCompressor>();
-            _preset = ScriptableObject.CreateInstance<CustomCompressorPreset>();
+            _preset = ScriptableObject.CreateInstance<CustomTextureCompressorPreset>();
         }
 
         [TearDown]
@@ -236,7 +236,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             _preset.ApplyTo(_config);
 
-            var secondPreset = ScriptableObject.CreateInstance<CustomCompressorPreset>();
+            var secondPreset = ScriptableObject.CreateInstance<CustomTextureCompressorPreset>();
             secondPreset.CopyFrom(_config);
 
             Assert.That(secondPreset.Strategy, Is.EqualTo(_preset.Strategy));
@@ -388,19 +388,19 @@ namespace dev.limitex.avatar.compressor.tests
             _preset.CopyFrom(_config);
 
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.Strategy), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.Strategy), _config),
                 Is.False
             );
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.FastWeight), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.FastWeight), _config),
                 Is.False
             );
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.MaxDivisor), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.MaxDivisor), _config),
                 Is.False
             );
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.ForcePowerOfTwo), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.ForcePowerOfTwo), _config),
                 Is.False
             );
         }
@@ -412,11 +412,11 @@ namespace dev.limitex.avatar.compressor.tests
             _config.Strategy = AnalysisStrategyType.Perceptual;
 
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.Strategy), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.Strategy), _config),
                 Is.True
             );
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.MaxDivisor), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.MaxDivisor), _config),
                 Is.False
             );
         }
@@ -428,11 +428,11 @@ namespace dev.limitex.avatar.compressor.tests
             _config.FastWeight = _preset.FastWeight + 0.1f;
 
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.FastWeight), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.FastWeight), _config),
                 Is.True
             );
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.HighAccuracyWeight), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.HighAccuracyWeight), _config),
                 Is.False
             );
         }
@@ -444,11 +444,11 @@ namespace dev.limitex.avatar.compressor.tests
             _config.MaxDivisor = _preset.MaxDivisor + 2;
 
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.MaxDivisor), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.MaxDivisor), _config),
                 Is.True
             );
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.MinDivisor), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.MinDivisor), _config),
                 Is.False
             );
         }
@@ -460,12 +460,12 @@ namespace dev.limitex.avatar.compressor.tests
             _config.ForcePowerOfTwo = !_preset.ForcePowerOfTwo;
 
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.ForcePowerOfTwo), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.ForcePowerOfTwo), _config),
                 Is.True
             );
             Assert.That(
                 _preset.IsFieldModified(
-                    nameof(CustomCompressorPreset.UseHighQualityFormatForHighComplexity),
+                    nameof(CustomTextureCompressorPreset.UseHighQualityFormatForHighComplexity),
                     _config
                 ),
                 Is.False
@@ -480,7 +480,7 @@ namespace dev.limitex.avatar.compressor.tests
             _preset.TargetPlatform = CompressionPlatform.Desktop;
 
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.TargetPlatform), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.TargetPlatform), _config),
                 Is.True
             );
         }
@@ -492,7 +492,7 @@ namespace dev.limitex.avatar.compressor.tests
             _config.FastWeight = _preset.FastWeight + 0.0000001f;
 
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomCompressorPreset.FastWeight), _config),
+                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.FastWeight), _config),
                 Is.False
             );
         }
@@ -513,21 +513,21 @@ namespace dev.limitex.avatar.compressor.tests
             // All supported fields should return false when identical
             string[] allFields =
             {
-                nameof(CustomCompressorPreset.Strategy),
-                nameof(CustomCompressorPreset.FastWeight),
-                nameof(CustomCompressorPreset.HighAccuracyWeight),
-                nameof(CustomCompressorPreset.PerceptualWeight),
-                nameof(CustomCompressorPreset.HighComplexityThreshold),
-                nameof(CustomCompressorPreset.LowComplexityThreshold),
-                nameof(CustomCompressorPreset.MinDivisor),
-                nameof(CustomCompressorPreset.MaxDivisor),
-                nameof(CustomCompressorPreset.MaxResolution),
-                nameof(CustomCompressorPreset.MinResolution),
-                nameof(CustomCompressorPreset.ForcePowerOfTwo),
-                nameof(CustomCompressorPreset.MinSourceSize),
-                nameof(CustomCompressorPreset.SkipIfSmallerThan),
-                nameof(CustomCompressorPreset.TargetPlatform),
-                nameof(CustomCompressorPreset.UseHighQualityFormatForHighComplexity),
+                nameof(CustomTextureCompressorPreset.Strategy),
+                nameof(CustomTextureCompressorPreset.FastWeight),
+                nameof(CustomTextureCompressorPreset.HighAccuracyWeight),
+                nameof(CustomTextureCompressorPreset.PerceptualWeight),
+                nameof(CustomTextureCompressorPreset.HighComplexityThreshold),
+                nameof(CustomTextureCompressorPreset.LowComplexityThreshold),
+                nameof(CustomTextureCompressorPreset.MinDivisor),
+                nameof(CustomTextureCompressorPreset.MaxDivisor),
+                nameof(CustomTextureCompressorPreset.MaxResolution),
+                nameof(CustomTextureCompressorPreset.MinResolution),
+                nameof(CustomTextureCompressorPreset.ForcePowerOfTwo),
+                nameof(CustomTextureCompressorPreset.MinSourceSize),
+                nameof(CustomTextureCompressorPreset.SkipIfSmallerThan),
+                nameof(CustomTextureCompressorPreset.TargetPlatform),
+                nameof(CustomTextureCompressorPreset.UseHighQualityFormatForHighComplexity),
             };
 
             foreach (var field in allFields)

@@ -3,15 +3,14 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor
 {
     /// <summary>
-    /// ScriptableObject that stores custom compressor preset settings.
+    /// ScriptableObject that stores custom texture compressor preset settings.
     /// Can be shared across multiple avatars and projects.
     /// </summary>
     [CreateAssetMenu(
-        fileName = "NewCompressorPreset",
-        menuName = "Avatar Compressor/Custom Preset",
-        order = 100
+        fileName = "NewTextureCompressorPreset",
+        menuName = "Avatar Compressor/Texture Compressor/CustomTextureCompressorPreset"
     )]
-    public class CustomCompressorPreset : ScriptableObject
+    public class CustomTextureCompressorPreset : ScriptableObject
     {
         [Header("Menu Settings")]
         [Tooltip(
