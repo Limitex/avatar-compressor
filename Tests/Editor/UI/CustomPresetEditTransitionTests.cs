@@ -18,13 +18,11 @@ namespace dev.limitex.avatar.compressor.tests
             _gameObject = new GameObject("TestCompressor");
             _config = _gameObject.AddComponent<TextureCompressor>();
             _preset = ScriptableObject.CreateInstance<CustomTextureCompressorPreset>();
-            CustomPresetEditorState.ClearAllStates();
         }
 
         [TearDown]
         public void TearDown()
         {
-            CustomPresetEditorState.ClearAllStates();
             if (_gameObject != null)
                 Object.DestroyImmediate(_gameObject);
             if (_preset != null)

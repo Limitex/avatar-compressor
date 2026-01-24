@@ -23,9 +23,6 @@ namespace dev.limitex.avatar.compressor.tests
         [TearDown]
         public void TearDown()
         {
-            // Clear all cached states to ensure clean state for next test
-            CustomPresetEditorState.ClearAllStates();
-
             if (_gameObject != null)
             {
                 Object.DestroyImmediate(_gameObject);
@@ -314,63 +311,6 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.That(_config.CustomPresetAsset, Is.Null);
             Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.True);
-        }
-
-        #endregion
-
-        #region Cache State Tests
-
-        [Test]
-        public void CachedStateCount_InitiallyZero()
-        {
-            CustomPresetEditorState.ClearAllStates();
-
-            Assert.That(CustomPresetEditorState.CachedStateCount, Is.EqualTo(0));
-        }
-
-        [Test]
-        public void CachedStateCount_IncreasesWhenSettingState()
-        {
-            CustomPresetEditorState.ClearAllStates();
-
-            CustomPresetEditorState.SetEditMode(_config, true);
-
-            Assert.That(CustomPresetEditorState.CachedStateCount, Is.EqualTo(1));
-        }
-
-        [Test]
-        public void HasStateFor_ReturnsTrueAfterSetting()
-        {
-            CustomPresetEditorState.ClearAllStates();
-
-            CustomPresetEditorState.SetEditMode(_config, true);
-
-            Assert.That(CustomPresetEditorState.HasStateFor(_config), Is.True);
-        }
-
-        [Test]
-        public void HasStateFor_ReturnsFalseBeforeSetting()
-        {
-            CustomPresetEditorState.ClearAllStates();
-
-            Assert.That(CustomPresetEditorState.HasStateFor(_config), Is.False);
-        }
-
-        [Test]
-        public void HasStateFor_WithNullConfig_ReturnsFalse()
-        {
-            Assert.That(CustomPresetEditorState.HasStateFor(null), Is.False);
-        }
-
-        [Test]
-        public void ClearAllStates_RemovesAllEntries()
-        {
-            CustomPresetEditorState.SetEditMode(_config, true);
-
-            CustomPresetEditorState.ClearAllStates();
-
-            Assert.That(CustomPresetEditorState.CachedStateCount, Is.EqualTo(0));
-            Assert.That(CustomPresetEditorState.HasStateFor(_config), Is.False);
         }
 
         #endregion

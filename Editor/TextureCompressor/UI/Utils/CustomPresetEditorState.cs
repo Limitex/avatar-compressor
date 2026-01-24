@@ -46,29 +46,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         private static readonly LruCache<int, bool> _editModeCache = new(MaxCachedStates);
 
         /// <summary>
-        /// Gets the current number of cached states. For testing purposes.
-        /// </summary>
-        public static int CachedStateCount => _editModeCache.Count;
-
-        /// <summary>
-        /// Clears all cached states. For testing purposes.
-        /// </summary>
-        public static void ClearAllStates()
-        {
-            _editModeCache.Clear();
-        }
-
-        /// <summary>
-        /// Checks if a state exists for the given config. For testing purposes.
-        /// </summary>
-        public static bool HasStateFor(TextureCompressor config)
-        {
-            if (config == null)
-                return false;
-            return _editModeCache.ContainsKey(config.GetInstanceID());
-        }
-
-        /// <summary>
         /// Checks if the specified config is in edit mode.
         /// </summary>
         public static bool IsInEditMode(TextureCompressor config)
