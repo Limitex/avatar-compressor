@@ -62,9 +62,37 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             );
             EditorGUI.EndDisabledGroup();
 
+            bool isLocked = CustomPresetEditorState.RequiresUnlinkToEdit(config);
+            if (isLocked)
+            {
+                var lockIcon = EditorGUIUtility.IconContent("IN LockButton on");
+                lockIcon.tooltip = "This preset is locked";
+                GUILayout.Label(lockIcon, GUILayout.Width(18), GUILayout.Height(18));
+            }
+
             if (GUILayout.Button("Edit", GUILayout.Width(50)))
             {
-                CustomPresetEditorState.SwitchToEditMode(config);
+                if (isLocked)
+                {
+                    bool confirmed = EditorUtility.DisplayDialog(
+                        "Preset Locked",
+                        "This preset is locked.\n\n"
+                            + "To edit the settings directly, unlock the preset by disabling the 'Lock' option in the preset asset.\n\n"
+                            + "Alternatively, you can unlink the preset and edit the settings manually.",
+                        "Unlink and Edit",
+                        "Cancel"
+                    );
+                    if (confirmed)
+                    {
+                        Undo.RecordObject(config, "Unlink Preset and Edit");
+                        CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(config);
+                        EditorUtility.SetDirty(config);
+                    }
+                }
+                else
+                {
+                    CustomPresetEditorState.SwitchToEditMode(config);
+                }
             }
             EditorGUILayout.EndHorizontal();
 
@@ -254,7 +282,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
-        private static void ChangePreset(TextureCompressor config, CustomTextureCompressorPreset newPreset)
+        private static void ChangePreset(
+            TextureCompressor config,
+            CustomTextureCompressorPreset newPreset
+        )
         {
             Undo.RecordObject(config, "Change Custom Preset");
             config.CustomPresetAsset = newPreset;

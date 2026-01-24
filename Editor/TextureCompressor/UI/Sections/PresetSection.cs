@@ -141,10 +141,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             // Edit Mode button
             bool isEditMode =
                 config.CustomPresetAsset == null || CustomPresetEditorState.IsInEditMode(config);
+            bool requiresUnlink = CustomPresetEditorState.RequiresUnlinkToEdit(config);
+
+            string tooltip = requiresUnlink
+                ? "Unlink preset and edit settings manually"
+                : "Manually configure compression settings";
+
             if (
                 EditorDrawUtils.DrawColoredButton(
                     "Edit Mode",
-                    "Manually configure compression settings",
+                    tooltip,
                     PresetColors.EditMode,
                     isEditMode,
                     height: 24f,
@@ -152,7 +158,27 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 )
             )
             {
-                CustomPresetEditorState.SwitchToEditMode(config);
+                if (requiresUnlink)
+                {
+                    bool confirmed = EditorUtility.DisplayDialog(
+                        "Unlink Preset",
+                        "This preset is locked and cannot be edited directly.\n\n"
+                            + "Do you want to unlink the preset and edit the settings manually?\n"
+                            + "(Current settings will be preserved)",
+                        "Unlink and Edit",
+                        "Cancel"
+                    );
+                    if (confirmed)
+                    {
+                        Undo.RecordObject(config, "Unlink Preset and Edit");
+                        CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(config);
+                        EditorUtility.SetDirty(config);
+                    }
+                }
+                else
+                {
+                    CustomPresetEditorState.SwitchToEditMode(config);
+                }
             }
 
             GUILayout.Space(ButtonSpacing);

@@ -20,7 +20,8 @@ namespace dev.limitex.avatar.compressor.tests
             _presetWithMenuPath = ScriptableObject.CreateInstance<CustomTextureCompressorPreset>();
             _presetWithMenuPath.MenuPath = "Test/Preset";
 
-            _presetWithoutMenuPath = ScriptableObject.CreateInstance<CustomTextureCompressorPreset>();
+            _presetWithoutMenuPath =
+                ScriptableObject.CreateInstance<CustomTextureCompressorPreset>();
             _presetWithoutMenuPath.MenuPath = "";
         }
 

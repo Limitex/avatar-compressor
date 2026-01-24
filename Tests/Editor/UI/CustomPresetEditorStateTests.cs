@@ -135,6 +135,18 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.DoesNotThrow(() => CustomPresetEditorState.SwitchToEditMode(null));
         }
 
+        [Test]
+        public void SwitchToEditMode_WithLockedPreset_DoesNotSwitchToEditMode()
+        {
+            _preset.Lock = true;
+            _config.CustomPresetAsset = _preset;
+            CustomPresetEditorState.SetEditMode(_config, false);
+
+            CustomPresetEditorState.SwitchToEditMode(_config);
+
+            Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.False);
+        }
+
         #endregion
 
         #region ApplyPresetAndSwitchToUseOnly Tests
@@ -256,6 +268,88 @@ namespace dev.limitex.avatar.compressor.tests
             _config.CustomPresetAsset = _preset;
 
             Assert.That(CustomPresetEditorState.IsCustomEditable(_config), Is.False);
+        }
+
+        #endregion
+
+        #region RequiresUnlinkToEdit Tests
+
+        [Test]
+        public void RequiresUnlinkToEdit_WithNullConfig_ReturnsFalse()
+        {
+            Assert.That(CustomPresetEditorState.RequiresUnlinkToEdit(null), Is.False);
+        }
+
+        [Test]
+        public void RequiresUnlinkToEdit_WithNoPreset_ReturnsFalse()
+        {
+            _config.CustomPresetAsset = null;
+
+            Assert.That(CustomPresetEditorState.RequiresUnlinkToEdit(_config), Is.False);
+        }
+
+        [Test]
+        public void RequiresUnlinkToEdit_WithUnlockedPreset_ReturnsFalse()
+        {
+            _preset.Lock = false;
+            _config.CustomPresetAsset = _preset;
+
+            Assert.That(CustomPresetEditorState.RequiresUnlinkToEdit(_config), Is.False);
+        }
+
+        [Test]
+        public void RequiresUnlinkToEdit_WithLockedPreset_ReturnsTrue()
+        {
+            _preset.Lock = true;
+            _config.CustomPresetAsset = _preset;
+
+            Assert.That(CustomPresetEditorState.RequiresUnlinkToEdit(_config), Is.True);
+        }
+
+        #endregion
+
+        #region UnlinkPresetAndSwitchToEditMode Tests
+
+        [Test]
+        public void UnlinkPresetAndSwitchToEditMode_WithNullConfig_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+                CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(null)
+            );
+        }
+
+        [Test]
+        public void UnlinkPresetAndSwitchToEditMode_UnlinksPreset()
+        {
+            _config.CustomPresetAsset = _preset;
+
+            CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(_config);
+
+            Assert.That(_config.CustomPresetAsset, Is.Null);
+        }
+
+        [Test]
+        public void UnlinkPresetAndSwitchToEditMode_SwitchesToEditMode()
+        {
+            _config.CustomPresetAsset = _preset;
+            CustomPresetEditorState.SetEditMode(_config, false);
+
+            CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(_config);
+
+            Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.True);
+        }
+
+        [Test]
+        public void UnlinkPresetAndSwitchToEditMode_WithLockedPreset_UnlinksAndSwitches()
+        {
+            _preset.Lock = true;
+            _config.CustomPresetAsset = _preset;
+            CustomPresetEditorState.SetEditMode(_config, false);
+
+            CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(_config);
+
+            Assert.That(_config.CustomPresetAsset, Is.Null);
+            Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.True);
         }
 
         #endregion

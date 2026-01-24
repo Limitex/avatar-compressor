@@ -400,7 +400,10 @@ namespace dev.limitex.avatar.compressor.tests
                 Is.False
             );
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.ForcePowerOfTwo), _config),
+                _preset.IsFieldModified(
+                    nameof(CustomTextureCompressorPreset.ForcePowerOfTwo),
+                    _config
+                ),
                 Is.False
             );
         }
@@ -432,7 +435,10 @@ namespace dev.limitex.avatar.compressor.tests
                 Is.True
             );
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.HighAccuracyWeight), _config),
+                _preset.IsFieldModified(
+                    nameof(CustomTextureCompressorPreset.HighAccuracyWeight),
+                    _config
+                ),
                 Is.False
             );
         }
@@ -460,7 +466,10 @@ namespace dev.limitex.avatar.compressor.tests
             _config.ForcePowerOfTwo = !_preset.ForcePowerOfTwo;
 
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.ForcePowerOfTwo), _config),
+                _preset.IsFieldModified(
+                    nameof(CustomTextureCompressorPreset.ForcePowerOfTwo),
+                    _config
+                ),
                 Is.True
             );
             Assert.That(
@@ -480,7 +489,10 @@ namespace dev.limitex.avatar.compressor.tests
             _preset.TargetPlatform = CompressionPlatform.Desktop;
 
             Assert.That(
-                _preset.IsFieldModified(nameof(CustomTextureCompressorPreset.TargetPlatform), _config),
+                _preset.IsFieldModified(
+                    nameof(CustomTextureCompressorPreset.TargetPlatform),
+                    _config
+                ),
                 Is.True
             );
         }

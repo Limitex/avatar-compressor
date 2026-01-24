@@ -92,13 +92,41 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         }
 
         /// <summary>
+        /// Checks if the config has a locked preset that requires unlinking to edit.
+        /// </summary>
+        public static bool RequiresUnlinkToEdit(TextureCompressor config)
+        {
+            if (config == null)
+                return false;
+
+            return config.CustomPresetAsset != null && config.CustomPresetAsset.Lock;
+        }
+
+        /// <summary>
         /// Switches the config to edit mode.
+        /// Does nothing if the preset is locked (caller should check RequiresUnlinkToEdit first).
         /// </summary>
         public static void SwitchToEditMode(TextureCompressor config)
         {
             if (config == null)
                 return;
 
+            if (RequiresUnlinkToEdit(config))
+                return;
+
+            SetEditMode(config, true);
+        }
+
+        /// <summary>
+        /// Unlinks the preset and switches to edit mode.
+        /// Current settings are preserved.
+        /// </summary>
+        public static void UnlinkPresetAndSwitchToEditMode(TextureCompressor config)
+        {
+            if (config == null)
+                return;
+
+            config.CustomPresetAsset = null;
             SetEditMode(config, true);
         }
 
