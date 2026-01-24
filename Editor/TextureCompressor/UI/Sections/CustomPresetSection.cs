@@ -33,7 +33,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 return;
 
             // Use-only mode: preset is assigned and not in edit mode
-            if (config.IsInUseOnlyMode)
+            if (CustomPresetEditorState.IsInUseOnlyMode(config))
             {
                 DrawUseOnlyMode(config);
             }
@@ -64,9 +64,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             if (GUILayout.Button("Edit", GUILayout.Width(50)))
             {
-                Undo.RecordObject(config, "Switch to Edit Mode");
-                config.SwitchToCustomEditMode();
-                EditorUtility.SetDirty(config);
+                CustomPresetEditorState.SwitchToEditMode(config);
             }
             EditorGUILayout.EndHorizontal();
 
@@ -311,6 +309,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             var newPreset = ScriptableObject.CreateInstance<CustomCompressorPreset>();
             newPreset.CopyFrom(config);
 
+            // Default MenuPath to filename for immediate menu visibility
             string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
             newPreset.MenuPath = fileName;
 

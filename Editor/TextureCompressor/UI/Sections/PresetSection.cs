@@ -165,7 +165,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             float buttonWidth = (availableWidth - ButtonSpacing) / 2f;
 
             // Edit Mode button
-            bool isEditMode = config.CustomPresetAsset == null || config.IsInCustomEditMode;
+            bool isEditMode =
+                config.CustomPresetAsset == null || CustomPresetEditorState.IsInEditMode(config);
             if (
                 EditorDrawUtils.DrawColoredButton(
                     "Edit Mode",
@@ -177,15 +178,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 )
             )
             {
-                Undo.RecordObject(config, "Switch to Edit Mode");
-                config.SwitchToCustomEditMode();
-                EditorUtility.SetDirty(config);
+                CustomPresetEditorState.SwitchToEditMode(config);
             }
 
             GUILayout.Space(ButtonSpacing);
 
             // Custom Preset dropdown button
-            bool isUseOnly = config.IsInUseOnlyMode;
+            bool isUseOnly = CustomPresetEditorState.IsInUseOnlyMode(config);
             string presetLabel = "Custom Preset \u25BE";
             bool clicked = EditorDrawUtils.DrawColoredButton(
                 presetLabel,
@@ -247,7 +246,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 onPresetSelected: (preset) =>
                 {
                     Undo.RecordObject(config, "Apply Custom Preset");
-                    config.ApplyCustomPreset(preset);
+                    CustomPresetEditorState.ApplyPresetAndSwitchToUseOnly(config, preset);
                     EditorUtility.SetDirty(config);
                 }
             );
