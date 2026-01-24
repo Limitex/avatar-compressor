@@ -260,19 +260,18 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region LRU Cache Eviction Tests
+        #region Cache State Tests
 
         [Test]
-        public void LRU_CachedStateCount_InitiallyZero()
+        public void CachedStateCount_InitiallyZero()
         {
-            // Clear any existing state from other tests
             CustomPresetEditorState.ClearAllStates();
 
             Assert.That(CustomPresetEditorState.CachedStateCount, Is.EqualTo(0));
         }
 
         [Test]
-        public void LRU_CachedStateCount_IncreasesWhenSettingState()
+        public void CachedStateCount_IncreasesWhenSettingState()
         {
             CustomPresetEditorState.ClearAllStates();
 
@@ -282,7 +281,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void LRU_HasStateFor_ReturnsTrueAfterSetting()
+        public void HasStateFor_ReturnsTrueAfterSetting()
         {
             CustomPresetEditorState.ClearAllStates();
 
@@ -292,7 +291,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void LRU_HasStateFor_ReturnsFalseBeforeSetting()
+        public void HasStateFor_ReturnsFalseBeforeSetting()
         {
             CustomPresetEditorState.ClearAllStates();
 
@@ -300,7 +299,13 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void LRU_ClearAllStates_RemovesAllEntries()
+        public void HasStateFor_WithNullConfig_ReturnsFalse()
+        {
+            Assert.That(CustomPresetEditorState.HasStateFor(null), Is.False);
+        }
+
+        [Test]
+        public void ClearAllStates_RemovesAllEntries()
         {
             CustomPresetEditorState.SetEditMode(_config, true);
 
@@ -308,235 +313,6 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.That(CustomPresetEditorState.CachedStateCount, Is.EqualTo(0));
             Assert.That(CustomPresetEditorState.HasStateFor(_config), Is.False);
-        }
-
-        [Test]
-        public void LRU_EvictsOldestEntry_WhenCacheFull()
-        {
-            CustomPresetEditorState.ClearAllStates();
-
-            // Create MaxCachedStates configs and set their state
-            var gameObjects = new System.Collections.Generic.List<GameObject>();
-            var configs = new System.Collections.Generic.List<TextureCompressor>();
-
-            try
-            {
-                for (int i = 0; i < CustomPresetEditorState.MaxCachedStates; i++)
-                {
-                    var go = new GameObject($"TestCompressor_{i}");
-                    gameObjects.Add(go);
-                    var config = go.AddComponent<TextureCompressor>();
-                    configs.Add(config);
-                    CustomPresetEditorState.SetEditMode(config, true);
-                }
-
-                // Verify cache is at capacity
-                Assert.That(
-                    CustomPresetEditorState.CachedStateCount,
-                    Is.EqualTo(CustomPresetEditorState.MaxCachedStates)
-                );
-
-                // First config should still have state
-                Assert.That(CustomPresetEditorState.HasStateFor(configs[0]), Is.True);
-
-                // Add one more config (beyond capacity)
-                var extraGo = new GameObject("TestCompressor_Extra");
-                gameObjects.Add(extraGo);
-                var extraConfig = extraGo.AddComponent<TextureCompressor>();
-                configs.Add(extraConfig);
-                CustomPresetEditorState.SetEditMode(extraConfig, true);
-
-                // Cache count should still be at max (one was evicted)
-                Assert.That(
-                    CustomPresetEditorState.CachedStateCount,
-                    Is.EqualTo(CustomPresetEditorState.MaxCachedStates)
-                );
-
-                // The oldest entry (first config) should have been evicted
-                Assert.That(CustomPresetEditorState.HasStateFor(configs[0]), Is.False);
-
-                // The new entry should exist
-                Assert.That(CustomPresetEditorState.HasStateFor(extraConfig), Is.True);
-            }
-            finally
-            {
-                // Cleanup
-                CustomPresetEditorState.ClearAllStates();
-                foreach (var go in gameObjects)
-                {
-                    Object.DestroyImmediate(go);
-                }
-            }
-        }
-
-        [Test]
-        public void LRU_UpdateExistingEntry_DoesNotEvict()
-        {
-            CustomPresetEditorState.ClearAllStates();
-
-            var gameObjects = new System.Collections.Generic.List<GameObject>();
-            var configs = new System.Collections.Generic.List<TextureCompressor>();
-
-            try
-            {
-                // Fill cache to capacity
-                for (int i = 0; i < CustomPresetEditorState.MaxCachedStates; i++)
-                {
-                    var go = new GameObject($"TestCompressor_{i}");
-                    gameObjects.Add(go);
-                    var config = go.AddComponent<TextureCompressor>();
-                    configs.Add(config);
-                    CustomPresetEditorState.SetEditMode(config, true);
-                }
-
-                // Update an existing entry (should not trigger eviction)
-                CustomPresetEditorState.SetEditMode(configs[0], false);
-
-                // All entries should still exist
-                Assert.That(
-                    CustomPresetEditorState.CachedStateCount,
-                    Is.EqualTo(CustomPresetEditorState.MaxCachedStates)
-                );
-                foreach (var config in configs)
-                {
-                    Assert.That(
-                        CustomPresetEditorState.HasStateFor(config),
-                        Is.True,
-                        $"Config {config.gameObject.name} should still have state"
-                    );
-                }
-            }
-            finally
-            {
-                CustomPresetEditorState.ClearAllStates();
-                foreach (var go in gameObjects)
-                {
-                    Object.DestroyImmediate(go);
-                }
-            }
-        }
-
-        [Test]
-        public void LRU_AccessUpdatesTime_PreventingEviction()
-        {
-            CustomPresetEditorState.ClearAllStates();
-
-            var gameObjects = new System.Collections.Generic.List<GameObject>();
-            var configs = new System.Collections.Generic.List<TextureCompressor>();
-
-            try
-            {
-                // Create first config (will be oldest)
-                var firstGo = new GameObject("TestCompressor_First");
-                gameObjects.Add(firstGo);
-                var firstConfig = firstGo.AddComponent<TextureCompressor>();
-                configs.Add(firstConfig);
-                CustomPresetEditorState.SetEditMode(firstConfig, true);
-
-                // Fill remaining cache
-                for (int i = 1; i < CustomPresetEditorState.MaxCachedStates; i++)
-                {
-                    var go = new GameObject($"TestCompressor_{i}");
-                    gameObjects.Add(go);
-                    var config = go.AddComponent<TextureCompressor>();
-                    configs.Add(config);
-                    CustomPresetEditorState.SetEditMode(config, true);
-                }
-
-                // Access the first config to update its access time (makes it "recently used")
-                CustomPresetEditorState.IsInEditMode(firstConfig);
-
-                // Add a new config (should evict the second oldest, not the first)
-                var extraGo = new GameObject("TestCompressor_Extra");
-                gameObjects.Add(extraGo);
-                var extraConfig = extraGo.AddComponent<TextureCompressor>();
-                CustomPresetEditorState.SetEditMode(extraConfig, true);
-
-                // First config should still exist (was accessed recently)
-                Assert.That(
-                    CustomPresetEditorState.HasStateFor(firstConfig),
-                    Is.True,
-                    "First config should not be evicted because it was accessed recently"
-                );
-
-                // Second config (index 1) should have been evicted (now the oldest)
-                Assert.That(
-                    CustomPresetEditorState.HasStateFor(configs[1]),
-                    Is.False,
-                    "Second config should be evicted as it became the oldest"
-                );
-
-                // New config should exist
-                Assert.That(CustomPresetEditorState.HasStateFor(extraConfig), Is.True);
-            }
-            finally
-            {
-                CustomPresetEditorState.ClearAllStates();
-                foreach (var go in gameObjects)
-                {
-                    Object.DestroyImmediate(go);
-                }
-            }
-        }
-
-        [Test]
-        public void LRU_MultipleEvictions_WorkCorrectly()
-        {
-            CustomPresetEditorState.ClearAllStates();
-
-            var gameObjects = new System.Collections.Generic.List<GameObject>();
-            var configs = new System.Collections.Generic.List<TextureCompressor>();
-
-            try
-            {
-                // Fill cache to capacity
-                for (int i = 0; i < CustomPresetEditorState.MaxCachedStates; i++)
-                {
-                    var go = new GameObject($"TestCompressor_{i}");
-                    gameObjects.Add(go);
-                    var config = go.AddComponent<TextureCompressor>();
-                    configs.Add(config);
-                    CustomPresetEditorState.SetEditMode(config, true);
-                }
-
-                // Add 3 more configs, causing 3 evictions
-                for (int i = 0; i < 3; i++)
-                {
-                    var go = new GameObject($"TestCompressor_Extra_{i}");
-                    gameObjects.Add(go);
-                    var config = go.AddComponent<TextureCompressor>();
-                    configs.Add(config);
-                    CustomPresetEditorState.SetEditMode(config, true);
-                }
-
-                // Cache should still be at max
-                Assert.That(
-                    CustomPresetEditorState.CachedStateCount,
-                    Is.EqualTo(CustomPresetEditorState.MaxCachedStates)
-                );
-
-                // First 3 configs should have been evicted
-                Assert.That(CustomPresetEditorState.HasStateFor(configs[0]), Is.False);
-                Assert.That(CustomPresetEditorState.HasStateFor(configs[1]), Is.False);
-                Assert.That(CustomPresetEditorState.HasStateFor(configs[2]), Is.False);
-
-                // Fourth config (index 3) should still exist
-                Assert.That(CustomPresetEditorState.HasStateFor(configs[3]), Is.True);
-
-                // All new configs should exist
-                int totalConfigs = configs.Count;
-                Assert.That(CustomPresetEditorState.HasStateFor(configs[totalConfigs - 1]), Is.True);
-                Assert.That(CustomPresetEditorState.HasStateFor(configs[totalConfigs - 2]), Is.True);
-                Assert.That(CustomPresetEditorState.HasStateFor(configs[totalConfigs - 3]), Is.True);
-            }
-            finally
-            {
-                CustomPresetEditorState.ClearAllStates();
-                foreach (var go in gameObjects)
-                {
-                    Object.DestroyImmediate(go);
-                }
-            }
         }
 
         #endregion

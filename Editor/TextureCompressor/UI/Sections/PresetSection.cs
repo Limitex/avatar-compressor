@@ -1,6 +1,5 @@
-using System.Collections.Generic;
-using System.Linq;
 using dev.limitex.avatar.compressor;
+using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.editor.ui;
 using UnityEditor;
 using UnityEngine;
@@ -128,34 +127,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         // Cached button rects for dropdown menu positioning, keyed by config instance ID.
         // GetLastRect() only returns accurate values during Repaint events.
-        // Using a dictionary to support multiple Inspector windows showing different objects.
-        // Stores (Rect, accessTime) to enable LRU-style eviction of oldest entries.
-        private static readonly Dictionary<
-            int,
-            (Rect rect, double accessTime)
-        > _customPresetButtonRects = new();
+        // Using LruCache to support multiple Inspector windows and prevent unbounded growth.
         private const int MaxCachedRects = 32;
-
-        private static void EvictOldestCacheEntry()
-        {
-            if (_customPresetButtonRects.Count == 0)
-                return;
-
-            var first = _customPresetButtonRects.First();
-            int oldestKey = first.Key;
-            double oldestTime = first.Value.accessTime;
-
-            foreach (var kvp in _customPresetButtonRects)
-            {
-                if (kvp.Value.accessTime < oldestTime)
-                {
-                    oldestTime = kvp.Value.accessTime;
-                    oldestKey = kvp.Key;
-                }
-            }
-
-            _customPresetButtonRects.Remove(oldestKey);
-        }
+        private static readonly LruCache<int, Rect> _buttonRectCache = new(MaxCachedRects);
 
         private static void DrawCustomModeSelector(TextureCompressor config)
         {
@@ -198,41 +172,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             // Capture rect during Repaint for accurate positioning
             if (Event.current.type == EventType.Repaint)
             {
-                int instanceId = config.GetInstanceID();
-                double currentTime = EditorApplication.timeSinceStartup;
-
-                // Evict oldest entry if cache is full (LRU-style)
-                if (
-                    _customPresetButtonRects.Count >= MaxCachedRects
-                    && !_customPresetButtonRects.ContainsKey(instanceId)
-                )
-                {
-                    EvictOldestCacheEntry();
-                }
-
-                _customPresetButtonRects[instanceId] = (
-                    GUILayoutUtility.GetLastRect(),
-                    currentTime
-                );
+                _buttonRectCache.Set(config.GetInstanceID(), GUILayoutUtility.GetLastRect());
             }
 
             if (clicked)
             {
-                int instanceId = config.GetInstanceID();
-                Rect buttonRect;
-                if (_customPresetButtonRects.TryGetValue(instanceId, out var cached))
-                {
-                    buttonRect = cached.rect;
-                    // Update access time on read (LRU)
-                    _customPresetButtonRects[instanceId] = (
-                        cached.rect,
-                        EditorApplication.timeSinceStartup
-                    );
-                }
-                else
-                {
-                    buttonRect = GUILayoutUtility.GetLastRect();
-                }
+                Rect buttonRect = _buttonRectCache.TryGetValue(config.GetInstanceID(), out var rect)
+                    ? rect
+                    : GUILayoutUtility.GetLastRect();
                 ShowCustomPresetMenu(config, buttonRect);
             }
 
