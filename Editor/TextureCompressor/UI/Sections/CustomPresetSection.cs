@@ -56,10 +56,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             var restriction = CustomPresetEditorState.GetEditRestriction(config);
 
             EditorGUILayout.BeginHorizontal();
-            if (restriction.IsBuiltIn)
+            if (restriction.IsBuiltIn || restriction.IsInPackage)
             {
+                string suffix = restriction switch
+                {
+                    { IsBuiltIn: true } => "Built-in",
+                    { IsInPackage: true } => "Package",
+                    _ => "",
+                };
                 EditorGUILayout.LabelField(
-                    $"{config.CustomPresetAsset.name} (Built-in)",
+                    $"{config.CustomPresetAsset.name} ({suffix})",
                     EditorStyles.boldLabel
                 );
             }
@@ -77,9 +83,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (restriction.RequiresUnlink)
             {
                 var lockIcon = EditorGUIUtility.IconContent("IN LockButton on");
-                lockIcon.tooltip = restriction.IsBuiltIn
-                    ? "This preset is built-in"
-                    : "This preset is locked";
+                lockIcon.tooltip = restriction switch
+                {
+                    { IsBuiltIn: true } => "This preset is built-in",
+                    { IsInPackage: true } => "This preset is in a package",
+                    _ => "This preset is locked",
+                };
                 GUILayout.Label(lockIcon, GUILayout.Width(18), GUILayout.Height(18));
             }
 

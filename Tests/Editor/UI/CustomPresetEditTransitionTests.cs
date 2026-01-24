@@ -66,7 +66,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void EditRestrictionInfo_Default_CanDirectEdit()
         {
-            var info = new EditRestrictionInfo(false, false);
+            var info = new EditRestrictionInfo(false, false, false);
 
             Assert.That(info.CanDirectEdit, Is.True);
             Assert.That(info.RequiresUnlink, Is.False);
@@ -75,29 +75,43 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void EditRestrictionInfo_Locked_RequiresUnlink()
         {
-            var info = new EditRestrictionInfo(true, false);
+            var info = new EditRestrictionInfo(true, false, false);
 
             Assert.That(info.CanDirectEdit, Is.False);
             Assert.That(info.RequiresUnlink, Is.True);
             Assert.That(info.IsLocked, Is.True);
             Assert.That(info.IsBuiltIn, Is.False);
+            Assert.That(info.IsInPackage, Is.False);
         }
 
         [Test]
         public void EditRestrictionInfo_BuiltIn_RequiresUnlink()
         {
-            var info = new EditRestrictionInfo(false, true);
+            var info = new EditRestrictionInfo(false, true, false);
 
             Assert.That(info.CanDirectEdit, Is.False);
             Assert.That(info.RequiresUnlink, Is.True);
             Assert.That(info.IsLocked, Is.False);
             Assert.That(info.IsBuiltIn, Is.True);
+            Assert.That(info.IsInPackage, Is.False);
+        }
+
+        [Test]
+        public void EditRestrictionInfo_InPackage_RequiresUnlink()
+        {
+            var info = new EditRestrictionInfo(false, false, true);
+
+            Assert.That(info.CanDirectEdit, Is.False);
+            Assert.That(info.RequiresUnlink, Is.True);
+            Assert.That(info.IsLocked, Is.False);
+            Assert.That(info.IsBuiltIn, Is.False);
+            Assert.That(info.IsInPackage, Is.True);
         }
 
         [Test]
         public void EditRestrictionInfo_LockedAndBuiltIn_RequiresUnlink()
         {
-            var info = new EditRestrictionInfo(true, true);
+            var info = new EditRestrictionInfo(true, true, false);
 
             Assert.That(info.CanDirectEdit, Is.False);
             Assert.That(info.RequiresUnlink, Is.True);

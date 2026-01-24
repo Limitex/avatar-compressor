@@ -10,21 +10,23 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     {
         public bool IsLocked { get; }
         public bool IsBuiltIn { get; }
+        public bool IsInPackage { get; }
 
         /// <summary>
         /// Returns true if the preset can be edited directly without unlinking.
         /// </summary>
-        public bool CanDirectEdit => !IsLocked && !IsBuiltIn;
+        public bool CanDirectEdit => !IsLocked && !IsBuiltIn && !IsInPackage;
 
         /// <summary>
         /// Returns true if the preset requires unlinking to edit.
         /// </summary>
-        public bool RequiresUnlink => IsLocked || IsBuiltIn;
+        public bool RequiresUnlink => IsLocked || IsBuiltIn || IsInPackage;
 
-        public EditRestrictionInfo(bool isLocked, bool isBuiltIn)
+        public EditRestrictionInfo(bool isLocked, bool isBuiltIn, bool isInPackage)
         {
             IsLocked = isLocked;
             IsBuiltIn = isBuiltIn;
+            IsInPackage = isInPackage;
         }
     }
 
@@ -99,18 +101,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         public static EditRestrictionInfo GetEditRestriction(TextureCompressor config)
         {
             if (config?.CustomPresetAsset == null)
-                return new EditRestrictionInfo(false, false);
+                return new EditRestrictionInfo(false, false, false);
 
             bool isLocked = config.CustomPresetAsset.Lock;
             bool isBuiltIn = IsBuiltInPreset(config.CustomPresetAsset);
+            bool isInPackage = !isBuiltIn && IsInPackage(config.CustomPresetAsset);
 
-            return new EditRestrictionInfo(isLocked, isBuiltIn);
+            return new EditRestrictionInfo(isLocked, isBuiltIn, isInPackage);
         }
 
         private static UnityEditor.PackageManager.PackageInfo _packageInfo;
 
         /// <summary>
-        /// Checks if the preset is a built-in preset (located within the package).
+        /// Checks if the preset is a built-in preset (located within this package).
         /// Returns false if running outside of a package context (e.g., during development).
         /// </summary>
         private static bool IsBuiltInPreset(CustomTextureCompressorPreset preset)
@@ -128,6 +131,18 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             var path = AssetDatabase.GetAssetPath(preset);
             return path.StartsWith(_packageInfo.assetPath);
+        }
+
+        /// <summary>
+        /// Checks if the preset is located within any package (Packages/ folder).
+        /// </summary>
+        private static bool IsInPackage(CustomTextureCompressorPreset preset)
+        {
+            if (preset == null)
+                return false;
+
+            var path = AssetDatabase.GetAssetPath(preset);
+            return path.StartsWith("Packages/");
         }
 
         /// <summary>

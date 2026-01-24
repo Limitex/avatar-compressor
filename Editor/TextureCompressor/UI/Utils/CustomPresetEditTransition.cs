@@ -28,13 +28,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
 
             string title = "Unlink Preset";
-            string message = restriction.IsBuiltIn
-                ? "This preset is a built-in preset and cannot be edited.\n\n"
-                    + "Do you want to unlink and edit the settings manually?\n"
-                    + "(Current settings will be preserved)"
-                : "This preset is locked and cannot be edited directly.\n\n"
-                    + "Do you want to unlink and edit the settings manually?\n"
-                    + "(Current settings will be preserved)";
+            string reason = restriction switch
+            {
+                { IsBuiltIn: true } => "This preset is a built-in preset and cannot be edited.",
+                { IsInPackage: true } => "This preset is in a package and cannot be edited.",
+                _ => "This preset is locked and cannot be edited directly.",
+            };
+            string message =
+                $"{reason}\n\n"
+                + "Do you want to unlink and edit the settings manually?\n"
+                + "(Current settings will be preserved)";
 
             bool confirmed = EditorUtility.DisplayDialog(
                 title,
