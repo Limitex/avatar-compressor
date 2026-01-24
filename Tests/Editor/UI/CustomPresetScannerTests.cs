@@ -76,7 +76,10 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void BuildPresetMenu_ReturnsGenericMenu()
         {
-            var menu = CustomPresetScanner.BuildPresetMenu(onPresetSelected: _ => { });
+            var menu = CustomPresetScanner.BuildPresetMenu(
+                currentPreset: null,
+                onPresetSelected: _ => { }
+            );
 
             Assert.That(menu, Is.Not.Null);
             Assert.That(menu, Is.InstanceOf<GenericMenu>());
@@ -87,18 +90,51 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var menu = CustomPresetScanner.BuildPresetMenu(onPresetSelected: null);
+                var menu = CustomPresetScanner.BuildPresetMenu(
+                    currentPreset: null,
+                    onPresetSelected: null
+                );
             });
         }
 
         [Test]
         public void BuildPresetMenu_CalledMultipleTimes_ReturnsNewInstance()
         {
-            var menu1 = CustomPresetScanner.BuildPresetMenu(onPresetSelected: _ => { });
+            var menu1 = CustomPresetScanner.BuildPresetMenu(
+                currentPreset: null,
+                onPresetSelected: _ => { }
+            );
 
-            var menu2 = CustomPresetScanner.BuildPresetMenu(onPresetSelected: _ => { });
+            var menu2 = CustomPresetScanner.BuildPresetMenu(
+                currentPreset: null,
+                onPresetSelected: _ => { }
+            );
 
             Assert.That(menu1, Is.Not.SameAs(menu2));
+        }
+
+        [Test]
+        public void BuildPresetMenu_WithCurrentPreset_ReturnsGenericMenu()
+        {
+            var menu = CustomPresetScanner.BuildPresetMenu(
+                currentPreset: _presetWithMenuPath,
+                onPresetSelected: _ => { }
+            );
+
+            Assert.That(menu, Is.Not.Null);
+            Assert.That(menu, Is.InstanceOf<GenericMenu>());
+        }
+
+        [Test]
+        public void BuildPresetMenu_WithCurrentPreset_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                CustomPresetScanner.BuildPresetMenu(
+                    currentPreset: _presetWithMenuPath,
+                    onPresetSelected: _ => { }
+                );
+            });
         }
 
         #endregion

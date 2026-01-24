@@ -243,6 +243,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         private static void ShowCustomPresetMenu(TextureCompressor config, Rect buttonRect)
         {
             var menu = CustomPresetScanner.BuildPresetMenu(
+                currentPreset: config.CustomPresetAsset,
                 onPresetSelected: (preset) =>
                 {
                     Undo.RecordObject(config, "Apply Custom Preset");

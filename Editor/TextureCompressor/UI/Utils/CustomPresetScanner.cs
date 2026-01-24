@@ -64,9 +64,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// <summary>
         /// Builds a GenericMenu for custom preset selection.
         /// </summary>
+        /// <param name="currentPreset">The currently selected preset (for checkmark display).</param>
         /// <param name="onPresetSelected">Callback when a preset is selected from the menu.</param>
         /// <returns>A configured GenericMenu ready to be shown.</returns>
-        public static GenericMenu BuildPresetMenu(Action<CustomCompressorPreset> onPresetSelected)
+        public static GenericMenu BuildPresetMenu(
+            CustomCompressorPreset currentPreset,
+            Action<CustomCompressorPreset> onPresetSelected
+        )
         {
             var menu = new GenericMenu();
 
@@ -74,7 +78,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             if (presets.Count > 0)
             {
-                AddPresetsToMenu(menu, presets, onPresetSelected);
+                AddPresetsToMenu(menu, presets, currentPreset, onPresetSelected);
             }
             else
             {
@@ -87,15 +91,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         private static void AddPresetsToMenu(
             GenericMenu menu,
             List<CustomCompressorPreset> presets,
+            CustomCompressorPreset currentPreset,
             Action<CustomCompressorPreset> onPresetSelected
         )
         {
             foreach (var preset in presets)
             {
                 var presetRef = preset; // Capture for closure
+                bool isSelected = currentPreset != null && currentPreset == preset;
                 menu.AddItem(
                     new GUIContent(preset.MenuPath),
-                    false,
+                    isSelected,
                     () => onPresetSelected?.Invoke(presetRef)
                 );
             }
