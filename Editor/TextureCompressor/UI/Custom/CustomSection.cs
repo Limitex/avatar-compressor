@@ -456,8 +456,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             var newPreset = ScriptableObject.CreateInstance<CustomTextureCompressorPreset>();
             newPreset.CopyFrom(config);
 
-            string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
-            newPreset.MenuPath = fileName;
+            string presetName = System.IO.Path.GetFileNameWithoutExtension(path);
+            newPreset.MenuPath = presetName;
 
             AssetDatabase.CreateAsset(newPreset, path);
             AssetDatabase.SaveAssets();
