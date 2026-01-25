@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: AggressivePlus
   m_EditorClassIdentifier:
   Lock: 1
-  Description: Better than Aggressive. Balanced settings without high-quality formats.
+  Description: Better than Aggressive. Improved quality while maintaining efficient compression.
   MenuPath: Built-in/Aggressive+
   MenuOrder: 400
   Strategy: 0
