@@ -6,7 +6,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class CustomPresetEditorStateTests
+    public class PresetEditorStateTests
     {
         private GameObject _gameObject;
         private TextureCompressor _config;
@@ -38,30 +38,30 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void IsInEditMode_DefaultIsFalse()
         {
-            Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.False);
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.False);
         }
 
         [Test]
         public void IsInEditMode_WithNullConfig_ReturnsFalse()
         {
-            Assert.That(CustomPresetEditorState.IsInEditMode(null), Is.False);
+            Assert.That(PresetEditorState.IsInEditMode(null), Is.False);
         }
 
         [Test]
         public void SetEditMode_True_SetsEditMode()
         {
-            CustomPresetEditorState.SetEditMode(_config, true);
+            PresetEditorState.SetEditMode(_config, true);
 
-            Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.True);
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.True);
         }
 
         [Test]
         public void SetEditMode_False_ClearsEditMode()
         {
-            CustomPresetEditorState.SetEditMode(_config, true);
-            CustomPresetEditorState.SetEditMode(_config, false);
+            PresetEditorState.SetEditMode(_config, true);
+            PresetEditorState.SetEditMode(_config, false);
 
-            Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.False);
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.False);
         }
 
         #endregion
@@ -72,33 +72,33 @@ namespace dev.limitex.avatar.compressor.tests
         public void IsInUseOnlyMode_TrueWhenPresetAssignedAndNotEditing()
         {
             _config.CustomPresetAsset = _preset;
-            CustomPresetEditorState.SetEditMode(_config, false);
+            PresetEditorState.SetEditMode(_config, false);
 
-            Assert.That(CustomPresetEditorState.IsInUseOnlyMode(_config), Is.True);
+            Assert.That(PresetEditorState.IsInUseOnlyMode(_config), Is.True);
         }
 
         [Test]
         public void IsInUseOnlyMode_FalseWhenNoPresetAssigned()
         {
             _config.CustomPresetAsset = null;
-            CustomPresetEditorState.SetEditMode(_config, false);
+            PresetEditorState.SetEditMode(_config, false);
 
-            Assert.That(CustomPresetEditorState.IsInUseOnlyMode(_config), Is.False);
+            Assert.That(PresetEditorState.IsInUseOnlyMode(_config), Is.False);
         }
 
         [Test]
         public void IsInUseOnlyMode_FalseWhenInEditMode()
         {
             _config.CustomPresetAsset = _preset;
-            CustomPresetEditorState.SetEditMode(_config, true);
+            PresetEditorState.SetEditMode(_config, true);
 
-            Assert.That(CustomPresetEditorState.IsInUseOnlyMode(_config), Is.False);
+            Assert.That(PresetEditorState.IsInUseOnlyMode(_config), Is.False);
         }
 
         [Test]
         public void IsInUseOnlyMode_WithNullConfig_ReturnsFalse()
         {
-            Assert.That(CustomPresetEditorState.IsInUseOnlyMode(null), Is.False);
+            Assert.That(PresetEditorState.IsInUseOnlyMode(null), Is.False);
         }
 
         #endregion
@@ -108,20 +108,20 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void SwitchToEditMode_SetsEditModeTrue()
         {
-            CustomPresetEditorState.SetEditMode(_config, false);
+            PresetEditorState.SetEditMode(_config, false);
 
-            CustomPresetEditorState.SwitchToEditMode(_config);
+            PresetEditorState.SwitchToEditMode(_config);
 
-            Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.True);
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.True);
         }
 
         [Test]
         public void SwitchToEditMode_PreservesCustomPresetAsset()
         {
             _config.CustomPresetAsset = _preset;
-            CustomPresetEditorState.SetEditMode(_config, false);
+            PresetEditorState.SetEditMode(_config, false);
 
-            CustomPresetEditorState.SwitchToEditMode(_config);
+            PresetEditorState.SwitchToEditMode(_config);
 
             Assert.That(_config.CustomPresetAsset, Is.EqualTo(_preset));
         }
@@ -129,7 +129,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void SwitchToEditMode_WithNullConfig_DoesNotThrow()
         {
-            Assert.DoesNotThrow(() => CustomPresetEditorState.SwitchToEditMode(null));
+            Assert.DoesNotThrow(() => PresetEditorState.SwitchToEditMode(null));
         }
 
         [Test]
@@ -137,11 +137,11 @@ namespace dev.limitex.avatar.compressor.tests
         {
             _preset.Lock = true;
             _config.CustomPresetAsset = _preset;
-            CustomPresetEditorState.SetEditMode(_config, false);
+            PresetEditorState.SetEditMode(_config, false);
 
-            CustomPresetEditorState.SwitchToEditMode(_config);
+            PresetEditorState.SwitchToEditMode(_config);
 
-            Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.False);
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.False);
         }
 
         #endregion
@@ -153,7 +153,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             _config.Preset = CompressorPreset.Balanced;
 
-            CustomPresetEditorState.ApplyPresetAndSwitchToUseOnly(_config, _preset);
+            PresetEditorState.ApplyPresetAndSwitchToUseOnly(_config, _preset);
 
             Assert.That(_config.Preset, Is.EqualTo(CompressorPreset.Custom));
         }
@@ -163,7 +163,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             _config.CustomPresetAsset = null;
 
-            CustomPresetEditorState.ApplyPresetAndSwitchToUseOnly(_config, _preset);
+            PresetEditorState.ApplyPresetAndSwitchToUseOnly(_config, _preset);
 
             Assert.That(_config.CustomPresetAsset, Is.EqualTo(_preset));
         }
@@ -171,11 +171,11 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void ApplyPresetAndSwitchToUseOnly_ExitsEditMode()
         {
-            CustomPresetEditorState.SetEditMode(_config, true);
+            PresetEditorState.SetEditMode(_config, true);
 
-            CustomPresetEditorState.ApplyPresetAndSwitchToUseOnly(_config, _preset);
+            PresetEditorState.ApplyPresetAndSwitchToUseOnly(_config, _preset);
 
-            Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.False);
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.False);
         }
 
         [Test]
@@ -184,7 +184,7 @@ namespace dev.limitex.avatar.compressor.tests
             _preset.MaxDivisor = 12;
             _preset.Strategy = AnalysisStrategyType.Fast;
 
-            CustomPresetEditorState.ApplyPresetAndSwitchToUseOnly(_config, _preset);
+            PresetEditorState.ApplyPresetAndSwitchToUseOnly(_config, _preset);
 
             Assert.That(_config.MaxDivisor, Is.EqualTo(12));
             Assert.That(_config.Strategy, Is.EqualTo(AnalysisStrategyType.Fast));
@@ -194,7 +194,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void ApplyPresetAndSwitchToUseOnly_WithNullConfig_DoesNotThrow()
         {
             Assert.DoesNotThrow(() =>
-                CustomPresetEditorState.ApplyPresetAndSwitchToUseOnly(null, _preset)
+                PresetEditorState.ApplyPresetAndSwitchToUseOnly(null, _preset)
             );
         }
 
@@ -202,12 +202,12 @@ namespace dev.limitex.avatar.compressor.tests
         public void ApplyPresetAndSwitchToUseOnly_WithNullPreset_DoesNotChangeState()
         {
             _config.Preset = CompressorPreset.Balanced;
-            CustomPresetEditorState.SetEditMode(_config, true);
+            PresetEditorState.SetEditMode(_config, true);
 
-            CustomPresetEditorState.ApplyPresetAndSwitchToUseOnly(_config, null);
+            PresetEditorState.ApplyPresetAndSwitchToUseOnly(_config, null);
 
             Assert.That(_config.Preset, Is.EqualTo(CompressorPreset.Balanced));
-            Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.True);
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.True);
         }
 
         #endregion
@@ -217,7 +217,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void IsCustomEditable_WithNullConfig_ReturnsFalse()
         {
-            Assert.That(CustomPresetEditorState.IsCustomEditable(null), Is.False);
+            Assert.That(PresetEditorState.IsCustomEditable(null), Is.False);
         }
 
         [Test]
@@ -225,7 +225,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             _config.Preset = CompressorPreset.Balanced;
 
-            Assert.That(CustomPresetEditorState.IsCustomEditable(_config), Is.False);
+            Assert.That(PresetEditorState.IsCustomEditable(_config), Is.False);
         }
 
         [Test]
@@ -234,7 +234,7 @@ namespace dev.limitex.avatar.compressor.tests
             _config.Preset = CompressorPreset.Custom;
             _config.CustomPresetAsset = null;
 
-            Assert.That(CustomPresetEditorState.IsCustomEditable(_config), Is.True);
+            Assert.That(PresetEditorState.IsCustomEditable(_config), Is.True);
         }
 
         [Test]
@@ -242,9 +242,9 @@ namespace dev.limitex.avatar.compressor.tests
         {
             _config.Preset = CompressorPreset.Custom;
             _config.CustomPresetAsset = _preset;
-            CustomPresetEditorState.SetEditMode(_config, true);
+            PresetEditorState.SetEditMode(_config, true);
 
-            Assert.That(CustomPresetEditorState.IsCustomEditable(_config), Is.True);
+            Assert.That(PresetEditorState.IsCustomEditable(_config), Is.True);
         }
 
         [Test]
@@ -252,9 +252,9 @@ namespace dev.limitex.avatar.compressor.tests
         {
             _config.Preset = CompressorPreset.Custom;
             _config.CustomPresetAsset = _preset;
-            CustomPresetEditorState.SetEditMode(_config, false);
+            PresetEditorState.SetEditMode(_config, false);
 
-            Assert.That(CustomPresetEditorState.IsCustomEditable(_config), Is.False);
+            Assert.That(PresetEditorState.IsCustomEditable(_config), Is.False);
         }
 
         [Test]
@@ -264,7 +264,7 @@ namespace dev.limitex.avatar.compressor.tests
             _config.Preset = CompressorPreset.Custom;
             _config.CustomPresetAsset = _preset;
 
-            Assert.That(CustomPresetEditorState.IsCustomEditable(_config), Is.False);
+            Assert.That(PresetEditorState.IsCustomEditable(_config), Is.False);
         }
 
         #endregion
@@ -274,9 +274,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void UnlinkPresetAndSwitchToEditMode_WithNullConfig_DoesNotThrow()
         {
-            Assert.DoesNotThrow(() =>
-                CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(null)
-            );
+            Assert.DoesNotThrow(() => PresetEditorState.UnlinkPresetAndSwitchToEditMode(null));
         }
 
         [Test]
@@ -284,7 +282,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             _config.CustomPresetAsset = _preset;
 
-            CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(_config);
+            PresetEditorState.UnlinkPresetAndSwitchToEditMode(_config);
 
             Assert.That(_config.CustomPresetAsset, Is.Null);
         }
@@ -293,11 +291,11 @@ namespace dev.limitex.avatar.compressor.tests
         public void UnlinkPresetAndSwitchToEditMode_SwitchesToEditMode()
         {
             _config.CustomPresetAsset = _preset;
-            CustomPresetEditorState.SetEditMode(_config, false);
+            PresetEditorState.SetEditMode(_config, false);
 
-            CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(_config);
+            PresetEditorState.UnlinkPresetAndSwitchToEditMode(_config);
 
-            Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.True);
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.True);
         }
 
         [Test]
@@ -305,12 +303,12 @@ namespace dev.limitex.avatar.compressor.tests
         {
             _preset.Lock = true;
             _config.CustomPresetAsset = _preset;
-            CustomPresetEditorState.SetEditMode(_config, false);
+            PresetEditorState.SetEditMode(_config, false);
 
-            CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(_config);
+            PresetEditorState.UnlinkPresetAndSwitchToEditMode(_config);
 
             Assert.That(_config.CustomPresetAsset, Is.Null);
-            Assert.That(CustomPresetEditorState.IsInEditMode(_config), Is.True);
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.True);
         }
 
         #endregion

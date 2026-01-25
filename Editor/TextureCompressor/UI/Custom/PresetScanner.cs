@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// <summary>
     /// Scans for CustomTextureCompressorPreset assets with MenuPath and builds hierarchical menus.
     /// </summary>
-    public static class CustomPresetScanner
+    public static class PresetScanner
     {
         private static List<CustomTextureCompressorPreset> _cachedPresets;
         private static double _cacheTime;

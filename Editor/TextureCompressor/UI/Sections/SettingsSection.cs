@@ -19,7 +19,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             ref bool showAdvanced
         )
         {
-            bool isEditable = CustomPresetEditorState.IsCustomEditable(config);
+            bool isEditable = PresetEditorState.IsCustomEditable(config);
 
             if (isEditable)
             {

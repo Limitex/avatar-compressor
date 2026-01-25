@@ -1,40 +1,12 @@
 using dev.limitex.avatar.compressor;
-using UnityEditor;
 
 namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
     /// <summary>
-    /// Information about editing restrictions for a preset.
-    /// </summary>
-    public readonly struct EditRestrictionInfo
-    {
-        public bool IsLocked { get; }
-        public bool IsBuiltIn { get; }
-        public bool IsInPackage { get; }
-
-        /// <summary>
-        /// Returns true if the preset can be edited directly without unlinking.
-        /// </summary>
-        public bool CanDirectEdit => !IsLocked && !IsBuiltIn && !IsInPackage;
-
-        /// <summary>
-        /// Returns true if the preset requires unlinking to edit.
-        /// </summary>
-        public bool RequiresUnlink => IsLocked || IsBuiltIn || IsInPackage;
-
-        public EditRestrictionInfo(bool isLocked, bool isBuiltIn, bool isInPackage)
-        {
-            IsLocked = isLocked;
-            IsBuiltIn = isBuiltIn;
-            IsInPackage = isInPackage;
-        }
-    }
-
-    /// <summary>
     /// Manages editor-only state for custom preset mode.
     /// State resets on domain reload; objects with presets default to use-only mode.
     /// </summary>
-    public static class CustomPresetEditorState
+    public static class PresetEditorState
     {
         private const int MaxCachedStates = 64;
 
@@ -92,65 +64,26 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         }
 
         /// <summary>
-        /// Gets the editing restriction information for the config's preset.
+        /// Gets the editing restriction for the config's preset.
         /// </summary>
-        public static EditRestrictionInfo GetEditRestriction(TextureCompressor config)
+        public static PresetRestriction GetRestriction(TextureCompressor config)
         {
             if (config?.CustomPresetAsset == null)
-                return new EditRestrictionInfo(false, false, false);
+                return PresetRestriction.None;
 
-            var path = AssetDatabase.GetAssetPath(config.CustomPresetAsset);
-            bool isLocked = config.CustomPresetAsset.Lock;
-            bool isBuiltIn = IsBuiltInPreset(path);
-            // IsBuiltIn takes priority: if it's in this package, don't mark as generic "package"
-            bool isInPackage = !isBuiltIn && IsInPackage(path);
-
-            return new EditRestrictionInfo(isLocked, isBuiltIn, isInPackage);
-        }
-
-        private static UnityEditor.PackageManager.PackageInfo _packageInfo;
-
-        /// <summary>
-        /// Checks if the preset is a built-in preset (located within this package).
-        /// Returns false if running outside of a package context (e.g., during development).
-        /// </summary>
-        private static bool IsBuiltInPreset(string assetPath)
-        {
-            if (string.IsNullOrEmpty(assetPath))
-                return false;
-
-            _packageInfo ??= UnityEditor.PackageManager.PackageInfo.FindForAssembly(
-                typeof(CustomPresetEditorState).Assembly
-            );
-
-            // When not installed as a package, all presets are considered user presets
-            if (_packageInfo == null)
-                return false;
-
-            return assetPath.StartsWith(_packageInfo.assetPath);
-        }
-
-        /// <summary>
-        /// Checks if the preset is located within any package (Packages/ folder).
-        /// </summary>
-        private static bool IsInPackage(string assetPath)
-        {
-            if (string.IsNullOrEmpty(assetPath))
-                return false;
-
-            return assetPath.StartsWith("Packages/");
+            return PresetLocationResolver.GetRestriction(config.CustomPresetAsset);
         }
 
         /// <summary>
         /// Switches the config to edit mode.
-        /// Does nothing if the preset requires unlinking (caller should check GetEditRestriction first).
+        /// Does nothing if the preset requires unlinking (caller should check GetRestriction first).
         /// </summary>
         public static void SwitchToEditMode(TextureCompressor config)
         {
             if (config == null)
                 return;
 
-            if (GetEditRestriction(config).RequiresUnlink)
+            if (GetRestriction(config).RequiresUnlink())
                 return;
 
             SetEditMode(config, true);

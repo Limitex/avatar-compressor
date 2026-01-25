@@ -7,7 +7,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class CustomPresetScannerTests
+    public class PresetScannerTests
     {
         private CustomTextureCompressorPreset _presetWithMenuPath;
         private CustomTextureCompressorPreset _presetWithoutMenuPath;
@@ -41,7 +41,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void GetMenuPresets_ReturnsListType()
         {
-            var result = CustomPresetScanner.GetMenuPresets();
+            var result = PresetScanner.GetMenuPresets();
 
             Assert.That(result, Is.Not.Null);
             Assert.That(
@@ -55,7 +55,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             // This test verifies the filtering logic by checking that presets without MenuPath are not included
             // Note: The actual asset database search depends on saved assets, so we test the concept
-            var presets = CustomPresetScanner.GetMenuPresets();
+            var presets = PresetScanner.GetMenuPresets();
 
             // All returned presets should have non-empty MenuPath
             foreach (var preset in presets)
@@ -75,7 +75,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void BuildPresetMenu_ReturnsGenericMenu()
         {
-            var menu = CustomPresetScanner.BuildPresetMenu(
+            var menu = PresetScanner.BuildPresetMenu(
                 currentPreset: null,
                 onPresetSelected: _ => { }
             );
@@ -89,7 +89,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var menu = CustomPresetScanner.BuildPresetMenu(
+                var menu = PresetScanner.BuildPresetMenu(
                     currentPreset: null,
                     onPresetSelected: null
                 );
@@ -99,12 +99,12 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void BuildPresetMenu_CalledMultipleTimes_ReturnsNewInstance()
         {
-            var menu1 = CustomPresetScanner.BuildPresetMenu(
+            var menu1 = PresetScanner.BuildPresetMenu(
                 currentPreset: null,
                 onPresetSelected: _ => { }
             );
 
-            var menu2 = CustomPresetScanner.BuildPresetMenu(
+            var menu2 = PresetScanner.BuildPresetMenu(
                 currentPreset: null,
                 onPresetSelected: _ => { }
             );
@@ -115,7 +115,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void BuildPresetMenu_WithCurrentPreset_ReturnsGenericMenu()
         {
-            var menu = CustomPresetScanner.BuildPresetMenu(
+            var menu = PresetScanner.BuildPresetMenu(
                 currentPreset: _presetWithMenuPath,
                 onPresetSelected: _ => { }
             );
@@ -129,7 +129,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                CustomPresetScanner.BuildPresetMenu(
+                PresetScanner.BuildPresetMenu(
                     currentPreset: _presetWithMenuPath,
                     onPresetSelected: _ => { }
                 );
@@ -143,8 +143,8 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void GetMenuPresets_ReturnsCopyOfList()
         {
-            var list1 = CustomPresetScanner.GetMenuPresets();
-            var list2 = CustomPresetScanner.GetMenuPresets();
+            var list1 = PresetScanner.GetMenuPresets();
+            var list2 = PresetScanner.GetMenuPresets();
 
             Assert.That(list1, Is.Not.SameAs(list2));
         }

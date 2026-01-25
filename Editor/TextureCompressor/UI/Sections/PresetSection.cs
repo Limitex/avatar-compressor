@@ -20,19 +20,18 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             DrawPresetButtons(config);
 
-            if (config.Preset == CompressorPreset.Custom)
-            {
-                EditorGUILayout.Space(10);
-                DrawCustomModeSelector(config);
-            }
-
             EditorGUILayout.Space(10);
             DrawPresetDescription(config.Preset);
 
-            if (config.Preset != CompressorPreset.Custom)
+            if (config.Preset == CompressorPreset.Custom)
             {
                 EditorGUILayout.Space(10);
-                DrawSettingsSummary(config);
+                CustomSection.Draw(config);
+            }
+            else
+            {
+                EditorGUILayout.Space(10);
+                SettingsSummaryDrawer.Draw(config);
             }
         }
 
@@ -125,88 +124,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
-        // Cached button rects for dropdown menu positioning, keyed by config instance ID.
-        // GetLastRect() only returns accurate values during Repaint events.
-        // Using LruCache to support multiple Inspector windows and prevent unbounded growth.
-        private const int MaxCachedRects = 32;
-        private static readonly LruCache<int, Rect> _buttonRectCache = new(MaxCachedRects);
-
-        private static void DrawCustomModeSelector(TextureCompressor config)
-        {
-            EditorGUILayout.BeginHorizontal();
-
-            float availableWidth = EditorGUIUtility.currentViewWidth - 20f;
-            float buttonWidth = (availableWidth - ButtonSpacing) / 2f;
-
-            // Edit Mode button
-            bool isEditMode =
-                config.CustomPresetAsset == null || CustomPresetEditorState.IsInEditMode(config);
-            var restriction = CustomPresetEditorState.GetEditRestriction(config);
-
-            string tooltip = restriction.RequiresUnlink
-                ? "Unlink preset and edit settings manually"
-                : "Manually configure compression settings";
-
-            if (
-                EditorDrawUtils.DrawColoredButton(
-                    "Edit Mode",
-                    tooltip,
-                    PresetColors.EditMode,
-                    isEditMode,
-                    height: 24f,
-                    width: buttonWidth
-                )
-            )
-            {
-                CustomPresetEditTransition.TryEnterEditMode(config);
-            }
-
-            GUILayout.Space(ButtonSpacing);
-
-            // Custom Preset dropdown button
-            bool isUseOnly = CustomPresetEditorState.IsInUseOnlyMode(config);
-            string presetLabel = "Custom Preset \u25BE";
-            bool clicked = EditorDrawUtils.DrawColoredButton(
-                presetLabel,
-                "Select a custom preset from the menu",
-                PresetColors.CustomPreset,
-                isUseOnly,
-                height: 24f,
-                width: buttonWidth
-            );
-
-            // Capture rect during Repaint for accurate positioning
-            if (Event.current.type == EventType.Repaint)
-            {
-                _buttonRectCache.Set(config.GetInstanceID(), GUILayoutUtility.GetLastRect());
-            }
-
-            if (clicked)
-            {
-                Rect buttonRect = _buttonRectCache.TryGetValue(config.GetInstanceID(), out var rect)
-                    ? rect
-                    : GUILayoutUtility.GetLastRect();
-                ShowCustomPresetMenu(config, buttonRect);
-            }
-
-            EditorGUILayout.EndHorizontal();
-        }
-
-        private static void ShowCustomPresetMenu(TextureCompressor config, Rect buttonRect)
-        {
-            var menu = CustomPresetScanner.BuildPresetMenu(
-                currentPreset: config.CustomPresetAsset,
-                onPresetSelected: (preset) =>
-                {
-                    Undo.RecordObject(config, "Apply Custom Preset");
-                    CustomPresetEditorState.ApplyPresetAndSwitchToUseOnly(config, preset);
-                    EditorUtility.SetDirty(config);
-                }
-            );
-
-            menu.DropDown(buttonRect);
-        }
-
         private static void DrawPresetDescription(CompressorPreset preset)
         {
             string description;
@@ -268,33 +185,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
 
             EditorGUILayout.HelpBox(description, messageType);
-        }
-
-        /// <summary>
-        /// Draws a compact summary of the current compression settings.
-        /// </summary>
-        /// <param name="config">The compressor configuration.</param>
-        /// <param name="title">Optional title for the summary section.</param>
-        public static void DrawSettingsSummary(
-            TextureCompressor config,
-            string title = "Current Settings Summary"
-        )
-        {
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
-
-            EditorGUILayout.LabelField($"Strategy: {config.Strategy}");
-            EditorGUILayout.LabelField(
-                $"Divisor Range: {config.MinDivisor}x - {config.MaxDivisor}x"
-            );
-            EditorGUILayout.LabelField(
-                $"Resolution Range: {config.MinResolution}px - {config.MaxResolution}px"
-            );
-            EditorGUILayout.LabelField(
-                $"Complexity Thresholds: {config.LowComplexityThreshold:P0} - {config.HighComplexityThreshold:P0}"
-            );
-
-            EditorGUILayout.EndVertical();
         }
     }
 }

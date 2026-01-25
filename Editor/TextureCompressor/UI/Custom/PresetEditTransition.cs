@@ -4,9 +4,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
     /// <summary>
     /// Handles edit mode transitions with user confirmation dialogs.
-    /// Coordinates between CustomPresetEditorState and the UI layer.
+    /// Coordinates between PresetEditorState and the UI layer.
     /// </summary>
-    public static class CustomPresetEditTransition
+    public static class PresetEditTransition
     {
         /// <summary>
         /// Attempts to transition to edit mode, showing a confirmation dialog if unlinking is required.
@@ -19,19 +19,21 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (config == null)
                 return;
 
-            var restriction = CustomPresetEditorState.GetEditRestriction(config);
+            var restriction = PresetEditorState.GetRestriction(config);
 
-            if (restriction.CanDirectEdit)
+            if (restriction.CanDirectEdit())
             {
-                CustomPresetEditorState.SwitchToEditMode(config);
+                PresetEditorState.SwitchToEditMode(config);
                 return;
             }
 
             string title = "Unlink Preset";
             string reason = restriction switch
             {
-                { IsBuiltIn: true } => "This preset is a built-in preset and cannot be edited.",
-                { IsInPackage: true } => "This preset is in a package and cannot be edited.",
+                PresetRestriction.BuiltIn =>
+                    "This preset is a built-in preset and cannot be edited.",
+                PresetRestriction.ExternalPackage =>
+                    "This preset is in a package and cannot be edited.",
                 _ => "This preset is locked and cannot be edited directly.",
             };
             string message =
@@ -50,7 +52,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 return;
 
             Undo.RecordObject(config, "Unlink Preset and Edit");
-            CustomPresetEditorState.UnlinkPresetAndSwitchToEditMode(config);
+            PresetEditorState.UnlinkPresetAndSwitchToEditMode(config);
             EditorUtility.SetDirty(config);
         }
     }
