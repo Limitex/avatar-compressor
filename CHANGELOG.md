@@ -40,6 +40,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `PresetEditTransitionTests` - Mode transition logic
   - `PresetScannerTests` - Preset discovery and menu building
   - `PresetLocationResolverTests` - Preset location and restriction detection
+- **Menu ordering for custom presets** - `MenuOrder` field to control display order
+  - Lower values appear first in the menu
+  - Default value is 1000, allowing built-in presets to appear before user presets
+- **Built-in custom presets** - 5 presets to fill gaps between existing compression presets
+  - `High Quality+` (MenuOrder: 100) - Between High Quality and Quality
+  - `Quality+` (MenuOrder: 200) - Between Quality and Balanced
+  - `Balanced+` (MenuOrder: 300) - Between Balanced and Aggressive
+  - `Aggressive+` (MenuOrder: 400) - Between Aggressive and Maximum
+  - `Maximum+` (MenuOrder: 500) - Slightly better than Maximum
 
 ### Changed
 

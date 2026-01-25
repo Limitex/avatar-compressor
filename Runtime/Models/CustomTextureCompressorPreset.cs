@@ -26,6 +26,9 @@ namespace dev.limitex.avatar.compressor
         )]
         public string MenuPath = "";
 
+        [Tooltip("Display order in the menu. Lower values appear first.")]
+        public int MenuOrder = 1000;
+
         [Header("Analysis Strategy")]
         [Tooltip("Complexity analysis method")]
         public AnalysisStrategyType Strategy = AnalysisStrategyType.Combined;

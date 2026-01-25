@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e08ef92a8ff53745a49f46c30027804, type: 3}
+  m_Name: MaximumPlus
+  m_EditorClassIdentifier:
+  Lock: 1
+  Description: Better than Maximum. Strong compression with slightly higher quality.
+  MenuPath: Built-in/Maximum+
+  MenuOrder: 500
+  Strategy: 0
+  FastWeight: 0.55
+  HighAccuracyWeight: 0.3
+  PerceptualWeight: 0.15
+  HighComplexityThreshold: 0.85
+  LowComplexityThreshold: 0.35
+  MinDivisor: 2
+  MaxDivisor: 16
+  MaxResolution: 2048
+  MinResolution: 32
+  ForcePowerOfTwo: 1
+  MinSourceSize: 128
+  SkipIfSmallerThan: 64
+  TargetPlatform: 0
+  UseHighQualityFormatForHighComplexity: 0
