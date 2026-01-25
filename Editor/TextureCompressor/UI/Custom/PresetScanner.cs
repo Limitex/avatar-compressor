@@ -91,8 +91,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 var presetRef = preset; // Capture for closure
                 bool isSelected = currentPreset != null && currentPreset == preset;
+
+                var restriction = PresetLocationResolver.GetRestriction(preset);
+                string suffix = restriction switch
+                {
+                    PresetRestriction.BuiltIn => " (Built-in)",
+                    PresetRestriction.ExternalPackage => " (Package)",
+                    _ => "",
+                };
+
                 menu.AddItem(
-                    new GUIContent(preset.MenuPath),
+                    new GUIContent(preset.MenuPath + suffix),
                     isSelected,
                     () => onPresetSelected?.Invoke(presetRef)
                 );
