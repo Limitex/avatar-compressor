@@ -42,10 +42,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 }
             }
 
-            // Sort by MenuPath for consistent ordering
-            presets.Sort(
-                (a, b) => string.Compare(a.MenuPath, b.MenuPath, StringComparison.Ordinal)
-            );
+            // Sort by MenuOrder first, then by MenuPath for consistent ordering
+            presets.Sort((a, b) =>
+            {
+                int orderCompare = a.MenuOrder.CompareTo(b.MenuOrder);
+                if (orderCompare != 0)
+                    return orderCompare;
+                return string.Compare(a.MenuPath, b.MenuPath, StringComparison.Ordinal);
+            });
 
             _cachedPresets = presets;
             _cacheTime = currentTime;
