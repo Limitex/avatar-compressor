@@ -84,12 +84,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (restriction.RequiresUnlink)
             {
                 var lockIcon = EditorGUIUtility.IconContent("IN LockButton on");
-                if (restriction.IsBuiltIn)
-                    lockIcon.tooltip = "This preset is built-in";
-                else if (restriction.IsInPackage)
-                    lockIcon.tooltip = "This preset is in a package";
-                else
-                    lockIcon.tooltip = "This preset is locked";
+                lockIcon.tooltip = restriction switch
+                {
+                    { IsBuiltIn: true } => "This preset is built-in",
+                    { IsInPackage: true } => "This preset is in a package",
+                    { IsLocked: true } => "This preset is locked",
+                    _ => "This preset cannot be edited",
+                };
                 GUILayout.Label(lockIcon, GUILayout.Width(18), GUILayout.Height(18));
             }
 
