@@ -117,6 +117,43 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(info.RequiresUnlink, Is.True);
             Assert.That(info.IsLocked, Is.True);
             Assert.That(info.IsBuiltIn, Is.True);
+            Assert.That(info.IsInPackage, Is.False);
+        }
+
+        [Test]
+        public void EditRestrictionInfo_LockedAndInPackage_RequiresUnlink()
+        {
+            var info = new EditRestrictionInfo(true, false, true);
+
+            Assert.That(info.CanDirectEdit, Is.False);
+            Assert.That(info.RequiresUnlink, Is.True);
+            Assert.That(info.IsLocked, Is.True);
+            Assert.That(info.IsBuiltIn, Is.False);
+            Assert.That(info.IsInPackage, Is.True);
+        }
+
+        [Test]
+        public void EditRestrictionInfo_BuiltInAndInPackage_RequiresUnlink()
+        {
+            var info = new EditRestrictionInfo(false, true, true);
+
+            Assert.That(info.CanDirectEdit, Is.False);
+            Assert.That(info.RequiresUnlink, Is.True);
+            Assert.That(info.IsLocked, Is.False);
+            Assert.That(info.IsBuiltIn, Is.True);
+            Assert.That(info.IsInPackage, Is.True);
+        }
+
+        [Test]
+        public void EditRestrictionInfo_AllRestrictions_RequiresUnlink()
+        {
+            var info = new EditRestrictionInfo(true, true, true);
+
+            Assert.That(info.CanDirectEdit, Is.False);
+            Assert.That(info.RequiresUnlink, Is.True);
+            Assert.That(info.IsLocked, Is.True);
+            Assert.That(info.IsBuiltIn, Is.True);
+            Assert.That(info.IsInPackage, Is.True);
         }
 
         #endregion

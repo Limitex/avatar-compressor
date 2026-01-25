@@ -103,9 +103,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (config?.CustomPresetAsset == null)
                 return new EditRestrictionInfo(false, false, false);
 
+            var path = AssetDatabase.GetAssetPath(config.CustomPresetAsset);
             bool isLocked = config.CustomPresetAsset.Lock;
-            bool isBuiltIn = IsBuiltInPreset(config.CustomPresetAsset);
-            bool isInPackage = !isBuiltIn && IsInPackage(config.CustomPresetAsset);
+            bool isBuiltIn = IsBuiltInPreset(path);
+            // IsBuiltIn takes priority: if it's in this package, don't mark as generic "package"
+            bool isInPackage = !isBuiltIn && IsInPackage(path);
 
             return new EditRestrictionInfo(isLocked, isBuiltIn, isInPackage);
         }
@@ -116,9 +118,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// Checks if the preset is a built-in preset (located within this package).
         /// Returns false if running outside of a package context (e.g., during development).
         /// </summary>
-        private static bool IsBuiltInPreset(CustomTextureCompressorPreset preset)
+        private static bool IsBuiltInPreset(string assetPath)
         {
-            if (preset == null)
+            if (string.IsNullOrEmpty(assetPath))
                 return false;
 
             _packageInfo ??= UnityEditor.PackageManager.PackageInfo.FindForAssembly(
@@ -129,20 +131,18 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (_packageInfo == null)
                 return false;
 
-            var path = AssetDatabase.GetAssetPath(preset);
-            return path.StartsWith(_packageInfo.assetPath);
+            return assetPath.StartsWith(_packageInfo.assetPath);
         }
 
         /// <summary>
         /// Checks if the preset is located within any package (Packages/ folder).
         /// </summary>
-        private static bool IsInPackage(CustomTextureCompressorPreset preset)
+        private static bool IsInPackage(string assetPath)
         {
-            if (preset == null)
+            if (string.IsNullOrEmpty(assetPath))
                 return false;
 
-            var path = AssetDatabase.GetAssetPath(preset);
-            return path.StartsWith("Packages/");
+            return assetPath.StartsWith("Packages/");
         }
 
         /// <summary>
