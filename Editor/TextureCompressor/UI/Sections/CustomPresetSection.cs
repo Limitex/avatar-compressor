@@ -288,6 +288,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (newPreset != null)
             {
                 newPreset.ApplyTo(config);
+
+                // Switch to UseOnlyMode if the preset cannot be edited directly
+                var restriction = CustomPresetEditorState.GetEditRestriction(config);
+                if (restriction.RequiresUnlink)
+                {
+                    CustomPresetEditorState.SetEditMode(config, false);
+                }
             }
 
             EditorUtility.SetDirty(config);
