@@ -13,7 +13,7 @@ namespace dev.limitex.avatar.compressor
         public CompressorPreset Preset = CompressorPreset.Balanced;
 
         [Tooltip("Custom preset asset for saving and loading custom settings")]
-        public CustomCompressorPreset CustomPresetAsset;
+        public CustomTextureCompressorPreset CustomPresetAsset;
 
         [Header("Analysis Strategy")]
         [Tooltip("Complexity analysis method")]

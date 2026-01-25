@@ -1,4 +1,5 @@
 using dev.limitex.avatar.compressor;
+using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.editor.ui;
 using UnityEditor;
 using UnityEngine;
@@ -18,13 +19,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorDrawUtils.DrawSectionHeader("Compression Preset");
 
             DrawPresetButtons(config);
+
             EditorGUILayout.Space(10);
             DrawPresetDescription(config.Preset);
 
-            if (config.Preset != CompressorPreset.Custom)
+            if (config.Preset == CompressorPreset.Custom)
             {
                 EditorGUILayout.Space(10);
-                DrawPresetSummary(config);
+                CustomSection.Draw(config);
+            }
+            else
+            {
+                EditorGUILayout.Space(10);
+                SettingsSummaryDrawer.Draw(config);
             }
         }
 
@@ -178,25 +185,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
 
             EditorGUILayout.HelpBox(description, messageType);
-        }
-
-        private static void DrawPresetSummary(TextureCompressor config)
-        {
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            EditorDrawUtils.DrawSectionHeader("Current Settings Summary");
-
-            EditorGUILayout.LabelField($"Strategy: {config.Strategy}");
-            EditorGUILayout.LabelField(
-                $"Divisor Range: {config.MinDivisor}x - {config.MaxDivisor}x"
-            );
-            EditorGUILayout.LabelField(
-                $"Resolution Range: {config.MinResolution}px - {config.MaxResolution}px"
-            );
-            EditorGUILayout.LabelField(
-                $"Complexity Thresholds: {config.LowComplexityThreshold:P0} - {config.HighComplexityThreshold:P0}"
-            );
-
-            EditorGUILayout.EndVertical();
         }
     }
 }

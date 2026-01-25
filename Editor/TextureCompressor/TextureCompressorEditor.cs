@@ -34,9 +34,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             // Preset section
             PresetSection.Draw(config);
-
-            // Custom preset section (only shown when Custom is selected)
-            CustomPresetSection.Draw(config);
             EditorGUILayout.Space(10);
 
             // Settings section

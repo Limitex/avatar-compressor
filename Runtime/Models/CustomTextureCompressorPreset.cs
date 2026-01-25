@@ -3,16 +3,29 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor
 {
     /// <summary>
-    /// ScriptableObject that stores custom compressor preset settings.
+    /// ScriptableObject that stores custom texture compressor preset settings.
     /// Can be shared across multiple avatars and projects.
     /// </summary>
     [CreateAssetMenu(
-        fileName = "NewCompressorPreset",
-        menuName = "Avatar Compressor/Custom Preset",
-        order = 100
+        fileName = "NewTextureCompressorPreset",
+        menuName = "Avatar Compressor/Texture Compressor/CustomTextureCompressorPreset"
     )]
-    public class CustomCompressorPreset : ScriptableObject
+    public class CustomTextureCompressorPreset : ScriptableObject
     {
+        [Header("Preset Settings")]
+        [Tooltip("Lock this preset to prevent editing when selected")]
+        public bool Lock = false;
+
+        [Tooltip("Description shown when this preset is selected")]
+        [TextArea(2, 4)]
+        public string Description = "";
+
+        [Header("Menu")]
+        [Tooltip(
+            "Path in the Custom preset menu (e.g., 'Quest' or 'PC/High Detail'). Empty = not shown in menu."
+        )]
+        public string MenuPath = "";
+
         [Header("Analysis Strategy")]
         [Tooltip("Complexity analysis method")]
         public AnalysisStrategyType Strategy = AnalysisStrategyType.Combined;

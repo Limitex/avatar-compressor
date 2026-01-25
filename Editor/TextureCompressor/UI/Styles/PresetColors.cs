@@ -13,5 +13,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         public static readonly Color Aggressive = new Color(0.9f, 0.7f, 0.2f);
         public static readonly Color Maximum = new Color(0.9f, 0.3f, 0.3f);
         public static readonly Color Custom = new Color(0.7f, 0.5f, 0.9f);
+        public static readonly Color EditMode = new Color(0.5f, 0.7f, 0.9f);
+        public static readonly Color CustomPreset = new Color(0.9f, 0.6f, 0.7f);
     }
 }

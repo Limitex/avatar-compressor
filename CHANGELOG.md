@@ -17,6 +17,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Auto-apply preset settings when switching to Custom mode with linked asset
   - Presets can be shared across multiple avatars and projects
   - Unit tests for preset operations (ApplyTo, CopyFrom, MatchesSettings)
+- **Custom Preset Selection Menu** - Dropdown menu for selecting presets by `MenuPath`
+  - Hierarchical menu structure (e.g., "PC/High Detail", "Quest/Optimized")
+  - Checkmark indicator for currently selected preset
+  - Presets without `MenuPath` are hidden from menu but can be assigned via object field
+- **Use Only Mode** - Read-only preset viewing when a preset is selected
+  - Settings summary shows current configuration at a glance
+  - Description field displayed when set on preset
+  - Edit button to switch to edit mode
+- **Preset Editing Restrictions** - Protection for non-editable presets
+  - `Lock` field to prevent accidental modifications to user presets
+  - Built-in preset detection (presets bundled with this package)
+  - External package preset detection (presets from other packages)
+  - Lock icon indicates restricted presets with tooltip explaining reason
+  - Unlink confirmation dialog when attempting to edit restricted presets
+- **LRU Cache Utility** - Generic `LruCache<TKey, TValue>` class for editor state management
+  - Configurable capacity with automatic eviction of oldest entries
+  - Used for button rect caching and edit mode state tracking
+  - Comprehensive unit tests for cache operations
+- **Custom preset UI tests** - Unit tests for new custom preset components
+  - `PresetEditorStateTests` - Edit mode state management
+  - `PresetEditTransitionTests` - Mode transition logic
+  - `PresetScannerTests` - Preset discovery and menu building
+  - `PresetLocationResolverTests` - Preset location and restriction detection
 
 ### Changed
 
@@ -29,6 +52,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Runtime: `texture` → (root namespace)
 - **Editor UI refactored** - Modularized Inspector code for maintainability
 - **Test structure reorganized** - Grouped tests by module (Analysis, Core, UI, etc.)
+- **Custom preset class renamed** - `CustomCompressorPreset` → `CustomTextureCompressorPreset` (**Breaking**)
+  - Clearer naming to indicate texture-specific functionality
+  - Added `Lock` and `Description` fields for preset management
+- **Custom preset UI restructured** - Extracted into dedicated `UI/Custom/` directory
+  - `CustomSection` - Main entry point for custom preset UI
+  - `PresetEditorState` - Manages edit mode vs use-only mode state
+  - `PresetRestriction` - Enum for editing restriction levels
+  - `PresetLocationResolver` - Determines preset editability based on location
+  - `PresetEditTransition` - Handles mode transitions with confirmation dialogs
+  - `PresetScanner` - Scans and caches presets with `MenuPath` for menu building
 
 ### Fixed
 
