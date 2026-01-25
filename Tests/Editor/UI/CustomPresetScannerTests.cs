@@ -15,8 +15,6 @@ namespace dev.limitex.avatar.compressor.tests
         [SetUp]
         public void SetUp()
         {
-            CustomPresetScanner.ClearCache();
-
             _presetWithMenuPath = ScriptableObject.CreateInstance<CustomTextureCompressorPreset>();
             _presetWithMenuPath.MenuPath = "Test/Preset";
 
@@ -143,29 +141,12 @@ namespace dev.limitex.avatar.compressor.tests
         #region Cache Tests
 
         [Test]
-        public void ClearCache_DoesNotThrow()
-        {
-            Assert.DoesNotThrow(() => CustomPresetScanner.ClearCache());
-        }
-
-        [Test]
         public void GetMenuPresets_ReturnsCopyOfList()
         {
             var list1 = CustomPresetScanner.GetMenuPresets();
             var list2 = CustomPresetScanner.GetMenuPresets();
 
             Assert.That(list1, Is.Not.SameAs(list2));
-        }
-
-        [Test]
-        public void GetMenuPresets_AfterClearCache_ReturnsValidList()
-        {
-            CustomPresetScanner.GetMenuPresets();
-            CustomPresetScanner.ClearCache();
-
-            var result = CustomPresetScanner.GetMenuPresets();
-
-            Assert.That(result, Is.Not.Null);
         }
 
         #endregion

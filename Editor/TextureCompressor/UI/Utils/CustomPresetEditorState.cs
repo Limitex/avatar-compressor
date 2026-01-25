@@ -36,11 +36,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// </summary>
     public static class CustomPresetEditorState
     {
-        /// <summary>
-        /// Maximum number of cached states before LRU eviction occurs.
-        /// Exposed for testing purposes.
-        /// </summary>
-        public const int MaxCachedStates = 64;
+        private const int MaxCachedStates = 64;
 
         // Stores edit mode state per TextureCompressor instance ID.
         // When true, the user is manually editing custom settings.

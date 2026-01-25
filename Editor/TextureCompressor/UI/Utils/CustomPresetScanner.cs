@@ -54,14 +54,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         }
 
         /// <summary>
-        /// Clears the preset cache, forcing a fresh scan on next access.
-        /// </summary>
-        public static void ClearCache()
-        {
-            _cachedPresets = null;
-        }
-
-        /// <summary>
         /// Builds a GenericMenu for custom preset selection.
         /// </summary>
         /// <param name="currentPreset">The currently selected preset (for checkmark display).</param>

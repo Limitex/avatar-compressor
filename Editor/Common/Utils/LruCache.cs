@@ -37,11 +37,6 @@ namespace dev.limitex.avatar.compressor.editor
         public int Count => _cache.Count;
 
         /// <summary>
-        /// Gets the maximum capacity of the cache.
-        /// </summary>
-        public int MaxCapacity => _maxCapacity;
-
-        /// <summary>
         /// Attempts to get a value from the cache.
         /// Updates the access time if found (LRU touch).
         /// </summary>
@@ -75,24 +70,6 @@ namespace dev.limitex.avatar.compressor.editor
             }
             _cache[key] = (value, _timeProvider());
         }
-
-        /// <summary>
-        /// Checks if the cache contains the specified key.
-        /// Does not update access time.
-        /// </summary>
-        public bool ContainsKey(TKey key) => _cache.ContainsKey(key);
-
-        /// <summary>
-        /// Removes all entries from the cache.
-        /// </summary>
-        public void Clear() => _cache.Clear();
-
-        /// <summary>
-        /// Removes the entry with the specified key.
-        /// </summary>
-        /// <param name="key">The key to remove.</param>
-        /// <returns>True if the entry was removed, false if not found.</returns>
-        public bool Remove(TKey key) => _cache.Remove(key);
 
         private void EvictOldest()
         {

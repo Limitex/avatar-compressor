@@ -25,12 +25,6 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void MaxCapacity_ReturnsConfiguredValue()
-        {
-            Assert.That(_cache.MaxCapacity, Is.EqualTo(4));
-        }
-
-        [Test]
         public void Set_IncreasesCount()
         {
             _cache.Set(1, "value1");
@@ -56,55 +50,6 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.That(found, Is.False);
             Assert.That(value, Is.Null);
-        }
-
-        [Test]
-        public void ContainsKey_ReturnsTrueForExistingKey()
-        {
-            _cache.Set(1, "value1");
-
-            Assert.That(_cache.ContainsKey(1), Is.True);
-        }
-
-        [Test]
-        public void ContainsKey_ReturnsFalseForMissingKey()
-        {
-            Assert.That(_cache.ContainsKey(999), Is.False);
-        }
-
-        [Test]
-        public void Clear_RemovesAllEntries()
-        {
-            _cache.Set(1, "value1");
-            _cache.Set(2, "value2");
-
-            _cache.Clear();
-
-            Assert.That(_cache.Count, Is.EqualTo(0));
-            Assert.That(_cache.ContainsKey(1), Is.False);
-            Assert.That(_cache.ContainsKey(2), Is.False);
-        }
-
-        [Test]
-        public void Remove_RemovesSpecificEntry()
-        {
-            _cache.Set(1, "value1");
-            _cache.Set(2, "value2");
-
-            bool removed = _cache.Remove(1);
-
-            Assert.That(removed, Is.True);
-            Assert.That(_cache.Count, Is.EqualTo(1));
-            Assert.That(_cache.ContainsKey(1), Is.False);
-            Assert.That(_cache.ContainsKey(2), Is.True);
-        }
-
-        [Test]
-        public void Remove_ReturnsFalseForMissingKey()
-        {
-            bool removed = _cache.Remove(999);
-
-            Assert.That(removed, Is.False);
         }
 
         [Test]
@@ -143,8 +88,8 @@ namespace dev.limitex.avatar.compressor.tests
             _cache.Set(5, "value5");
 
             Assert.That(_cache.Count, Is.EqualTo(4));
-            Assert.That(_cache.ContainsKey(1), Is.False, "Oldest entry should be evicted");
-            Assert.That(_cache.ContainsKey(5), Is.True, "New entry should exist");
+            Assert.That(_cache.TryGetValue(1, out _), Is.False, "Oldest entry should be evicted");
+            Assert.That(_cache.TryGetValue(5, out _), Is.True, "New entry should exist");
         }
 
         [Test]
@@ -165,10 +110,10 @@ namespace dev.limitex.avatar.compressor.tests
             _cache.Set(1, "updated");
 
             Assert.That(_cache.Count, Is.EqualTo(4));
-            Assert.That(_cache.ContainsKey(1), Is.True);
-            Assert.That(_cache.ContainsKey(2), Is.True);
-            Assert.That(_cache.ContainsKey(3), Is.True);
-            Assert.That(_cache.ContainsKey(4), Is.True);
+            Assert.That(_cache.TryGetValue(1, out _), Is.True);
+            Assert.That(_cache.TryGetValue(2, out _), Is.True);
+            Assert.That(_cache.TryGetValue(3, out _), Is.True);
+            Assert.That(_cache.TryGetValue(4, out _), Is.True);
         }
 
         [Test]
@@ -193,12 +138,16 @@ namespace dev.limitex.avatar.compressor.tests
             _cache.Set(5, "value5");
 
             Assert.That(
-                _cache.ContainsKey(1),
+                _cache.TryGetValue(1, out _),
                 Is.True,
                 "Key 1 should not be evicted (was accessed)"
             );
-            Assert.That(_cache.ContainsKey(2), Is.False, "Key 2 should be evicted (became oldest)");
-            Assert.That(_cache.ContainsKey(5), Is.True, "New entry should exist");
+            Assert.That(
+                _cache.TryGetValue(2, out _),
+                Is.False,
+                "Key 2 should be evicted (became oldest)"
+            );
+            Assert.That(_cache.TryGetValue(5, out _), Is.True, "New entry should exist");
         }
 
         [Test]
@@ -219,13 +168,13 @@ namespace dev.limitex.avatar.compressor.tests
             }
 
             Assert.That(_cache.Count, Is.EqualTo(4));
-            Assert.That(_cache.ContainsKey(1), Is.False, "Key 1 should be evicted");
-            Assert.That(_cache.ContainsKey(2), Is.False, "Key 2 should be evicted");
-            Assert.That(_cache.ContainsKey(3), Is.False, "Key 3 should be evicted");
-            Assert.That(_cache.ContainsKey(4), Is.True, "Key 4 should remain");
-            Assert.That(_cache.ContainsKey(5), Is.True, "Key 5 should exist");
-            Assert.That(_cache.ContainsKey(6), Is.True, "Key 6 should exist");
-            Assert.That(_cache.ContainsKey(7), Is.True, "Key 7 should exist");
+            Assert.That(_cache.TryGetValue(1, out _), Is.False, "Key 1 should be evicted");
+            Assert.That(_cache.TryGetValue(2, out _), Is.False, "Key 2 should be evicted");
+            Assert.That(_cache.TryGetValue(3, out _), Is.False, "Key 3 should be evicted");
+            Assert.That(_cache.TryGetValue(4, out _), Is.True, "Key 4 should remain");
+            Assert.That(_cache.TryGetValue(5, out _), Is.True, "Key 5 should exist");
+            Assert.That(_cache.TryGetValue(6, out _), Is.True, "Key 6 should exist");
+            Assert.That(_cache.TryGetValue(7, out _), Is.True, "Key 7 should exist");
         }
 
         #endregion
@@ -243,8 +192,8 @@ namespace dev.limitex.avatar.compressor.tests
             smallCache.Set(2, "value2");
 
             Assert.That(smallCache.Count, Is.EqualTo(1));
-            Assert.That(smallCache.ContainsKey(1), Is.False);
-            Assert.That(smallCache.ContainsKey(2), Is.True);
+            Assert.That(smallCache.TryGetValue(1, out _), Is.False);
+            Assert.That(smallCache.TryGetValue(2, out _), Is.True);
         }
 
         [Test]
@@ -272,7 +221,7 @@ namespace dev.limitex.avatar.compressor.tests
             _cache.Set(5, "value5");
 
             Assert.That(_cache.Count, Is.EqualTo(4));
-            Assert.That(_cache.ContainsKey(5), Is.True);
+            Assert.That(_cache.TryGetValue(5, out _), Is.True);
         }
 
         #endregion
