@@ -267,6 +267,18 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(PresetEditorState.IsCustomEditable(_config), Is.False);
         }
 
+        [Test]
+        public void IsCustomEditable_CustomPresetWithLockedAssetInEditMode_ReturnsFalse()
+        {
+            // Even in edit mode, locked presets should not be editable
+            _preset.Lock = true;
+            _config.Preset = CompressorPreset.Custom;
+            _config.CustomPresetAsset = _preset;
+            PresetEditorState.SetEditMode(_config, true);
+
+            Assert.That(PresetEditorState.IsCustomEditable(_config), Is.False);
+        }
+
         #endregion
 
         #region UnlinkPresetAndSwitchToEditMode Tests

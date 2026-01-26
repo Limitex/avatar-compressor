@@ -64,8 +64,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private static void DrawEditModeButton(TextureCompressor config, float buttonWidth)
         {
-            bool isEditMode =
-                config.CustomPresetAsset == null || PresetEditorState.IsInEditMode(config);
+            bool isEditMode = PresetEditorState.IsCustomEditable(config);
             var restriction = PresetEditorState.GetRestriction(config);
 
             string tooltip = restriction.RequiresUnlink()
@@ -89,7 +88,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private static void DrawCustomPresetButton(TextureCompressor config, float buttonWidth)
         {
-            bool isUseOnly = PresetEditorState.IsInUseOnlyMode(config);
+            bool isUseOnly =
+                config.CustomPresetAsset != null && !PresetEditorState.IsCustomEditable(config);
             string presetLabel = "Custom Preset \u25BE";
 
             bool clicked = EditorDrawUtils.DrawColoredButton(
@@ -136,7 +136,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private static void DrawDetailPanel(TextureCompressor config)
         {
-            if (PresetEditorState.IsInUseOnlyMode(config))
+            // Show UseOnly panel when preset is assigned and not editable
+            bool showUseOnly =
+                config.CustomPresetAsset != null && !PresetEditorState.IsCustomEditable(config);
+
+            if (showUseOnly)
             {
                 DrawUseOnlyPanel(config);
             }
