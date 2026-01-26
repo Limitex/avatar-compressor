@@ -108,9 +108,9 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void EnsureValidEditState_WhenInEditModeWithNoPreset_ExitsEditMode()
+        public void EnsureValidEditState_WhenInEditModeWithNonCustomPreset_ExitsEditMode()
         {
-            // Edge case: in edit mode but preset is Custom (not Custom mode)
+            // Edge case: in edit mode but preset is not Custom mode
             _config.Preset = CompressorPreset.Balanced;
             _config.CustomPresetAsset = null;
             PresetEditorState.SetEditMode(_config, true);
@@ -118,6 +118,20 @@ namespace dev.limitex.avatar.compressor.tests
             PresetEditTransition.EnsureValidEditState(_config);
 
             Assert.That(PresetEditorState.IsInEditMode(_config), Is.False);
+        }
+
+        [Test]
+        public void EnsureValidEditState_WhenCustomModeWithNoPresetAssetInEditMode_DoesNotExitEditMode()
+        {
+            // Edge case: Custom mode, no preset asset assigned, but in edit mode
+            _config.Preset = CompressorPreset.Custom;
+            _config.CustomPresetAsset = null;
+            PresetEditorState.SetEditMode(_config, true);
+
+            PresetEditTransition.EnsureValidEditState(_config);
+
+            // Should remain in edit mode since IsCustomEditable returns true
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.True);
         }
 
         #endregion

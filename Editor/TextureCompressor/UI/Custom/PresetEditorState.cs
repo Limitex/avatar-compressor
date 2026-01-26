@@ -40,7 +40,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         /// <summary>
         /// Checks if the config is in Custom preset mode and settings are editable.
-        /// Returns true when: Custom preset is selected AND (no preset asset assigned OR in edit mode with no restrictions).
+        /// Returns true when: Custom preset is selected AND (no preset asset assigned OR in edit mode with restriction that allows direct edit).
         /// </summary>
         public static bool IsCustomEditable(TextureCompressor config)
         {
