@@ -29,6 +29,99 @@ namespace dev.limitex.avatar.compressor.tests
                 Object.DestroyImmediate(_preset);
         }
 
+        #region EnsureValidEditState Tests
+
+        [Test]
+        public void EnsureValidEditState_WithNullConfig_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() => PresetEditTransition.EnsureValidEditState(null));
+        }
+
+        [Test]
+        public void EnsureValidEditState_WhenEditableWithNoPreset_DoesNotChangeState()
+        {
+            _config.Preset = CompressorPreset.Custom;
+            _config.CustomPresetAsset = null;
+            _config.MaxDivisor = 8;
+
+            PresetEditTransition.EnsureValidEditState(_config);
+
+            Assert.That(_config.MaxDivisor, Is.EqualTo(8));
+            Assert.That(_config.CustomPresetAsset, Is.Null);
+        }
+
+        [Test]
+        public void EnsureValidEditState_WhenEditableInEditMode_DoesNotExitEditMode()
+        {
+            _preset.Lock = false;
+            _config.Preset = CompressorPreset.Custom;
+            _config.CustomPresetAsset = _preset;
+            PresetEditorState.SetEditMode(_config, true);
+
+            PresetEditTransition.EnsureValidEditState(_config);
+
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.True);
+        }
+
+        [Test]
+        public void EnsureValidEditState_WhenNotEditableAndNotInEditMode_DoesNotChangeState()
+        {
+            _preset.Lock = true;
+            _config.Preset = CompressorPreset.Custom;
+            _config.CustomPresetAsset = _preset;
+            PresetEditorState.SetEditMode(_config, false);
+
+            PresetEditTransition.EnsureValidEditState(_config);
+
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.False);
+        }
+
+        [Test]
+        public void EnsureValidEditState_WhenLockedPresetAndInEditMode_ExitsEditMode()
+        {
+            _preset.Lock = true;
+            _config.Preset = CompressorPreset.Custom;
+            _config.CustomPresetAsset = _preset;
+            PresetEditorState.SetEditMode(_config, true);
+
+            PresetEditTransition.EnsureValidEditState(_config);
+
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.False);
+        }
+
+        [Test]
+        public void EnsureValidEditState_WhenLockedPresetAndInEditMode_AppliesPresetSettings()
+        {
+            _preset.Lock = true;
+            _preset.MaxDivisor = 16;
+            _preset.Strategy = AnalysisStrategyType.Fast;
+            _config.Preset = CompressorPreset.Custom;
+            _config.CustomPresetAsset = _preset;
+            _config.MaxDivisor = 4;
+            _config.Strategy = AnalysisStrategyType.HighAccuracy;
+            PresetEditorState.SetEditMode(_config, true);
+
+            PresetEditTransition.EnsureValidEditState(_config);
+
+            Assert.That(_config.MaxDivisor, Is.EqualTo(16));
+            Assert.That(_config.Strategy, Is.EqualTo(AnalysisStrategyType.Fast));
+        }
+
+        [Test]
+        public void EnsureValidEditState_WhenInEditModeWithNoPreset_ExitsEditMode()
+        {
+            // Edge case: in edit mode but preset is Custom (not Custom mode)
+            _config.Preset = CompressorPreset.Balanced;
+            _config.CustomPresetAsset = null;
+            PresetEditorState.SetEditMode(_config, true);
+
+            PresetEditTransition.EnsureValidEditState(_config);
+
+            Assert.That(PresetEditorState.IsInEditMode(_config), Is.False);
+        }
+
+        #endregion
+
         #region TryEnterEditMode Tests - Direct Edit Cases
 
         [Test]
