@@ -39,6 +39,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (config.Preset != CompressorPreset.Custom)
                 return;
 
+            PresetEditTransition.EnsureValidEditState(config);
+
             bool isEditable = PresetEditorState.IsCustomEditable(config);
             var restriction = PresetEditorState.GetRestriction(config);
 

@@ -9,6 +9,29 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     public static class PresetEditTransition
     {
         /// <summary>
+        /// Validates edit state consistency and auto-exits edit mode if the preset became locked.
+        /// Call this at the start of UI drawing to ensure state is valid.
+        /// </summary>
+        public static void EnsureValidEditState(TextureCompressor config)
+        {
+            if (config == null)
+                return;
+
+            if (
+                !PresetEditorState.IsCustomEditable(config)
+                && PresetEditorState.IsInEditMode(config)
+            )
+            {
+                if (config.CustomPresetAsset != null)
+                {
+                    config.CustomPresetAsset.ApplyTo(config);
+                    EditorUtility.SetDirty(config);
+                }
+                PresetEditorState.SetEditMode(config, false);
+            }
+        }
+
+        /// <summary>
         /// Attempts to transition to edit mode, showing a confirmation dialog if unlinking is required.
         /// Uses appropriate dialog messages based on the preset's restriction type.
         /// Handles Undo registration and SetDirty automatically when unlinking.
