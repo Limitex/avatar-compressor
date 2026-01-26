@@ -66,43 +66,6 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region IsInUseOnlyMode Tests
-
-        [Test]
-        public void IsInUseOnlyMode_TrueWhenPresetAssignedAndNotEditing()
-        {
-            _config.CustomPresetAsset = _preset;
-            PresetEditorState.SetEditMode(_config, false);
-
-            Assert.That(PresetEditorState.IsInUseOnlyMode(_config), Is.True);
-        }
-
-        [Test]
-        public void IsInUseOnlyMode_FalseWhenNoPresetAssigned()
-        {
-            _config.CustomPresetAsset = null;
-            PresetEditorState.SetEditMode(_config, false);
-
-            Assert.That(PresetEditorState.IsInUseOnlyMode(_config), Is.False);
-        }
-
-        [Test]
-        public void IsInUseOnlyMode_FalseWhenInEditMode()
-        {
-            _config.CustomPresetAsset = _preset;
-            PresetEditorState.SetEditMode(_config, true);
-
-            Assert.That(PresetEditorState.IsInUseOnlyMode(_config), Is.False);
-        }
-
-        [Test]
-        public void IsInUseOnlyMode_WithNullConfig_ReturnsFalse()
-        {
-            Assert.That(PresetEditorState.IsInUseOnlyMode(null), Is.False);
-        }
-
-        #endregion
-
         #region SwitchToEditMode Tests
 
         [Test]

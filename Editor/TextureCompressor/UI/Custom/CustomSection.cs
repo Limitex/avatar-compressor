@@ -39,34 +39,43 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (config.Preset != CompressorPreset.Custom)
                 return;
 
-            DrawModeSelector(config);
+            bool isEditable = PresetEditorState.IsCustomEditable(config);
+            var restriction = PresetEditorState.GetRestriction(config);
+
+            DrawModeSelector(config, isEditable, restriction);
             EditorGUILayout.Space(10);
-            DrawDetailPanel(config);
+            DrawDetailPanel(config, isEditable, restriction);
         }
 
         #endregion
 
         #region Mode Selector
 
-        private static void DrawModeSelector(TextureCompressor config)
+        private static void DrawModeSelector(
+            TextureCompressor config,
+            bool isEditable,
+            PresetRestriction restriction
+        )
         {
             EditorGUILayout.BeginHorizontal();
 
             float availableWidth = EditorGUIUtility.currentViewWidth - 20f;
             float buttonWidth = (availableWidth - ButtonSpacing) / 2f;
 
-            DrawEditModeButton(config, buttonWidth);
+            DrawEditModeButton(config, isEditable, restriction, buttonWidth);
             GUILayout.Space(ButtonSpacing);
-            DrawCustomPresetButton(config, buttonWidth);
+            DrawCustomPresetButton(config, isEditable, buttonWidth);
 
             EditorGUILayout.EndHorizontal();
         }
 
-        private static void DrawEditModeButton(TextureCompressor config, float buttonWidth)
+        private static void DrawEditModeButton(
+            TextureCompressor config,
+            bool isEditable,
+            PresetRestriction restriction,
+            float buttonWidth
+        )
         {
-            bool isEditMode = PresetEditorState.IsCustomEditable(config);
-            var restriction = PresetEditorState.GetRestriction(config);
-
             string tooltip = restriction.RequiresUnlink()
                 ? "Unlink preset and edit settings manually"
                 : "Manually configure compression settings";
@@ -76,7 +85,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     "Edit Mode",
                     tooltip,
                     PresetColors.EditMode,
-                    isEditMode,
+                    isEditable,
                     height: 24f,
                     width: buttonWidth
                 )
@@ -86,17 +95,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
-        private static void DrawCustomPresetButton(TextureCompressor config, float buttonWidth)
+        private static void DrawCustomPresetButton(
+            TextureCompressor config,
+            bool isEditable,
+            float buttonWidth
+        )
         {
-            bool isUseOnly =
-                config.CustomPresetAsset != null && !PresetEditorState.IsCustomEditable(config);
             string presetLabel = "Custom Preset \u25BE";
 
             bool clicked = EditorDrawUtils.DrawColoredButton(
                 presetLabel,
                 "Select a custom preset from the menu",
                 PresetColors.CustomPreset,
-                isUseOnly,
+                !isEditable,
                 height: 24f,
                 width: buttonWidth
             );
@@ -134,30 +145,31 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         #region Detail Panels
 
-        private static void DrawDetailPanel(TextureCompressor config)
+        private static void DrawDetailPanel(
+            TextureCompressor config,
+            bool isEditable,
+            PresetRestriction restriction
+        )
         {
-            // Show UseOnly panel when preset is assigned and not editable
-            bool showUseOnly =
-                config.CustomPresetAsset != null && !PresetEditorState.IsCustomEditable(config);
-
-            if (showUseOnly)
-            {
-                DrawUseOnlyPanel(config);
-            }
-            else
+            if (isEditable)
             {
                 DrawEditPanel(config);
             }
+            else
+            {
+                DrawUseOnlyPanel(config, restriction);
+            }
         }
 
-        private static void DrawUseOnlyPanel(TextureCompressor config)
+        private static void DrawUseOnlyPanel(
+            TextureCompressor config,
+            PresetRestriction restriction
+        )
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
             EditorDrawUtils.DrawSectionHeader("Custom Preset (Use Only)");
             EditorGUILayout.Space(4);
-
-            var restriction = PresetEditorState.GetRestriction(config);
 
             EditorGUILayout.BeginHorizontal();
             if (restriction == PresetRestriction.BuiltIn)
