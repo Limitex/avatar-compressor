@@ -39,14 +39,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (config.Preset != CompressorPreset.Custom)
                 return;
 
+            // Validate edit state - may exit edit mode and apply preset settings if locked
             PresetEditTransition.EnsureValidEditState(config);
 
             bool isEditable = PresetEditorState.IsCustomEditable(config);
+            bool hasPresetAsset = config.CustomPresetAsset != null;
             var restriction = PresetEditorState.GetRestriction(config);
 
             DrawModeSelector(config, isEditable, restriction);
             EditorGUILayout.Space(10);
-            DrawDetailPanel(config, isEditable, restriction);
+            DrawDetailPanel(config, isEditable, hasPresetAsset, restriction);
         }
 
         #endregion
@@ -150,16 +152,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         private static void DrawDetailPanel(
             TextureCompressor config,
             bool isEditable,
+            bool hasPresetAsset,
             PresetRestriction restriction
         )
         {
-            if (isEditable)
+            // UseOnly panel: preset is assigned but not editable (locked/package/built-in)
+            // Edit panel: no preset assigned, or preset is editable
+            if (!isEditable && hasPresetAsset)
             {
-                DrawEditPanel(config);
+                DrawUseOnlyPanel(config, restriction);
             }
             else
             {
-                DrawUseOnlyPanel(config, restriction);
+                DrawEditPanel(config, hasPresetAsset);
             }
         }
 
@@ -224,18 +229,25 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.EndVertical();
         }
 
-        private static void DrawEditPanel(TextureCompressor config)
+        private static void DrawEditPanel(TextureCompressor config, bool hasPresetAsset)
         {
             var pendingAction = PendingAction.None;
             CustomTextureCompressorPreset pendingNewPreset = null;
+            bool isModified = hasPresetAsset && !config.CustomPresetAsset.MatchesSettings(config);
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
             EditorDrawUtils.DrawSectionHeader("Custom Preset");
             EditorGUILayout.Space(4);
-            DrawPresetField(config, ref pendingAction, ref pendingNewPreset);
+            DrawPresetField(
+                config,
+                hasPresetAsset,
+                isModified,
+                ref pendingAction,
+                ref pendingNewPreset
+            );
             EditorGUILayout.Space(4);
-            DrawStatusAndActions(config);
+            DrawStatusAndActions(hasPresetAsset, isModified);
 
             EditorGUILayout.EndVertical();
 
@@ -248,6 +260,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private static void DrawPresetField(
             TextureCompressor config,
+            bool hasPresetAsset,
+            bool isModified,
             ref PendingAction pendingAction,
             ref CustomTextureCompressorPreset pendingNewPreset
         )
@@ -268,20 +282,18 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 pendingNewPreset = newPreset;
             }
 
-            DrawActionButtons(config, ref pendingAction);
+            DrawActionButtons(hasPresetAsset, isModified, ref pendingAction);
 
             EditorGUILayout.EndHorizontal();
         }
 
         private static void DrawActionButtons(
-            TextureCompressor config,
+            bool hasPresetAsset,
+            bool isModified,
             ref PendingAction pendingAction
         )
         {
-            bool hasPreset = config.CustomPresetAsset != null;
-            bool isModified = hasPreset && !config.CustomPresetAsset.MatchesSettings(config);
-
-            if (hasPreset && isModified)
+            if (hasPresetAsset && isModified)
             {
                 if (
                     GUILayout.Button(
@@ -317,7 +329,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 pendingAction = PendingAction.CreateNew;
             }
 
-            if (hasPreset)
+            if (hasPresetAsset)
             {
                 if (
                     GUILayout.Button(
@@ -332,11 +344,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
-        private static void DrawStatusAndActions(TextureCompressor config)
+        private static void DrawStatusAndActions(bool hasPresetAsset, bool isModified)
         {
-            bool hasPreset = config.CustomPresetAsset != null;
-
-            if (!hasPreset)
+            if (!hasPresetAsset)
             {
                 EditorGUILayout.HelpBox(
                     "Settings are stored in this component only.\n"
@@ -345,8 +355,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 );
                 return;
             }
-
-            bool isModified = !config.CustomPresetAsset.MatchesSettings(config);
 
             if (isModified)
             {
@@ -363,10 +371,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private static void DrawPresetSummary(TextureCompressor config)
         {
-            if (
-                config.CustomPresetAsset != null
-                && !string.IsNullOrEmpty(config.CustomPresetAsset.Description)
-            )
+            // Called only from DrawUseOnlyPanel where CustomPresetAsset is guaranteed non-null
+            if (!string.IsNullOrEmpty(config.CustomPresetAsset.Description))
             {
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                 EditorGUILayout.LabelField("Description", EditorStyles.boldLabel);
