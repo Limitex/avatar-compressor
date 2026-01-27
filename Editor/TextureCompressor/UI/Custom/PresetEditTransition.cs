@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
@@ -77,6 +78,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             Undo.RecordObject(config, "Unlink Preset and Edit");
             PresetEditorState.UnlinkPresetAndSwitchToEditMode(config);
             EditorUtility.SetDirty(config);
+            GUIUtility.ExitGUI();
         }
     }
 }
