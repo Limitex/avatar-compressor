@@ -65,7 +65,7 @@ namespace dev.limitex.avatar.compressor
         public int MaxResolution = 2048;
 
         [Tooltip("Minimum output resolution")]
-        public int MinResolution = 32;
+        public int MinResolution = 64;
 
         [Tooltip("Force output to power of 2 dimensions")]
         public bool ForcePowerOfTwo = true;
