@@ -78,6 +78,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Buttons now evenly distributed across available width
   - Consistent spacing between buttons using calculated widths
 - **Emission map quality boost** - Fixed calculation that was incorrectly reducing quality instead of boosting it
+- **Custom preset edit mode stability** - Fixed issues with edit mode state management
+  - NullReferenceException no longer occurs after unlinking a preset
+  - Edit mode now auto-exits when preset becomes locked externally
+  - Locked presets can no longer be edited even when edit mode flag is set
 
 ## [v0.4.0] - 2026-01-16
 

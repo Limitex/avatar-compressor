@@ -39,28 +39,23 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         }
 
         /// <summary>
-        /// Checks if the custom preset is in use-only mode (not editing).
-        /// Use-only mode is active when a preset is assigned and edit mode is not enabled.
-        /// </summary>
-        public static bool IsInUseOnlyMode(TextureCompressor config)
-        {
-            if (config == null)
-                return false;
-
-            return config.CustomPresetAsset != null && !IsInEditMode(config);
-        }
-
-        /// <summary>
         /// Checks if the config is in Custom preset mode and settings are editable.
-        /// Returns true when: Custom preset is selected AND (no preset asset assigned OR in edit mode).
+        /// Returns true when: Custom preset is selected AND (no preset asset assigned OR in edit mode with restriction that allows direct edit).
         /// </summary>
         public static bool IsCustomEditable(TextureCompressor config)
         {
             if (config == null || config.Preset != CompressorPreset.Custom)
                 return false;
 
-            // Editable if: no preset assigned, OR explicitly in edit mode
-            return config.CustomPresetAsset == null || IsInEditMode(config);
+            // Editable if: no preset assigned
+            if (config.CustomPresetAsset == null)
+                return true;
+
+            // Or in edit mode AND restriction allows direct edit
+            if (IsInEditMode(config) && !GetRestriction(config).RequiresUnlink())
+                return true;
+
+            return false;
         }
 
         /// <summary>
