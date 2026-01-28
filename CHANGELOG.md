@@ -74,6 +74,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **MinResolution default value alignment** - Fixed inconsistency between field default and Balanced preset
+  - Changed default from 32 to 64 in both `TextureCompressor` and `CustomTextureCompressorPreset`
+  - Ensures new components start with values matching the Balanced preset
+- **Preset not applied on component add** - Added `Reset()` method to `TextureCompressor`
+  - Preset settings are now automatically applied when the component is first added
+  - Also applies when using "Reset" from the Inspector context menu
 - **Preset button layout** - Fixed uneven spacing of preset selection buttons in Editor UI
   - Buttons now evenly distributed across available width
   - Consistent spacing between buttons using calculated widths
