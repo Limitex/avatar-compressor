@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture.ui
@@ -48,6 +49,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (restriction.CanDirectEdit())
             {
                 PresetEditorState.SwitchToEditMode(config);
+                InternalEditorUtility.RepaintAllViews();
                 return;
             }
 
