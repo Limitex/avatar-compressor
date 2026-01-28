@@ -241,8 +241,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     }
                 }
 
-                // Resize texture
-                var resizedTexture = _processor.Resize(originalTexture, analysis);
+                // Resize texture (use linear color space for normal maps)
+                var resizedTexture = _processor.Resize(
+                    originalTexture,
+                    analysis,
+                    textureInfo.IsNormalMap
+                );
 
                 // Apply compression
                 _formatSelector.CompressTexture(

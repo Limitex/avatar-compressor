@@ -570,6 +570,101 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Normal Map Tests
+
+        [Test]
+        public void ResizeTo_NormalMap_UsesLinearColorSpace()
+        {
+            var sourceTexture = CreateNormalMapTexture(512, 512);
+
+            var result = _processor.ResizeTo(sourceTexture, 256, 256, isNormalMap: true);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(256, result.height);
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void ResizeTo_NormalMap_PreservesNormalVectors()
+        {
+            // Create a normal map with known normal vectors
+            var sourceTexture = CreateNormalMapTexture(64, 64);
+            var originalPixels = sourceTexture.GetPixels();
+
+            var result = _processor.ResizeTo(sourceTexture, 64, 64, isNormalMap: true);
+            var resultPixels = result.GetPixels();
+
+            // Check that the normal vectors are preserved (allowing for some precision loss)
+            // For a flat normal (0.5, 0.5, 1) the values should remain close to the original
+            for (int i = 0; i < resultPixels.Length; i += 100) // Sample every 100th pixel
+            {
+                Assert.That(
+                    resultPixels[i].r,
+                    Is.EqualTo(originalPixels[i].r).Within(0.05f),
+                    $"Red channel (normal X) should be preserved at index {i}"
+                );
+                Assert.That(
+                    resultPixels[i].g,
+                    Is.EqualTo(originalPixels[i].g).Within(0.05f),
+                    $"Green channel (normal Y) should be preserved at index {i}"
+                );
+            }
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Copy_NormalMap_UsesLinearColorSpace()
+        {
+            var sourceTexture = CreateNormalMapTexture(256, 256);
+
+            var result = _processor.Copy(sourceTexture, isNormalMap: true);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(256, result.height);
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_NormalMap_UsesLinearColorSpace()
+        {
+            var source = CreateNormalMapTexture(512, 512);
+            var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(256, 256));
+
+            var result = _processor.Resize(source, analysis, isNormalMap: true);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(256, result.height);
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void ResizeTo_NonNormalMap_UsesDefaultColorSpace()
+        {
+            var sourceTexture = CreateTexture(512, 512);
+
+            var result = _processor.ResizeTo(sourceTexture, 256, 256, isNormalMap: false);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(256, result.height);
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private static bool IsPowerOfTwo(int x)
@@ -585,6 +680,31 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 pixels[i] = Color.white;
             }
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return texture;
+        }
+
+        private Texture2D CreateNormalMapTexture(int width, int height)
+        {
+            // Normal maps must be created in linear color space to avoid gamma correction
+            // during resize operations that use linear RenderTextures
+            var texture = new Texture2D(
+                width,
+                height,
+                TextureFormat.RGBA32,
+                mipChain: false,
+                linear: true
+            );
+            var pixels = new Color[width * height];
+
+            // Create a flat normal map (pointing straight up: 0, 0, 1)
+            // Encoded as (0.5, 0.5, 1, 1) in tangent space
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = new Color(0.5f, 0.5f, 1f, 1f);
+            }
+
             texture.SetPixels(pixels);
             texture.Apply();
             return texture;

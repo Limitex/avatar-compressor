@@ -12,16 +12,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly CompressionPlatform _targetPlatform;
         private readonly bool _useHighQualityFormatForHighComplexity;
         private readonly float _highQualityComplexityThreshold;
+        private readonly NormalMapPreprocessor _normalMapPreprocessor;
 
         public TextureFormatSelector(
             CompressionPlatform targetPlatform = CompressionPlatform.Auto,
             bool useHighQualityFormatForHighComplexity = true,
-            float highQualityComplexityThreshold = 0.7f
+            float highQualityComplexityThreshold = 0.7f,
+            NormalMapPreprocessor normalMapPreprocessor = null
         )
         {
             _targetPlatform = targetPlatform;
             _useHighQualityFormatForHighComplexity = useHighQualityFormatForHighComplexity;
             _highQualityComplexityThreshold = highQualityComplexityThreshold;
+            _normalMapPreprocessor = normalMapPreprocessor ?? new NormalMapPreprocessor();
         }
 
         /// <summary>
@@ -84,7 +87,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 targetFormat = PredictFormat(isNormalMap, complexity, hasAlpha);
             }
 
-            return ApplyCompression(texture, targetFormat);
+            return ApplyCompression(texture, sourceFormat, targetFormat, isNormalMap);
         }
 
         /// <summary>
@@ -108,12 +111,23 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <summary>
         /// Applies compression to a texture with fallback handling.
         /// </summary>
-        private bool ApplyCompression(Texture2D texture, TextureFormat targetFormat)
+        private bool ApplyCompression(
+            Texture2D texture,
+            TextureFormat sourceFormat,
+            TextureFormat targetFormat,
+            bool isNormalMap
+        )
         {
             // Skip if texture is already in the target format
             if (texture.format == targetFormat)
             {
                 return false;
+            }
+
+            // Apply preprocessing before compression (normal maps only)
+            if (isNormalMap)
+            {
+                _normalMapPreprocessor.PrepareForCompression(texture, sourceFormat);
             }
 
             try
