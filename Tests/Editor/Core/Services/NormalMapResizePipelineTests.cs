@@ -228,22 +228,6 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region Copy Tests
-
-        [Test]
-        public void Copy_NormalMap_PreservesData()
-        {
-            var source = NormalMapTestTextureFactory.CreateSphereNormal(256);
-
-            var result = _processor.Copy(source, isNormalMap: true);
-
-            AssertNormalMapPreserved(source, result, "Copy_SphereNormal");
-
-            Object.DestroyImmediate(source);
-            Object.DestroyImmediate(result);
-        }
-
-        #endregion
 
         #region Assertion Helpers
 

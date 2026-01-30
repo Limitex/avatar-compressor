@@ -22,6 +22,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly TextureFormatSelector _formatSelector;
         private readonly ComplexityCalculator _complexityCalc;
         private readonly TextureAnalyzer _analyzer;
+        private readonly NormalMapPreprocessor _normalMapPreprocessor;
         private readonly Dictionary<string, FrozenTextureSettings> _frozenLookup;
 
         // Flag to avoid repeating the same warning for every texture
@@ -85,6 +86,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 _processor,
                 _complexityCalc
             );
+
+            _normalMapPreprocessor = new NormalMapPreprocessor();
         }
 
         /// <summary>
@@ -248,14 +251,36 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     textureInfo.IsNormalMap
                 );
 
-                // Apply compression
-                _formatSelector.CompressTexture(
-                    resizedTexture,
-                    originalTexture.format,
-                    textureInfo.IsNormalMap,
-                    analysis.NormalizedComplexity,
-                    formatOverride
-                );
+                // Determine target format
+                TextureFormat targetFormat;
+                if (formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto)
+                {
+                    targetFormat = TextureFormatSelector.ConvertFrozenFormat(formatOverride.Value);
+                }
+                else if (TextureFormatSelector.IsCompressedFormat(originalTexture.format))
+                {
+                    targetFormat = originalTexture.format;
+                }
+                else
+                {
+                    bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
+                    targetFormat = _formatSelector.PredictFormat(
+                        textureInfo.IsNormalMap,
+                        analysis.NormalizedComplexity,
+                        hasAlpha
+                    );
+                }
+
+                // Apply normal map preprocessing before compression
+                if (textureInfo.IsNormalMap)
+                {
+                    _normalMapPreprocessor.PrepareForCompression(
+                        resizedTexture,
+                        originalTexture.format
+                    );
+                }
+
+                ApplyCompression(resizedTexture, targetFormat);
 
                 resizedTexture.name = originalTexture.name + "_compressed";
 
@@ -312,6 +337,66 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             return (processedTextures, clonedMaterials);
+        }
+
+        /// <summary>
+        /// Applies compression to a texture with fallback handling.
+        /// </summary>
+        private bool ApplyCompression(Texture2D texture, TextureFormat targetFormat)
+        {
+            if (texture.format == targetFormat)
+            {
+                return false;
+            }
+
+            try
+            {
+                EditorUtility.CompressTexture(
+                    texture,
+                    targetFormat,
+                    TextureCompressionQuality.Best
+                );
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning(
+                    $"[{Name}] Failed to compress texture to {targetFormat}: {e.Message}. "
+                        + "Attempting fallback."
+                );
+                return ApplyFallbackCompression(texture);
+            }
+        }
+
+        /// <summary>
+        /// Applies fallback compression when primary compression fails.
+        /// </summary>
+        private bool ApplyFallbackCompression(Texture2D texture)
+        {
+            try
+            {
+                var platform = TextureFormatSelector.ResolvePlatform(_config.TargetPlatform);
+                var fallbackFormat =
+                    platform == CompressionPlatform.Mobile
+                        ? TextureFormat.ASTC_6x6
+                        : TextureFormat.DXT5;
+
+                EditorUtility.CompressTexture(
+                    texture,
+                    fallbackFormat,
+                    TextureCompressionQuality.Normal
+                );
+                Debug.Log($"[{Name}] Fallback compression to {fallbackFormat} succeeded.");
+                return true;
+            }
+            catch (System.Exception fallbackEx)
+            {
+                Debug.LogError(
+                    $"[{Name}] Fallback compression also failed: {fallbackEx.Message}. "
+                        + "Texture will remain uncompressed."
+                );
+                return false;
+            }
         }
 
         private void LogSummary(

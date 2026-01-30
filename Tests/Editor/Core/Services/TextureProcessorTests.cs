@@ -345,40 +345,6 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void Copy_PreservesMipmaps()
-        {
-            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
-
-            var result = _processor.Copy(sourceTexture);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(512, result.width);
-            Assert.AreEqual(512, result.height);
-            Assert.IsTrue(result.mipmapCount > 1, "Copied texture should preserve mipmaps");
-
-            Object.DestroyImmediate(sourceTexture);
-            Object.DestroyImmediate(result);
-        }
-
-        [Test]
-        public void Copy_WithoutMipmaps_DoesNotAddMipmaps()
-        {
-            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
-
-            var result = _processor.Copy(sourceTexture);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(
-                1,
-                result.mipmapCount,
-                "Copied texture should not have mipmaps when source doesn't have them"
-            );
-
-            Object.DestroyImmediate(sourceTexture);
-            Object.DestroyImmediate(result);
-        }
-
-        [Test]
         public void ResizeTo_SameDimensions_PreservesMipmaps()
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
@@ -612,21 +578,6 @@ namespace dev.limitex.avatar.compressor.tests
                     $"Green channel (normal Y) should be preserved at index {i}"
                 );
             }
-
-            Object.DestroyImmediate(sourceTexture);
-            Object.DestroyImmediate(result);
-        }
-
-        [Test]
-        public void Copy_NormalMap_UsesLinearColorSpace()
-        {
-            var sourceTexture = CreateNormalMapTexture(256, 256);
-
-            var result = _processor.Copy(sourceTexture, isNormalMap: true);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(256, result.width);
-            Assert.AreEqual(256, result.height);
 
             Object.DestroyImmediate(sourceTexture);
             Object.DestroyImmediate(result);

@@ -1010,6 +1010,771 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Compression Format Tests - Desktop
+
+        [Test]
+        public void Compress_OpaqueTexture_Desktop_CompressesToDXT1()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.UseHighQualityFormatForHighComplexity = true;
+            config.HighComplexityThreshold = 0.7f;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            // Create simple opaque texture (low complexity)
+            var texture = CreateOpaqueTexture(256, 256);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.DXT1,
+                newTexture.format,
+                "Opaque low complexity texture should compress to DXT1"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        [Test]
+        public void Compress_TextureWithAlpha_Desktop_CompressesToDXT5()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            // Disable high quality format to ensure DXT5 is selected for alpha textures
+            config.UseHighQualityFormatForHighComplexity = false;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateTextureWithAlpha(256, 256);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.DXT5,
+                newTexture.format,
+                "Texture with alpha should compress to DXT5"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        [Test]
+        public void Compress_HighComplexityTexture_Desktop_CompressesToBC7()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.UseHighQualityFormatForHighComplexity = true;
+            config.HighComplexityThreshold = 0.3f; // Lower threshold to ensure high complexity detection
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            // Create high complexity texture (noisy pattern)
+            var texture = CreateHighComplexityTexture(256, 256);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.BC7,
+                newTexture.format,
+                "High complexity texture should compress to BC7"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        [Test]
+        public void Compress_NormalMap_Desktop_CompressesToBC5()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var normalTexture = CreateNormalMapTexture(256, 256);
+            material.SetTexture("_BumpMap", normalTexture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.BC5,
+                newTexture.format,
+                "Normal map should compress to BC5"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        [Test]
+        public void Compress_NormalMapWithAlpha_Desktop_CompressesToBC7()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            // Normal map with significant alpha
+            var normalTexture = CreateNormalMapTextureWithAlpha(256, 256);
+            material.SetTexture("_BumpMap", normalTexture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.BC7,
+                newTexture.format,
+                "Normal map with alpha should compress to BC7 to preserve alpha"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        #endregion
+
+        #region Compression Format Tests - Mobile
+
+        [Test]
+        public void Compress_OpaqueTexture_Mobile_CompressesToASTC()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Mobile;
+            config.UseHighQualityFormatForHighComplexity = true;
+            config.HighComplexityThreshold = 0.7f;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateOpaqueTexture(256, 256);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            // Should be one of the ASTC formats
+            Assert.That(
+                newTexture.format,
+                Is.EqualTo(TextureFormat.ASTC_4x4)
+                    .Or.EqualTo(TextureFormat.ASTC_6x6)
+                    .Or.EqualTo(TextureFormat.ASTC_8x8),
+                "Mobile texture should compress to ASTC format"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        [Test]
+        public void Compress_NormalMap_Mobile_CompressesToASTC4x4()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Mobile;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var normalTexture = CreateNormalMapTexture(256, 256);
+            material.SetTexture("_BumpMap", normalTexture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.ASTC_4x4,
+                newTexture.format,
+                "Mobile normal map should compress to ASTC_4x4"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        #endregion
+
+        #region Frozen Format Override Tests
+
+        [Test]
+        public void Compress_WithFrozenFormatBC7_UsesBC7()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+
+            // Create texture and save as asset to get GUID
+            var texture = CreateOpaqueTexture(256, 256);
+            string assetPath = AssetDatabase.GetAssetPath(texture);
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+
+            // Add frozen settings with BC7 override
+            config.FrozenTextures = new List<FrozenTextureSettings>
+            {
+                new FrozenTextureSettings
+                {
+                    TextureGuid = guid,
+                    Skip = false,
+                    Divisor = 1,
+                    Format = FrozenTextureFormat.BC7,
+                },
+            };
+
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.BC7,
+                newTexture.format,
+                "Frozen format BC7 override should be applied"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        [Test]
+        public void Compress_WithFrozenFormatDXT5_UsesDXT5()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+
+            var texture = CreateOpaqueTexture(256, 256);
+            string assetPath = AssetDatabase.GetAssetPath(texture);
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+
+            config.FrozenTextures = new List<FrozenTextureSettings>
+            {
+                new FrozenTextureSettings
+                {
+                    TextureGuid = guid,
+                    Skip = false,
+                    Divisor = 1,
+                    Format = FrozenTextureFormat.DXT5,
+                },
+            };
+
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.DXT5,
+                newTexture.format,
+                "Frozen format DXT5 override should be applied"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        [Test]
+        public void Compress_WithFrozenFormatAuto_UsesNormalSelection()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.UseHighQualityFormatForHighComplexity = true;
+            config.HighComplexityThreshold = 0.7f;
+
+            var texture = CreateOpaqueTexture(256, 256);
+            string assetPath = AssetDatabase.GetAssetPath(texture);
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+
+            config.FrozenTextures = new List<FrozenTextureSettings>
+            {
+                new FrozenTextureSettings
+                {
+                    TextureGuid = guid,
+                    Skip = false,
+                    Divisor = 1,
+                    Format = FrozenTextureFormat.Auto,
+                },
+            };
+
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            // Auto should fall through to normal selection (DXT1 for opaque)
+            Assert.AreEqual(
+                TextureFormat.DXT1,
+                newTexture.format,
+                "Frozen format Auto should use normal format selection"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        [Test]
+        public void Compress_WithFrozenFormatASTC_OnDesktop_UsesASTC()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+
+            var texture = CreateOpaqueTexture(256, 256);
+            string assetPath = AssetDatabase.GetAssetPath(texture);
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+
+            config.FrozenTextures = new List<FrozenTextureSettings>
+            {
+                new FrozenTextureSettings
+                {
+                    TextureGuid = guid,
+                    Skip = false,
+                    Divisor = 1,
+                    Format = FrozenTextureFormat.ASTC_4x4,
+                },
+            };
+
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.ASTC_4x4,
+                newTexture.format,
+                "Frozen ASTC format should be applied even on Desktop platform"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        #endregion
+
+        #region Normal Map Pixel Data Integrity Tests
+
+        [Test]
+        public void Compress_BC5NormalMap_ProducesValidNormalizedVectors()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var normalTexture = CreateNormalMapTexture(64, 64);
+            material.SetTexture("_BumpMap", normalTexture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(TextureFormat.BC5, newTexture.format);
+
+            var compressedPixels = newTexture.GetPixels();
+
+            // Verify all compressed normals can be reconstructed to valid unit vectors
+            int sampleCount = 100;
+            int step = Mathf.Max(1, compressedPixels.Length / sampleCount);
+
+            for (int i = 0; i < compressedPixels.Length; i += step)
+            {
+                float x = compressedPixels[i].r * 2f - 1f;
+                float y = compressedPixels[i].g * 2f - 1f;
+
+                // X² + Y² should not exceed 1 (otherwise Z cannot be reconstructed)
+                // Allow small tolerance for BC5 compression artifacts
+                float xyLengthSq = x * x + y * y;
+                Assert.That(
+                    xyLengthSq,
+                    Is.LessThanOrEqualTo(1.02f),
+                    $"Normal at index {i} has X²+Y²={xyLengthSq:F4} which exceeds 1"
+                );
+
+                // Reconstruct Z and verify unit length
+                float zSq = 1f - xyLengthSq;
+                float z = zSq > 0f ? Mathf.Sqrt(zSq) : 0f;
+                float length = Mathf.Sqrt(x * x + y * y + z * z);
+
+                Assert.That(
+                    length,
+                    Is.EqualTo(1f).Within(0.02f),
+                    $"Reconstructed normal at index {i} has length {length:F4}, expected ~1.0"
+                );
+            }
+
+            _createdObjects.Add(newTexture);
+        }
+
+        [Test]
+        public void Compress_BC5NormalMap_ProducesValidReconstructableNormals()
+        {
+            // Note: Detailed direction preservation is tested in NormalMapPreprocessorTests.
+            // This integration test verifies that the compressed normals are valid unit vectors
+            // that can be reconstructed (i.e., not corrupted by the compression pipeline).
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            var normalTexture = CreateNormalMapTexture(64, 64);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_BumpMap", normalTexture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(TextureFormat.BC5, newTexture.format);
+
+            var compressedPixels = newTexture.GetPixels();
+
+            // Verify all compressed normals can be reconstructed to valid unit vectors
+            // and have Z pointing in the positive direction (tangent space convention)
+            int sampleCount = 100;
+            int step = Mathf.Max(1, compressedPixels.Length / sampleCount);
+
+            for (int i = 0; i < compressedPixels.Length; i += step)
+            {
+                float x = compressedPixels[i].r * 2f - 1f;
+                float y = compressedPixels[i].g * 2f - 1f;
+                float zSq = 1f - x * x - y * y;
+                float z = zSq > 0f ? Mathf.Sqrt(zSq) : 0f;
+
+                // Verify unit length
+                float length = Mathf.Sqrt(x * x + y * y + z * z);
+                Assert.That(
+                    length,
+                    Is.EqualTo(1f).Within(0.03f),
+                    $"Normal at index {i} should have unit length, got {length:F4}"
+                );
+
+                // Verify Z is non-negative (tangent space normals point outward)
+                Assert.That(
+                    z,
+                    Is.GreaterThanOrEqualTo(0f),
+                    $"Normal at index {i} should have non-negative Z for tangent space"
+                );
+            }
+
+            _createdObjects.Add(newTexture);
+        }
+
+        #endregion
+
+        #region Compressed Source Format Tests
+
+        /// <summary>
+        /// Tests that normal map compression produces valid normals with downscaling.
+        /// Verifies the full pipeline including resize and compression works correctly.
+        /// </summary>
+        [Test]
+        public void Compress_NormalMapWithDownscale_ProducesValidNormals()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 32;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            config.MinDivisor = 2; // Force downscale
+            config.MaxDivisor = 2;
+            var service = new TextureCompressorService(config);
+
+            var normalTexture = CreateNormalMapTexture(128, 128);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_BumpMap", normalTexture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(TextureFormat.BC5, newTexture.format);
+
+            // Should be downscaled
+            Assert.That(newTexture.width, Is.LessThan(128), "Texture should be downscaled");
+
+            // Verify normals are valid after downscale
+            var pixels = newTexture.GetPixels();
+            int invalidCount = 0;
+            for (int i = 0; i < pixels.Length; i += 5)
+            {
+                float x = pixels[i].r * 2f - 1f;
+                float y = pixels[i].g * 2f - 1f;
+                if (x * x + y * y > 1.05f)
+                {
+                    invalidCount++;
+                }
+            }
+
+            Assert.AreEqual(0, invalidCount, "All normals should have valid X²+Y² <= 1");
+
+            _createdObjects.Add(newTexture);
+        }
+
+        /// <summary>
+        /// Tests that the IsCompressedFormat method correctly identifies compressed formats.
+        /// This is used to determine if a source texture should preserve its format.
+        /// </summary>
+        [Test]
+        public void IsCompressedFormat_IdentifiesAllCompressedFormats()
+        {
+            // BC formats (Desktop)
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.BC5));
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.BC7));
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.DXT1));
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.DXT5));
+
+            // ASTC formats (Mobile)
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ASTC_4x4));
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ASTC_6x6));
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ASTC_8x8));
+
+            // Uncompressed formats
+            Assert.IsFalse(TextureFormatSelector.IsCompressedFormat(TextureFormat.RGBA32));
+            Assert.IsFalse(TextureFormatSelector.IsCompressedFormat(TextureFormat.RGB24));
+            Assert.IsFalse(TextureFormatSelector.IsCompressedFormat(TextureFormat.ARGB32));
+        }
+
+        #endregion
+
+        #region Mobile Platform Tests
+
+        [Test]
+        public void Compress_Mobile_HighComplexityTexture_CompressesToASTC4x4()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Mobile;
+            config.UseHighQualityFormatForHighComplexity = true;
+            config.HighComplexityThreshold = 0.3f; // Low threshold to ensure high complexity
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateHighComplexityTexture(256, 256);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.ASTC_4x4,
+                newTexture.format,
+                "High complexity mobile texture should compress to ASTC_4x4"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        [Test]
+        public void Compress_Mobile_LowComplexityTexture_CompressesToASTC8x8()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Mobile;
+            config.UseHighQualityFormatForHighComplexity = true;
+            config.HighComplexityThreshold = 0.9f; // High threshold to ensure low complexity
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            // Use opaque texture (low complexity gradient)
+            var texture = CreateOpaqueTexture(256, 256);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.ASTC_8x8,
+                newTexture.format,
+                "Low complexity mobile texture should compress to ASTC_8x8"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        #endregion
+
+        #region Frozen Format Override Tests (Additional)
+
+        [Test]
+        public void Compress_WithFrozenFormatOverrideOnNormalMap_OverridesBC5()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+
+            var normalTexture = CreateNormalMapTexture(256, 256);
+            string assetPath = AssetDatabase.GetAssetPath(normalTexture);
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+
+            // Override normal map to use DXT1 instead of default BC5
+            config.FrozenTextures = new List<FrozenTextureSettings>
+            {
+                new FrozenTextureSettings
+                {
+                    TextureGuid = guid,
+                    Skip = false,
+                    Divisor = 1,
+                    Format = FrozenTextureFormat.DXT1,
+                },
+            };
+
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_BumpMap", normalTexture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.DXT1,
+                newTexture.format,
+                "Frozen format should override default BC5 for normal maps"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        [Test]
+        public void Compress_WithNullFrozenFormat_UsesDefaultSelection()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.UseHighQualityFormatForHighComplexity = true;
+            config.HighComplexityThreshold = 0.7f;
+            // No frozen textures configured
+            config.FrozenTextures = new List<FrozenTextureSettings>();
+
+            var service = new TextureCompressorService(config);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            var texture = CreateOpaqueTexture(256, 256);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.DXT1,
+                newTexture.format,
+                "Without frozen format, should use default selection (DXT1 for opaque)"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private TextureCompressor CreateConfig()
@@ -1063,6 +1828,143 @@ namespace dev.limitex.avatar.compressor.tests
         private static bool IsPowerOfTwo(int x)
         {
             return x > 0 && (x & (x - 1)) == 0;
+        }
+
+        private Texture2D CreateOpaqueTexture(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            var pixels = new Color[width * height];
+
+            // Create simple gradient pattern (low complexity, fully opaque)
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    float v = (x + y) / (float)(width + height);
+                    pixels[y * width + x] = new Color(v, v, v, 1f);
+                }
+            }
+
+            texture.SetPixels(pixels);
+            texture.Apply();
+
+            string assetPath =
+                $"{TestAssetFolder}/OpaqueTexture_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+        }
+
+        private Texture2D CreateTextureWithAlpha(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            var pixels = new Color[width * height];
+            System.Random random = new System.Random(42);
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                float v = (float)random.NextDouble();
+                // Create significant alpha variation
+                float a = (float)random.NextDouble() * 0.5f + 0.25f;
+                pixels[i] = new Color(v, v, v, a);
+            }
+
+            texture.SetPixels(pixels);
+            texture.Apply();
+
+            string assetPath =
+                $"{TestAssetFolder}/AlphaTexture_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+        }
+
+        private Texture2D CreateHighComplexityTexture(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            var pixels = new Color[width * height];
+            System.Random random = new System.Random(123);
+
+            // Create noisy, high-variance pattern
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                float r = (float)random.NextDouble();
+                float g = (float)random.NextDouble();
+                float b = (float)random.NextDouble();
+                pixels[i] = new Color(r, g, b, 1f);
+            }
+
+            texture.SetPixels(pixels);
+            texture.Apply();
+
+            string assetPath =
+                $"{TestAssetFolder}/HighComplexity_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+        }
+
+        private Texture2D CreateNormalMapTexture(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            var pixels = new Color32[width * height];
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                // Create varied normals for testing
+                // Normal encoded in tangent space: (x*0.5+0.5, y*0.5+0.5, z*0.5+0.5)
+                float x = ((i % width) / (float)width - 0.5f) * 0.6f;
+                float y = ((i / width) / (float)height - 0.5f) * 0.6f;
+
+                // Encode to 0-1 range
+                byte r = (byte)((x * 0.5f + 0.5f) * 255f);
+                byte g = (byte)((y * 0.5f + 0.5f) * 255f);
+
+                pixels[i] = new Color32(r, g, 255, 255);
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            string assetPath =
+                $"{TestAssetFolder}/NormalMap_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+        }
+
+        private Texture2D CreateNormalMapTextureWithAlpha(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            var pixels = new Color32[width * height];
+            System.Random random = new System.Random(42);
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                float x = ((i % width) / (float)width - 0.5f) * 0.6f;
+                float y = ((i / width) / (float)height - 0.5f) * 0.6f;
+
+                byte r = (byte)((x * 0.5f + 0.5f) * 255f);
+                byte g = (byte)((y * 0.5f + 0.5f) * 255f);
+                // Significant alpha variation
+                byte a = (byte)(random.Next(50, 200));
+
+                pixels[i] = new Color32(r, g, 255, a);
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            string assetPath =
+                $"{TestAssetFolder}/NormalMapAlpha_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
         }
 
         #endregion

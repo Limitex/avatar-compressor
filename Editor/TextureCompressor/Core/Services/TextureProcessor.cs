@@ -48,7 +48,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 if (width == source.width && height == source.height)
                 {
-                    result = Copy(source, isNormalMap);
+                    result = ResizeTo(source, source.width, source.height, isNormalMap);
                 }
                 else
                 {
@@ -172,17 +172,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 return result;
             }
-        }
-
-        /// <summary>
-        /// Creates a copy of the texture.
-        /// </summary>
-        /// <param name="source">Source texture to copy</param>
-        /// <param name="isNormalMap">Whether this texture is a normal map (uses linear color space)</param>
-        /// <returns>Copy of the texture (uncompressed RGBA32 format)</returns>
-        public Texture2D Copy(Texture2D source, bool isNormalMap = false)
-        {
-            return ResizeTo(source, source.width, source.height, isNormalMap);
         }
 
         /// <summary>
