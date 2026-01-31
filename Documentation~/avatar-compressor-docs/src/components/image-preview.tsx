@@ -253,7 +253,6 @@ const ModalContent: FC<PreviewModalProps> = ({
           <img
             src={src}
             alt={alt}
-            loading="lazy"
             className="block max-h-[85vh] max-w-[85vw] object-contain rounded-xl"
           />
         )}
