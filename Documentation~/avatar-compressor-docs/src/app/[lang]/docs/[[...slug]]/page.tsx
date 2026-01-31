@@ -23,7 +23,7 @@ export default async function Page(props: { params: Promise<{ lang: string; slug
         <MDX
           components={getMDXComponents({
             a: createRelativeLink(source, page),
-          })}
+          }, locale)}
         />
       </DocsBody>
     </DocsPage>
