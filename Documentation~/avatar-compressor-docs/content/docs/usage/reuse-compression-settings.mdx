@@ -1,0 +1,174 @@
+---
+title: Reuse Texture Compression Settings
+description: Learn how to save and reuse texture compression settings across multiple avatars
+icon: Copy
+---
+
+This tutorial shows you how to create and use custom presets to share compression settings across multiple avatars.
+
+## When to Use Custom Presets
+
+Custom presets are useful when you want to:
+
+- Apply the same settings to multiple avatars
+- Create platform-specific configurations (PC vs Quest)
+- Share settings with other creators
+- Fine-tune beyond the built-in presets
+
+## Creating a Custom Preset
+
+<Steps>
+<Step>
+### Configure Your Settings
+
+1. Add **LAC Texture Compressor** to your avatar
+2. Select the **Custom** preset
+3. Adjust settings until you're happy with the results
+
+<Callout type="info">
+Use **Preview Compression Results** to verify your settings before saving.
+</Callout>
+</Step>
+
+<Step>
+### Save as Preset
+
+1. Click the **+** button next to the preset field
+2. Choose a save location (e.g., `Assets/Presets/`)
+3. Name your preset (e.g., "MyPCSettings")
+
+Your current settings are now saved as a reusable asset.
+
+</Step>
+
+<Step>
+### Configure Menu Path
+
+Select your new preset asset in the Project window and set:
+
+| Field           | Example               | Description                      |
+| --------------- | --------------------- | -------------------------------- |
+| **Menu Path**   | `My Presets/PC`       | Where it appears in the dropdown |
+| **Menu Order**  | `100`                 | Lower values appear first        |
+| **Description** | `High quality for PC` | Shown when preset is selected    |
+
+<Callout type="info">
+Only presets with a Menu Path appear in the dropdown menu.
+</Callout>
+</Step>
+
+<Step>
+### Use on Other Avatars
+
+1. Add **LAC Texture Compressor** to another avatar
+2. Select **Custom** preset
+3. Click the **Custom Preset** button and select your saved preset
+
+The settings are applied automatically.
+
+</Step>
+</Steps>
+
+## Common Use Cases
+
+<Tabs items={['PC and Quest', 'Multiple Avatars', 'Sharing']}>
+<Tab value="PC and Quest">
+**Create separate presets for each platform.**
+
+| Preset Name     | Menu Path         | Settings                           |
+| --------------- | ----------------- | ---------------------------------- |
+| PC High Quality | `Platforms/PC`    | Quality preset + higher resolution |
+| Quest Optimized | `Platforms/Quest` | Aggressive preset + ASTC formats   |
+
+Switch between them when building for different platforms.
+
+</Tab>
+
+<Tab value="Multiple Avatars">
+**Share consistent settings across your avatar collection.**
+
+1. Create a preset with your preferred settings
+2. Apply it to all your avatars
+3. Update the preset once to update all avatars
+
+Changes to the preset automatically apply to all linked avatars.
+
+</Tab>
+
+<Tab value="Sharing">
+**Distribute presets to other creators.**
+
+1. Create and configure your preset
+2. Enable **Lock** to prevent accidental changes
+3. Share the `.asset` file
+
+Recipients can import and use it immediately.
+
+</Tab>
+</Tabs>
+
+## Using Built-in Plus Presets
+
+Avatar Compressor includes intermediate presets that provide finer control:
+
+| Preset          | Use When                                         |
+| --------------- | ------------------------------------------------ |
+| **Quality+**    | Quality is too strong, High Quality is too light |
+| **Balanced+**   | Balanced is too strong, Quality is too light     |
+| **Aggressive+** | Aggressive is too strong, Balanced is too light  |
+
+<Steps>
+<Step>
+### Access Plus Presets
+
+1. Select **Custom** preset on the component
+2. Click the **Custom Preset** button
+3. Find them under **Built-in** category
+
+</Step>
+</Steps>
+
+## Tips
+
+- **Lock Important Presets**: Enable the **Lock** field on presets you don't want accidentally modified.
+- **Organize with Menu Paths**: Use folder-style paths like `PC/Quality` or `Quest/Optimized` to organize presets.
+- **Use Descriptive Names**: Add a **Description** so you remember what each preset is for.
+
+For details on these settings, see the [Texture Compressor Reference](../../components/texture-compressor#custom-presets).
+
+## Troubleshooting
+
+<Accordions>
+<Accordion title="Preset doesn't appear in dropdown">
+- Check that **Menu Path** is set on the preset asset
+- Verify the preset file exists and isn't corrupted
+- Try closing and reopening the Inspector
+</Accordion>
+
+<Accordion title="Can't edit the preset">
+  The preset may be restricted: - **Locked**: Disable the Lock field on the
+  preset asset - **Built-in**: These are read-only; click **Edit** then
+  **Unlink** to copy settings - **External Package**: Same as built-in; unlink
+  to edit locally
+</Accordion>
+
+<Accordion title="Changes aren't saved">
+- Click **Save** to write changes to the linked preset
+- If the preset is restricted, changes only apply locally
+- Use **Unlink** if you want to keep local changes without affecting the preset
+</Accordion>
+</Accordions>
+
+## Next Steps
+
+<Cards>
+  <Card
+    title="Texture Compressor Reference"
+    href="../../components/texture-compressor"
+  >
+    Learn about all available settings and options.
+  </Card>
+  <Card title="Reduce Texture Memory" href="./reduce-texture-memory">
+    Basic tutorial for texture compression.
+  </Card>
+</Cards>

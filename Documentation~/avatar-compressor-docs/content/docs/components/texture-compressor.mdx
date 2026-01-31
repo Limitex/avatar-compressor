@@ -120,10 +120,24 @@ Use this when file size is critical.
 <Tab value="Custom">
 **Full control over all settings.**
 
-When you select Custom, all settings become editable. See [Advanced Settings](#advanced-settings) below.
+When you select Custom, all settings become editable. You can also use **Custom Preset Assets** to save and reuse your settings. See [Custom Presets](#custom-presets) and [Advanced Settings](#advanced-settings) below.
 
 </Tab>
 </Tabs>
+
+### Built-in Custom Presets
+
+In addition to the main presets above, intermediate presets are available via the Custom Preset dropdown:
+
+| Preset            | Position                         | Description                                   |
+| ----------------- | -------------------------------- | --------------------------------------------- |
+| **High Quality+** | Higher quality than High Quality | Maximum quality with minimal processing       |
+| **Quality+**      | Between High Quality and Quality | Higher quality than Quality, less compression |
+| **Balanced+**     | Between Quality and Balanced     | Higher quality than Balanced                  |
+| **Aggressive+**   | Between Balanced and Aggressive  | Higher quality than Aggressive                |
+| **Maximum+**      | Between Aggressive and Maximum   | Higher quality than Maximum                   |
+
+These presets provide finer control when the main presets don't quite match your needs.
 
 ## Texture Filters
 
@@ -135,19 +149,6 @@ Control which texture types are processed:
 | **Process Normal Maps**    | Normal/bump maps (`_BumpMap`, `_NormalMap`, etc.)    |
 | **Process Emission Maps**  | Emission textures (`_EmissionMap`, etc.)             |
 | **Process Other Textures** | Metallic, roughness, and other textures              |
-
-### Size Filters
-
-| Filter                   | Description                                                  |
-| ------------------------ | ------------------------------------------------------------ |
-| **Min Source Size**      | Only process textures larger than this size (in pixels)      |
-| **Skip If Smaller Than** | Skip textures smaller than or equal to this size (in pixels) |
-
-<Callout type="info">
-  These two filters work together. For example, with Min Source Size = 256 and
-  Skip If Smaller Than = 128, textures smaller than 256px are excluded from
-  processing, and textures at or below 128px are completely skipped.
-</Callout>
 
 ### Path Exclusions
 
@@ -289,6 +290,111 @@ The texture will return to normal automatic processing.
   list.
 </Callout>
 
+## Custom Presets
+
+Custom Presets allow you to save compression settings as reusable ScriptableObject assets. This is useful for:
+
+- Sharing settings across multiple avatars
+- Creating platform-specific configurations (e.g., "PC/High Detail", "Quest/Optimized")
+- Maintaining consistent compression settings across projects
+
+### Creating a Custom Preset
+
+<Tabs items={['From the Component', 'From the Assets Menu']}>
+<Tab value="From the Component">
+
+1. Set the component to **Custom** mode
+2. Configure your desired settings
+3. Click the **+** button next to the preset field
+4. Choose a location and name for your new preset
+
+The current settings will be saved to the new preset automatically.
+
+</Tab>
+<Tab value="From the Assets Menu">
+
+1. Right-click in the Project window
+2. Select **Create > Avatar Compressor > Texture Compressor > CustomTextureCompressorPreset**
+3. Name your preset and configure settings in the Inspector
+4. Set the **Menu Path** field to make the preset appear in the dropdown menu
+
+</Tab>
+</Tabs>
+
+### Using a Custom Preset
+
+1. Set the component to **Custom** mode
+2. Click the **Custom Preset** button
+3. Select a preset from the hierarchical menu
+
+<Callout type="info">
+  Only presets with a **Menu Path** configured appear in the dropdown menu.
+  Presets without a Menu Path can still be assigned by dragging them to the
+  preset field.
+</Callout>
+
+### Use-Only Mode vs Edit Mode
+
+When you select a preset from the **Custom Preset** button, the component enters **Use-Only Mode**:
+
+| Mode          | Description                                               |
+| ------------- | --------------------------------------------------------- |
+| **Use-Only**  | Settings are read-only, showing a summary of the preset   |
+| **Edit Mode** | Full access to modify settings (click **Edit** to switch) |
+
+In Use-Only Mode:
+
+- A settings summary shows the current configuration at a glance
+- The preset's **Description** is displayed if set
+- Click **Edit** to switch to Edit Mode for modifications
+
+### Preset Editing Restrictions
+
+Some presets cannot be edited directly:
+
+| Restriction Type     | Icon | Description                                |
+| -------------------- | ---- | ------------------------------------------ |
+| **Locked**           | 🔒   | User-locked preset (Lock field enabled)    |
+| **Built-in**         | 🔒   | Bundled with Avatar Compressor package     |
+| **External Package** | 🔒   | From another package (e.g., a preset pack) |
+
+When attempting to edit a restricted preset:
+
+1. A confirmation dialog appears
+2. You can choose to **Unlink** and continue editing (settings are copied locally)
+3. Or **Cancel** to keep the preset linked
+
+### Managing Preset Settings
+
+These actions are available as icon buttons next to the preset field:
+
+| Button                                                                                  | Action      | Description                                               |
+| --------------------------------------------------------------------------------------- | ----------- | --------------------------------------------------------- |
+| <kbd style={{minWidth: '1.5rem', display: 'inline-block', textAlign: 'center'}}>↓</kbd> | **Save**    | Save current settings to the linked preset (if editable)  |
+| <kbd style={{minWidth: '1.5rem', display: 'inline-block', textAlign: 'center'}}>↩</kbd> | **Discard** | Reload settings from the preset, discarding local changes |
+| <kbd style={{minWidth: '1.5rem', display: 'inline-block', textAlign: 'center'}}>+</kbd> | **Create**  | Create a new preset from current settings                 |
+| <kbd style={{minWidth: '1.5rem', display: 'inline-block', textAlign: 'center'}}>✕</kbd> | **Unlink**  | Disconnect from preset while keeping current settings     |
+
+<Callout type="info">
+  Hover over the icon buttons to see tooltips describing each action.
+</Callout>
+
+A sync indicator shows whether local settings match the preset:
+
+- **Modified**: Local settings differ from the preset
+- **Synced**: Settings match the linked preset
+
+### Preset Configuration
+
+When editing a Custom Preset asset in the Inspector:
+
+| Field           | Description                                                      |
+| --------------- | ---------------------------------------------------------------- |
+| **Menu Path**   | Hierarchical path in dropdown (e.g., "PC/High Detail")           |
+| **Menu Order**  | Display order in menu (lower values appear first, default: 1000) |
+| **Description** | Optional description shown in Use-Only Mode                      |
+| **Lock**        | Prevent accidental modifications to this preset                  |
+
 ## Advanced Settings
 
 <Callout>
@@ -331,6 +437,15 @@ Textures between these thresholds receive interpolated compression.
 | **Max Divisor** | Maximum scale factor (e.g., 16 = 1/16 size) |
 | **Min Resolution** | Textures won't be scaled below this |
 | **Max Resolution** | Textures won't exceed this |
+</Accordion>
+<Accordion title="Size Filters">
+| Setting | Description |
+| ------- | ----------- |
+| **Min Source Size** | Only process textures larger than this size (in pixels) |
+| **Skip If Smaller Than** | Skip textures smaller than or equal to this size (in pixels) |
+
+These two filters work together. For example, with Min Source Size = 256 and Skip If Smaller Than = 128, textures smaller than 256px are excluded from processing, and textures at or below 128px are completely skipped.
+
 </Accordion>
 <Accordion title="Special Texture Handling">
 - **Normal Maps**: Analyzed using normal vector variation instead of color complexity
