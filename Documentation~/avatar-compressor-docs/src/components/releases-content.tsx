@@ -7,6 +7,8 @@ import {
   Calendar,
   ExternalLink,
   ArrowRight,
+  Download,
+  HardDrive,
   Package,
   Loader2,
 } from "lucide-react";
@@ -48,6 +50,7 @@ interface Asset {
   name: string;
   browser_download_url: string;
   size: number;
+  download_count: number;
 }
 
 interface Release {
@@ -234,16 +237,25 @@ export function ReleasesContent({ locale = "en" }: ReleasesContentProps) {
             <div className="mb-4 space-y-2">
               <div className="flex flex-wrap gap-2">
                 {release.assets.map((asset) => (
-                  <span
+                  <div
                     key={asset.id}
-                    className="inline-flex items-center gap-2 text-sm bg-fd-muted px-3 py-1.5 rounded-lg"
+                    className="flex flex-col gap-1 text-sm bg-fd-muted px-3 py-2 rounded-lg"
                   >
-                    <Package className="size-3.5 text-fd-muted-foreground" />
-                    <span>{asset.name}</span>
-                    <span className="text-fd-muted-foreground text-xs">
-                      ({formatBytes(asset.size)})
+                    <span className="inline-flex items-center gap-2">
+                      <Package className="size-3.5 text-fd-muted-foreground flex-shrink-0" />
+                      <span>{asset.name}</span>
                     </span>
-                  </span>
+                    <span className="inline-flex items-center gap-1.5 text-fd-muted-foreground text-xs pl-5.5">
+                      <span className="inline-flex items-center gap-1 bg-fd-background/50 px-2 py-0.5 rounded">
+                        <HardDrive className="size-2.5" />
+                        {formatBytes(asset.size)}
+                      </span>
+                      <span className="inline-flex items-center gap-1 bg-fd-background/50 px-2 py-0.5 rounded">
+                        <Download className="size-2.5" />
+                        {asset.download_count.toLocaleString()}
+                      </span>
+                    </span>
+                  </div>
                 ))}
               </div>
               <a
