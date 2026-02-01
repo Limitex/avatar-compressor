@@ -1622,6 +1622,172 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.IsFalse(TextureFormatSelector.IsCompressedFormat(TextureFormat.ARGB32));
         }
 
+        /// <summary>
+        /// Tests that when source texture is already compressed (BC5), the format is preserved.
+        /// This verifies the behavior where compressed source textures maintain their format.
+        /// </summary>
+        [Test]
+        public void Compress_SourceAlreadyCompressedBC5_PreservesFormat()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessMainTextures = true;
+            var service = new TextureCompressorService(config);
+
+            // Create texture and compress to BC5
+            var texture = CreateOpaqueTexture(64, 64);
+            EditorUtility.CompressTexture(
+                texture,
+                TextureFormat.BC5,
+                TextureCompressionQuality.Best
+            );
+            Assert.AreEqual(TextureFormat.BC5, texture.format, "Source should be BC5");
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.BC5,
+                newTexture.format,
+                "Already compressed BC5 source should preserve BC5 format"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        /// <summary>
+        /// Tests that when source texture is already compressed (DXT5), the format is preserved.
+        /// </summary>
+        [Test]
+        public void Compress_SourceAlreadyCompressedDXT5_PreservesFormat()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessMainTextures = true;
+            var service = new TextureCompressorService(config);
+
+            // Create texture and compress to DXT5
+            var texture = CreateTextureWithAlpha(64, 64);
+            EditorUtility.CompressTexture(
+                texture,
+                TextureFormat.DXT5,
+                TextureCompressionQuality.Best
+            );
+            Assert.AreEqual(TextureFormat.DXT5, texture.format, "Source should be DXT5");
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.DXT5,
+                newTexture.format,
+                "Already compressed DXT5 source should preserve DXT5 format"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        /// <summary>
+        /// Tests that when source texture is already compressed (BC7), the format is preserved.
+        /// </summary>
+        [Test]
+        public void Compress_SourceAlreadyCompressedBC7_PreservesFormat()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessMainTextures = true;
+            var service = new TextureCompressorService(config);
+
+            // Create texture and compress to BC7
+            var texture = CreateOpaqueTexture(64, 64);
+            EditorUtility.CompressTexture(
+                texture,
+                TextureFormat.BC7,
+                TextureCompressionQuality.Best
+            );
+            Assert.AreEqual(TextureFormat.BC7, texture.format, "Source should be BC7");
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.BC7,
+                newTexture.format,
+                "Already compressed BC7 source should preserve BC7 format"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
+        /// <summary>
+        /// Tests that when source texture is already compressed (ASTC), the format is preserved
+        /// even when target platform is Desktop.
+        /// </summary>
+        [Test]
+        public void Compress_SourceAlreadyCompressedASTC_PreservesFormat()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop; // Desktop platform
+            config.ProcessMainTextures = true;
+            var service = new TextureCompressorService(config);
+
+            // Create texture and compress to ASTC (mobile format)
+            var texture = CreateOpaqueTexture(64, 64);
+            EditorUtility.CompressTexture(
+                texture,
+                TextureFormat.ASTC_6x6,
+                TextureCompressionQuality.Best
+            );
+            Assert.AreEqual(TextureFormat.ASTC_6x6, texture.format, "Source should be ASTC_6x6");
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
+            Assert.IsNotNull(newTexture);
+            Assert.AreEqual(
+                TextureFormat.ASTC_6x6,
+                newTexture.format,
+                "Already compressed ASTC source should preserve format even on Desktop"
+            );
+
+            _createdObjects.Add(newTexture);
+        }
+
         #endregion
 
         #region Mobile Platform Tests

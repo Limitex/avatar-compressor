@@ -276,7 +276,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     _normalMapPreprocessor.PrepareForCompression(
                         resizedTexture,
-                        originalTexture.format
+                        originalTexture.format,
+                        targetFormat
                     );
                 }
 

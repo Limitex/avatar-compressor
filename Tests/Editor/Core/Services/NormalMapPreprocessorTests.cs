@@ -22,7 +22,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var texture = CreateNormalMapTexture(4, 4);
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.BC5);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.BC5, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
 
@@ -51,7 +51,7 @@ namespace dev.limitex.avatar.compressor.tests
             // Flat normal pointing straight up: (0, 0, 1) encoded as (0.5, 0.5, 1)
             var texture = CreateFlatNormalTexture(4, 4);
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32, TextureFormat.BC5);
 
             var pixels = texture.GetPixels();
 
@@ -93,7 +93,7 @@ namespace dev.limitex.avatar.compressor.tests
             texture.SetPixels(pixels);
             texture.Apply();
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
 
@@ -113,7 +113,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                _preprocessor.PrepareForCompression(null, TextureFormat.RGBA32);
+                _preprocessor.PrepareForCompression(null, TextureFormat.RGBA32, TextureFormat.BC5);
             });
         }
 
@@ -137,7 +137,7 @@ namespace dev.limitex.avatar.compressor.tests
             texture.SetPixels(pixels);
             texture.Apply();
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.BC5);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.BC5, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
 
@@ -170,7 +170,7 @@ namespace dev.limitex.avatar.compressor.tests
             texture.SetPixels(pixels);
             texture.Apply();
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
 
@@ -213,7 +213,7 @@ namespace dev.limitex.avatar.compressor.tests
             texture.Apply();
 
             // Source is RGB format (has Z), should preserve negative Z
-            _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
             float z = newPixels[0].b * 2f - 1f;
@@ -244,7 +244,7 @@ namespace dev.limitex.avatar.compressor.tests
             texture.Apply();
 
             // Source is RGB format (has Z)
-            _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
             float z = newPixels[0].b * 2f - 1f;
@@ -280,7 +280,7 @@ namespace dev.limitex.avatar.compressor.tests
             texture.SetPixels(pixels);
             texture.Apply();
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.DXT5);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.DXT5, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
 
@@ -313,7 +313,7 @@ namespace dev.limitex.avatar.compressor.tests
             texture.SetPixels(pixels);
             texture.Apply();
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.BC7);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.BC7, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
 
@@ -345,7 +345,11 @@ namespace dev.limitex.avatar.compressor.tests
             texture.SetPixels(pixels);
             texture.Apply();
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.DXT5Crunched);
+            _preprocessor.PrepareForCompression(
+                texture,
+                TextureFormat.DXT5Crunched,
+                TextureFormat.BC5
+            );
 
             var newPixels = texture.GetPixels();
 
@@ -377,7 +381,7 @@ namespace dev.limitex.avatar.compressor.tests
             texture.SetPixels(pixels);
             texture.Apply();
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.DXT5);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.DXT5, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
 
@@ -409,7 +413,7 @@ namespace dev.limitex.avatar.compressor.tests
             texture.SetPixels(pixels);
             texture.Apply();
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.DXT5);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.DXT5, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
 
@@ -436,7 +440,7 @@ namespace dev.limitex.avatar.compressor.tests
             texture.SetPixels(pixels);
             texture.Apply();
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.BC5);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.BC5, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
             // Should be flat normal (0, 0, 1) -> XY = (0.5, 0.5)
@@ -454,7 +458,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var texture = CreateTextureWithMissingZ(4, 4);
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.BC5);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.BC5, TextureFormat.BC5);
 
             var pixels = texture.GetPixels();
 
@@ -494,7 +498,7 @@ namespace dev.limitex.avatar.compressor.tests
             texture.SetPixels(pixels);
             texture.Apply();
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.BC5);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.BC5, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
 
@@ -529,7 +533,7 @@ namespace dev.limitex.avatar.compressor.tests
             texture.SetPixels(pixels);
             texture.Apply();
 
-            _preprocessor.PrepareForCompression(texture, TextureFormat.BC5);
+            _preprocessor.PrepareForCompression(texture, TextureFormat.BC5, TextureFormat.BC5);
 
             var newPixels = texture.GetPixels();
             float actualZ = newPixels[0].b * 2f - 1f;

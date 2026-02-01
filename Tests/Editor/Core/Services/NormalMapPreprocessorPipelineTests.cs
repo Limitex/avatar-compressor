@@ -37,7 +37,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var resized = _processor.ResizeTo(source, 256, 256, isNormalMap: true);
 
-            _preprocessor.PrepareForCompression(resized, sourceFormat);
+            _preprocessor.PrepareForCompression(resized, sourceFormat, TextureFormat.BC5);
 
             AssertNormalsAreValid(resized, $"{formatName} SphereNormal");
 
@@ -59,7 +59,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var resized = _processor.ResizeTo(source, 256, 256, isNormalMap: true);
 
-            _preprocessor.PrepareForCompression(resized, sourceFormat);
+            _preprocessor.PrepareForCompression(resized, sourceFormat, TextureFormat.BC5);
 
             AssertNormalsAreValid(resized, $"{formatName} DXTnm SphereNormal");
 
@@ -75,7 +75,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var resized = _processor.ResizeTo(source, 256, 256, isNormalMap: true);
 
-            _preprocessor.PrepareForCompression(resized, TextureFormat.BC5);
+            _preprocessor.PrepareForCompression(resized, TextureFormat.BC5, TextureFormat.BC5);
 
             var resultPixels = resized.GetPixels();
 
@@ -111,7 +111,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var resized = _processor.ResizeTo(source, 256, 256, isNormalMap: true);
 
-            _preprocessor.PrepareForCompression(resized, TextureFormat.DXT5);
+            _preprocessor.PrepareForCompression(resized, TextureFormat.DXT5, TextureFormat.BC5);
 
             var resultPixels = resized.GetPixels();
 
@@ -142,7 +142,7 @@ namespace dev.limitex.avatar.compressor.tests
             var resized = _processor.ResizeTo(source, 256, 256, isNormalMap: true);
 
             // RGB source format (RGBA32) preserves Z sign for Object Space normal maps
-            _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32);
+            _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.BC5);
 
             var resultPixels = resized.GetPixels();
 
@@ -188,8 +188,8 @@ namespace dev.limitex.avatar.compressor.tests
             // Pass through the full pipeline (same as TextureCompressorService)
             var resized = _processor.ResizeTo(bc5Source, 256, 256, isNormalMap: true);
 
-            // Apply preprocessor with BC5 source format
-            _preprocessor.PrepareForCompression(resized, TextureFormat.BC5);
+            // Apply preprocessor with BC5 source format, BC5 target format
+            _preprocessor.PrepareForCompression(resized, TextureFormat.BC5, TextureFormat.BC5);
 
             // Compress to BC5
             EditorUtility.CompressTexture(
@@ -221,8 +221,8 @@ namespace dev.limitex.avatar.compressor.tests
 
             var resized = _processor.ResizeTo(dxt5Source, 256, 256, isNormalMap: true);
 
-            // Apply preprocessor with DXT5 source format (reads from AG channels)
-            _preprocessor.PrepareForCompression(resized, TextureFormat.DXT5);
+            // Apply preprocessor with DXT5 source format (reads from AG channels), BC5 target
+            _preprocessor.PrepareForCompression(resized, TextureFormat.DXT5, TextureFormat.BC5);
 
             // Compress to BC5
             EditorUtility.CompressTexture(
@@ -252,8 +252,8 @@ namespace dev.limitex.avatar.compressor.tests
 
             var resized = _processor.ResizeTo(bc7Source, 256, 256, isNormalMap: true);
 
-            // Apply preprocessor with BC7 source format (reads from AG channels)
-            _preprocessor.PrepareForCompression(resized, TextureFormat.BC7);
+            // Apply preprocessor with BC7 source format (reads from AG channels), BC5 target
+            _preprocessor.PrepareForCompression(resized, TextureFormat.BC7, TextureFormat.BC5);
 
             // Compress to BC5
             EditorUtility.CompressTexture(
@@ -286,7 +286,7 @@ namespace dev.limitex.avatar.compressor.tests
             var bc5Source = CreateActualCompressedTexture(originalSource, TextureFormat.BC5);
 
             var resized = _processor.ResizeTo(bc5Source, targetSize, targetSize, isNormalMap: true);
-            _preprocessor.PrepareForCompression(resized, TextureFormat.BC5);
+            _preprocessor.PrepareForCompression(resized, TextureFormat.BC5, TextureFormat.BC5);
             EditorUtility.CompressTexture(
                 resized,
                 TextureFormat.BC5,
@@ -350,6 +350,244 @@ namespace dev.limitex.avatar.compressor.tests
             Object.DestroyImmediate(source);
             Object.DestroyImmediate(bc5Texture);
             Object.DestroyImmediate(blitResult);
+        }
+
+        /// <summary>
+        /// Tests DXT5 to DXT5 compression pipeline.
+        /// Verifies that EditorUtility.CompressTexture produces DXTnm format (XY in AG channels).
+        /// </summary>
+        [Test]
+        public void FullPipeline_DXT5ToDXT5_PreservesNormals()
+        {
+            var originalSource = NormalMapTestTextureFactory.CreateSphereNormal(256);
+            var dxt5Source = CreateActualCompressedTexture(originalSource, TextureFormat.DXT5);
+
+            Assert.AreEqual(TextureFormat.DXT5, dxt5Source.format, "Source should be DXT5 format");
+
+            var resized = _processor.ResizeTo(dxt5Source, 256, 256, isNormalMap: true);
+
+            // Apply preprocessor with DXT5 source format (reads from AG), DXT5 target (writes to AG)
+            _preprocessor.PrepareForCompression(resized, TextureFormat.DXT5, TextureFormat.DXT5);
+
+            // Compress to DXT5
+            EditorUtility.CompressTexture(
+                resized,
+                TextureFormat.DXT5,
+                TextureCompressionQuality.Best
+            );
+
+            Assert.AreEqual(TextureFormat.DXT5, resized.format, "Output should be DXT5 format");
+            AssertDXTnmNormalsAreValid(resized, "DXT5 to DXT5");
+
+            Object.DestroyImmediate(originalSource);
+            Object.DestroyImmediate(dxt5Source);
+            Object.DestroyImmediate(resized);
+        }
+
+        /// <summary>
+        /// Tests BC7 to BC7 compression pipeline.
+        /// Verifies that EditorUtility.CompressTexture produces DXTnm format (XY in AG channels).
+        /// </summary>
+        [Test]
+        public void FullPipeline_BC7ToBC7_PreservesNormals()
+        {
+            var originalSource = NormalMapTestTextureFactory.CreateSphereNormal(256);
+            var bc7Source = CreateActualCompressedTexture(originalSource, TextureFormat.BC7);
+
+            Assert.AreEqual(TextureFormat.BC7, bc7Source.format, "Source should be BC7 format");
+
+            var resized = _processor.ResizeTo(bc7Source, 256, 256, isNormalMap: true);
+
+            // Apply preprocessor with BC7 source format (reads from AG), BC7 target (writes to AG)
+            _preprocessor.PrepareForCompression(resized, TextureFormat.BC7, TextureFormat.BC7);
+
+            // Compress to BC7
+            EditorUtility.CompressTexture(
+                resized,
+                TextureFormat.BC7,
+                TextureCompressionQuality.Best
+            );
+
+            Assert.AreEqual(TextureFormat.BC7, resized.format, "Output should be BC7 format");
+            AssertDXTnmNormalsAreValid(resized, "BC7 to BC7");
+
+            Object.DestroyImmediate(originalSource);
+            Object.DestroyImmediate(bc7Source);
+            Object.DestroyImmediate(resized);
+        }
+
+        /// <summary>
+        /// Tests uncompressed RGBA to DXT5 compression pipeline.
+        /// Verifies that normal maps compressed to DXT5 are in DXTnm format.
+        /// </summary>
+        [Test]
+        public void FullPipeline_RGBAToDXT5_PreservesNormals()
+        {
+            var source = NormalMapTestTextureFactory.CreateSphereNormal(256);
+
+            var resized = _processor.ResizeTo(source, 256, 256, isNormalMap: true);
+
+            // Apply preprocessor with RGBA source format (reads from RGB), DXT5 target (writes to AG)
+            _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.DXT5);
+
+            // Compress to DXT5
+            EditorUtility.CompressTexture(
+                resized,
+                TextureFormat.DXT5,
+                TextureCompressionQuality.Best
+            );
+
+            Assert.AreEqual(TextureFormat.DXT5, resized.format, "Output should be DXT5 format");
+            AssertDXTnmNormalsAreValid(resized, "RGBA to DXT5");
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(resized);
+        }
+
+        /// <summary>
+        /// Tests uncompressed RGBA to BC7 compression pipeline.
+        /// Verifies that normal maps compressed to BC7 are in DXTnm format.
+        /// </summary>
+        [Test]
+        public void FullPipeline_RGBAToBC7_PreservesNormals()
+        {
+            var source = NormalMapTestTextureFactory.CreateSphereNormal(256);
+
+            var resized = _processor.ResizeTo(source, 256, 256, isNormalMap: true);
+
+            // Apply preprocessor with RGBA source format (reads from RGB), BC7 target (writes to AG)
+            _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.BC7);
+
+            // Compress to BC7
+            EditorUtility.CompressTexture(
+                resized,
+                TextureFormat.BC7,
+                TextureCompressionQuality.Best
+            );
+
+            Assert.AreEqual(TextureFormat.BC7, resized.format, "Output should be BC7 format");
+            AssertDXTnmNormalsAreValid(resized, "RGBA to BC7");
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(resized);
+        }
+
+        /// <summary>
+        /// Verifies that EditorUtility.CompressTexture preserves the input channel layout.
+        /// When input has XY in RG channels, output also has XY in RG channels.
+        /// This documents that EditorUtility.CompressTexture does NOT automatically convert to DXTnm.
+        /// </summary>
+        [Test]
+        public void EditorUtilityCompressTexture_DXT5_PreservesRGLayout_WhenInputIsRG()
+        {
+            // Create a texture with known normal in RG layout (standard RGB normal map)
+            var source = new Texture2D(64, 64, TextureFormat.RGBA32, false, true);
+            var pixels = new Color[64 * 64];
+
+            float inputX = 0.6f;
+            float inputY = 0.4f;
+            float inputZ = Mathf.Sqrt(1f - inputX * inputX - inputY * inputY);
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                // RG layout: X in R, Y in G, Z in B
+                pixels[i] = NormalMapTestTextureFactory.EncodeNormal(inputX, inputY, inputZ);
+            }
+            source.SetPixels(pixels);
+            source.Apply();
+
+            // Compress to DXT5 using EditorUtility
+            EditorUtility.CompressTexture(
+                source,
+                TextureFormat.DXT5,
+                TextureCompressionQuality.Best
+            );
+
+            var resultPixels = source.GetPixels();
+            int centerIndex = 32 * 64 + 32;
+
+            // Check that data remains in RG channels
+            float fromR = resultPixels[centerIndex].r * 2f - 1f;
+            float fromG = resultPixels[centerIndex].g * 2f - 1f;
+
+            Debug.Log(
+                $"[DXT5 RG Input Test] Input X={inputX}, Y={inputY}\n"
+                    + $"  Output R: {fromR:F3} (expected {inputX}), G: {fromG:F3} (expected {inputY})"
+            );
+
+            // EditorUtility.CompressTexture preserves the input layout - it does NOT auto-convert to DXTnm
+            Assert.That(
+                fromR,
+                Is.EqualTo(inputX).Within(0.15f),
+                "X should remain in R channel after compression"
+            );
+            Assert.That(
+                fromG,
+                Is.EqualTo(inputY).Within(0.15f),
+                "Y should remain in G channel after compression"
+            );
+
+            Object.DestroyImmediate(source);
+        }
+
+        /// <summary>
+        /// Verifies that EditorUtility.CompressTexture preserves the input channel layout.
+        /// When input has XY in AG channels (DXTnm layout), output also has XY in AG channels.
+        /// This is the layout expected by Unity's UnpackNormalDXT5nm shader function.
+        /// </summary>
+        [Test]
+        public void EditorUtilityCompressTexture_DXT5_PreservesAGLayout_WhenInputIsAG()
+        {
+            // Create a texture with known normal in AG layout (DXTnm format)
+            var source = new Texture2D(64, 64, TextureFormat.RGBA32, false, true);
+            var pixels = new Color[64 * 64];
+
+            float inputX = 0.6f;
+            float inputY = 0.4f;
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                // AG layout (DXTnm): X in A, Y in G
+                float encodedA = inputX * 0.5f + 0.5f;
+                float encodedG = inputY * 0.5f + 0.5f;
+                pixels[i] = new Color(0.5f, encodedG, 0.5f, encodedA);
+            }
+            source.SetPixels(pixels);
+            source.Apply();
+
+            // Compress to DXT5 using EditorUtility
+            EditorUtility.CompressTexture(
+                source,
+                TextureFormat.DXT5,
+                TextureCompressionQuality.Best
+            );
+
+            var resultPixels = source.GetPixels();
+            int centerIndex = 32 * 64 + 32;
+
+            // Check that data remains in AG channels
+            float fromA = resultPixels[centerIndex].a * 2f - 1f;
+            float fromG = resultPixels[centerIndex].g * 2f - 1f;
+
+            Debug.Log(
+                $"[DXT5 AG Input Test] Input X={inputX}, Y={inputY}\n"
+                    + $"  Output A: {fromA:F3} (expected {inputX}), G: {fromG:F3} (expected {inputY})"
+            );
+
+            // EditorUtility.CompressTexture preserves the input layout
+            // Since NormalMapPreprocessor writes to AG for DXT5/BC7, this must be preserved
+            Assert.That(
+                fromA,
+                Is.EqualTo(inputX).Within(0.15f),
+                "X should remain in A channel after compression (DXTnm layout)"
+            );
+            Assert.That(
+                fromG,
+                Is.EqualTo(inputY).Within(0.15f),
+                "Y should remain in G channel after compression (DXTnm layout)"
+            );
+
+            Object.DestroyImmediate(source);
         }
 
         /// <summary>
@@ -421,6 +659,53 @@ namespace dev.limitex.avatar.compressor.tests
             );
         }
 
+        /// <summary>
+        /// Asserts that DXT5/BC7 compressed normal map data is valid in AG layout (DXTnm format).
+        /// Unity's UnpackNormalDXT5nm shader function reads XY from AG channels (.wy swizzle).
+        /// NormalMapPreprocessor writes to AG channels for DXT5/BC7 targets to match this expectation.
+        /// </summary>
+        private void AssertDXTnmNormalsAreValid(Texture2D texture, string testName)
+        {
+            var pixels = texture.GetPixels();
+            int sampleCount = Mathf.Min(500, pixels.Length);
+            int step = Mathf.Max(1, pixels.Length / sampleCount);
+
+            int invalidCount = 0;
+            float maxLengthSq = 0f;
+
+            for (int i = 0; i < pixels.Length; i += step)
+            {
+                // DXTnm layout: X in A channel, Y in G channel
+                // This matches Unity's UnpackNormalDXT5nm which reads packednormal.wy (A and G)
+                float x = pixels[i].a * 2f - 1f;
+                float y = pixels[i].g * 2f - 1f;
+                float lengthSq = x * x + y * y;
+                maxLengthSq = Mathf.Max(maxLengthSq, lengthSq);
+
+                // X² + Y² must be <= 1 for Z to be reconstructable
+                if (lengthSq > 1.05f) // Small tolerance for compression artifacts
+                {
+                    invalidCount++;
+                }
+            }
+
+            Debug.Log(
+                $"[{testName}] DXTnm AG layout - Max X²+Y²: {maxLengthSq:F4}, Invalid count: {invalidCount}"
+            );
+
+            Assert.That(
+                maxLengthSq,
+                Is.LessThanOrEqualTo(1.05f),
+                $"{testName}: X²+Y² in AG channels should not exceed 1 (Z must be reconstructable)"
+            );
+
+            Assert.AreEqual(
+                0,
+                invalidCount,
+                $"{testName}: All sampled normals should have valid X²+Y² <= 1 in AG channels"
+            );
+        }
+
         #endregion
 
         #region Resize + Preprocess Combined Tests
@@ -439,7 +724,7 @@ namespace dev.limitex.avatar.compressor.tests
             var resized = _processor.ResizeTo(source, targetSize, targetSize, isNormalMap: true);
 
             // Apply preprocessor
-            _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32);
+            _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.BC5);
 
             AssertNormalsAreValid(resized, $"Resize {sourceSize}->{targetSize}");
 

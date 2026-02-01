@@ -12,6 +12,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// - RGBA/RGB: XYZ stored in RGB channels
     ///
     /// Reference: UnityCG.cginc UnpackNormalDXT5nm uses packednormal.wy (AG)
+    ///
+    /// IMPORTANT: EditorUtility.CompressTexture does NOT perform DXTnm conversion.
+    /// It compresses the texture as-is, preserving channel layout.
+    /// Therefore, we must manually pack data into the correct channels before compression:
+    /// - For BC5 target: Write XY to RG channels
+    /// - For DXT5/BC7 target: Write XY to AG channels (DXTnm format)
     /// </summary>
     public class NormalMapPreprocessor
     {
@@ -25,16 +31,24 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <summary>
         /// Prepares a normal map texture for compression.
         /// Reads XY from appropriate channels based on source format,
-        /// normalizes vectors, and writes to RGB for subsequent compression.
+        /// normalizes vectors, and writes to the appropriate channels based on target format.
         /// </summary>
-        public void PrepareForCompression(Texture2D texture, TextureFormat sourceFormat)
+        /// <param name="texture">The texture to preprocess (must be readable)</param>
+        /// <param name="sourceFormat">The original texture format (determines input channel layout)</param>
+        /// <param name="targetFormat">The target compression format (determines output channel layout)</param>
+        public void PrepareForCompression(
+            Texture2D texture,
+            TextureFormat sourceFormat,
+            TextureFormat targetFormat
+        )
         {
             if (texture == null || !texture.isReadable)
             {
                 return;
             }
 
-            var channelLayout = GetChannelLayout(sourceFormat);
+            var sourceLayout = GetChannelLayout(sourceFormat);
+            var targetLayout = GetChannelLayout(targetFormat);
             var pixels = texture.GetPixels32();
 
             for (int i = 0; i < pixels.Length; i++)
@@ -43,7 +57,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 float x,
                     y,
                     originalZ;
-                ReadNormalChannels(pixels[i], channelLayout, out x, out y, out originalZ);
+                ReadNormalChannels(pixels[i], sourceLayout, out x, out y, out originalZ);
 
                 // Recalculate Z magnitude from unit sphere constraint
                 float zSquared = 1f - x * x - y * y;
@@ -53,7 +67,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 // 2-channel formats (BC5, DXTnm) don't store Z, assume positive (Tangent Space)
                 // 3-channel formats preserve original Z sign (Object Space support)
                 float z =
-                    channelLayout == NormalChannelLayout.RGB && originalZ < 0f
+                    sourceLayout == NormalChannelLayout.RGB && originalZ < 0f
                         ? -zMagnitude
                         : zMagnitude;
 
@@ -73,12 +87,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     z = 1f;
                 }
 
-                // Always write to RGB for subsequent compression
-                // EditorUtility.CompressTexture will handle channel packing for target format
-                pixels[i].r = (byte)Mathf.Clamp((x * 0.5f + 0.5f) * 255f, 0f, 255f);
-                pixels[i].g = (byte)Mathf.Clamp((y * 0.5f + 0.5f) * 255f, 0f, 255f);
-                pixels[i].b = (byte)Mathf.Clamp((z * 0.5f + 0.5f) * 255f, 0f, 255f);
-                pixels[i].a = 255;
+                // Write to appropriate channels based on target format
+                WriteNormalChannels(ref pixels[i], targetLayout, x, y, z);
             }
 
             texture.SetPixels32(pixels);
@@ -154,6 +164,61 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     x = (pixel.r / 255f) * 2f - 1f;
                     y = (pixel.g / 255f) * 2f - 1f;
                     originalZ = (pixel.b / 255f) * 2f - 1f;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Writes normal XYZ to appropriate channels based on target layout.
+        /// </summary>
+        /// <remarks>
+        /// Channel packing for each format:
+        /// - RG (BC5): X in R, Y in G, Z in B (B is ignored during BC5 compression but useful for testing)
+        /// - AG (DXTnm for DXT5/BC7): X in A, Y in G, Z in B (B is ignored during compression)
+        /// - RGB: X in R, Y in G, Z in B, A=255
+        ///
+        /// Note: Z is always written to B channel for consistency, even though BC5 and DXTnm
+        /// formats only use 2 channels. This allows pre-compression validation and debugging.
+        /// The compression step will ignore unused channels appropriately.
+        /// </remarks>
+        private static void WriteNormalChannels(
+            ref Color32 pixel,
+            NormalChannelLayout layout,
+            float x,
+            float y,
+            float z
+        )
+        {
+            byte encodedX = (byte)Mathf.Clamp((x * 0.5f + 0.5f) * 255f, 0f, 255f);
+            byte encodedY = (byte)Mathf.Clamp((y * 0.5f + 0.5f) * 255f, 0f, 255f);
+            byte encodedZ = (byte)Mathf.Clamp((z * 0.5f + 0.5f) * 255f, 0f, 255f);
+
+            switch (layout)
+            {
+                case NormalChannelLayout.RG:
+                    // BC5: XY in RG, Z in B (B ignored during compression)
+                    pixel.r = encodedX;
+                    pixel.g = encodedY;
+                    pixel.b = encodedZ;
+                    pixel.a = 255;
+                    break;
+
+                case NormalChannelLayout.AG:
+                    // DXTnm (DXT5/BC7): X in A, Y in G, Z in B (B ignored during compression)
+                    // R channel is set to a neutral value (some shaders may sample it)
+                    pixel.r = 128; // Neutral value (0.5 encoded)
+                    pixel.g = encodedY;
+                    pixel.b = encodedZ;
+                    pixel.a = encodedX;
+                    break;
+
+                case NormalChannelLayout.RGB:
+                default:
+                    // Standard RGB: XYZ in RGB
+                    pixel.r = encodedX;
+                    pixel.g = encodedY;
+                    pixel.b = encodedZ;
+                    pixel.a = 255;
                     break;
             }
         }
