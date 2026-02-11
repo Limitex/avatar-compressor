@@ -173,7 +173,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             var target = EditorUserBuildSettings.activeBuildTarget;
-            return target == BuildTarget.Android
+            return (target == BuildTarget.Android || target == BuildTarget.iOS)
                 ? CompressionPlatform.Mobile
                 : CompressionPlatform.Desktop;
         }
