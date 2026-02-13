@@ -507,6 +507,48 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void PrepareForCompression_RestoreOriginalBeforeSecondPass_PreservesNormalXY()
+        {
+            var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            var pixels = new Color32[4];
+
+            float x = 0.45f;
+            float y = -0.15f;
+            byte encodedX = (byte)((x * 0.5f + 0.5f) * 255f);
+            byte encodedY = (byte)((y * 0.5f + 0.5f) * 255f);
+
+            for (int i = 0; i < 4; i++)
+            {
+                pixels[i] = new Color32(encodedX, encodedY, 255, 64);
+            }
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            // First pass (primary compression path): BC7 with alpha preservation.
+            _preprocessor.PrepareForCompression(
+                texture,
+                TextureFormat.RGBA32,
+                TextureFormat.BC7,
+                preserveAlpha: true
+            );
+
+            // Simulate Phase 1 fix behavior: restore original pixels before fallback pass.
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            // Second pass (fallback path): preprocess for DXT5.
+            _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32, TextureFormat.DXT5);
+
+            var converted = texture.GetPixels();
+            float decodedX = converted[0].a * 2f - 1f;
+            float decodedY = converted[0].g * 2f - 1f;
+            Assert.That(decodedX, Is.EqualTo(x).Within(0.02f));
+            Assert.That(decodedY, Is.EqualTo(y).Within(0.02f));
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
         public void PrepareForCompression_FromBC5Source_AssumesPositiveZ()
         {
             // BC5 source doesn't have Z, so should assume positive Z

@@ -472,6 +472,133 @@ namespace dev.limitex.avatar.compressor.tests
             Object.DestroyImmediate(resized);
         }
 
+        [Test]
+        public void FullPipeline_RGBAToBC7_WithPreserveAlpha_KeepsAlpha()
+        {
+            var source = new Texture2D(128, 128, TextureFormat.RGBA32, false, true);
+            var pixels = new Color[128 * 128];
+
+            for (int y = 0; y < 128; y++)
+            {
+                for (int x = 0; x < 128; x++)
+                {
+                    float nx = (x / 127f - 0.5f) * 0.6f;
+                    float ny = (y / 127f - 0.5f) * 0.6f;
+                    float nz = Mathf.Sqrt(Mathf.Max(0f, 1f - nx * nx - ny * ny));
+                    float alpha = x / 127f;
+                    pixels[y * 128 + x] = new Color(
+                        nx * 0.5f + 0.5f,
+                        ny * 0.5f + 0.5f,
+                        nz * 0.5f + 0.5f,
+                        alpha
+                    );
+                }
+            }
+            source.SetPixels(pixels);
+            source.Apply();
+
+            var resized = _processor.ResizeTo(source, 128, 128, isNormalMap: true);
+            _preprocessor.PrepareForCompression(
+                resized,
+                TextureFormat.RGBA32,
+                TextureFormat.BC7,
+                preserveAlpha: true
+            );
+            EditorUtility.CompressTexture(resized, TextureFormat.BC7, TextureCompressionQuality.Best);
+
+            var result = resized.GetPixels();
+            float minAlpha = 1f;
+            float maxAlpha = 0f;
+            for (int i = 0; i < result.Length; i += 97)
+            {
+                minAlpha = Mathf.Min(minAlpha, result[i].a);
+                maxAlpha = Mathf.Max(maxAlpha, result[i].a);
+            }
+
+            Assert.That(minAlpha, Is.LessThan(0.35f), "Low alpha range should be preserved");
+            Assert.That(maxAlpha, Is.GreaterThan(0.65f), "High alpha range should be preserved");
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(resized);
+        }
+
+        [Test]
+        public void FullPipeline_RGBAToDXT5_AlphaStoresNormalX()
+        {
+            var source = new Texture2D(64, 64, TextureFormat.RGBA32, false, true);
+            var pixels = new Color[64 * 64];
+            const float inputX = 0.6f;
+            const float inputY = 0.2f;
+            const float sourceAlpha = 0.2f;
+            float inputZ = Mathf.Sqrt(Mathf.Max(0f, 1f - inputX * inputX - inputY * inputY));
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = new Color(
+                    inputX * 0.5f + 0.5f,
+                    inputY * 0.5f + 0.5f,
+                    inputZ * 0.5f + 0.5f,
+                    sourceAlpha
+                );
+            }
+            source.SetPixels(pixels);
+            source.Apply();
+
+            var resized = _processor.ResizeTo(source, 64, 64, isNormalMap: true);
+            _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.DXT5);
+            EditorUtility.CompressTexture(resized, TextureFormat.DXT5, TextureCompressionQuality.Best);
+
+            var center = resized.GetPixels()[32 * 64 + 32];
+            float decodedXFromAlpha = center.a * 2f - 1f;
+
+            Assert.That(
+                decodedXFromAlpha,
+                Is.EqualTo(inputX).Within(0.2f),
+                "DXT5 alpha channel should store normal X (DXTnm layout)"
+            );
+            Assert.That(
+                center.a,
+                Is.GreaterThan(sourceAlpha + 0.2f),
+                "Original alpha should be replaced in DXT5 normal-map path"
+            );
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(resized);
+        }
+
+        [Test]
+        public void Preprocess_BC7Source_ToBC7_WithPreserveAlphaFalse_UsesAGLayout()
+        {
+            var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false, true);
+            var pixels = new Color[4];
+            float x = 0.5f;
+            float y = -0.3f;
+            float encodedA = x * 0.5f + 0.5f;
+            float encodedG = y * 0.5f + 0.5f;
+
+            for (int i = 0; i < 4; i++)
+            {
+                pixels[i] = new Color(0f, encodedG, 0f, encodedA);
+            }
+            texture.SetPixels(pixels);
+            texture.Apply();
+
+            _preprocessor.PrepareForCompression(
+                texture,
+                TextureFormat.BC7,
+                TextureFormat.BC7,
+                preserveAlpha: false
+            );
+
+            var result = texture.GetPixels();
+            Assert.That(result[0].r, Is.EqualTo(1f).Within(0.01f));
+            Assert.That(result[0].b, Is.EqualTo(1f).Within(0.01f));
+            Assert.That(result[0].a * 2f - 1f, Is.EqualTo(x).Within(0.02f));
+            Assert.That(result[0].g * 2f - 1f, Is.EqualTo(y).Within(0.02f));
+
+            Object.DestroyImmediate(texture);
+        }
+
         /// <summary>
         /// Verifies that EditorUtility.CompressTexture preserves the input channel layout.
         /// When input has XY in RG channels, output also has XY in RG channels.
