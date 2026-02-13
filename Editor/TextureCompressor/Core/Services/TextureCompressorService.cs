@@ -288,7 +288,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     );
                 }
 
-                ApplyCompression(resizedTexture, targetFormat);
+                ApplyCompression(
+                    resizedTexture,
+                    targetFormat,
+                    textureInfo.IsNormalMap,
+                    preserveNormalMapAlpha
+                );
 
                 resizedTexture.name = originalTexture.name + "_compressed";
 
@@ -350,7 +355,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <summary>
         /// Applies compression to a texture with fallback handling.
         /// </summary>
-        private bool ApplyCompression(Texture2D texture, TextureFormat targetFormat)
+        private bool ApplyCompression(
+            Texture2D texture,
+            TextureFormat targetFormat,
+            bool isNormalMap,
+            bool preserveAlpha
+        )
         {
             if (texture.format == targetFormat)
             {
@@ -372,14 +382,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     $"[{Name}] Failed to compress texture to {targetFormat}: {e.Message}. "
                         + "Attempting fallback."
                 );
-                return ApplyFallbackCompression(texture);
+                return ApplyFallbackCompression(texture, targetFormat, isNormalMap, preserveAlpha);
             }
         }
 
         /// <summary>
         /// Applies fallback compression when primary compression fails.
         /// </summary>
-        private bool ApplyFallbackCompression(Texture2D texture)
+        private bool ApplyFallbackCompression(
+            Texture2D texture,
+            TextureFormat preprocessedFormat,
+            bool isNormalMap,
+            bool preserveAlpha
+        )
         {
             try
             {
@@ -388,6 +403,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     platform == CompressionPlatform.Mobile
                         ? TextureFormat.ASTC_6x6
                         : TextureFormat.DXT5;
+
+                if (isNormalMap)
+                {
+                    _normalMapPreprocessor.PrepareForCompression(
+                        texture,
+                        preprocessedFormat,
+                        fallbackFormat,
+                        preserveAlpha
+                    );
+                }
 
                 EditorUtility.CompressTexture(
                     texture,
