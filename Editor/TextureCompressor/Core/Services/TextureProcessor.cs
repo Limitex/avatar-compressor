@@ -133,13 +133,26 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     ? RenderTextureReadWrite.Linear
                     : RenderTextureReadWrite.Default;
 
-                // ARGB32 is used as it provides 8 bits per channel which is sufficient for normal map precision.
-                // The colorSpace parameter controls sRGB conversion independently of the format.
+                // For normal maps, prefer float/half RT to reduce interpolation quantization during resize.
+                // Fall back to ARGB32 when higher precision RT formats are not supported.
+                var rtFormat = RenderTextureFormat.ARGB32;
+                if (isNormalMap)
+                {
+                    if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBFloat))
+                    {
+                        rtFormat = RenderTextureFormat.ARGBFloat;
+                    }
+                    else if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf))
+                    {
+                        rtFormat = RenderTextureFormat.ARGBHalf;
+                    }
+                }
+
                 RenderTexture rt = RenderTexture.GetTemporary(
                     newWidth,
                     newHeight,
                     0,
-                    RenderTextureFormat.ARGB32,
+                    rtFormat,
                     colorSpace
                 );
                 rt.filterMode = FilterMode.Bilinear;
