@@ -1720,6 +1720,95 @@ namespace dev.limitex.avatar.compressor.tests
             _createdObjects.Add(newTexture);
         }
 
+        [Test]
+        public void Compress_SourceAlreadyCompressedDXT5_OnBumpMap_PreservesFormat()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            var source = CreateCompressedDXT5NormalMap(128, 128, 0.35f, -0.25f, sourceIsAGLayout: true);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_BumpMap", source);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var result = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(result);
+            Assert.AreEqual(
+                TextureFormat.DXT5,
+                result.format,
+                "Already compressed DXT5 source on _BumpMap should preserve DXT5 format"
+            );
+
+            _createdObjects.Add(result);
+        }
+
+        [Test]
+        [TestCase(false)]
+        [TestCase(true)]
+        public void Compress_DXT5NormalMapSource_UsesCorrectInputLayout(bool sourceIsAGLayout)
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            config.MinDivisor = 1;
+            config.MaxDivisor = 1;
+            var service = new TextureCompressorService(config);
+
+            const float expectedX = 0.35f;
+            const float expectedY = -0.25f;
+            var source = CreateCompressedDXT5NormalMap(
+                128,
+                128,
+                expectedX,
+                expectedY,
+                sourceIsAGLayout
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_BumpMap", source);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var result = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(result);
+            Assert.AreEqual(TextureFormat.DXT5, result.format);
+
+            var pixels = result.GetPixels();
+            int centerIndex = (result.height / 2) * result.width + (result.width / 2);
+
+            // DXT5 output should be DXTnm layout (X in A, Y in G).
+            float decodedX = pixels[centerIndex].a * 2f - 1f;
+            float decodedY = pixels[centerIndex].g * 2f - 1f;
+
+            string layoutLabel = sourceIsAGLayout ? "AG" : "RG";
+            Assert.That(
+                decodedX,
+                Is.EqualTo(expectedX).Within(0.2f),
+                $"DXT5 {layoutLabel} source should preserve X direction during recompression"
+            );
+            Assert.That(
+                decodedY,
+                Is.EqualTo(expectedY).Within(0.2f),
+                $"DXT5 {layoutLabel} source should preserve Y direction during recompression"
+            );
+
+            _createdObjects.Add(result);
+        }
+
         /// <summary>
         /// Tests that when source texture is already compressed (BC7), the format is preserved.
         /// </summary>
@@ -2197,6 +2286,44 @@ namespace dev.limitex.avatar.compressor.tests
 
             string assetPath =
                 $"{TestAssetFolder}/NormalMapAlpha_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+        }
+
+        private Texture2D CreateCompressedDXT5NormalMap(
+            int width,
+            int height,
+            float x,
+            float y,
+            bool sourceIsAGLayout
+        )
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false, true);
+            var pixels = new Color32[width * height];
+
+            byte encodedX = (byte)Mathf.Clamp((x * 0.5f + 0.5f) * 255f, 0f, 255f);
+            byte encodedY = (byte)Mathf.Clamp((y * 0.5f + 0.5f) * 255f, 0f, 255f);
+
+            Color32 packedPixel = sourceIsAGLayout
+                ? new Color32(255, encodedY, 255, encodedX)
+                : new Color32(encodedX, encodedY, 255, 255);
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = packedPixel;
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            EditorUtility.CompressTexture(texture, TextureFormat.DXT5, TextureCompressionQuality.Best);
+            Assert.AreEqual(TextureFormat.DXT5, texture.format, "Source should be DXT5");
+
+            string layout = sourceIsAGLayout ? "AG" : "RG";
+            string assetPath =
+                $"{TestAssetFolder}/NormalMapDXT5_{layout}_{width}x{height}_{System.Guid.NewGuid():N}.asset";
             AssetDatabase.CreateAsset(texture, assetPath);
             _createdAssetPaths.Add(assetPath);
 

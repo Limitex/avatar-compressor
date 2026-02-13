@@ -468,7 +468,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Resolves source normal-map layout from format and, for BC7, pixel heuristics.
+        /// Resolves source normal-map layout from format and, for DXT5/BC7,
+        /// pixel heuristics when the source layout is ambiguous.
         /// </summary>
         private static NormalMapPreprocessor.SourceLayout ResolveNormalSourceLayout(
             Texture2D texture,
@@ -481,19 +482,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     return NormalMapPreprocessor.SourceLayout.RG;
                 case TextureFormat.DXT5:
                 case TextureFormat.DXT5Crunched:
-                    return NormalMapPreprocessor.SourceLayout.AG;
                 case TextureFormat.BC7:
-                    return DetectBC7SourceLayout(texture);
+                    return DetectDXTnmLikeSourceLayout(texture);
                 default:
                     return NormalMapPreprocessor.SourceLayout.RGB;
             }
         }
 
         /// <summary>
-        /// Detects whether BC7 source pixels are in AG (DXTnm) or RGB layout.
-        /// Defaults to AG unless RGB evidence is strong to preserve compatibility.
+        /// Detects whether DXT5/BC7 source pixels are in AG (DXTnm), RG, or RGB layout.
+        /// Defaults to AG unless non-DXTnm evidence is strong to preserve compatibility.
         /// </summary>
-        private static NormalMapPreprocessor.SourceLayout DetectBC7SourceLayout(Texture2D texture)
+        private static NormalMapPreprocessor.SourceLayout DetectDXTnmLikeSourceLayout(
+            Texture2D texture
+        )
         {
             if (texture == null || !texture.isReadable)
             {
@@ -555,17 +557,33 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 float validAgRatio = (float)validAgCount / total;
                 float rbNearOneRatio = (float)rbNearOneCount / total;
                 float rgbConsistencyRatio = (float)rgbConsistentCount / total;
+                float rgAdvantage = validRgRatio - validAgRatio;
 
-                bool rgbLikely =
-                    rbNearOneRatio < 0.9f
-                    && (
-                        rgbConsistencyRatio >= 0.7f
-                        || (validRgRatio >= 0.85f && (validRgRatio - validAgRatio) >= 0.12f)
-                    );
+                // Strong DXTnm AG signature: R/B are near 1 while XY validity matches AG.
+                if (rbNearOneRatio >= 0.9f && validAgRatio >= 0.75f)
+                {
+                    return NormalMapPreprocessor.SourceLayout.AG;
+                }
 
-                return rgbLikely
-                    ? NormalMapPreprocessor.SourceLayout.RGB
-                    : NormalMapPreprocessor.SourceLayout.AG;
+                // AG is substantially more plausible than RG.
+                if (validAgRatio >= 0.9f && rgAdvantage <= -0.1f)
+                {
+                    return NormalMapPreprocessor.SourceLayout.AG;
+                }
+
+                // RG is clearly more plausible than AG.
+                if (validRgRatio >= 0.85f && rgAdvantage >= 0.12f)
+                {
+                    return NormalMapPreprocessor.SourceLayout.RG;
+                }
+
+                // RGB stores an explicit Z in B that should roughly match reconstructed Z from RG.
+                if (rbNearOneRatio < 0.9f && rgbConsistencyRatio >= 0.7f)
+                {
+                    return NormalMapPreprocessor.SourceLayout.RGB;
+                }
+
+                return NormalMapPreprocessor.SourceLayout.AG;
             }
             catch
             {
