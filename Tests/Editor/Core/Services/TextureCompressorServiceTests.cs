@@ -1165,6 +1165,12 @@ namespace dev.limitex.avatar.compressor.tests
                 "Normal map with alpha should compress to BC7 to preserve alpha"
             );
 
+            var pixels = newTexture.GetPixels();
+            float minAlpha = pixels.Min(p => p.a);
+            float maxAlpha = pixels.Max(p => p.a);
+            Assert.That(minAlpha, Is.LessThan(0.9f), "Alpha variation should be preserved");
+            Assert.That(maxAlpha, Is.GreaterThan(0.6f), "High alpha values should remain");
+
             _createdObjects.Add(newTexture);
         }
 

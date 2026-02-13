@@ -17,7 +17,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// It compresses the texture as-is, preserving channel layout.
     /// Therefore, we must manually pack data into the correct channels before compression:
     /// - For BC5 target: Write XY to RG channels
-    /// - For DXT5/BC7 target: Write XY to AG channels (DXTnm format)
+    /// - For DXT5 target: Write XY to AG channels (DXTnm format)
+    /// - For BC7 target:
+    ///   - Default: Write XY to AG channels (DXTnm format)
+    ///   - Preserve alpha mode: Write XYZ to RGB and keep source alpha
     /// </summary>
     public class NormalMapPreprocessor
     {
@@ -36,10 +39,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <param name="texture">The texture to preprocess (must be readable)</param>
         /// <param name="sourceFormat">The original texture format (determines input channel layout)</param>
         /// <param name="targetFormat">The target compression format (determines output channel layout)</param>
+        /// <param name="preserveAlpha">
+        /// When true and target is BC7, preserves source alpha by writing normals to RGB instead of AG.
+        /// </param>
         public void PrepareForCompression(
             Texture2D texture,
             TextureFormat sourceFormat,
-            TextureFormat targetFormat
+            TextureFormat targetFormat,
+            bool preserveAlpha = false
         )
         {
             if (texture == null || !texture.isReadable)
@@ -48,7 +55,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             var sourceLayout = GetChannelLayout(sourceFormat);
-            var targetLayout = GetChannelLayout(targetFormat);
+            var targetLayout = GetChannelLayout(targetFormat, preserveAlpha);
             var pixels = texture.GetPixels32();
 
             for (int i = 0; i < pixels.Length; i++)
@@ -88,7 +95,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
 
                 // Write to appropriate channels based on target format
-                WriteNormalChannels(ref pixels[i], targetLayout, x, y, z);
+                WriteNormalChannels(ref pixels[i], targetLayout, x, y, z, pixels[i].a, preserveAlpha);
             }
 
             texture.SetPixels32(pixels);
@@ -113,7 +120,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <summary>
         /// Determines the channel layout based on texture format.
         /// </summary>
-        private static NormalChannelLayout GetChannelLayout(TextureFormat format)
+        private static NormalChannelLayout GetChannelLayout(
+            TextureFormat format,
+            bool preserveAlpha = false
+        )
         {
             switch (format)
             {
@@ -124,8 +134,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 // DXTnm formats: XY stored in AG (shader reads as .wy)
                 case TextureFormat.DXT5:
                 case TextureFormat.DXT5Crunched:
-                case TextureFormat.BC7:
                     return NormalChannelLayout.AG;
+
+                case TextureFormat.BC7:
+                    return preserveAlpha ? NormalChannelLayout.RGB : NormalChannelLayout.AG;
 
                 // All other formats: assume standard RGB layout
                 default:
@@ -175,7 +187,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Channel packing for each format:
         /// - RG (BC5): X in R, Y in G, Z in B (B is ignored during BC5 compression but useful for testing)
         /// - AG (DXTnm for DXT5/BC7): X in A, Y in G, Z in B (B is ignored during compression)
-        /// - RGB: X in R, Y in G, Z in B, A=255
+        /// - RGB: X in R, Y in G, Z in B, A=source alpha (when preserve alpha mode is enabled)
         ///
         /// Note: Z is always written to B channel for consistency, even though BC5 and DXTnm
         /// formats only use 2 channels. This allows pre-compression validation and debugging.
@@ -186,7 +198,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
             NormalChannelLayout layout,
             float x,
             float y,
-            float z
+            float z,
+            byte sourceAlpha,
+            bool preserveAlpha
         )
         {
             byte encodedX = (byte)Mathf.Clamp((x * 0.5f + 0.5f) * 255f, 0f, 255f);
@@ -218,7 +232,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     pixel.r = encodedX;
                     pixel.g = encodedY;
                     pixel.b = encodedZ;
-                    pixel.a = 255;
+                    pixel.a = preserveAlpha ? sourceAlpha : (byte)255;
                     break;
             }
         }

@@ -426,6 +426,33 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void PrepareForCompression_ToBC7_WithPreserveAlpha_KeepsSourceAlpha()
+        {
+            var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            var pixels = new Color32[4];
+            byte sourceAlpha = 64;
+
+            for (int i = 0; i < 4; i++)
+            {
+                pixels[i] = new Color32(128, 128, 255, sourceAlpha);
+            }
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            _preprocessor.PrepareForCompression(
+                texture,
+                TextureFormat.RGBA32,
+                TextureFormat.BC7,
+                preserveAlpha: true
+            );
+
+            var newPixels = texture.GetPixels32();
+            Assert.AreEqual(sourceAlpha, newPixels[0].a, "Alpha should be preserved for BC7");
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
         public void PrepareForCompression_FromBC5Source_AssumesPositiveZ()
         {
             // BC5 source doesn't have Z, so should assume positive Z

@@ -251,6 +251,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     textureInfo.IsNormalMap
                 );
 
+                bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
+
                 // Determine target format
                 TextureFormat targetFormat;
                 if (formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto)
@@ -263,7 +265,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
                 else
                 {
-                    bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
                     targetFormat = _formatSelector.PredictFormat(
                         textureInfo.IsNormalMap,
                         analysis.NormalizedComplexity,
@@ -274,10 +275,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 // Apply normal map preprocessing before compression
                 if (textureInfo.IsNormalMap)
                 {
+                    bool preserveNormalMapAlpha =
+                        hasAlpha
+                        && targetFormat == TextureFormat.BC7
+                        && !UsesDxtnmLayout(originalTexture.format);
+
                     _normalMapPreprocessor.PrepareForCompression(
                         resizedTexture,
                         originalTexture.format,
-                        targetFormat
+                        targetFormat,
+                        preserveNormalMapAlpha
                     );
                 }
 
@@ -398,6 +405,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 );
                 return false;
             }
+        }
+
+        private static bool UsesDxtnmLayout(TextureFormat format)
+        {
+            return format == TextureFormat.DXT5
+                || format == TextureFormat.DXT5Crunched
+                || format == TextureFormat.BC7;
         }
 
         private void LogSummary(
