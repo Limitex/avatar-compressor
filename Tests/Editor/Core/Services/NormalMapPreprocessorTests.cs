@@ -549,6 +549,41 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void PrepareForCompression_BC7Source_WithRGBOverride_ReadsRGBLayout()
+        {
+            var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            var pixels = new Color32[4];
+
+            float x = 0.35f;
+            float y = -0.25f;
+            byte encodedX = (byte)((x * 0.5f + 0.5f) * 255f);
+            byte encodedY = (byte)((y * 0.5f + 0.5f) * 255f);
+
+            for (int i = 0; i < 4; i++)
+            {
+                // RGB stores normal data; alpha is unrelated semantic data.
+                pixels[i] = new Color32(encodedX, encodedY, 255, 32);
+            }
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            _preprocessor.PrepareForCompression(
+                texture,
+                TextureFormat.BC7,
+                TextureFormat.DXT5,
+                sourceLayout: NormalMapPreprocessor.SourceLayout.RGB
+            );
+
+            var converted = texture.GetPixels();
+            float decodedX = converted[0].a * 2f - 1f;
+            float decodedY = converted[0].g * 2f - 1f;
+            Assert.That(decodedX, Is.EqualTo(x).Within(0.02f));
+            Assert.That(decodedY, Is.EqualTo(y).Within(0.02f));
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
         public void PrepareForCompression_FromBC5Source_AssumesPositiveZ()
         {
             // BC5 source doesn't have Z, so should assume positive Z

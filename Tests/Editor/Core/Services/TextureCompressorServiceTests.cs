@@ -1761,6 +1761,57 @@ namespace dev.limitex.avatar.compressor.tests
             _createdObjects.Add(newTexture);
         }
 
+        [Test]
+        public void Compress_BC7RGBLayoutNormalMapSource_PreservesSemanticAlpha()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            // Simulate BC7 source produced by this tool in preserve-alpha mode (normals in RGB).
+            var source = CreateNormalMapTextureWithAlpha(128, 128);
+            var preprocessor = new NormalMapPreprocessor();
+            preprocessor.PrepareForCompression(
+                source,
+                TextureFormat.RGBA32,
+                TextureFormat.BC7,
+                preserveAlpha: true
+            );
+            EditorUtility.CompressTexture(source, TextureFormat.BC7, TextureCompressionQuality.Best);
+            Assert.AreEqual(TextureFormat.BC7, source.format, "Source should be BC7");
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_BumpMap", source);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var result = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(result);
+            Assert.AreEqual(TextureFormat.BC7, result.format);
+
+            var pixels = result.GetPixels();
+            float minAlpha = pixels.Min(p => p.a);
+            float maxAlpha = pixels.Max(p => p.a);
+            Assert.That(
+                minAlpha,
+                Is.LessThan(0.85f),
+                "BC7 RGB-layout source should keep semantic alpha after recompression"
+            );
+            Assert.That(
+                maxAlpha,
+                Is.GreaterThan(0.55f),
+                "Alpha should retain high-value range when preservation is enabled"
+            );
+
+            _createdObjects.Add(result);
+        }
+
         /// <summary>
         /// Tests that when source texture is already compressed (ASTC), the format is preserved
         /// even when target platform is Desktop.

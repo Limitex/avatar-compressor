@@ -253,6 +253,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
                 bool preserveNormalMapAlpha;
+                var sourceLayout = textureInfo.IsNormalMap
+                    ? ResolveNormalSourceLayout(resizedTexture, originalTexture.format)
+                    : NormalMapPreprocessor.SourceLayout.Auto;
 
                 // Determine target format
                 TextureFormat targetFormat;
@@ -273,21 +276,21 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     );
                 }
 
-                // DXTnm sources store normal X in the alpha channel, which can make
-                // HasSignificantAlpha return true even when there is no semantic alpha to preserve.
-                // UsesDxtnmLayout prevents false positives for those sources.
+                // DXTnm sources store normal X in alpha and can trigger HasSignificantAlpha().
+                // Preserve alpha only when the source layout is actually RGB (semantic alpha).
                 preserveNormalMapAlpha =
                     textureInfo.IsNormalMap
                     && hasAlpha
                     && targetFormat == TextureFormat.BC7
-                    && !UsesDxtnmLayout(originalTexture.format);
+                    && sourceLayout == NormalMapPreprocessor.SourceLayout.RGB;
 
                 ApplyCompression(
                     resizedTexture,
                     originalTexture.format,
                     targetFormat,
                     textureInfo.IsNormalMap,
-                    preserveNormalMapAlpha
+                    preserveNormalMapAlpha,
+                    sourceLayout
                 );
 
                 resizedTexture.name = originalTexture.name + "_compressed";
@@ -355,7 +358,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             TextureFormat sourceFormat,
             TextureFormat targetFormat,
             bool isNormalMap,
-            bool preserveAlpha
+            bool preserveAlpha,
+            NormalMapPreprocessor.SourceLayout sourceLayout
         )
         {
             if (texture.format == targetFormat)
@@ -378,7 +382,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         texture,
                         sourceFormat,
                         targetFormat,
-                        preserveAlpha
+                        preserveAlpha,
+                        sourceLayout
                     );
                 }
 
@@ -402,7 +407,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     texture.Apply(texture.mipmapCount > 1);
                 }
 
-                return ApplyFallbackCompression(texture, sourceFormat, isNormalMap, preserveAlpha);
+                return ApplyFallbackCompression(
+                    texture,
+                    sourceFormat,
+                    isNormalMap,
+                    preserveAlpha,
+                    sourceLayout
+                );
             }
         }
 
@@ -413,7 +424,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             Texture2D texture,
             TextureFormat sourceFormat,
             bool isNormalMap,
-            bool preserveAlpha
+            bool preserveAlpha,
+            NormalMapPreprocessor.SourceLayout sourceLayout
         )
         {
             try
@@ -431,7 +443,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         texture,
                         sourceFormat,
                         fallbackFormat,
-                        fallbackPreserveAlpha
+                        fallbackPreserveAlpha,
+                        sourceLayout
                     );
                 }
 
@@ -454,15 +467,115 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Returns true if the format uses DXTnm channel layout (XY in AG) when used as a normal map.
-        /// Note: BC7 normal maps from Unity's TextureImporter use DXTnm layout.
-        /// BC7 textures produced by this tool with preserveAlpha=true use RGB layout instead.
+        /// Resolves source normal-map layout from format and, for BC7, pixel heuristics.
         /// </summary>
-        private static bool UsesDxtnmLayout(TextureFormat format)
+        private static NormalMapPreprocessor.SourceLayout ResolveNormalSourceLayout(
+            Texture2D texture,
+            TextureFormat format
+        )
         {
-            return format == TextureFormat.DXT5
-                || format == TextureFormat.DXT5Crunched
-                || format == TextureFormat.BC7;
+            switch (format)
+            {
+                case TextureFormat.BC5:
+                    return NormalMapPreprocessor.SourceLayout.RG;
+                case TextureFormat.DXT5:
+                case TextureFormat.DXT5Crunched:
+                    return NormalMapPreprocessor.SourceLayout.AG;
+                case TextureFormat.BC7:
+                    return DetectBC7SourceLayout(texture);
+                default:
+                    return NormalMapPreprocessor.SourceLayout.RGB;
+            }
+        }
+
+        /// <summary>
+        /// Detects whether BC7 source pixels are in AG (DXTnm) or RGB layout.
+        /// Defaults to AG unless RGB evidence is strong to preserve compatibility.
+        /// </summary>
+        private static NormalMapPreprocessor.SourceLayout DetectBC7SourceLayout(Texture2D texture)
+        {
+            if (texture == null || !texture.isReadable)
+            {
+                return NormalMapPreprocessor.SourceLayout.AG;
+            }
+
+            try
+            {
+                var pixels = texture.GetPixels32();
+                if (pixels.Length == 0)
+                {
+                    return NormalMapPreprocessor.SourceLayout.AG;
+                }
+
+                int sampleCount = Mathf.Min(pixels.Length, 4096);
+                int step = Mathf.Max(1, pixels.Length / sampleCount);
+
+                int validRgCount = 0;
+                int validAgCount = 0;
+                int rbNearOneCount = 0;
+                int rgbConsistentCount = 0;
+                int total = 0;
+
+                for (int i = 0; i < pixels.Length; i += step)
+                {
+                    var p = pixels[i];
+
+                    float xFromR = (p.r / 255f) * 2f - 1f;
+                    float yFromG = (p.g / 255f) * 2f - 1f;
+                    float zFromB = (p.b / 255f) * 2f - 1f;
+                    float xFromA = (p.a / 255f) * 2f - 1f;
+
+                    if (xFromR * xFromR + yFromG * yFromG <= 1.02f)
+                    {
+                        validRgCount++;
+                    }
+
+                    if (xFromA * xFromA + yFromG * yFromG <= 1.02f)
+                    {
+                        validAgCount++;
+                    }
+
+                    if (p.r >= 250 && p.b >= 250)
+                    {
+                        rbNearOneCount++;
+                    }
+
+                    float zFromRgSq = 1f - xFromR * xFromR - yFromG * yFromG;
+                    float zFromRg = zFromRgSq > 0f ? Mathf.Sqrt(zFromRgSq) : 0f;
+                    if (
+                        zFromRgSq >= -0.02f
+                        && Mathf.Abs(Mathf.Abs(zFromB) - zFromRg) <= 0.25f
+                    )
+                    {
+                        rgbConsistentCount++;
+                    }
+
+                    total++;
+                }
+
+                float validRgRatio = (float)validRgCount / total;
+                float validAgRatio = (float)validAgCount / total;
+                float rbNearOneRatio = (float)rbNearOneCount / total;
+                float rgbConsistencyRatio = (float)rgbConsistentCount / total;
+
+                bool rgbLikely =
+                    rbNearOneRatio < 0.9f
+                    && (
+                        rgbConsistencyRatio >= 0.7f
+                        || (
+                            validRgRatio >= 0.85f
+                            && (validRgRatio - validAgRatio) >= 0.12f
+                        )
+                    );
+
+                return rgbLikely
+                    ? NormalMapPreprocessor.SourceLayout.RGB
+                    : NormalMapPreprocessor.SourceLayout.AG;
+            }
+            catch
+            {
+                return NormalMapPreprocessor.SourceLayout.AG;
+            }
         }
 
         private void LogSummary(

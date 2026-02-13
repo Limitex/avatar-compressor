@@ -26,6 +26,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
     public class NormalMapPreprocessor
     {
         /// <summary>
+        /// Optional source layout override for cases where format alone is ambiguous (e.g. BC7).
+        /// </summary>
+        public enum SourceLayout
+        {
+            Auto,
+            RG,
+            AG,
+            RGB,
+        }
+
+        /// <summary>
         /// Minimum vector length threshold for normalization.
         /// Vectors with length below this are considered degenerate (e.g., corrupted data,
         /// interpolation artifacts) and will be reset to the default flat normal (0, 0, 1).
@@ -44,11 +55,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// When true and target is BC7, preserves source alpha by writing normals to RGB instead of AG.
         /// DXT5/DXT5Crunched targets cannot preserve alpha because A is required for X in DXTnm layout.
         /// </param>
+        /// <param name="sourceLayout">
+        /// Optional source channel layout override. Use Auto for format-based detection.
+        /// </param>
         public void PrepareForCompression(
             Texture2D texture,
             TextureFormat sourceFormat,
             TextureFormat targetFormat,
-            bool preserveAlpha = false
+            bool preserveAlpha = false,
+            SourceLayout sourceLayout = SourceLayout.Auto
         )
         {
             if (texture == null || !texture.isReadable)
@@ -56,7 +71,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 return;
             }
 
-            var sourceLayout = GetChannelLayout(sourceFormat);
+            var sourceChannelLayout =
+                sourceLayout == SourceLayout.Auto
+                    ? GetChannelLayout(sourceFormat)
+                    : ToChannelLayout(sourceLayout);
             var targetLayout = GetChannelLayout(targetFormat, preserveAlpha);
             var pixels = texture.GetPixels32();
 
@@ -68,7 +86,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 float x,
                     y,
                     originalZ;
-                ReadNormalChannels(pixels[i], sourceLayout, out x, out y, out originalZ);
+                ReadNormalChannels(pixels[i], sourceChannelLayout, out x, out y, out originalZ);
 
                 // Recalculate Z magnitude from unit sphere constraint
                 float zSquared = 1f - x * x - y * y;
@@ -78,7 +96,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 // 2-channel formats (BC5, DXTnm) don't store Z, assume positive (Tangent Space)
                 // 3-channel formats preserve original Z sign (Object Space support)
                 float z =
-                    sourceLayout == NormalChannelLayout.RGB && originalZ < 0f
+                    sourceChannelLayout == NormalChannelLayout.RGB && originalZ < 0f
                         ? -zMagnitude
                         : zMagnitude;
 
@@ -144,6 +162,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     return preserveAlpha ? NormalChannelLayout.RGB : NormalChannelLayout.AG;
 
                 // All other formats: assume standard RGB layout
+                default:
+                    return NormalChannelLayout.RGB;
+            }
+        }
+
+        private static NormalChannelLayout ToChannelLayout(SourceLayout sourceLayout)
+        {
+            switch (sourceLayout)
+            {
+                case SourceLayout.RG:
+                    return NormalChannelLayout.RG;
+                case SourceLayout.AG:
+                    return NormalChannelLayout.AG;
+                case SourceLayout.RGB:
                 default:
                     return NormalChannelLayout.RGB;
             }
