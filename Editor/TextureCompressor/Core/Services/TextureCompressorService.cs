@@ -252,6 +252,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 );
 
                 bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
+                bool preserveNormalMapAlpha;
 
                 // Determine target format
                 TextureFormat targetFormat;
@@ -272,24 +273,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     );
                 }
 
-                // Apply normal map preprocessing before compression
-                if (textureInfo.IsNormalMap)
-                {
-                    bool preserveNormalMapAlpha =
-                        hasAlpha
-                        && targetFormat == TextureFormat.BC7
-                        && !UsesDxtnmLayout(originalTexture.format);
-
-                    _normalMapPreprocessor.PrepareForCompression(
-                        resizedTexture,
-                        originalTexture.format,
-                        targetFormat,
-                        preserveNormalMapAlpha
-                    );
-                }
+                preserveNormalMapAlpha =
+                    textureInfo.IsNormalMap
+                    && hasAlpha
+                    && targetFormat == TextureFormat.BC7
+                    && !UsesDxtnmLayout(originalTexture.format);
 
                 ApplyCompression(
                     resizedTexture,
+                    originalTexture.format,
                     targetFormat,
                     textureInfo.IsNormalMap,
                     preserveNormalMapAlpha
@@ -357,6 +349,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         private bool ApplyCompression(
             Texture2D texture,
+            TextureFormat sourceFormat,
             TextureFormat targetFormat,
             bool isNormalMap,
             bool preserveAlpha
@@ -369,6 +362,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             try
             {
+                if (isNormalMap)
+                {
+                    _normalMapPreprocessor.PrepareForCompression(
+                        texture,
+                        sourceFormat,
+                        targetFormat,
+                        preserveAlpha
+                    );
+                }
+
                 EditorUtility.CompressTexture(
                     texture,
                     targetFormat,

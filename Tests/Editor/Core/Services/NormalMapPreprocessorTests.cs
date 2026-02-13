@@ -466,9 +466,14 @@ namespace dev.limitex.avatar.compressor.tests
             var pixels = new Color32[4];
             byte sourceAlpha = 64;
 
+            float x = 0.3f;
+            float y = 0.1f;
+            byte encodedX = (byte)((x * 0.5f + 0.5f) * 255f);
+            byte encodedY = (byte)((y * 0.5f + 0.5f) * 255f);
+
             for (int i = 0; i < 4; i++)
             {
-                pixels[i] = new Color32(128, 128, 255, sourceAlpha);
+                pixels[i] = new Color32(encodedX, encodedY, 255, sourceAlpha);
             }
             texture.SetPixels32(pixels);
             texture.Apply();
@@ -482,6 +487,21 @@ namespace dev.limitex.avatar.compressor.tests
 
             var newPixels = texture.GetPixels32();
             Assert.AreEqual(sourceAlpha, newPixels[0].a, "Alpha should be preserved for BC7");
+            Assert.That(
+                (newPixels[0].r / 255f) * 2f - 1f,
+                Is.EqualTo(x).Within(0.02f),
+                "X should be encoded in R when alpha is preserved"
+            );
+            Assert.That(
+                (newPixels[0].g / 255f) * 2f - 1f,
+                Is.EqualTo(y).Within(0.02f),
+                "Y should be encoded in G when alpha is preserved"
+            );
+            Assert.That(
+                Mathf.Abs(((newPixels[0].a / 255f) * 2f - 1f) - x),
+                Is.GreaterThan(0.05f),
+                "A should not be repurposed for X in alpha-preserve mode"
+            );
 
             Object.DestroyImmediate(texture);
         }
