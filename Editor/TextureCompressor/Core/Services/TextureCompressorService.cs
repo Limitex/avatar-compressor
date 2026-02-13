@@ -438,7 +438,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 if (isNormalMap)
                 {
-                    bool fallbackPreserveAlpha = preserveAlpha && fallbackFormat == TextureFormat.BC7;
+                    bool fallbackPreserveAlpha =
+                        preserveAlpha && fallbackFormat == TextureFormat.BC7;
                     _normalMapPreprocessor.PrepareForCompression(
                         texture,
                         sourceFormat,
@@ -542,10 +543,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                     float zFromRgSq = 1f - xFromR * xFromR - yFromG * yFromG;
                     float zFromRg = zFromRgSq > 0f ? Mathf.Sqrt(zFromRgSq) : 0f;
-                    if (
-                        zFromRgSq >= -0.02f
-                        && Mathf.Abs(Mathf.Abs(zFromB) - zFromRg) <= 0.25f
-                    )
+                    if (zFromRgSq >= -0.02f && Mathf.Abs(Mathf.Abs(zFromB) - zFromRg) <= 0.25f)
                     {
                         rgbConsistentCount++;
                     }
@@ -562,10 +560,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     rbNearOneRatio < 0.9f
                     && (
                         rgbConsistencyRatio >= 0.7f
-                        || (
-                            validRgRatio >= 0.85f
-                            && (validRgRatio - validAgRatio) >= 0.12f
-                        )
+                        || (validRgRatio >= 0.85f && (validRgRatio - validAgRatio) >= 0.12f)
                     );
 
                 return rgbLikely

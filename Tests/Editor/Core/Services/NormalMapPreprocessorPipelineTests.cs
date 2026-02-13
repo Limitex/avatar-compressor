@@ -504,7 +504,11 @@ namespace dev.limitex.avatar.compressor.tests
                 TextureFormat.BC7,
                 preserveAlpha: true
             );
-            EditorUtility.CompressTexture(resized, TextureFormat.BC7, TextureCompressionQuality.Best);
+            EditorUtility.CompressTexture(
+                resized,
+                TextureFormat.BC7,
+                TextureCompressionQuality.Best
+            );
 
             var result = resized.GetPixels();
             float minAlpha = 1f;
@@ -546,7 +550,11 @@ namespace dev.limitex.avatar.compressor.tests
 
             var resized = _processor.ResizeTo(source, 64, 64, isNormalMap: true);
             _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.DXT5);
-            EditorUtility.CompressTexture(resized, TextureFormat.DXT5, TextureCompressionQuality.Best);
+            EditorUtility.CompressTexture(
+                resized,
+                TextureFormat.DXT5,
+                TextureCompressionQuality.Best
+            );
 
             var center = resized.GetPixels()[32 * 64 + 32];
             float decodedXFromAlpha = center.a * 2f - 1f;

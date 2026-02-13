@@ -1780,7 +1780,11 @@ namespace dev.limitex.avatar.compressor.tests
                 TextureFormat.BC7,
                 preserveAlpha: true
             );
-            EditorUtility.CompressTexture(source, TextureFormat.BC7, TextureCompressionQuality.Best);
+            EditorUtility.CompressTexture(
+                source,
+                TextureFormat.BC7,
+                TextureCompressionQuality.Best
+            );
             Assert.AreEqual(TextureFormat.BC7, source.format, "Source should be BC7");
 
             var root = CreateGameObject("Root");
