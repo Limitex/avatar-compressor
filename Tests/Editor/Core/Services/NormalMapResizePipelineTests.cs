@@ -128,6 +128,23 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void ResizeSameSize_SphereNormal_WhenARGBFloatSupported_PreservesData()
+        {
+            if (!SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBFloat))
+            {
+                Assert.Ignore("ARGBFloat RenderTexture is not supported on this environment.");
+            }
+
+            var source = NormalMapTestTextureFactory.CreateSphereNormal(256);
+            var result = _processor.ResizeTo(source, 256, 256, isNormalMap: true);
+
+            AssertNormalMapPreserved(source, result, "SphereNormal_ARGBFloat");
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
         [TestCase(512, 256)]
         [TestCase(512, 128)]
         [TestCase(1024, 256)]
