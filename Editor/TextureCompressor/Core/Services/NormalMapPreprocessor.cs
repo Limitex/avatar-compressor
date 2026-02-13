@@ -225,9 +225,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// - AG (DXTnm for DXT5/BC7): X in A, Y in G, R/B are constants for better DXT1 block precision
         /// - RGB: X in R, Y in G, Z in B, A copied from source
         ///
-        /// Note: Z is always written to B channel for consistency, even though BC5 and DXTnm
-        /// formats only use 2 channels. This allows pre-compression validation and debugging.
-        /// The compression step will ignore unused channels appropriately.
+        /// Note: For RG/RGB targets, Z is written to B channel for consistency.
+        /// For AG (DXTnm) targets, B is intentionally fixed to 255 to improve DXT1 RGB block
+        /// precision for the Y channel.
         /// </remarks>
         private static void WriteNormalChannels(
             ref Color32 pixel,
