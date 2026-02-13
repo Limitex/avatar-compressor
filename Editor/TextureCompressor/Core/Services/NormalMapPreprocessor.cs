@@ -186,7 +186,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <remarks>
         /// Channel packing for each format:
         /// - RG (BC5): X in R, Y in G, Z in B (B is ignored during BC5 compression but useful for testing)
-        /// - AG (DXTnm for DXT5/BC7): X in A, Y in G, Z in B (B is ignored during compression)
+        /// - AG (DXTnm for DXT5/BC7): X in A, Y in G, R/B are constants to improve G precision
         /// - RGB: X in R, Y in G, Z in B, A=source alpha (when preserve alpha mode is enabled)
         ///
         /// Note: Z is always written to B channel for consistency, even though BC5 and DXTnm
@@ -218,11 +218,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     break;
 
                 case NormalChannelLayout.AG:
-                    // DXTnm (DXT5/BC7): X in A, Y in G, Z in B (B ignored during compression)
-                    // R channel is set to a neutral value (some shaders may sample it)
-                    pixel.r = 128; // Neutral value (0.5 encoded)
+                    // DXTnm (DXT5/BC7): X in A, Y in G.
+                    // Keep R/B at constants so DXT1 RGB block precision focuses on G.
+                    pixel.r = 255;
                     pixel.g = encodedY;
-                    pixel.b = encodedZ;
+                    pixel.b = 255;
                     pixel.a = encodedX;
                     break;
 

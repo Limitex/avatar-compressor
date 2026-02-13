@@ -426,6 +426,40 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void PrepareForCompression_ToDXT5_SetsConstantRBChannels()
+        {
+            var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            var pixels = new Color[4];
+
+            float x = 0.4f;
+            float y = -0.2f;
+            for (int i = 0; i < 4; i++)
+            {
+                pixels[i] = new Color(x * 0.5f + 0.5f, y * 0.5f + 0.5f, 1f, 1f);
+            }
+            texture.SetPixels(pixels);
+            texture.Apply();
+
+            _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32, TextureFormat.DXT5);
+
+            var newPixels = texture.GetPixels();
+            Assert.That(newPixels[0].r, Is.EqualTo(1f).Within(0.01f), "R should be constant 1.0");
+            Assert.That(newPixels[0].b, Is.EqualTo(1f).Within(0.01f), "B should be constant 1.0");
+            Assert.That(
+                newPixels[0].g * 2f - 1f,
+                Is.EqualTo(y).Within(0.02f),
+                "Y should remain encoded in G"
+            );
+            Assert.That(
+                newPixels[0].a * 2f - 1f,
+                Is.EqualTo(x).Within(0.02f),
+                "X should remain encoded in A"
+            );
+
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
         public void PrepareForCompression_ToBC7_WithPreserveAlpha_KeepsSourceAlpha()
         {
             var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
