@@ -360,6 +360,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 return false;
             }
 
+            Color32[] originalPixels = null;
+            if (isNormalMap && texture.isReadable)
+            {
+                // Fallback must start from the original source layout, not from preprocessed pixels.
+                originalPixels = texture.GetPixels32();
+            }
+
             try
             {
                 if (isNormalMap)
@@ -385,7 +392,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     $"[{Name}] Failed to compress texture to {targetFormat}: {e.Message}. "
                         + "Attempting fallback."
                 );
-                return ApplyFallbackCompression(texture, targetFormat, isNormalMap, preserveAlpha);
+
+                if (originalPixels != null)
+                {
+                    texture.SetPixels32(originalPixels);
+                    texture.Apply(texture.mipmapCount > 1);
+                }
+
+                return ApplyFallbackCompression(texture, sourceFormat, isNormalMap, preserveAlpha);
             }
         }
 
@@ -394,7 +408,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         private bool ApplyFallbackCompression(
             Texture2D texture,
-            TextureFormat preprocessedFormat,
+            TextureFormat sourceFormat,
             bool isNormalMap,
             bool preserveAlpha
         )
@@ -409,11 +423,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 if (isNormalMap)
                 {
+                    bool fallbackPreserveAlpha = preserveAlpha && fallbackFormat == TextureFormat.BC7;
                     _normalMapPreprocessor.PrepareForCompression(
                         texture,
-                        preprocessedFormat,
+                        sourceFormat,
                         fallbackFormat,
-                        preserveAlpha
+                        fallbackPreserveAlpha
                     );
                 }
 
