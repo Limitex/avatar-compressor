@@ -273,6 +273,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     );
                 }
 
+                // DXTnm sources store normal X in the alpha channel, which can make
+                // HasSignificantAlpha return true even when there is no semantic alpha to preserve.
+                // UsesDxtnmLayout prevents false positives for those sources.
                 preserveNormalMapAlpha =
                     textureInfo.IsNormalMap
                     && hasAlpha
@@ -450,6 +453,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
         }
 
+        /// <summary>
+        /// Returns true if the format uses DXTnm channel layout (XY in AG) when used as a normal map.
+        /// Note: BC7 normal maps from Unity's TextureImporter use DXTnm layout.
+        /// BC7 textures produced by this tool with preserveAlpha=true use RGB layout instead.
+        /// </summary>
         private static bool UsesDxtnmLayout(TextureFormat format)
         {
             return format == TextureFormat.DXT5
