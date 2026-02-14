@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
@@ -1961,6 +1962,53 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void Compress_BC7RGBLayoutNormalMapSource_WithOpaqueAlpha_PreservesNegativeZ()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            // RGB layout with opaque alpha must keep signed Z data (object-space style input).
+            var source = CreateBC7RGBLayoutObjectSpaceNormalWithOpaqueAlpha(128, 128);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_BumpMap", source);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var result = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(result);
+            Assert.AreEqual(TextureFormat.BC7, result.format);
+
+            var pixels = result.GetPixels();
+            int row = result.height / 2;
+            int leftIndex = row * result.width + (result.width / 4);
+            int rightIndex = row * result.width + (result.width * 3 / 4);
+
+            float leftZ = pixels[leftIndex].b * 2f - 1f;
+            float rightZ = pixels[rightIndex].b * 2f - 1f;
+
+            Assert.That(
+                leftZ,
+                Is.LessThan(-0.2f),
+                "RGB-layout opaque-alpha source should keep negative Z on left half"
+            );
+            Assert.That(
+                rightZ,
+                Is.GreaterThan(0.2f),
+                "RGB-layout opaque-alpha source should keep positive Z on right half"
+            );
+
+            _createdObjects.Add(result);
+        }
+
+        [Test]
         public void Compress_BC7RGLayoutNormalMapSource_WithBinaryAlpha_PreservesSemanticAlpha()
         {
             var config = CreateConfig();
@@ -2036,6 +2084,131 @@ namespace dev.limitex.avatar.compressor.tests
                 centerZ,
                 Is.GreaterThan(0.2f),
                 "RG-layout source with B=0 should keep positive Z after recompression"
+            );
+
+            _createdObjects.Add(result);
+        }
+
+        [Test]
+        public void Compress_BC7RGLayoutNormalMapSource_WithOpaqueAlpha_PreservesNormalDirection()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            // RG layout with opaque alpha should not be treated as AG layout.
+            var source = CreateBC7RGLayoutNormalMapWithOpaqueAlpha(128, 128, bValue: 0);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_BumpMap", source);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var result = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(result);
+            Assert.AreEqual(TextureFormat.BC7, result.format);
+
+            var pixels = result.GetPixels();
+            int sampleX = result.width * 3 / 4;
+            int sampleY = result.height / 4;
+            int sampleIndex = sampleY * result.width + sampleX;
+
+            float decodedX = pixels[sampleIndex].a * 2f - 1f;
+            float decodedY = pixels[sampleIndex].g * 2f - 1f;
+            float expectedX = (sampleX / (float)result.width - 0.5f) * 0.6f;
+            float expectedY = (sampleY / (float)result.height - 0.5f) * 0.6f;
+
+            Assert.That(
+                decodedX,
+                Is.EqualTo(expectedX).Within(0.2f),
+                "Opaque-alpha RG-layout source should preserve X direction after recompression"
+            );
+            Assert.That(
+                decodedY,
+                Is.EqualTo(expectedY).Within(0.2f),
+                "Opaque-alpha RG-layout source should preserve Y direction after recompression"
+            );
+
+            _createdObjects.Add(result);
+        }
+
+        [Test]
+        public void DetectDXTnmLikeSourceLayout_BC7RGBLayout_WithMixedSignedZAndOpaqueAlpha_ReturnsRGB()
+        {
+            var source = CreateBC7RGBLayoutObjectSpaceNormalWithOpaqueAlpha(128, 128);
+
+            var layout = InvokeDetectDXTnmLikeSourceLayout(source);
+
+            Assert.AreEqual(
+                NormalMapPreprocessor.SourceLayout.RGB,
+                layout,
+                "Mixed signed-Z BC7 RGB-layout source should be detected as RGB"
+            );
+        }
+
+        [Test]
+        [TestCase((byte)0, "NegativeZ", NormalMapPreprocessor.SourceLayout.RGB)]
+        [TestCase((byte)255, "PositiveZ", NormalMapPreprocessor.SourceLayout.RGB)]
+        public void DetectDXTnmLikeSourceLayout_BC7RGBLayout_WithSingleSignedZOpaqueAlpha_ReturnsExpectedLayout(
+            byte encodedZ,
+            string signedZLabel,
+            NormalMapPreprocessor.SourceLayout expectedLayout
+        )
+        {
+            var source = CreateBC7RGBLayoutObjectSpaceNormalWithOpaqueAlphaSingleSign(
+                128,
+                128,
+                encodedZ,
+                signedZLabel
+            );
+
+            var layout = InvokeDetectDXTnmLikeSourceLayout(source);
+
+            Assert.AreEqual(expectedLayout, layout, $"Single-sign {signedZLabel} detection mismatch");
+        }
+
+        [Test]
+        public void Compress_BC7RGBLayoutNormalMapSource_WithSingleNegativeZOpaqueAlpha_PreservesNegativeZ()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            var source = CreateBC7RGBLayoutObjectSpaceNormalWithOpaqueAlphaSingleSign(
+                128,
+                128,
+                encodedZ: 0,
+                signedZLabel: "NegativeZ"
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_BumpMap", source);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var result = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(result);
+            Assert.AreEqual(TextureFormat.BC7, result.format);
+
+            var pixels = result.GetPixels();
+            int centerIndex = (result.height / 2) * result.width + (result.width / 2);
+            float centerZ = pixels[centerIndex].b * 2f - 1f;
+            Assert.That(
+                centerZ,
+                Is.LessThan(-0.2f),
+                "Single-sign negative-Z RGB-layout source should keep negative Z after recompression"
             );
 
             _createdObjects.Add(result);
@@ -2534,6 +2707,136 @@ namespace dev.limitex.avatar.compressor.tests
             _createdAssetPaths.Add(assetPath);
 
             return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+        }
+
+        private Texture2D CreateBC7RGLayoutNormalMapWithOpaqueAlpha(
+            int width,
+            int height,
+            byte bValue = 128
+        )
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false, true);
+            var pixels = new Color32[width * height];
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int index = y * width + x;
+                    float nx = (x / (float)width - 0.5f) * 0.6f;
+                    float ny = (y / (float)height - 0.5f) * 0.6f;
+
+                    byte r = (byte)Mathf.Clamp((nx * 0.5f + 0.5f) * 255f, 0f, 255f);
+                    byte g = (byte)Mathf.Clamp((ny * 0.5f + 0.5f) * 255f, 0f, 255f);
+                    pixels[index] = new Color32(r, g, bValue, 255);
+                }
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            EditorUtility.CompressTexture(texture, TextureFormat.BC7, TextureCompressionQuality.Best);
+            Assert.AreEqual(TextureFormat.BC7, texture.format, "Source should be BC7");
+
+            string assetPath =
+                $"{TestAssetFolder}/NormalMapBC7_RG_OpaqueAlpha_B{bValue}_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+        }
+
+        private Texture2D CreateBC7RGBLayoutObjectSpaceNormalWithOpaqueAlpha(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false, true);
+            var pixels = new Color32[width * height];
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int index = y * width + x;
+                    byte encodedZ = x < width / 2 ? (byte)0 : (byte)255;
+                    pixels[index] = new Color32(128, 128, encodedZ, 255);
+                }
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            var preprocessor = new NormalMapPreprocessor();
+            preprocessor.PrepareForCompression(
+                texture,
+                TextureFormat.RGBA32,
+                TextureFormat.BC7,
+                preserveAlpha: true,
+                sourceLayout: NormalMapPreprocessor.SourceLayout.RGB
+            );
+            EditorUtility.CompressTexture(texture, TextureFormat.BC7, TextureCompressionQuality.Best);
+            Assert.AreEqual(TextureFormat.BC7, texture.format, "Source should be BC7");
+
+            string assetPath =
+                $"{TestAssetFolder}/NormalMapBC7_RGB_OpaqueAlpha_ObjectSpace_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+        }
+
+        private Texture2D CreateBC7RGBLayoutObjectSpaceNormalWithOpaqueAlphaSingleSign(
+            int width,
+            int height,
+            byte encodedZ,
+            string signedZLabel
+        )
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false, true);
+            var pixels = new Color32[width * height];
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                // RGB layout object-space normal with opaque semantic alpha.
+                pixels[i] = new Color32(128, 128, encodedZ, 255);
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            var preprocessor = new NormalMapPreprocessor();
+            preprocessor.PrepareForCompression(
+                texture,
+                TextureFormat.RGBA32,
+                TextureFormat.BC7,
+                preserveAlpha: true,
+                sourceLayout: NormalMapPreprocessor.SourceLayout.RGB
+            );
+            EditorUtility.CompressTexture(texture, TextureFormat.BC7, TextureCompressionQuality.Best);
+            Assert.AreEqual(TextureFormat.BC7, texture.format, "Source should be BC7");
+
+            string assetPath =
+                $"{TestAssetFolder}/NormalMapBC7_RGB_OpaqueAlpha_ObjectSpace_{signedZLabel}_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+        }
+
+        private static NormalMapPreprocessor.SourceLayout InvokeDetectDXTnmLikeSourceLayout(
+            Texture2D texture
+        )
+        {
+            var method = typeof(TextureCompressorService).GetMethod(
+                "DetectDXTnmLikeSourceLayout",
+                BindingFlags.Static | BindingFlags.NonPublic
+            );
+            Assert.IsNotNull(method, "DetectDXTnmLikeSourceLayout method should exist");
+
+            object value = method.Invoke(null, new object[] { texture });
+            Assert.IsInstanceOf<NormalMapPreprocessor.SourceLayout>(
+                value,
+                "Layout detector should return SourceLayout"
+            );
+            return (NormalMapPreprocessor.SourceLayout)value;
         }
 
         #endregion

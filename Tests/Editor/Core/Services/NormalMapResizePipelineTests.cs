@@ -215,6 +215,7 @@ namespace dev.limitex.avatar.compressor.tests
             var resultWithoutFlag = _processor.ResizeTo(source, 256, 256, isNormalMap: false);
 
             // Compare the two results - they should be different
+            var sourcePixels = source.GetPixels();
             var pixelsWithFlag = resultWithFlag.GetPixels();
             var pixelsWithoutFlag = resultWithoutFlag.GetPixels();
 
@@ -232,10 +233,28 @@ namespace dev.limitex.avatar.compressor.tests
                 }
             }
 
-            // Note: This may or may not show difference depending on Unity's color space settings
-            // The important thing is that isNormalMap=true preserves data correctly
+            float withFlagAngularError = CalculateAverageAngularDifference(
+                sourcePixels,
+                pixelsWithFlag
+            );
+            float withoutFlagAngularError = CalculateAverageAngularDifference(
+                sourcePixels,
+                pixelsWithoutFlag
+            );
+
             Debug.Log(
-                $"[NormalMapResizePipelineTests] WithFlag vs WithoutFlag difference detected: {hasDifference}"
+                "[NormalMapResizePipelineTests] WithFlag vs WithoutFlag difference detected: "
+                    + $"{hasDifference}, "
+                    + $"WithFlag avg angular error: {withFlagAngularError:F4}°, "
+                    + $"WithoutFlag avg angular error: {withoutFlagAngularError:F4}°"
+            );
+
+            // Rendering setup can make both paths equivalent on some environments.
+            // At minimum, the normal-map path must not be less accurate.
+            Assert.That(
+                withFlagAngularError,
+                Is.LessThanOrEqualTo(withoutFlagAngularError + 0.1f),
+                "isNormalMap=true path should be at least as accurate as default resize path"
             );
 
             Object.DestroyImmediate(source);
@@ -330,6 +349,25 @@ namespace dev.limitex.avatar.compressor.tests
             );
 
             Assert.AreEqual(0, errorCount, $"{testName}: {errorCount} pixels exceeded tolerance");
+        }
+
+        private static float CalculateAverageAngularDifference(Color[] sourcePixels, Color[] resultPixels)
+        {
+            int sampleCount = Mathf.Min(1000, sourcePixels.Length);
+            int step = Mathf.Max(1, sourcePixels.Length / sampleCount);
+            float angleSum = 0f;
+            int count = 0;
+
+            for (int i = 0; i < sourcePixels.Length; i += step)
+            {
+                var sourceNormal = NormalMapTestTextureFactory.DecodeNormal(sourcePixels[i]).normalized;
+                var resultNormal = NormalMapTestTextureFactory.DecodeNormal(resultPixels[i]).normalized;
+                float dot = Mathf.Clamp(Vector3.Dot(sourceNormal, resultNormal), -1f, 1f);
+                angleSum += Mathf.Acos(dot) * Mathf.Rad2Deg;
+                count++;
+            }
+
+            return count > 0 ? angleSum / count : 0f;
         }
 
         #endregion
