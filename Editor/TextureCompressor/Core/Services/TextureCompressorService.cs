@@ -251,7 +251,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     textureInfo.IsNormalMap
                 );
 
-                bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
+                bool hasAlpha = false;
+                bool hasAlphaComputed = false;
+                bool GetHasAlpha()
+                {
+                    if (!hasAlphaComputed)
+                    {
+                        hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
+                        hasAlphaComputed = true;
+                    }
+
+                    return hasAlpha;
+                }
+
                 bool preserveNormalMapAlpha;
                 var sourceLayout = textureInfo.IsNormalMap
                     ? ResolveNormalSourceLayout(
@@ -276,7 +288,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     targetFormat = _formatSelector.PredictFormat(
                         textureInfo.IsNormalMap,
                         analysis.NormalizedComplexity,
-                        hasAlpha
+                        GetHasAlpha()
                     );
                 }
 
@@ -284,9 +296,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 // Preserve semantic alpha for non-AG layouts (RGB/RG) when targeting BC7.
                 preserveNormalMapAlpha =
                     textureInfo.IsNormalMap
-                    && hasAlpha
                     && targetFormat == TextureFormat.BC7
-                    && sourceLayout != NormalMapPreprocessor.SourceLayout.AG;
+                    && sourceLayout != NormalMapPreprocessor.SourceLayout.AG
+                    && GetHasAlpha();
 
                 ApplyCompression(
                     resizedTexture,
