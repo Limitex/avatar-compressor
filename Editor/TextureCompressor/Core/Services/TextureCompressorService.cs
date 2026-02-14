@@ -280,13 +280,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     );
                 }
 
-                // DXTnm sources store normal X in alpha and can trigger HasSignificantAlpha().
-                // Preserve alpha only when the source layout is actually RGB (semantic alpha).
+                // DXTnm AG layout stores normal X in alpha and can trigger HasSignificantAlpha().
+                // Preserve semantic alpha for non-AG layouts (RGB/RG) when targeting BC7.
                 preserveNormalMapAlpha =
                     textureInfo.IsNormalMap
                     && hasAlpha
                     && targetFormat == TextureFormat.BC7
-                    && sourceLayout == NormalMapPreprocessor.SourceLayout.RGB;
+                    && sourceLayout != NormalMapPreprocessor.SourceLayout.AG;
 
                 ApplyCompression(
                     resizedTexture,

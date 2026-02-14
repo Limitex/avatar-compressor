@@ -1960,6 +1960,49 @@ namespace dev.limitex.avatar.compressor.tests
             _createdObjects.Add(result);
         }
 
+        [Test]
+        public void Compress_BC7RGLayoutNormalMapSource_WithBinaryAlpha_PreservesSemanticAlpha()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            // Simulate BC7 source where normals are in RG and alpha contains cutout semantics.
+            // B is intentionally non-reconstructed to avoid RGB-layout heuristics.
+            var source = CreateBC7RGLayoutNormalMapWithBinaryAlpha(128, 128);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_BumpMap", source);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var result = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(result);
+            Assert.AreEqual(TextureFormat.BC7, result.format);
+
+            var pixels = result.GetPixels();
+            float minAlpha = pixels.Min(p => p.a);
+            float maxAlpha = pixels.Max(p => p.a);
+            Assert.That(
+                minAlpha,
+                Is.LessThan(0.25f),
+                "RG-layout source should keep low binary alpha values after recompression"
+            );
+            Assert.That(
+                maxAlpha,
+                Is.GreaterThan(0.75f),
+                "RG-layout source should keep high binary alpha values after recompression"
+            );
+
+            _createdObjects.Add(result);
+        }
+
         /// <summary>
         /// Tests that when source texture is already compressed (ASTC), the format is preserved
         /// even when target platform is Desktop.
@@ -2410,6 +2453,41 @@ namespace dev.limitex.avatar.compressor.tests
             string layout = sourceIsAGLayout ? "AG" : "RG";
             string assetPath =
                 $"{TestAssetFolder}/NormalMapDXT5_{layout}_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+        }
+
+        private Texture2D CreateBC7RGLayoutNormalMapWithBinaryAlpha(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false, true);
+            var pixels = new Color32[width * height];
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int index = y * width + x;
+                    float nx = (x / (float)width - 0.5f) * 0.6f;
+                    float ny = (y / (float)height - 0.5f) * 0.6f;
+
+                    byte r = (byte)Mathf.Clamp((nx * 0.5f + 0.5f) * 255f, 0f, 255f);
+                    byte g = (byte)Mathf.Clamp((ny * 0.5f + 0.5f) * 255f, 0f, 255f);
+                    byte b = 128;
+                    byte a = ((x / 8 + y / 8) % 2 == 0) ? (byte)0 : (byte)255;
+                    pixels[index] = new Color32(r, g, b, a);
+                }
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            EditorUtility.CompressTexture(texture, TextureFormat.BC7, TextureCompressionQuality.Best);
+            Assert.AreEqual(TextureFormat.BC7, texture.format, "Source should be BC7");
+
+            string assetPath =
+                $"{TestAssetFolder}/NormalMapBC7_RG_BinaryAlpha_{width}x{height}_{System.Guid.NewGuid():N}.asset";
             AssetDatabase.CreateAsset(texture, assetPath);
             _createdAssetPaths.Add(assetPath);
 
