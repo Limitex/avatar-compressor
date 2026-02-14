@@ -254,7 +254,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
                 bool preserveNormalMapAlpha;
                 var sourceLayout = textureInfo.IsNormalMap
-                    ? ResolveNormalSourceLayout(resizedTexture, originalTexture.format)
+                    ? ResolveNormalSourceLayout(
+                        originalTexture,
+                        resizedTexture,
+                        originalTexture.format
+                    )
                     : NormalMapPreprocessor.SourceLayout.Auto;
 
                 // Determine target format
@@ -472,10 +476,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// pixel heuristics when the source layout is ambiguous.
         /// </summary>
         private static NormalMapPreprocessor.SourceLayout ResolveNormalSourceLayout(
-            Texture2D texture,
+            Texture2D originalTexture,
+            Texture2D resizedTexture,
             TextureFormat format
         )
         {
+            var detectionTexture =
+                originalTexture != null && originalTexture.isReadable
+                    ? originalTexture
+                    : resizedTexture;
+
             switch (format)
             {
                 case TextureFormat.BC5:
@@ -483,7 +493,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 case TextureFormat.DXT5:
                 case TextureFormat.DXT5Crunched:
                 case TextureFormat.BC7:
-                    return DetectDXTnmLikeSourceLayout(texture);
+                    return DetectDXTnmLikeSourceLayout(detectionTexture);
                 default:
                     return NormalMapPreprocessor.SourceLayout.RGB;
             }
@@ -517,6 +527,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 int validAgCount = 0;
                 int rbNearOneCount = 0;
                 int rgbConsistentCount = 0;
+                int alphaNonOpaqueCount = 0;
                 int total = 0;
 
                 for (int i = 0; i < pixels.Length; i += step)
@@ -550,6 +561,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         rgbConsistentCount++;
                     }
 
+                    if (p.a < AnalysisConstants.SignificantAlphaThreshold)
+                    {
+                        alphaNonOpaqueCount++;
+                    }
+
                     total++;
                 }
 
@@ -557,6 +573,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 float validAgRatio = (float)validAgCount / total;
                 float rbNearOneRatio = (float)rbNearOneCount / total;
                 float rgbConsistencyRatio = (float)rgbConsistentCount / total;
+                float alphaNonOpaqueRatio = (float)alphaNonOpaqueCount / total;
                 float rgAdvantage = validRgRatio - validAgRatio;
 
                 // Strong DXTnm AG signature: R/B are near 1 while XY validity matches AG.
@@ -569,6 +586,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (validAgRatio >= 0.9f && rgAdvantage <= -0.1f)
                 {
                     return NormalMapPreprocessor.SourceLayout.AG;
+                }
+
+                // If explicit Z in B is plausible and alpha contains meaningful non-opaque values,
+                // prioritize RGB to preserve semantic alpha (e.g., cutout/mask textures).
+                if (
+                    rbNearOneRatio < 0.9f
+                    && rgbConsistencyRatio >= 0.7f
+                    && alphaNonOpaqueRatio >= 0.05f
+                )
+                {
+                    return NormalMapPreprocessor.SourceLayout.RGB;
                 }
 
                 // RG is clearly more plausible than AG.

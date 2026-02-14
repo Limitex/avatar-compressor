@@ -1905,6 +1905,61 @@ namespace dev.limitex.avatar.compressor.tests
             _createdObjects.Add(result);
         }
 
+        [Test]
+        public void Compress_BC7RGBLayoutNormalMapSource_WithBinaryAlpha_PreservesSemanticAlpha()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            // Binary alpha is a common cutout/mask pattern and must survive recompression.
+            var source = CreateNormalMapTextureWithBinaryAlpha(128, 128);
+            var preprocessor = new NormalMapPreprocessor();
+            preprocessor.PrepareForCompression(
+                source,
+                TextureFormat.RGBA32,
+                TextureFormat.BC7,
+                preserveAlpha: true
+            );
+            EditorUtility.CompressTexture(
+                source,
+                TextureFormat.BC7,
+                TextureCompressionQuality.Best
+            );
+            Assert.AreEqual(TextureFormat.BC7, source.format, "Source should be BC7");
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_BumpMap", source);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var result = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(result);
+            Assert.AreEqual(TextureFormat.BC7, result.format);
+
+            var pixels = result.GetPixels();
+            float minAlpha = pixels.Min(p => p.a);
+            float maxAlpha = pixels.Max(p => p.a);
+            Assert.That(
+                minAlpha,
+                Is.LessThan(0.25f),
+                "Binary alpha low values should be preserved after recompression"
+            );
+            Assert.That(
+                maxAlpha,
+                Is.GreaterThan(0.75f),
+                "Binary alpha high values should be preserved after recompression"
+            );
+
+            _createdObjects.Add(result);
+        }
+
         /// <summary>
         /// Tests that when source texture is already compressed (ASTC), the format is preserved
         /// even when target platform is Desktop.
@@ -2286,6 +2341,37 @@ namespace dev.limitex.avatar.compressor.tests
 
             string assetPath =
                 $"{TestAssetFolder}/NormalMapAlpha_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+        }
+
+        private Texture2D CreateNormalMapTextureWithBinaryAlpha(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            var pixels = new Color32[width * height];
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int index = y * width + x;
+                    float nx = (x / (float)width - 0.5f) * 0.6f;
+                    float ny = (y / (float)height - 0.5f) * 0.6f;
+
+                    byte r = (byte)((nx * 0.5f + 0.5f) * 255f);
+                    byte g = (byte)((ny * 0.5f + 0.5f) * 255f);
+                    byte a = ((x / 8 + y / 8) % 2 == 0) ? (byte)0 : (byte)255;
+                    pixels[index] = new Color32(r, g, 255, a);
+                }
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+
+            string assetPath =
+                $"{TestAssetFolder}/NormalMapBinaryAlpha_{width}x{height}_{System.Guid.NewGuid():N}.asset";
             AssetDatabase.CreateAsset(texture, assetPath);
             _createdAssetPaths.Add(assetPath);
 
