@@ -2003,6 +2003,44 @@ namespace dev.limitex.avatar.compressor.tests
             _createdObjects.Add(result);
         }
 
+        [Test]
+        public void Compress_BC7RGLayoutNormalMapSource_WithZeroBlue_PreservesPositiveZ()
+        {
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.TargetPlatform = CompressionPlatform.Desktop;
+            config.ProcessNormalMaps = true;
+            var service = new TextureCompressorService(config);
+
+            // RG layout may contain undefined B values (e.g., 0). The pipeline must not treat
+            // this as signed RGB Z and flip normal direction.
+            var source = CreateBC7RGLayoutNormalMapWithBinaryAlpha(128, 128, bValue: 0);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_BumpMap", source);
+            renderer.sharedMaterial = material;
+
+            service.Compress(root, false);
+
+            var result = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
+            Assert.IsNotNull(result);
+            Assert.AreEqual(TextureFormat.BC7, result.format);
+
+            var pixels = result.GetPixels();
+            int centerIndex = (result.height / 2) * result.width + (result.width / 2);
+            float centerZ = pixels[centerIndex].b * 2f - 1f;
+            Assert.That(
+                centerZ,
+                Is.GreaterThan(0.2f),
+                "RG-layout source with B=0 should keep positive Z after recompression"
+            );
+
+            _createdObjects.Add(result);
+        }
+
         /// <summary>
         /// Tests that when source texture is already compressed (ASTC), the format is preserved
         /// even when target platform is Desktop.
@@ -2459,7 +2497,11 @@ namespace dev.limitex.avatar.compressor.tests
             return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
         }
 
-        private Texture2D CreateBC7RGLayoutNormalMapWithBinaryAlpha(int width, int height)
+        private Texture2D CreateBC7RGLayoutNormalMapWithBinaryAlpha(
+            int width,
+            int height,
+            byte bValue = 128
+        )
         {
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false, true);
             var pixels = new Color32[width * height];
@@ -2474,7 +2516,7 @@ namespace dev.limitex.avatar.compressor.tests
 
                     byte r = (byte)Mathf.Clamp((nx * 0.5f + 0.5f) * 255f, 0f, 255f);
                     byte g = (byte)Mathf.Clamp((ny * 0.5f + 0.5f) * 255f, 0f, 255f);
-                    byte b = 128;
+                    byte b = bValue;
                     byte a = ((x / 8 + y / 8) % 2 == 0) ? (byte)0 : (byte)255;
                     pixels[index] = new Color32(r, g, b, a);
                 }
@@ -2487,7 +2529,7 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(TextureFormat.BC7, texture.format, "Source should be BC7");
 
             string assetPath =
-                $"{TestAssetFolder}/NormalMapBC7_RG_BinaryAlpha_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+                $"{TestAssetFolder}/NormalMapBC7_RG_BinaryAlpha_B{bValue}_{width}x{height}_{System.Guid.NewGuid():N}.asset";
             AssetDatabase.CreateAsset(texture, assetPath);
             _createdAssetPaths.Add(assetPath);
 

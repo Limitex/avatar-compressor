@@ -538,7 +538,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 int validRgCount = 0;
                 int validAgCount = 0;
                 int rbNearOneCount = 0;
-                int rgbConsistentCount = 0;
+                int rgbSignedConsistentCount = 0;
                 int alphaNonOpaqueCount = 0;
                 int total = 0;
 
@@ -568,9 +568,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                     float zFromRgSq = 1f - xFromR * xFromR - yFromG * yFromG;
                     float zFromRg = zFromRgSq > 0f ? Mathf.Sqrt(zFromRgSq) : 0f;
-                    if (zFromRgSq >= -0.02f && Mathf.Abs(Mathf.Abs(zFromB) - zFromRg) <= 0.25f)
+                    if (zFromRgSq >= -0.02f && Mathf.Abs(zFromB - zFromRg) <= 0.25f)
                     {
-                        rgbConsistentCount++;
+                        rgbSignedConsistentCount++;
                     }
 
                     if (p.a < AnalysisConstants.SignificantAlphaThreshold)
@@ -584,7 +584,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 float validRgRatio = (float)validRgCount / total;
                 float validAgRatio = (float)validAgCount / total;
                 float rbNearOneRatio = (float)rbNearOneCount / total;
-                float rgbConsistencyRatio = (float)rgbConsistentCount / total;
+                float rgbSignedConsistencyRatio = (float)rgbSignedConsistentCount / total;
                 float alphaNonOpaqueRatio = (float)alphaNonOpaqueCount / total;
                 float rgAdvantage = validRgRatio - validAgRatio;
 
@@ -600,25 +600,25 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     return NormalMapPreprocessor.SourceLayout.AG;
                 }
 
-                // If explicit Z in B is plausible and alpha contains meaningful non-opaque values,
+                // RG is clearly more plausible than AG and avoids treating undefined B as signed Z.
+                if (validRgRatio >= 0.85f && rgAdvantage >= 0.12f)
+                {
+                    return NormalMapPreprocessor.SourceLayout.RG;
+                }
+
+                // If explicit signed Z in B is plausible and alpha contains meaningful non-opaque values,
                 // prioritize RGB to preserve semantic alpha (e.g., cutout/mask textures).
                 if (
                     rbNearOneRatio < 0.9f
-                    && rgbConsistencyRatio >= 0.7f
+                    && rgbSignedConsistencyRatio >= 0.7f
                     && alphaNonOpaqueRatio >= 0.05f
                 )
                 {
                     return NormalMapPreprocessor.SourceLayout.RGB;
                 }
 
-                // RG is clearly more plausible than AG.
-                if (validRgRatio >= 0.85f && rgAdvantage >= 0.12f)
-                {
-                    return NormalMapPreprocessor.SourceLayout.RG;
-                }
-
                 // RGB stores an explicit Z in B that should roughly match reconstructed Z from RG.
-                if (rbNearOneRatio < 0.9f && rgbConsistencyRatio >= 0.7f)
+                if (rbNearOneRatio < 0.9f && rgbSignedConsistencyRatio >= 0.7f)
                 {
                     return NormalMapPreprocessor.SourceLayout.RGB;
                 }
