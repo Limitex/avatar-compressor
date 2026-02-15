@@ -198,167 +198,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (processedTextures.ContainsKey(originalTexture))
                     continue;
 
-                string assetPath = AssetDatabase.GetAssetPath(originalTexture);
-                string guid = AssetDatabase.AssetPathToGUID(assetPath);
-                TextureAnalysisResult analysis;
-                FrozenTextureSettings frozenSettings = null;
-                FrozenTextureFormat? formatOverride = null;
-
-                // Check if texture is frozen (non-skipped frozen textures are still in collection)
-                if (
-                    !string.IsNullOrEmpty(guid)
-                    && _frozenLookup.TryGetValue(guid, out frozenSettings)
-                    && !frozenSettings.Skip
-                )
-                {
-                    // Use frozen settings instead of analysis
-                    int divisor = frozenSettings.Divisor;
-                    Vector2Int resolution = _processor.CalculateNewDimensions(
-                        originalTexture.width,
-                        originalTexture.height,
-                        divisor
-                    );
-
-                    // Create analysis result with frozen values
-                    // Complexity is set to 0.5 as a neutral value for format selection when format is Auto
-                    analysis = new TextureAnalysisResult(0.5f, divisor, resolution);
-                    formatOverride = frozenSettings.Format;
-
-                    if (enableLogging)
-                    {
-                        Debug.Log(
-                            $"[{Name}] Using frozen settings for '{originalTexture.name}': "
-                                + $"Divisor={divisor}, Format={frozenSettings.Format}"
-                        );
-                    }
-                }
-                else
-                {
-                    // Normal analysis path
-                    if (!analysisResults.TryGetValue(originalTexture, out analysis))
-                    {
-                        Debug.LogWarning(
-                            $"[{Name}] Skipping texture '{originalTexture.name}': analysis failed"
-                        );
-                        continue;
-                    }
-                }
-
-                // Resize texture (use linear color space for normal maps)
-                var resizedTexture = _processor.Resize(
+                var compressedTexture = ProcessSingleTexture(
                     originalTexture,
-                    analysis,
-                    textureInfo.IsNormalMap
+                    textureInfo,
+                    analysisResults,
+                    enableLogging
                 );
 
-                bool hasAlpha = false;
-                bool hasAlphaComputed = false;
-                bool GetHasAlpha()
+                if (compressedTexture != null)
                 {
-                    if (!hasAlphaComputed)
-                    {
-                        hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
-                        hasAlphaComputed = true;
-                    }
-
-                    return hasAlpha;
-                }
-
-                bool preserveNormalMapAlpha;
-                var sourceLayout = textureInfo.IsNormalMap
-                    ? NormalMapSourceLayoutDetector.Resolve(
-                        originalTexture,
-                        resizedTexture,
-                        originalTexture.format
-                    )
-                    : NormalMapPreprocessor.SourceLayout.Auto;
-
-                // Determine target format
-                TextureFormat targetFormat;
-                if (formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto)
-                {
-                    targetFormat = TextureFormatSelector.ConvertFrozenFormat(formatOverride.Value);
-                }
-                else if (TextureFormatSelector.IsCompressedFormat(originalTexture.format))
-                {
-                    targetFormat = originalTexture.format;
-                }
-                else
-                {
-                    targetFormat = _formatSelector.PredictFormat(
-                        textureInfo.IsNormalMap,
-                        analysis.NormalizedComplexity,
-                        GetHasAlpha()
-                    );
-                }
-
-                // DXTnm AG layout stores normal X in alpha and can trigger HasSignificantAlpha().
-                // For BC7 normal maps:
-                // - preserve semantic alpha for non-AG layouts when meaningful alpha exists
-                // - always preserve RGB-layout signed Z, even when alpha is fully opaque
-                preserveNormalMapAlpha =
-                    textureInfo.IsNormalMap
-                    && NormalMapCompressionPolicy.ShouldPreserveSemanticAlpha(
-                        targetFormat,
-                        sourceLayout,
-                        GetHasAlpha()
-                    );
-
-                ApplyCompression(
-                    resizedTexture,
-                    originalTexture.format,
-                    targetFormat,
-                    textureInfo.IsNormalMap,
-                    preserveNormalMapAlpha,
-                    sourceLayout
-                );
-
-                resizedTexture.name = originalTexture.name + "_compressed";
-
-                if (enableLogging)
-                {
-                    var frozenInfo =
-                        formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto
-                            ? " [FROZEN]"
-                            : "";
-                    Debug.Log(
-                        $"[{Name}] {originalTexture.name}: "
-                            + $"{originalTexture.width}x{originalTexture.height} -> "
-                            + $"{resizedTexture.width}x{resizedTexture.height} ({resizedTexture.format}){frozenInfo} "
-                            + $"(Complexity: {analysis.NormalizedComplexity:P0}, "
-                            + $"Divisor: {analysis.RecommendedDivisor}x)"
-                    );
-                }
-
-                var compressedTexture = resizedTexture;
-
-                // Enable mipmap streaming to avoid NDMF warnings
-                var serializedTexture = new SerializedObject(compressedTexture);
-                var streamingMipmaps = serializedTexture.FindProperty("m_StreamingMipmaps");
-                if (streamingMipmaps != null)
-                {
-                    streamingMipmaps.boolValue = true;
-                    serializedTexture.ApplyModifiedPropertiesWithoutUndo();
-                }
-                else if (!_streamingMipmapsWarningShown)
-                {
-                    _streamingMipmapsWarningShown = true;
-                    Debug.LogWarning(
-                        $"[{Name}] Could not enable streaming mipmaps: "
-                            + "property 'm_StreamingMipmaps' not found. This may indicate a Unity version difference."
-                    );
-                }
-
-                // Register the texture replacement in ObjectRegistry so that subsequent NDMF plugins
-                // can track which original texture was replaced. This maintains proper reference
-                // tracking across the build pipeline for tools like TexTransTool and Avatar Optimizer.
-                ObjectRegistry.RegisterReplacedObject(originalTexture, compressedTexture);
-
-                processedTextures[originalTexture] = compressedTexture;
-
-                foreach (var reference in textureInfo.References)
-                {
-                    reference.Material.SetTexture(reference.PropertyName, compressedTexture);
+                    processedTextures[originalTexture] = compressedTexture;
                 }
             }
 
@@ -368,6 +217,181 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             return (processedTextures, clonedMaterials);
+        }
+
+        /// <summary>
+        /// Processes a single texture: resolves settings, resizes, selects format,
+        /// applies compression, enables streaming mipmaps, and updates material references.
+        /// </summary>
+        /// <returns>The compressed texture if processing succeeded; null if skipped.</returns>
+        private Texture2D ProcessSingleTexture(
+            Texture2D originalTexture,
+            TextureInfo textureInfo,
+            Dictionary<Texture2D, TextureAnalysisResult> analysisResults,
+            bool enableLogging
+        )
+        {
+            string assetPath = AssetDatabase.GetAssetPath(originalTexture);
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            TextureAnalysisResult analysis;
+            FrozenTextureSettings frozenSettings = null;
+            FrozenTextureFormat? formatOverride = null;
+
+            // Check if texture is frozen (non-skipped frozen textures are still in collection)
+            if (
+                !string.IsNullOrEmpty(guid)
+                && _frozenLookup.TryGetValue(guid, out frozenSettings)
+                && !frozenSettings.Skip
+            )
+            {
+                // Use frozen settings instead of analysis
+                int divisor = frozenSettings.Divisor;
+                Vector2Int resolution = _processor.CalculateNewDimensions(
+                    originalTexture.width,
+                    originalTexture.height,
+                    divisor
+                );
+
+                // Create analysis result with frozen values
+                // Complexity is set to 0.5 as a neutral value for format selection when format is Auto
+                analysis = new TextureAnalysisResult(0.5f, divisor, resolution);
+                formatOverride = frozenSettings.Format;
+
+                if (enableLogging)
+                {
+                    Debug.Log(
+                        $"[{Name}] Using frozen settings for '{originalTexture.name}': "
+                            + $"Divisor={divisor}, Format={frozenSettings.Format}"
+                    );
+                }
+            }
+            else
+            {
+                // Normal analysis path
+                if (!analysisResults.TryGetValue(originalTexture, out analysis))
+                {
+                    Debug.LogWarning(
+                        $"[{Name}] Skipping texture '{originalTexture.name}': analysis failed"
+                    );
+                    return null;
+                }
+            }
+
+            // Resize texture (use linear color space for normal maps)
+            var resizedTexture = _processor.Resize(
+                originalTexture,
+                analysis,
+                textureInfo.IsNormalMap
+            );
+
+            bool hasAlpha = false;
+            bool hasAlphaComputed = false;
+            bool GetHasAlpha()
+            {
+                if (!hasAlphaComputed)
+                {
+                    hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
+                    hasAlphaComputed = true;
+                }
+
+                return hasAlpha;
+            }
+
+            var sourceLayout = textureInfo.IsNormalMap
+                ? NormalMapSourceLayoutDetector.Resolve(
+                    originalTexture,
+                    resizedTexture,
+                    originalTexture.format
+                )
+                : NormalMapPreprocessor.SourceLayout.Auto;
+
+            // Determine target format
+            TextureFormat targetFormat;
+            if (formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto)
+            {
+                targetFormat = TextureFormatSelector.ConvertFrozenFormat(formatOverride.Value);
+            }
+            else if (TextureFormatSelector.IsCompressedFormat(originalTexture.format))
+            {
+                targetFormat = originalTexture.format;
+            }
+            else
+            {
+                targetFormat = _formatSelector.PredictFormat(
+                    textureInfo.IsNormalMap,
+                    analysis.NormalizedComplexity,
+                    GetHasAlpha()
+                );
+            }
+
+            // DXTnm AG layout stores normal X in alpha and can trigger HasSignificantAlpha().
+            // For BC7 normal maps:
+            // - preserve semantic alpha for non-AG layouts when meaningful alpha exists
+            // - always preserve RGB-layout signed Z, even when alpha is fully opaque
+            bool preserveNormalMapAlpha =
+                textureInfo.IsNormalMap
+                && NormalMapCompressionPolicy.ShouldPreserveSemanticAlpha(
+                    targetFormat,
+                    sourceLayout,
+                    GetHasAlpha()
+                );
+
+            ApplyCompression(
+                resizedTexture,
+                originalTexture.format,
+                targetFormat,
+                textureInfo.IsNormalMap,
+                preserveNormalMapAlpha,
+                sourceLayout
+            );
+
+            resizedTexture.name = originalTexture.name + "_compressed";
+
+            if (enableLogging)
+            {
+                var frozenInfo =
+                    formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto
+                        ? " [FROZEN]"
+                        : "";
+                Debug.Log(
+                    $"[{Name}] {originalTexture.name}: "
+                        + $"{originalTexture.width}x{originalTexture.height} -> "
+                        + $"{resizedTexture.width}x{resizedTexture.height} ({resizedTexture.format}){frozenInfo} "
+                        + $"(Complexity: {analysis.NormalizedComplexity:P0}, "
+                        + $"Divisor: {analysis.RecommendedDivisor}x)"
+                );
+            }
+
+            var compressedTexture = resizedTexture;
+
+            // Enable mipmap streaming to avoid NDMF warnings
+            var serializedTexture = new SerializedObject(compressedTexture);
+            var streamingMipmaps = serializedTexture.FindProperty("m_StreamingMipmaps");
+            if (streamingMipmaps != null)
+            {
+                streamingMipmaps.boolValue = true;
+                serializedTexture.ApplyModifiedPropertiesWithoutUndo();
+            }
+            else if (!_streamingMipmapsWarningShown)
+            {
+                _streamingMipmapsWarningShown = true;
+                Debug.LogWarning(
+                    $"[{Name}] Could not enable streaming mipmaps: "
+                        + "property 'm_StreamingMipmaps' not found. This may indicate a Unity version difference."
+                );
+            }
+
+            // Register the texture replacement in ObjectRegistry so that subsequent NDMF plugins
+            // can track which original texture was replaced. This maintains proper reference
+            // tracking across the build pipeline for tools like TexTransTool and Avatar Optimizer.
+            ObjectRegistry.RegisterReplacedObject(originalTexture, compressedTexture);
+
+            foreach (var reference in textureInfo.References)
+            {
+                reference.Material.SetTexture(reference.PropertyName, compressedTexture);
+            }
+
+            return compressedTexture;
         }
 
         /// <summary>
