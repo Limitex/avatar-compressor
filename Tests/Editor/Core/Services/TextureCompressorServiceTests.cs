@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
@@ -2143,7 +2142,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var source = CreateBC7RGBLayoutObjectSpaceNormalWithOpaqueAlpha(128, 128);
 
-            var layout = InvokeDetectDXTnmLikeSourceLayout(source);
+            var layout = NormalMapSourceLayoutDetector.DetectDXTnmLike(source);
 
             Assert.AreEqual(
                 NormalMapPreprocessor.SourceLayout.RGB,
@@ -2168,9 +2167,51 @@ namespace dev.limitex.avatar.compressor.tests
                 signedZLabel
             );
 
-            var layout = InvokeDetectDXTnmLikeSourceLayout(source);
+            var layout = NormalMapSourceLayoutDetector.DetectDXTnmLike(source);
 
             Assert.AreEqual(expectedLayout, layout, $"Single-sign {signedZLabel} detection mismatch");
+        }
+
+        [Test]
+        public void ShouldPreserveSemanticAlpha_BC7RgbLayoutOpaqueAlpha_ReturnsTrue()
+        {
+            bool preserve = NormalMapCompressionPolicy.ShouldPreserveSemanticAlpha(
+                TextureFormat.BC7,
+                NormalMapPreprocessor.SourceLayout.RGB,
+                hasSignificantAlpha: false
+            );
+
+            Assert.IsTrue(
+                preserve,
+                "RGB layout should preserve semantic alpha in BC7 even when alpha is fully opaque"
+            );
+        }
+
+        [Test]
+        public void ShouldPreserveSemanticAlpha_BC7AgLayoutWithAlpha_ReturnsFalse()
+        {
+            bool preserve = NormalMapCompressionPolicy.ShouldPreserveSemanticAlpha(
+                TextureFormat.BC7,
+                NormalMapPreprocessor.SourceLayout.AG,
+                hasSignificantAlpha: true
+            );
+
+            Assert.IsFalse(
+                preserve,
+                "AG layout should not preserve semantic alpha in BC7 because alpha stores normal X"
+            );
+        }
+
+        [Test]
+        public void ShouldPreserveSemanticAlpha_NonBC7Format_ReturnsFalse()
+        {
+            bool preserve = NormalMapCompressionPolicy.ShouldPreserveSemanticAlpha(
+                TextureFormat.BC5,
+                NormalMapPreprocessor.SourceLayout.RGB,
+                hasSignificantAlpha: true
+            );
+
+            Assert.IsFalse(preserve, "Only BC7 output can preserve semantic alpha in this policy");
         }
 
         [Test]
@@ -2819,24 +2860,6 @@ namespace dev.limitex.avatar.compressor.tests
             _createdAssetPaths.Add(assetPath);
 
             return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
-        }
-
-        private static NormalMapPreprocessor.SourceLayout InvokeDetectDXTnmLikeSourceLayout(
-            Texture2D texture
-        )
-        {
-            var method = typeof(TextureCompressorService).GetMethod(
-                "DetectDXTnmLikeSourceLayout",
-                BindingFlags.Static | BindingFlags.NonPublic
-            );
-            Assert.IsNotNull(method, "DetectDXTnmLikeSourceLayout method should exist");
-
-            object value = method.Invoke(null, new object[] { texture });
-            Assert.IsInstanceOf<NormalMapPreprocessor.SourceLayout>(
-                value,
-                "Layout detector should return SourceLayout"
-            );
-            return (NormalMapPreprocessor.SourceLayout)value;
         }
 
         #endregion
