@@ -27,8 +27,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         /// <param name="source">Source texture to resize</param>
         /// <param name="analysis">Pre-computed analysis result with recommended settings</param>
+        /// <param name="isNormalMap">Whether this texture is a normal map (uses linear color space)</param>
         /// <returns>Resized texture (uncompressed RGBA32 format)</returns>
-        public Texture2D Resize(Texture2D source, TextureAnalysisResult analysis)
+        public Texture2D Resize(
+            Texture2D source,
+            TextureAnalysisResult analysis,
+            bool isNormalMap = false
+        )
         {
             Texture2D result;
             if (
@@ -41,21 +46,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 int width = EnsureMultipleOf4(source.width);
                 int height = EnsureMultipleOf4(source.height);
 
-                if (width == source.width && height == source.height)
-                {
-                    result = Copy(source);
-                }
-                else
-                {
-                    result = ResizeTo(source, width, height);
-                }
+                result = ResizeTo(source, width, height, isNormalMap);
             }
             else
             {
                 result = ResizeTo(
                     source,
                     analysis.RecommendedResolution.x,
-                    analysis.RecommendedResolution.y
+                    analysis.RecommendedResolution.y,
+                    isNormalMap
                 );
             }
 
@@ -107,15 +106,46 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Resizes a texture to the specified dimensions.
         /// Thread-safe: uses lock to protect RenderTexture.active.
         /// </summary>
-        public Texture2D ResizeTo(Texture2D source, int newWidth, int newHeight)
+        /// <param name="source">Source texture to resize</param>
+        /// <param name="newWidth">Target width</param>
+        /// <param name="newHeight">Target height</param>
+        /// <param name="isNormalMap">Whether this texture is a normal map (uses linear color space)</param>
+        /// <returns>Resized texture (uncompressed RGBA32 format)</returns>
+        public Texture2D ResizeTo(
+            Texture2D source,
+            int newWidth,
+            int newHeight,
+            bool isNormalMap = false
+        )
         {
             lock (RenderTextureLock)
             {
+                // Normal maps store vector data, not color, so they must be processed in linear space
+                // to avoid sRGB gamma correction that would corrupt the normal vectors.
+                var colorSpace = isNormalMap
+                    ? RenderTextureReadWrite.Linear
+                    : RenderTextureReadWrite.Default;
+
+                // For normal maps, prefer float/half RT to reduce interpolation quantization during resize.
+                var rtFormat = RenderTextureFormat.ARGB32;
+                if (isNormalMap)
+                {
+                    if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBFloat))
+                    {
+                        rtFormat = RenderTextureFormat.ARGBFloat;
+                    }
+                    else if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf))
+                    {
+                        rtFormat = RenderTextureFormat.ARGBHalf;
+                    }
+                }
+
                 RenderTexture rt = RenderTexture.GetTemporary(
                     newWidth,
                     newHeight,
                     0,
-                    RenderTextureFormat.ARGB32
+                    rtFormat,
+                    colorSpace
                 );
                 rt.filterMode = FilterMode.Bilinear;
 
@@ -124,11 +154,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 Graphics.Blit(source, rt);
 
                 // Preserve mipmap setting from source texture
+                // For normal maps, use linear color space to prevent gamma correction
                 Texture2D result = new Texture2D(
                     newWidth,
                     newHeight,
                     TextureFormat.RGBA32,
-                    source.mipmapCount > 1
+                    source.mipmapCount > 1,
+                    isNormalMap
                 );
                 result.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
                 result.Apply(source.mipmapCount > 1);
@@ -145,14 +177,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 return result;
             }
-        }
-
-        /// <summary>
-        /// Creates a copy of the texture.
-        /// </summary>
-        public Texture2D Copy(Texture2D source)
-        {
-            return ResizeTo(source, source.width, source.height);
         }
 
         /// <summary>

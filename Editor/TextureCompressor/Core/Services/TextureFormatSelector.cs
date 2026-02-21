@@ -4,8 +4,8 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
-    /// Service for selecting and applying texture compression formats.
-    /// Separates compression logic from resizing for single responsibility.
+    /// Service for selecting texture compression formats based on platform and texture properties.
+    /// Provides format prediction without performing actual compression.
     /// </summary>
     public class TextureFormatSelector
     {
@@ -47,47 +47,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Compresses a texture using platform-appropriate format based on analysis.
-        /// </summary>
-        /// <param name="texture">The texture to compress (will be modified in place)</param>
-        /// <param name="sourceFormat">The original format of the source texture</param>
-        /// <param name="isNormalMap">Whether this texture is a normal map</param>
-        /// <param name="complexity">Normalized complexity value (0-1)</param>
-        /// <param name="formatOverride">Optional format override from frozen settings</param>
-        /// <returns>True if compression was applied, false if skipped or failed</returns>
-        public bool CompressTexture(
-            Texture2D texture,
-            TextureFormat sourceFormat,
-            bool isNormalMap,
-            float complexity,
-            FrozenTextureFormat? formatOverride = null
-        )
-        {
-            TextureFormat targetFormat;
-
-            // Check for frozen format override (highest priority)
-            if (formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto)
-            {
-                targetFormat = ConvertFrozenFormat(formatOverride.Value);
-            }
-            // If source was already compressed, preserve the same format
-            else if (IsCompressedFormat(sourceFormat))
-            {
-                targetFormat = sourceFormat;
-            }
-            else
-            {
-                // Determine if texture has alpha
-                bool hasAlpha = HasSignificantAlpha(texture);
-
-                // Select appropriate format based on platform and texture properties
-                targetFormat = PredictFormat(isNormalMap, complexity, hasAlpha);
-            }
-
-            return ApplyCompression(texture, targetFormat);
-        }
-
-        /// <summary>
         /// Converts FrozenTextureFormat enum to Unity TextureFormat.
         /// </summary>
         public static TextureFormat ConvertFrozenFormat(FrozenTextureFormat format)
@@ -106,66 +65,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Applies compression to a texture with fallback handling.
-        /// </summary>
-        private bool ApplyCompression(Texture2D texture, TextureFormat targetFormat)
-        {
-            // Skip if texture is already in the target format
-            if (texture.format == targetFormat)
-            {
-                return false;
-            }
-
-            try
-            {
-                EditorUtility.CompressTexture(
-                    texture,
-                    targetFormat,
-                    TextureCompressionQuality.Best
-                );
-                return true;
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogWarning(
-                    $"[TextureCompressor] Failed to compress texture to {targetFormat}: {e.Message}. "
-                        + $"Attempting fallback."
-                );
-
-                // Fallback to widely supported formats
-                try
-                {
-                    var platform = ResolvePlatform(_targetPlatform);
-                    var fallbackFormat =
-                        platform == CompressionPlatform.Mobile
-                            ? TextureFormat.ASTC_6x6
-                            : TextureFormat.DXT5;
-
-                    EditorUtility.CompressTexture(
-                        texture,
-                        fallbackFormat,
-                        TextureCompressionQuality.Normal
-                    );
-                    Debug.Log(
-                        $"[TextureCompressor] Fallback compression to {fallbackFormat} succeeded."
-                    );
-                    return true;
-                }
-                catch (System.Exception fallbackEx)
-                {
-                    Debug.LogError(
-                        $"[TextureCompressor] Fallback compression also failed: {fallbackEx.Message}. "
-                            + $"Texture will remain uncompressed."
-                    );
-                    return false;
-                }
-            }
-        }
-
-        /// <summary>
         /// Resolves the target platform from settings or auto-detects from build target.
         /// </summary>
-        private static CompressionPlatform ResolvePlatform(CompressionPlatform setting)
+        public static CompressionPlatform ResolvePlatform(CompressionPlatform setting)
         {
             if (setting != CompressionPlatform.Auto)
             {
@@ -309,8 +211,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public static bool HasSignificantAlpha(Texture2D texture)
         {
             // Assume alpha exists for null or non-readable textures to preserve quality.
-            // This is a conservative approach that may result in slightly larger file sizes
-            // but ensures transparency is not incorrectly discarded.
             if (texture == null || !texture.isReadable)
                 return true;
 
