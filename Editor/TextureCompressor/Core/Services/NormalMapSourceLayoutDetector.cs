@@ -69,11 +69,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             TextureFormat format
         )
         {
-            var detectionTexture =
-                originalTexture != null && originalTexture.isReadable
-                    ? originalTexture
-                    : resizedTexture;
-
             switch (format)
             {
                 case TextureFormat.BC5:
@@ -81,7 +76,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 case TextureFormat.DXT5:
                 case TextureFormat.DXT5Crunched:
                 case TextureFormat.BC7:
-                    return DetectDXTnmLike(detectionTexture);
+                    // Heuristic detection requires reading pixel data directly.
+                    // Non-readable textures cannot be sampled, so fall back to AG
+                    // which Unity's normal map import always produces for DXT5/BC7.
+                    if (originalTexture != null && originalTexture.isReadable)
+                        return DetectDXTnmLike(originalTexture);
+                    return NormalMapPreprocessor.SourceLayout.AG;
                 default:
                     return NormalMapPreprocessor.SourceLayout.RGB;
             }
