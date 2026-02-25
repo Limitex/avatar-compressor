@@ -318,10 +318,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             // Detect source layout and determine alpha preservation for normal maps
             var sourceLayout = textureInfo.IsNormalMap
-                ? NormalMapSourceLayoutDetector.Resolve(
-                    originalTexture,
-                    originalTexture.format
-                )
+                ? NormalMapSourceLayoutDetector.Resolve(originalTexture, originalTexture.format)
                 : NormalMapPreprocessor.SourceLayout.Auto;
 
             bool preserveNormalMapAlpha =

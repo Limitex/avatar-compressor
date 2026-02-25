@@ -47,10 +47,7 @@ namespace dev.limitex.avatar.compressor.tests
             var texture = NormalMapTestTextureFactory.CreateFlat(16);
             _createdObjects.Add(texture);
 
-            var result = NormalMapSourceLayoutDetector.Resolve(
-                texture,
-                TextureFormat.RGBA32
-            );
+            var result = NormalMapSourceLayoutDetector.Resolve(texture, TextureFormat.RGBA32);
 
             Assert.AreEqual(NormalMapPreprocessor.SourceLayout.RGB, result);
         }
@@ -61,10 +58,7 @@ namespace dev.limitex.avatar.compressor.tests
             var texture = NormalMapTestTextureFactory.CreateFlat(16);
             _createdObjects.Add(texture);
 
-            var result = NormalMapSourceLayoutDetector.Resolve(
-                texture,
-                TextureFormat.RGB24
-            );
+            var result = NormalMapSourceLayoutDetector.Resolve(texture, TextureFormat.RGB24);
 
             Assert.AreEqual(NormalMapPreprocessor.SourceLayout.RGB, result);
         }
@@ -80,10 +74,7 @@ namespace dev.limitex.avatar.compressor.tests
             var texture = NormalMapTestTextureFactory.CreateSphereAG(32);
             _createdObjects.Add(texture);
 
-            var result = NormalMapSourceLayoutDetector.Resolve(
-                texture,
-                TextureFormat.DXT5
-            );
+            var result = NormalMapSourceLayoutDetector.Resolve(texture, TextureFormat.DXT5);
 
             Assert.AreEqual(NormalMapPreprocessor.SourceLayout.AG, result);
         }

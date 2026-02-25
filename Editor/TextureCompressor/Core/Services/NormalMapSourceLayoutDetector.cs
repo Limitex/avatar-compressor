@@ -35,8 +35,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <summary>
         /// Minimum |Z| value to classify a pixel as definitively positive or negative Z.
         /// Values in [-threshold, +threshold] are considered indeterminate.
+        /// Set to ~25x the 8-bit quantization error (±1/256 ≈ 0.008) for reliable signal separation.
         /// </summary>
-        private const float ZSignThreshold = 0.2f;
+        private const float ZMagnitudeThreshold = 0.2f;
+
+        /// <summary>
+        /// Minimum ratio of pixels that must be classified as negative (or positive) Z
+        /// to consider the texture as having mixed signed Z (object-space normal map).
+        /// A value of 0.2 requires at least 20% of sampled pixels in each sign category.
+        /// </summary>
+        private const float MixedZRatioThreshold = 0.2f;
 
         /// <summary>
         /// Maximum allowed difference between B-channel Z and reconstructed Z (signed)
@@ -132,11 +140,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     zFromBMin = Mathf.Min(zFromBMin, zFromB);
                     zFromBMax = Mathf.Max(zFromBMax, zFromB);
 
-                    if (zFromB <= -ZSignThreshold)
+                    if (zFromB <= -ZMagnitudeThreshold)
                     {
                         zNegativeCount++;
                     }
-                    else if (zFromB >= ZSignThreshold)
+                    else if (zFromB >= ZMagnitudeThreshold)
                     {
                         zPositiveCount++;
                     }
@@ -196,7 +204,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 float zPositiveRatio = (float)zPositiveCount / total;
                 float rgAdvantage = validRgRatio - validAgRatio;
                 bool mixedSignedZ =
-                    zNegativeRatio >= ZSignThreshold && zPositiveRatio >= ZSignThreshold;
+                    zNegativeRatio >= MixedZRatioThreshold
+                    && zPositiveRatio >= MixedZRatioThreshold;
                 // When alpha is consistently opaque, xFromA=1 makes AG validation fail
                 // for most non-flat normals, inflating rgAdvantage. In this case rgAdvantage
                 // is not a reliable discriminator, so we relax the guard.

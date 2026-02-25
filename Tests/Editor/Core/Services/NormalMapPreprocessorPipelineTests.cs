@@ -929,10 +929,7 @@ namespace dev.limitex.avatar.compressor.tests
             var resized = _processor.ResizeTo(bc7Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
-            var sourceLayout = NormalMapSourceLayoutDetector.Resolve(
-                bc7Source,
-                TextureFormat.BC7
-            );
+            var sourceLayout = NormalMapSourceLayoutDetector.Resolve(bc7Source, TextureFormat.BC7);
             Assert.AreEqual(
                 NormalMapPreprocessor.SourceLayout.RG,
                 sourceLayout,
@@ -966,10 +963,7 @@ namespace dev.limitex.avatar.compressor.tests
             var resized = _processor.ResizeTo(bc7Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
-            var sourceLayout = NormalMapSourceLayoutDetector.Resolve(
-                bc7Source,
-                TextureFormat.BC7
-            );
+            var sourceLayout = NormalMapSourceLayoutDetector.Resolve(bc7Source, TextureFormat.BC7);
             Assert.AreEqual(
                 NormalMapPreprocessor.SourceLayout.RGB,
                 sourceLayout,
@@ -1048,10 +1042,7 @@ namespace dev.limitex.avatar.compressor.tests
             var resized = _processor.ResizeTo(bc7Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
-            var sourceLayout = NormalMapSourceLayoutDetector.Resolve(
-                bc7Source,
-                TextureFormat.BC7
-            );
+            var sourceLayout = NormalMapSourceLayoutDetector.Resolve(bc7Source, TextureFormat.BC7);
             Assert.AreEqual(
                 NormalMapPreprocessor.SourceLayout.RGB,
                 sourceLayout,
