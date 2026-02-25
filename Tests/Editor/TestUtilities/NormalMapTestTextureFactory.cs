@@ -290,7 +290,11 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         /// <summary>
-        /// Creates a degenerate normal map with all zero vectors.
+        /// Creates a normal map with near-zero XY components.
+        /// Encoded as (128, 128, 128) which decodes to approximately (0.004, 0.004, 0.004).
+        /// Note: 8-bit encoding cannot represent exact zero (0.5*255 = 127.5).
+        /// During preprocessing, Z is recalculated from the unit sphere constraint
+        /// sqrt(1 - x² - y²) ≈ 1.0, so the result is an approximately flat normal.
         /// </summary>
         public static Texture2D CreateDegenerate(int size, bool linear = true)
         {
@@ -298,7 +302,7 @@ namespace dev.limitex.avatar.compressor.tests
             var pixels = new Color32[size * size];
             for (int i = 0; i < pixels.Length; i++)
             {
-                // Zero vector encoded: (128, 128, 128) in [-1,1] maps to (0, 0, 0)
+                // Near-zero XY: (128/255)*2-1 ≈ 0.004 per component
                 pixels[i] = new Color32(128, 128, 128, 255);
             }
             texture.SetPixels32(pixels);

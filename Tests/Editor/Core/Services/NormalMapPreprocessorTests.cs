@@ -241,19 +241,21 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void PrepareForCompression_DegenerateVector_ResetsToFlatNormal()
+        public void PrepareForCompression_NearZeroXY_NormalizesToFlatNormal()
         {
-            // Create texture with (128, 128, 128) = vector (0, 0, 0)
+            // (128, 128, 128) decodes to approximately (0.004, 0.004, 0.004).
+            // Z is recalculated as sqrt(1 - x² - y²) ≈ 1.0, producing an approximately
+            // flat normal through the regular normalization path (not the degenerate reset).
             var texture = NormalMapTestTextureFactory.CreateDegenerate(4);
             _createdObjects.Add(texture);
 
             _preprocessor.PrepareForCompression(texture, TextureFormat.RGBA32, TextureFormat.BC5);
 
             var pixels = texture.GetPixels32();
-            // Degenerate (0,0,0) should reset to flat normal (0, 0, 1) -> (128, 128, 255)
-            Assert.That(pixels[0].r, Is.InRange((byte)126, (byte)130)); // X=0
-            Assert.That(pixels[0].g, Is.InRange((byte)126, (byte)130)); // Y=0
-            Assert.That(pixels[0].b, Is.GreaterThan((byte)200)); // Z close to 1
+            // Near-zero XY normalizes to approximately flat normal -> (128, 128, 255)
+            Assert.That(pixels[0].r, Is.InRange((byte)126, (byte)130)); // X ≈ 0
+            Assert.That(pixels[0].g, Is.InRange((byte)126, (byte)130)); // Y ≈ 0
+            Assert.That(pixels[0].b, Is.GreaterThan((byte)200)); // Z ≈ 1
         }
 
         #endregion
