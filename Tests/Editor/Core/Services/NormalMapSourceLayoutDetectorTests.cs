@@ -302,6 +302,30 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(NormalMapPreprocessor.SourceLayout.AG, result);
         }
 
+        [Test]
+        public void Resolve_NonReadableDXT5_FallsBackToAG()
+        {
+            var texture = NormalMapTestTextureFactory.CreateSphereAG(16);
+            _createdObjects.Add(texture);
+            texture.Apply(true, true); // makeNoLongerReadable
+
+            var result = NormalMapSourceLayoutDetector.Resolve(texture, TextureFormat.DXT5);
+
+            Assert.AreEqual(NormalMapPreprocessor.SourceLayout.AG, result);
+        }
+
+        [Test]
+        public void Resolve_NonReadableBC7_FallsBackToAG()
+        {
+            var texture = NormalMapTestTextureFactory.CreateSphereAG(16);
+            _createdObjects.Add(texture);
+            texture.Apply(true, true); // makeNoLongerReadable
+
+            var result = NormalMapSourceLayoutDetector.Resolve(texture, TextureFormat.BC7);
+
+            Assert.AreEqual(NormalMapPreprocessor.SourceLayout.AG, result);
+        }
+
         #endregion
     }
 }
