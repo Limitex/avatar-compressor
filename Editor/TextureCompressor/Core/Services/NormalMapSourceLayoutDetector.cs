@@ -60,12 +60,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Resolves source normal-map layout from format and, for DXT5/BC7,
         /// pixel heuristics when the source layout is ambiguous.
         /// </summary>
-        /// <param name="originalTexture">The original texture (preferred for detection if readable)</param>
-        /// <param name="resizedTexture">The resized texture (fallback for detection)</param>
+        /// <param name="originalTexture">The original texture (must be readable for heuristic detection)</param>
         /// <param name="format">The original texture format</param>
         public static NormalMapPreprocessor.SourceLayout Resolve(
             Texture2D originalTexture,
-            Texture2D resizedTexture,
             TextureFormat format
         )
         {

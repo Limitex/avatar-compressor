@@ -855,7 +855,6 @@ namespace dev.limitex.avatar.compressor.tests
 
             var sourceLayout = NormalMapSourceLayoutDetector.Resolve(
                 dxt5Source,
-                resized,
                 TextureFormat.DXT5
             );
             Assert.AreEqual(
@@ -893,7 +892,6 @@ namespace dev.limitex.avatar.compressor.tests
 
             var sourceLayout = NormalMapSourceLayoutDetector.Resolve(
                 dxt5Source,
-                resized,
                 TextureFormat.DXT5
             );
             Assert.AreEqual(
@@ -933,7 +931,6 @@ namespace dev.limitex.avatar.compressor.tests
 
             var sourceLayout = NormalMapSourceLayoutDetector.Resolve(
                 bc7Source,
-                resized,
                 TextureFormat.BC7
             );
             Assert.AreEqual(
@@ -971,7 +968,6 @@ namespace dev.limitex.avatar.compressor.tests
 
             var sourceLayout = NormalMapSourceLayoutDetector.Resolve(
                 bc7Source,
-                resized,
                 TextureFormat.BC7
             );
             Assert.AreEqual(
@@ -1054,7 +1050,6 @@ namespace dev.limitex.avatar.compressor.tests
 
             var sourceLayout = NormalMapSourceLayoutDetector.Resolve(
                 bc7Source,
-                resized,
                 TextureFormat.BC7
             );
             Assert.AreEqual(

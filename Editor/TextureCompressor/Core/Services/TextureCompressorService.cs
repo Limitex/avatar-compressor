@@ -320,7 +320,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var sourceLayout = textureInfo.IsNormalMap
                 ? NormalMapSourceLayoutDetector.Resolve(
                     originalTexture,
-                    resizedTexture,
                     originalTexture.format
                 )
                 : NormalMapPreprocessor.SourceLayout.Auto;

@@ -36,7 +36,7 @@ namespace dev.limitex.avatar.compressor.tests
             var texture = NormalMapTestTextureFactory.CreateFlat(16);
             _createdObjects.Add(texture);
 
-            var result = NormalMapSourceLayoutDetector.Resolve(texture, texture, TextureFormat.BC5);
+            var result = NormalMapSourceLayoutDetector.Resolve(texture, TextureFormat.BC5);
 
             Assert.AreEqual(NormalMapPreprocessor.SourceLayout.RG, result);
         }
@@ -48,7 +48,6 @@ namespace dev.limitex.avatar.compressor.tests
             _createdObjects.Add(texture);
 
             var result = NormalMapSourceLayoutDetector.Resolve(
-                texture,
                 texture,
                 TextureFormat.RGBA32
             );
@@ -63,7 +62,6 @@ namespace dev.limitex.avatar.compressor.tests
             _createdObjects.Add(texture);
 
             var result = NormalMapSourceLayoutDetector.Resolve(
-                texture,
                 texture,
                 TextureFormat.RGB24
             );
@@ -84,7 +82,6 @@ namespace dev.limitex.avatar.compressor.tests
 
             var result = NormalMapSourceLayoutDetector.Resolve(
                 texture,
-                texture,
                 TextureFormat.DXT5
             );
 
@@ -98,7 +95,7 @@ namespace dev.limitex.avatar.compressor.tests
             var texture = NormalMapTestTextureFactory.CreateSphereAG(32);
             _createdObjects.Add(texture);
 
-            var result = NormalMapSourceLayoutDetector.Resolve(texture, texture, TextureFormat.BC7);
+            var result = NormalMapSourceLayoutDetector.Resolve(texture, TextureFormat.BC7);
 
             Assert.AreEqual(NormalMapPreprocessor.SourceLayout.AG, result);
         }
@@ -295,15 +292,12 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region Resolve - Fallback to Resized Texture
+        #region Resolve - Non-Readable Fallback
 
         [Test]
-        public void Resolve_NullOriginal_UsesResizedTexture()
+        public void Resolve_NullOriginal_FallsBackToAG()
         {
-            var resized = NormalMapTestTextureFactory.CreateSphereAG(32);
-            _createdObjects.Add(resized);
-
-            var result = NormalMapSourceLayoutDetector.Resolve(null, resized, TextureFormat.DXT5);
+            var result = NormalMapSourceLayoutDetector.Resolve(null, TextureFormat.DXT5);
 
             Assert.AreEqual(NormalMapPreprocessor.SourceLayout.AG, result);
         }
