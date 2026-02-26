@@ -3,6 +3,7 @@ using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -13,6 +14,9 @@ namespace dev.limitex.avatar.compressor.tests
     [TestFixture]
     public class NormalMapPreprocessorPipelineTests
     {
+        private static bool IsSoftwareRenderer =>
+            SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
+
         private NormalMapPreprocessor _preprocessor;
         private TextureProcessor _processor;
         private List<Object> _createdObjects;
@@ -255,6 +259,11 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Pipeline_ObjectSpaceMixedZ_ProducesValidVectors()
         {
+            if (IsSoftwareRenderer)
+                Assert.Ignore(
+                    "Software renderer blit destroys alternating Z patterns via half-texel blending."
+                );
+
             var source = NormalMapTestTextureFactory.CreateMixedZ(32);
             _createdObjects.Add(source);
 

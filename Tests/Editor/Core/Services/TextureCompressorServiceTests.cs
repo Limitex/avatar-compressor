@@ -5,12 +5,16 @@ using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
     public class TextureCompressorServiceTests
     {
+        private static bool IsSoftwareRenderer =>
+            SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
+
         private const string TestAssetFolder = "Assets/_LAC_TMP";
         private List<Object> _createdObjects;
         private List<string> _createdAssetPaths;
@@ -1790,6 +1794,9 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Compress_BC5NormalMap_ProducesValidNormalizedVectors()
         {
+            if (IsSoftwareRenderer)
+                Assert.Ignore("Normal vector precision test requires a GPU renderer.");
+
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;

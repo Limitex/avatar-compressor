@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -12,6 +13,9 @@ namespace dev.limitex.avatar.compressor.tests
     [TestFixture]
     public class NormalMapResizePipelineTests
     {
+        private static bool IsSoftwareRenderer =>
+            SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
+
         private TextureProcessor _processor;
         private List<Object> _createdObjects;
 
@@ -221,6 +225,9 @@ namespace dev.limitex.avatar.compressor.tests
         [TestCase(NormalMapPattern.SharpEdge)]
         public void ResizeSameSize_AllPatterns_PreservesData(NormalMapPattern pattern)
         {
+            if (IsSoftwareRenderer)
+                Assert.Ignore("Same-size blit precision test requires a GPU renderer.");
+
             var source = CreateTextureForPattern(pattern, 128);
             _createdObjects.Add(source);
 
@@ -291,6 +298,9 @@ namespace dev.limitex.avatar.compressor.tests
         [TestCase(512)]
         public void ResizeSameSize_VariousSizes_PreservesData(int size)
         {
+            if (IsSoftwareRenderer)
+                Assert.Ignore("Same-size blit precision test requires a GPU renderer.");
+
             var source = NormalMapTestTextureFactory.CreateSphere(size);
             _createdObjects.Add(source);
 
@@ -322,6 +332,9 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void ResizeSameSize_SphereNormal_WhenARGBFloatSupported_PreservesData()
         {
+            if (IsSoftwareRenderer)
+                Assert.Ignore("Same-size blit precision test requires a GPU renderer.");
+
             if (!SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBFloat))
             {
                 Assert.Ignore("ARGBFloat RenderTexture is not supported on this environment.");
@@ -366,6 +379,9 @@ namespace dev.limitex.avatar.compressor.tests
         [TestCase(256, 64)]
         public void Downscale_SphereNormal_PreservesNormalDirection(int sourceSize, int targetSize)
         {
+            if (IsSoftwareRenderer)
+                Assert.Ignore("Downscale precision test requires a GPU renderer.");
+
             var source = NormalMapTestTextureFactory.CreateSphere(sourceSize);
             _createdObjects.Add(source);
 
