@@ -15,7 +15,8 @@ namespace dev.limitex.avatar.compressor.tests
     public class NormalMapPreprocessorPipelineTests
     {
         private static bool IsSoftwareRenderer =>
-            SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
+            SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null
+            || SystemInfo.graphicsDeviceName.Contains("llvmpipe");
 
         private NormalMapPreprocessor _preprocessor;
         private TextureProcessor _processor;

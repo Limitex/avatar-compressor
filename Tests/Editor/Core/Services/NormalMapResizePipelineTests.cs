@@ -14,7 +14,8 @@ namespace dev.limitex.avatar.compressor.tests
     public class NormalMapResizePipelineTests
     {
         private static bool IsSoftwareRenderer =>
-            SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
+            SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null
+            || SystemInfo.graphicsDeviceName.Contains("llvmpipe");
 
         private TextureProcessor _processor;
         private List<Object> _createdObjects;

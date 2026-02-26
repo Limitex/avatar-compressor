@@ -13,7 +13,8 @@ namespace dev.limitex.avatar.compressor.tests
     public class TextureCompressorServiceTests
     {
         private static bool IsSoftwareRenderer =>
-            SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
+            SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null
+            || SystemInfo.graphicsDeviceName.Contains("llvmpipe");
 
         private const string TestAssetFolder = "Assets/_LAC_TMP";
         private List<Object> _createdObjects;
