@@ -7,9 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Normal map preprocessing pipeline** - Channel layout conversion for correct compression output
+  - Reads XY from source channels (RG/AG/RGB) and reconstructs Z via unit sphere constraint
+  - Writes to target layout per format: BC5→RG, DXTnm→AG, BC7 RGB→alpha preserved, Uncompressed→RGB
+  - Normalizes degenerate vectors (length < 0.0001) to default flat normal (0, 0, 1)
+  - Preserves Z sign for 3-channel formats (object-space normal maps)
+- **Normal map source layout auto-detection** - Pixel heuristic analysis for ambiguous formats (DXT5/BC7)
+  - Detects AG (DXTnm), RG, and RGB layouts using R/B constants, unit vector validity, Z sign consistency, and alpha patterns
+  - Falls back to AG layout for non-readable DXT5/BC7 textures
+
+### Changed
+
+- **Texture compression flow restructured** - Extracted from TextureFormatSelector into TextureCompressorService
+  - `ProcessSingleTexture()` handles individual texture processing with frozen settings, resizing, format selection, and logging
+  - `ApplyCompression()` applies compression with normal map preprocessing and fallback handling
+  - `ApplyFallbackCompression()` restores original pixels and re-preprocesses for fallback format
+  - TextureFormatSelector now handles format selection only (no side effects)
+- **Normal map resize quality improved** - TextureProcessor uses linear color space for normal maps
+  - Prevents sRGB gamma correction from corrupting vector data
+  - Uses higher precision RenderTextures (Float/Half) to reduce quantization error during resizing
+- **ZSignThreshold split** - Replaced single threshold with `ZMagnitudeThreshold` and `MixedZRatioThreshold` for clearer semantics
+
 ### Fixed
 
 - **Texture Format Selector** - Fixed the issue where uncompressed textures were compressed with PC format on iOS build target
+- **Normal map sRGB corruption** - Fixed normal map vector data being corrupted by sRGB gamma correction during resize
+- **Non-readable normal map handling** - Fixed layout detection failure for non-readable DXT5/BC7 textures by defaulting to AG layout
 
 ## [v0.5.0] - 2026-01-31
 
