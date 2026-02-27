@@ -283,7 +283,7 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region ResizeTo and Copy Tests
+        #region ResizeTo Tests
 
         [Test]
         public void ResizeTo_WithMipmaps_PreservesMipmaps()
@@ -345,40 +345,6 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void Copy_PreservesMipmaps()
-        {
-            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
-
-            var result = _processor.Copy(sourceTexture);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(512, result.width);
-            Assert.AreEqual(512, result.height);
-            Assert.IsTrue(result.mipmapCount > 1, "Copied texture should preserve mipmaps");
-
-            Object.DestroyImmediate(sourceTexture);
-            Object.DestroyImmediate(result);
-        }
-
-        [Test]
-        public void Copy_WithoutMipmaps_DoesNotAddMipmaps()
-        {
-            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
-
-            var result = _processor.Copy(sourceTexture);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(
-                1,
-                result.mipmapCount,
-                "Copied texture should not have mipmaps when source doesn't have them"
-            );
-
-            Object.DestroyImmediate(sourceTexture);
-            Object.DestroyImmediate(result);
-        }
-
-        [Test]
         public void ResizeTo_SameDimensions_PreservesMipmaps()
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
@@ -393,6 +359,156 @@ namespace dev.limitex.avatar.compressor.tests
             );
 
             Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        #endregion
+
+        #region ResizeTo Normal Map Tests
+
+        [Test]
+        public void ResizeTo_NormalMap_ReturnsCorrectDimensions()
+        {
+            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+
+            var result = _processor.ResizeTo(sourceTexture, 256, 256, isNormalMap: true);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(256, result.height);
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void ResizeTo_NormalMap_ReturnsRGBA32Format()
+        {
+            var sourceTexture = new Texture2D(256, 256, TextureFormat.RGBA32, false);
+
+            var result = _processor.ResizeTo(sourceTexture, 128, 128, isNormalMap: true);
+
+            Assert.AreEqual(
+                TextureFormat.RGBA32,
+                result.format,
+                "Normal map resize should return RGBA32 format"
+            );
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void ResizeTo_NormalMap_PreservesMipmaps()
+        {
+            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
+
+            var result = _processor.ResizeTo(sourceTexture, 256, 256, isNormalMap: true);
+
+            Assert.IsTrue(
+                result.mipmapCount > 1,
+                "Normal map resize should preserve mipmaps from source"
+            );
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void ResizeTo_NormalMap_PreservesTextureSettings()
+        {
+            var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
+            sourceTexture.wrapModeU = TextureWrapMode.Repeat;
+            sourceTexture.filterMode = FilterMode.Trilinear;
+
+            var result = _processor.ResizeTo(sourceTexture, 256, 256, isNormalMap: true);
+
+            Assert.AreEqual(TextureWrapMode.Repeat, result.wrapModeU);
+            Assert.AreEqual(FilterMode.Trilinear, result.filterMode);
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void ResizeTo_NormalMap_PreservesNormalVectors()
+        {
+            var sourceTexture = CreateNormalMapTexture(64, 64);
+            var originalPixels = sourceTexture.GetPixels();
+
+            var result = _processor.ResizeTo(sourceTexture, 64, 64, isNormalMap: true);
+            var resultPixels = result.GetPixels();
+
+            for (int i = 0; i < resultPixels.Length; i += 100)
+            {
+                Assert.That(
+                    resultPixels[i].r,
+                    Is.EqualTo(originalPixels[i].r).Within(0.05f),
+                    $"Red channel (normal X) should be preserved at index {i}"
+                );
+                Assert.That(
+                    resultPixels[i].g,
+                    Is.EqualTo(originalPixels[i].g).Within(0.05f),
+                    $"Green channel (normal Y) should be preserved at index {i}"
+                );
+            }
+
+            Object.DestroyImmediate(sourceTexture);
+            Object.DestroyImmediate(result);
+        }
+
+        #endregion
+
+        #region Resize Normal Map Tests
+
+        [Test]
+        public void Resize_NormalMap_WithDivisor2_ReturnsHalfSize()
+        {
+            var processorNoPow2 = new TextureProcessor(32, 2048, false);
+            var source = CreateTexture(512, 512);
+            var analysis = new TextureAnalysisResult(0.3f, 2, new Vector2Int(256, 256));
+
+            var result = processorNoPow2.Resize(source, analysis, isNormalMap: true);
+
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(256, result.height);
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_NormalMap_ReturnsRGBA32Format()
+        {
+            var source = CreateTexture(256, 256);
+            var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(128, 128));
+
+            var result = _processor.Resize(source, analysis, isNormalMap: true);
+
+            Assert.AreEqual(
+                TextureFormat.RGBA32,
+                result.format,
+                "Normal map resize should return uncompressed RGBA32 format"
+            );
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_NormalMap_WhenNoDivisor_ReturnsSameSize()
+        {
+            var processorNoPow2 = new TextureProcessor(32, 2048, false);
+            var source = CreateTexture(256, 256);
+            var analysis = new TextureAnalysisResult(0.8f, 1, new Vector2Int(256, 256));
+
+            var result = processorNoPow2.Resize(source, analysis, isNormalMap: true);
+
+            Assert.AreEqual(256, result.width);
+            Assert.AreEqual(256, result.height);
+            Assert.AreNotSame(source, result, "Should return a new texture instance");
+
+            Object.DestroyImmediate(source);
             Object.DestroyImmediate(result);
         }
 
@@ -585,6 +701,27 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 pixels[i] = Color.white;
             }
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return texture;
+        }
+
+        private Texture2D CreateNormalMapTexture(int width, int height)
+        {
+            var texture = new Texture2D(
+                width,
+                height,
+                TextureFormat.RGBA32,
+                mipChain: false,
+                linear: true
+            );
+            var pixels = new Color[width * height];
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = new Color(0.5f, 0.5f, 1f, 1f);
+            }
+
             texture.SetPixels(pixels);
             texture.Apply();
             return texture;
