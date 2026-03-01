@@ -333,15 +333,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
             int totalPixels = width * height;
             float[,] glcm = new float[GlcmLevels, GlcmLevels];
             int pairs = 0;
-            int step = Mathf.Max(1, width / 256);
 
-            // Horizontal direction (with step sampling)
-            for (int y = 0; y < height; y += step)
+            // Horizontal direction
+            for (int y = 0; y < height; y++)
             {
-                for (int x = 0; x < width - step; x += step)
+                for (int x = 0; x < width - 1; x++)
                 {
                     int idx1 = y * width + x;
-                    int idx2 = y * width + x + step;
+                    int idx2 = y * width + x + 1;
 
                     if (
                         idx1 < totalPixels
@@ -367,13 +366,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
             }
 
-            // Vertical direction (with step sampling)
-            for (int y = 0; y < height - step; y += step)
+            // Vertical direction
+            for (int y = 0; y < height - 1; y++)
             {
-                for (int x = 0; x < width; x += step)
+                for (int x = 0; x < width; x++)
                 {
                     int idx1 = y * width + x;
-                    int idx2 = (y + step) * width + x;
+                    int idx2 = (y + 1) * width + x;
 
                     if (
                         idx1 < totalPixels
