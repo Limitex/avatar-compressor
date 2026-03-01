@@ -1,0 +1,261 @@
+// TextureAnalysisHighAccuracy.hlsl
+// Kernels for the HighAccuracy analysis strategy:
+// DctHighFreqRatio, GlcmAccumulate, GlcmFeatures, Entropy, EntropyFinalize.
+
+#ifndef TEXTURE_ANALYSIS_HIGH_ACCURACY_INCLUDED
+#define TEXTURE_ANALYSIS_HIGH_ACCURACY_INCLUDED
+
+// Pre-computed DCT cosine table for 8-point DCT
+// DctCosTable[i][j] = cos((2*i+1)*j*PI/16)
+static const float DctCosTable[8][8] = {
+    { 1.000000, 0.980785, 0.923880, 0.831470, 0.707107, 0.555570, 0.382683, 0.195090 },
+    { 1.000000, 0.831470, 0.382683,-0.195090,-0.707107,-0.980785,-0.923880,-0.555570 },
+    { 1.000000, 0.555570,-0.382683,-0.980785,-0.707107, 0.195090, 0.923880, 0.831470 },
+    { 1.000000, 0.195090,-0.923880,-0.555570, 0.707107, 0.831470,-0.382683,-0.980785 },
+    { 1.000000,-0.195090,-0.923880, 0.555570, 0.707107,-0.831470,-0.382683, 0.980785 },
+    { 1.000000,-0.555570,-0.382683, 0.980785,-0.707107,-0.195090, 0.923880,-0.831470 },
+    { 1.000000,-0.831470, 0.382683, 0.195090,-0.707107, 0.980785,-0.923880, 0.555570 },
+    { 1.000000,-0.980785, 0.923880,-0.831470, 0.707107,-0.555570, 0.382683,-0.195090 }
+};
+
+static const float InvSqrt2 = 0.707107;
+
+// Kernel 5: DCT High Frequency Ratio (8x8 block DCT)
+// One thread group per 8x8 block.
+// Group thread (tx, ty) computes DCT coefficient (u=tx, v=ty).
+groupshared float gs_DctBlock[8][8];
+groupshared float gs_DctCoeff[8][8];
+groupshared bool gs_BlockValid;
+
+[numthreads(8, 8, 1)]
+void DctHighFreqRatio(uint3 groupId : SV_GroupID, uint3 gtid : SV_GroupThreadID)
+{
+    uint bx = groupId.x;
+    uint by = groupId.y;
+    uint tx = gtid.x; // u coordinate
+    uint ty = gtid.y; // v coordinate
+
+    uint px = bx * DCT_BLOCK_SIZE + tx;
+    uint py = by * DCT_BLOCK_SIZE + ty;
+
+    // Initialize shared flag
+    if (tx == 0 && ty == 0)
+        gs_BlockValid = true;
+    GroupMemoryBarrierWithGroupSync();
+
+    // Load pixel and check transparency
+    if (px < _Width && py < _Height)
+    {
+        float4 pixel = SamplePixel(px, py);
+        if (!_IsNormalMap && IsTransparent(pixel))
+            gs_BlockValid = false;
+        gs_DctBlock[ty][tx] = ToGrayscale(pixel.rgb);
+    }
+    else
+    {
+        gs_BlockValid = false;
+        gs_DctBlock[ty][tx] = 0.0;
+    }
+    GroupMemoryBarrierWithGroupSync();
+
+    if (!gs_BlockValid)
+        return;
+
+    // Compute 2D DCT coefficient (u=tx, v=ty)
+    float sum = 0.0;
+    for (uint y = 0; y < DCT_BLOCK_SIZE; y++)
+    {
+        for (uint x = 0; x < DCT_BLOCK_SIZE; x++)
+        {
+            sum += gs_DctBlock[y][x] * DctCosTable[x][tx] * DctCosTable[y][ty];
+        }
+    }
+
+    float cu = (tx == 0) ? InvSqrt2 : 1.0;
+    float cv = (ty == 0) ? InvSqrt2 : 1.0;
+    float coeff = 0.25 * cu * cv * sum;
+    gs_DctCoeff[ty][tx] = coeff;
+    GroupMemoryBarrierWithGroupSync();
+
+    // Accumulate energy (all threads)
+    float energy = coeff * coeff;
+    AtomicAddFixed(IDX_DCT_TOTAL_ENERGY, energy);
+
+    if (tx + ty > 2)
+    {
+        AtomicAddFixed(IDX_DCT_HIGH_FREQ, energy);
+    }
+
+    // Count valid blocks (one thread per group)
+    if (tx == 0 && ty == 0)
+    {
+        AtomicIncrement(IDX_DCT_BLOCK_COUNT);
+    }
+}
+
+// Kernel 6: GLCM Accumulate (build co-occurrence matrix)
+[numthreads(16, 16, 1)]
+void GlcmAccumulate(uint3 id : SV_DispatchThreadID)
+{
+    uint x = id.x;
+    uint y = id.y;
+
+    if (x >= _Width || y >= _Height)
+        return;
+
+    float4 c = SamplePixel(x, y);
+    if (!_IsNormalMap && IsTransparent(c))
+        return;
+
+    float gray = ToGrayscale(c.rgb);
+    uint i = clamp((uint)(gray * (GLCM_LEVELS - 1)), 0, GLCM_LEVELS - 1);
+
+    // Horizontal neighbor
+    if (x + 1 < _Width)
+    {
+        float4 cRight = SamplePixel(x + 1, y);
+        if (_IsNormalMap || !IsTransparent(cRight))
+        {
+            float grayRight = ToGrayscale(cRight.rgb);
+            uint j = clamp((uint)(grayRight * (GLCM_LEVELS - 1)), 0, GLCM_LEVELS - 1);
+
+            AtomicIncrement(IDX_GLCM_MATRIX + i * GLCM_LEVELS + j);
+            AtomicIncrement(IDX_GLCM_MATRIX + j * GLCM_LEVELS + i);
+            AtomicAddUint(IDX_GLCM_PAIRS, 2u);
+        }
+    }
+
+    // Vertical neighbor
+    if (y + 1 < _Height)
+    {
+        float4 cDown = SamplePixel(x, y + 1);
+        if (_IsNormalMap || !IsTransparent(cDown))
+        {
+            float grayDown = ToGrayscale(cDown.rgb);
+            uint j = clamp((uint)(grayDown * (GLCM_LEVELS - 1)), 0, GLCM_LEVELS - 1);
+
+            AtomicIncrement(IDX_GLCM_MATRIX + i * GLCM_LEVELS + j);
+            AtomicIncrement(IDX_GLCM_MATRIX + j * GLCM_LEVELS + i);
+            AtomicAddUint(IDX_GLCM_PAIRS, 2u);
+        }
+    }
+}
+
+// Kernel 7: GLCM Features (compute contrast, homogeneity, energy from matrix)
+// Single workgroup processes the 16x16 matrix.
+groupshared float gs_GlcmContrast[256];
+groupshared float gs_GlcmHomogeneity[256];
+groupshared float gs_GlcmEnergy[256];
+
+[numthreads(256, 1, 1)]
+void GlcmFeatures(uint3 gtid : SV_GroupThreadID)
+{
+    uint idx = gtid.x;
+    uint pairs = _IntermediateBuffer[IDX_GLCM_PAIRS];
+
+    if (pairs == 0 || idx >= GLCM_LEVELS * GLCM_LEVELS)
+    {
+        gs_GlcmContrast[idx] = 0.0;
+        gs_GlcmHomogeneity[idx] = 0.0;
+        gs_GlcmEnergy[idx] = 0.0;
+    }
+    else
+    {
+        uint i = idx / GLCM_LEVELS;
+        uint j = idx % GLCM_LEVELS;
+        float p = (float)_IntermediateBuffer[IDX_GLCM_MATRIX + idx] / (float)pairs;
+        int diff = (int)i - (int)j;
+
+        gs_GlcmContrast[idx] = (float)(diff * diff) * p;
+        gs_GlcmHomogeneity[idx] = p / (1.0 + abs((float)diff));
+        gs_GlcmEnergy[idx] = p * p;
+    }
+    GroupMemoryBarrierWithGroupSync();
+
+    // Parallel reduction (256 threads)
+    for (uint stride = 128; stride > 0; stride >>= 1)
+    {
+        if (idx < stride)
+        {
+            gs_GlcmContrast[idx] += gs_GlcmContrast[idx + stride];
+            gs_GlcmHomogeneity[idx] += gs_GlcmHomogeneity[idx + stride];
+            gs_GlcmEnergy[idx] += gs_GlcmEnergy[idx + stride];
+        }
+        GroupMemoryBarrierWithGroupSync();
+    }
+
+    // Thread 0 writes results to intermediate buffer
+    // Reuse GLCM slots for the computed features
+    if (idx == 0)
+    {
+        // Store GLCM features as fixed-point in specific slots
+        // We reuse the first 3 slots of the GLCM matrix area for output
+        _IntermediateBuffer[IDX_GLCM_MATRIX + 0] = (uint)(gs_GlcmContrast[0] * FIXED_POINT_SCALE);
+        _IntermediateBuffer[IDX_GLCM_MATRIX + 1] = (uint)(gs_GlcmHomogeneity[0] * FIXED_POINT_SCALE);
+        _IntermediateBuffer[IDX_GLCM_MATRIX + 2] = (uint)(gs_GlcmEnergy[0] * FIXED_POINT_SCALE);
+    }
+}
+
+// Kernel 8: Shannon Entropy (histogram-based)
+[numthreads(16, 16, 1)]
+void Entropy(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _Width || id.y >= _Height)
+        return;
+
+    float4 pixel = SamplePixel(id.x, id.y);
+    if (!_IsNormalMap && IsTransparent(pixel))
+        return;
+
+    float gray = ToGrayscale(pixel.rgb);
+    uint bin = clamp((uint)(gray * (HISTOGRAM_BINS - 1)), 0, HISTOGRAM_BINS - 1);
+    AtomicIncrement(IDX_ENTROPY_HISTOGRAM + bin);
+    AtomicIncrement(IDX_ENTROPY_VALID_COUNT);
+}
+
+// Kernel 8b: Entropy Finalize (compute entropy from histogram)
+groupshared float gs_EntropyPartial[256];
+
+[numthreads(256, 1, 1)]
+void EntropyFinalize(uint3 gtid : SV_GroupThreadID)
+{
+    uint idx = gtid.x;
+    uint totalCount = _IntermediateBuffer[IDX_ENTROPY_VALID_COUNT];
+
+    if (totalCount == 0 || idx >= HISTOGRAM_BINS)
+    {
+        gs_EntropyPartial[idx] = 0.0;
+    }
+    else
+    {
+        uint count = _IntermediateBuffer[IDX_ENTROPY_HISTOGRAM + idx];
+        if (count > 0)
+        {
+            float prob = (float)count / (float)totalCount;
+            gs_EntropyPartial[idx] = -prob * log2(prob);
+        }
+        else
+        {
+            gs_EntropyPartial[idx] = 0.0;
+        }
+    }
+    GroupMemoryBarrierWithGroupSync();
+
+    // Parallel reduction
+    for (uint stride = 128; stride > 0; stride >>= 1)
+    {
+        if (idx < stride)
+        {
+            gs_EntropyPartial[idx] += gs_EntropyPartial[idx + stride];
+        }
+        GroupMemoryBarrierWithGroupSync();
+    }
+
+    if (idx == 0)
+    {
+        // Store entropy as fixed-point
+        _IntermediateBuffer[IDX_ENTROPY_VALID_COUNT] = (uint)(gs_EntropyPartial[0] * FIXED_POINT_SCALE);
+    }
+}
+
+#endif // TEXTURE_ANALYSIS_HIGH_ACCURACY_INCLUDED
