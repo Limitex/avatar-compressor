@@ -506,8 +506,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 for (int bx = 0; bx < blocksX; bx++)
                 {
-                    float blockMean = 0f;
-                    int validPixels = 0;
+                    // Welford's online algorithm: single-pass mean + variance
+                    int n = 0;
+                    float mean = 0f;
+                    float m2 = 0f;
 
                     for (int y = 0; y < blockSize; y++)
                     {
@@ -516,32 +518,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             int idx = (by * blockSize + y) * width + (bx * blockSize + x);
                             if (idx < totalPixels && !AlphaExtractor.IsTransparent(grayscale[idx]))
                             {
-                                blockMean += grayscale[idx];
-                                validPixels++;
+                                n++;
+                                float delta = grayscale[idx] - mean;
+                                mean += delta / n;
+                                float delta2 = grayscale[idx] - mean;
+                                m2 += delta * delta2;
                             }
                         }
                     }
 
-                    if (validPixels == 0)
+                    if (n == 0)
                         continue;
-                    blockMean /= validPixels;
 
-                    float blockVariance = 0f;
-                    for (int y = 0; y < blockSize; y++)
-                    {
-                        for (int x = 0; x < blockSize; x++)
-                        {
-                            int idx = (by * blockSize + y) * width + (bx * blockSize + x);
-                            if (idx < totalPixels && !AlphaExtractor.IsTransparent(grayscale[idx]))
-                            {
-                                float diff = grayscale[idx] - blockMean;
-                                blockVariance += diff * diff;
-                            }
-                        }
-                    }
-                    blockVariance /= validPixels;
-
-                    totalVariance += blockVariance;
+                    totalVariance += m2 / n;
                     blockCount++;
                 }
             }
@@ -629,8 +618,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 for (int bx = 0; bx < blocksX; bx++)
                 {
+                    // Welford's online algorithm: single-pass mean + variance
+                    int n = 0;
                     float mean = 0f;
-                    int validPixels = 0;
+                    float m2 = 0f;
 
                     for (int y = 0; y < blockSize; y++)
                     {
@@ -639,30 +630,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             int idx = (by * blockSize + y) * width + (bx * blockSize + x);
                             if (idx < totalPixels && !AlphaExtractor.IsTransparent(grayscale[idx]))
                             {
-                                mean += grayscale[idx];
-                                validPixels++;
+                                n++;
+                                float delta = grayscale[idx] - mean;
+                                mean += delta / n;
+                                float delta2 = grayscale[idx] - mean;
+                                m2 += delta * delta2;
                             }
                         }
                     }
 
-                    if (validPixels == 0)
+                    if (n == 0)
                         continue;
-                    mean /= validPixels;
 
-                    float variance = 0f;
-                    for (int y = 0; y < blockSize; y++)
-                    {
-                        for (int x = 0; x < blockSize; x++)
-                        {
-                            int idx = (by * blockSize + y) * width + (bx * blockSize + x);
-                            if (idx < totalPixels && !AlphaExtractor.IsTransparent(grayscale[idx]))
-                            {
-                                float diff = grayscale[idx] - mean;
-                                variance += diff * diff;
-                            }
-                        }
-                    }
-                    variance /= validPixels;
+                    float variance = m2 / n;
 
                     if (variance > threshold)
                         detailBlocks++;
