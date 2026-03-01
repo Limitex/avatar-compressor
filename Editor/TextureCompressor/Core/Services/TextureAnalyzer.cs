@@ -199,7 +199,29 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 divisor
             );
 
-            return new TextureAnalysisResult(complexity, divisor, resolution);
+            bool hasSignificantAlpha = CheckSignificantAlpha(data.Pixels);
+
+            return new TextureAnalysisResult(complexity, divisor, resolution, hasSignificantAlpha);
+        }
+
+        /// <summary>
+        /// Checks if the pixel data contains significant alpha using sampling.
+        /// Replicates TextureFormatSelector.HasSignificantAlpha logic on pre-loaded pixels
+        /// to avoid redundant GPU readback.
+        /// </summary>
+        private static bool CheckSignificantAlpha(Color[] pixels)
+        {
+            int sampleCount = Mathf.Min(pixels.Length, 10000);
+            int step = Mathf.Max(1, pixels.Length / sampleCount);
+            float threshold = AnalysisConstants.SignificantAlphaThreshold / 255f;
+
+            for (int i = 0; i < pixels.Length; i += step)
+            {
+                if (pixels[i].a < threshold)
+                    return true;
+            }
+
+            return false;
         }
     }
 }

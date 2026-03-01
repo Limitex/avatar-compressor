@@ -23,6 +23,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         public Vector2Int RecommendedResolution { get; }
 
+        /// <summary>
+        /// Whether the texture has significant alpha (computed during analysis to avoid redundant scans).
+        /// </summary>
+        public bool HasSignificantAlpha { get; }
+
         // IAnalysisResult implementation
         public float Score => NormalizedComplexity;
 
@@ -31,11 +36,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
             + $"Divisor: {RecommendedDivisor}x, "
             + $"Target: {RecommendedResolution.x}x{RecommendedResolution.y}";
 
-        public TextureAnalysisResult(float complexity, int divisor, Vector2Int resolution)
+        public TextureAnalysisResult(
+            float complexity,
+            int divisor,
+            Vector2Int resolution,
+            bool hasSignificantAlpha = false
+        )
         {
             NormalizedComplexity = complexity;
             RecommendedDivisor = divisor;
             RecommendedResolution = resolution;
+            HasSignificantAlpha = hasSignificantAlpha;
         }
     }
 }

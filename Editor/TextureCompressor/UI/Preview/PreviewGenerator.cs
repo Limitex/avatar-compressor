@@ -189,7 +189,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         tex.mipmapCount
                     );
                     bool isNormalMap = info.TextureType == "Normal";
-                    bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
+                    bool hasAlpha = analysis.HasSignificantAlpha;
 
                     int divisor;
                     Vector2Int recommendedSize;
