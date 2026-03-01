@@ -1,7 +1,5 @@
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using dev.limitex.avatar.compressor.editor;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -195,6 +193,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var resizeItems =
                 new List<(
                     Texture2D Source,
+                    TextureFormat SourceFormat,
                     TextureAnalysisResult Analysis,
                     bool IsNormalMap,
                     TextureInfo Info,
@@ -218,6 +217,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 resizeItems.Add(
                     (
                         originalTexture,
+                        originalTexture.format,
                         resolved.Value.Analysis,
                         textureInfo.IsNormalMap,
                         textureInfo,
@@ -231,9 +231,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 resizeItems.Select(item => (item.Source, item.Analysis, item.IsNormalMap))
             );
 
-            // Step 3: Resolve format and preprocess normal maps in parallel
+            // Step 3: Resolve format and preprocess normal maps
             var preprocessResults =
-                new ConcurrentDictionary<
+                new Dictionary<
                     Texture2D,
                     (
                         Texture2D Resized,
@@ -244,81 +244,77 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     )
                 >();
 
-            Parallel.ForEach(
-                resizeItems,
-                item =>
+            foreach (var item in resizeItems)
+            {
+                if (!resizedTextures.TryGetValue(item.Source, out var resizedTexture))
+                    continue;
+
+                bool hasAlpha = false;
+                bool hasAlphaComputed = false;
+                bool GetHasAlpha()
                 {
-                    if (!resizedTextures.TryGetValue(item.Source, out var resizedTexture))
-                        return;
-
-                    bool hasAlpha = false;
-                    bool hasAlphaComputed = false;
-                    bool GetHasAlpha()
+                    if (!hasAlphaComputed)
                     {
-                        if (!hasAlphaComputed)
-                        {
-                            hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
-                            hasAlphaComputed = true;
-                        }
-                        return hasAlpha;
+                        hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
+                        hasAlphaComputed = true;
                     }
+                    return hasAlpha;
+                }
 
-                    TextureFormat targetFormat;
-                    if (
-                        item.FormatOverride.HasValue
-                        && item.FormatOverride.Value != FrozenTextureFormat.Auto
-                    )
-                    {
-                        targetFormat = TextureFormatSelector.ConvertFrozenFormat(
-                            item.FormatOverride.Value
-                        );
-                    }
-                    else if (TextureFormatSelector.IsCompressedFormat(item.Source.format))
-                    {
-                        targetFormat = item.Source.format;
-                    }
-                    else
-                    {
-                        targetFormat = _formatSelector.PredictFormat(
-                            item.IsNormalMap,
-                            item.Analysis.NormalizedComplexity,
-                            GetHasAlpha()
-                        );
-                    }
-
-                    var sourceLayout = item.IsNormalMap
-                        ? NormalMapSourceLayoutDetector.Resolve(item.Source, item.Source.format)
-                        : NormalMapPreprocessor.SourceLayout.Auto;
-
-                    bool preserveAlpha =
-                        item.IsNormalMap
-                        && NormalMapPreprocessor.ShouldPreserveSemanticAlpha(
-                            targetFormat,
-                            sourceLayout,
-                            GetHasAlpha()
-                        );
-
-                    // Normal map pixel preprocessing (CPU-bound, safe to parallelize)
-                    if (item.IsNormalMap && resizedTexture.isReadable)
-                    {
-                        _normalMapPreprocessor.PrepareForCompression(
-                            resizedTexture,
-                            item.Source.format,
-                            targetFormat,
-                            preserveAlpha,
-                            sourceLayout
-                        );
-                    }
-
-                    preprocessResults[item.Source] = (
-                        resizedTexture,
-                        targetFormat,
+                TextureFormat targetFormat;
+                if (
+                    item.FormatOverride.HasValue
+                    && item.FormatOverride.Value != FrozenTextureFormat.Auto
+                )
+                {
+                    targetFormat = TextureFormatSelector.ConvertFrozenFormat(
+                        item.FormatOverride.Value
+                    );
+                }
+                else if (TextureFormatSelector.IsCompressedFormat(item.SourceFormat))
+                {
+                    targetFormat = item.SourceFormat;
+                }
+                else
+                {
+                    targetFormat = _formatSelector.PredictFormat(
                         item.IsNormalMap,
+                        item.Analysis.NormalizedComplexity,
+                        GetHasAlpha()
+                    );
+                }
+
+                var sourceLayout = item.IsNormalMap
+                    ? NormalMapSourceLayoutDetector.Resolve(item.Source, item.SourceFormat)
+                    : NormalMapPreprocessor.SourceLayout.Auto;
+
+                bool preserveAlpha =
+                    item.IsNormalMap
+                    && NormalMapPreprocessor.ShouldPreserveSemanticAlpha(
+                        targetFormat,
+                        sourceLayout,
+                        GetHasAlpha()
+                    );
+
+                if (item.IsNormalMap && resizedTexture.isReadable)
+                {
+                    _normalMapPreprocessor.PrepareForCompression(
+                        resizedTexture,
+                        item.SourceFormat,
+                        targetFormat,
                         preserveAlpha,
                         sourceLayout
                     );
                 }
-            );
+
+                preprocessResults[item.Source] = (
+                    resizedTexture,
+                    targetFormat,
+                    item.IsNormalMap,
+                    preserveAlpha,
+                    sourceLayout
+                );
+            }
 
             // Step 4: Sequential compression (EditorUtility.CompressTexture is main-thread-only)
             var processedTextures = new Dictionary<Texture2D, Texture2D>();
@@ -340,7 +336,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     ApplyCompressionOnly(
                         resizedTexture,
-                        item.Source.format,
+                        item.SourceFormat,
                         preprocessed.TargetFormat,
                         preprocessed.IsNormalMap,
                         preprocessed.PreserveAlpha,
