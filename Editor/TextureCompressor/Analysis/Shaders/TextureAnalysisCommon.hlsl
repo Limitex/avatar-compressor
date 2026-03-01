@@ -109,9 +109,7 @@ bool IsTransparent(float4 pixel)
 // Percentile normalization (matches MathUtils.NormalizeWithPercentile)
 float NormalizeWithPercentile(float value, float low, float high)
 {
-    if (value <= low) return 0.0;
-    if (value >= high) return 1.0;
-    return (value - low) / (high - low);
+    return saturate((value - low) / (high - low));
 }
 
 // Atomic add for fixed-point float values.
