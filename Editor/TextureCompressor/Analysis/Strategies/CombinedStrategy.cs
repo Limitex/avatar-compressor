@@ -1,9 +1,11 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Combined analysis strategy using weighted average of Fast, HighAccuracy, and Perceptual strategies.
+    /// Sub-strategies run in parallel for improved throughput.
     /// </summary>
     public class CombinedStrategy : ITextureComplexityAnalyzer
     {
@@ -28,9 +30,18 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         public TextureComplexityResult Analyze(ProcessedPixelData data)
         {
-            float fast = _fastStrategy.Analyze(data).Score;
-            float highAcc = _highAccuracyStrategy.Analyze(data).Score;
-            float perceptual = _perceptualStrategy.Analyze(data).Score;
+            // Run all three strategies in parallel (read-only access to shared data)
+            float fast = 0f,
+                highAcc = 0f,
+                perceptual = 0f;
+
+            var fastTask = Task.Run(() => fast = _fastStrategy.Analyze(data).Score);
+            var highAccTask = Task.Run(() => highAcc = _highAccuracyStrategy.Analyze(data).Score);
+            var perceptualTask = Task.Run(
+                () => perceptual = _perceptualStrategy.Analyze(data).Score
+            );
+
+            Task.WaitAll(fastTask, highAccTask, perceptualTask);
 
             float totalWeight = _fastWeight + _highAccuracyWeight + _perceptualWeight;
 

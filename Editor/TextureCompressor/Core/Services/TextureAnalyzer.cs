@@ -83,10 +83,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             // Phase 3: Truly parallel analysis (no lock contention)
+            // Limit outer parallelism to leave threads for inner parallelism (CombinedStrategy)
             var results = new ConcurrentDictionary<Texture2D, TextureAnalysisResult>();
+            var parallelOptions = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = System.Math.Max(
+                    1,
+                    System.Environment.ProcessorCount / 2
+                ),
+            };
 
             Parallel.ForEach(
                 pixelDataList,
+                parallelOptions,
                 item =>
                 {
                     var result = AnalyzeSingle(item.Data, item.Analyzer);
