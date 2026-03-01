@@ -20,9 +20,11 @@
 #define DEFAULT_COMPLEXITY_SCORE 0.5
 
 // Fixed-point scale for atomic float accumulation.
-// Using 100000 gives 5 decimal places of precision.
-#define FIXED_POINT_SCALE 100000.0
-#define FIXED_POINT_SCALE_UINT 100000
+// Using 1000 to prevent uint32 overflow at 512x512 resolution.
+// Worst-case: Sobel sum 2.83 * 1000 * 260100 = 736M < 4.29B (uint32 max).
+// Precision after averaging 260K samples: ~3.8e-9, well within float32 limits.
+#define FIXED_POINT_SCALE 1000.0
+#define FIXED_POINT_SCALE_UINT 1000
 
 // Input / Output Bindings
 

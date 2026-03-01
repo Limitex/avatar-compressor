@@ -24,7 +24,6 @@ static const float InvSqrt2 = 0.707107;
 // One thread group per 8x8 block.
 // Group thread (tx, ty) computes DCT coefficient (u=tx, v=ty).
 groupshared float gs_DctBlock[8][8];
-groupshared float gs_DctCoeff[8][8];
 groupshared bool gs_BlockValid;
 
 [numthreads(8, 8, 1)]
@@ -74,21 +73,29 @@ void DctHighFreqRatio(uint3 groupId : SV_GroupID, uint3 gtid : SV_GroupThreadID)
     float cu = (tx == 0) ? InvSqrt2 : 1.0;
     float cv = (ty == 0) ? InvSqrt2 : 1.0;
     float coeff = 0.25 * cu * cv * sum;
-    gs_DctCoeff[ty][tx] = coeff;
+    // Store energy in gs_DctBlock (reused; pixel data no longer needed)
+    float energy = coeff * coeff;
+    gs_DctBlock[ty][tx] = energy;
     GroupMemoryBarrierWithGroupSync();
 
-    // Accumulate energy (all threads)
-    float energy = coeff * coeff;
-    AtomicAddFixed(IDX_DCT_TOTAL_ENERGY, energy);
-
-    if (tx + ty > 2)
-    {
-        AtomicAddFixed(IDX_DCT_HIGH_FREQ, energy);
-    }
-
-    // Count valid blocks (one thread per group)
+    // Thread 0 reduces per-block energies and accumulates a single ratio [0,1]
     if (tx == 0 && ty == 0)
     {
+        float totalEnergy = 0.0;
+        float highFreqEnergy = 0.0;
+        for (uint v = 0; v < DCT_BLOCK_SIZE; v++)
+        {
+            for (uint u = 0; u < DCT_BLOCK_SIZE; u++)
+            {
+                float e = gs_DctBlock[v][u];
+                totalEnergy += e;
+                if (u + v > 2)
+                    highFreqEnergy += e;
+            }
+        }
+
+        float blockRatio = totalEnergy > 0.0001 ? highFreqEnergy / totalEnergy : 0.0;
+        AtomicAddFixed(IDX_DCT_HIGH_FREQ, blockRatio);
         AtomicIncrement(IDX_DCT_BLOCK_COUNT);
     }
 }

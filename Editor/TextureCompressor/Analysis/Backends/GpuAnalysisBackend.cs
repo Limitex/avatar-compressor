@@ -15,6 +15,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     {
         private const int IntermediateBufferSize = 538;
         private const int ResultBufferSize = 3;
+        private const float FixedPointScale = 1000f;
 
         private readonly ComputeShader _shader;
         private readonly AnalysisStrategyType _strategyType;
@@ -396,9 +397,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float count = colorData[3];
             if (count > 0)
             {
-                _shader.SetFloat("_ColorMeanR", (colorData[0] / 100000f) / count);
-                _shader.SetFloat("_ColorMeanG", (colorData[1] / 100000f) / count);
-                _shader.SetFloat("_ColorMeanB", (colorData[2] / 100000f) / count);
+                _shader.SetFloat("_ColorMeanR", (colorData[0] / FixedPointScale) / count);
+                _shader.SetFloat("_ColorMeanG", (colorData[1] / FixedPointScale) / count);
+                _shader.SetFloat("_ColorMeanB", (colorData[2] / FixedPointScale) / count);
             }
             else
             {
@@ -462,7 +463,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var blockVarData = new uint[2]; // sum, count at indices 528-529
             intermediateBuffer.GetData(blockVarData, 0, 528, 2);
             float bvCount = blockVarData[1];
-            float avgBlockVariance = bvCount > 0 ? (blockVarData[0] / 100000f) / bvCount : 0f;
+            float avgBlockVariance =
+                bvCount > 0 ? (blockVarData[0] / FixedPointScale) / bvCount : 0f;
             _shader.SetFloat("_AvgBlockVariance", avgBlockVariance);
 
             // Detail density: one thread group per 16x16 block

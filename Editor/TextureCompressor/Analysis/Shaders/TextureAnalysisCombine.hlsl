@@ -41,8 +41,8 @@ void CombineResults(uint3 id : SV_DispatchThreadID)
     // HighAccuracy strategy score
     float highAccScore = 0.0;
     {
-        float dctTotalEnergy = ReadFixed(IDX_DCT_TOTAL_ENERGY);
-        float dctRatio = dctTotalEnergy > 0.0001 ? ReadFixed(IDX_DCT_HIGH_FREQ) / dctTotalEnergy : 0.0;
+        float dctBlockCount = ReadUint(IDX_DCT_BLOCK_COUNT);
+        float dctRatio = dctBlockCount > 0.0 ? ReadFixed(IDX_DCT_HIGH_FREQ) / dctBlockCount : 0.0;
 
         // GLCM features (stored by GlcmFeatures kernel)
         float contrast = (float)_IntermediateBuffer[IDX_GLCM_MATRIX + 0] / FIXED_POINT_SCALE;
