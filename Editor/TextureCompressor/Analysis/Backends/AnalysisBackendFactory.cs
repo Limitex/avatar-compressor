@@ -1,3 +1,6 @@
+using UnityEditor;
+using UnityEngine;
+
 namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
@@ -6,11 +9,55 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// </summary>
     public static class AnalysisBackendFactory
     {
+        private const string ShaderPath =
+            "Packages/dev.limitex.avatar-compressor/"
+            + "Editor/TextureCompressor/Analysis/Shaders/TextureAnalysis.compute";
+
         /// <summary>
         /// Creates the best available analysis backend.
-        /// Currently returns CPU backend; GPU backend will be added when compute shaders are ready.
+        /// Returns GPU backend if compute shaders are supported and the shader asset is available;
+        /// otherwise falls back to the CPU backend.
         /// </summary>
         public static ITextureAnalysisBackend Create(
+            AnalysisStrategyType strategy,
+            float fastWeight,
+            float highAccuracyWeight,
+            float perceptualWeight,
+            TextureProcessor processor,
+            ComplexityCalculator complexityCalc
+        )
+        {
+            if (SystemInfo.supportsComputeShaders && TryLoadShader(out var shader))
+            {
+                try
+                {
+                    return new GpuAnalysisBackend(
+                        shader,
+                        strategy,
+                        fastWeight,
+                        highAccuracyWeight,
+                        perceptualWeight,
+                        complexityCalc,
+                        processor
+                    );
+                }
+                catch (System.Exception)
+                {
+                    // Kernel not found or other initialization error — fall through to CPU
+                }
+            }
+
+            return CreateCpuBackend(
+                strategy,
+                fastWeight,
+                highAccuracyWeight,
+                perceptualWeight,
+                processor,
+                complexityCalc
+            );
+        }
+
+        private static CpuAnalysisBackend CreateCpuBackend(
             AnalysisStrategyType strategy,
             float fastWeight,
             float highAccuracyWeight,
@@ -33,6 +80,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 processor,
                 complexityCalc
             );
+        }
+
+        private static bool TryLoadShader(out ComputeShader shader)
+        {
+            shader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderPath);
+            return shader != null;
         }
     }
 }
