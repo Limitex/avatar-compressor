@@ -37,8 +37,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             var fastTask = Task.Run(() => fast = _fastStrategy.Analyze(data).Score);
             var highAccTask = Task.Run(() => highAcc = _highAccuracyStrategy.Analyze(data).Score);
-            var perceptualTask = Task.Run(
-                () => perceptual = _perceptualStrategy.Analyze(data).Score
+            var perceptualTask = Task.Run(() =>
+                perceptual = _perceptualStrategy.Analyze(data).Score
             );
 
             Task.WaitAll(fastTask, highAccTask, perceptualTask);

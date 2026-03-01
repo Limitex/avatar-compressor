@@ -124,10 +124,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
 
                 var resultBuffer = new ComputeBuffer(ResultBufferSize, sizeof(float));
-                var intermediateBuffer = new ComputeBuffer(
-                    IntermediateBufferSize,
-                    sizeof(uint)
-                );
+                var intermediateBuffer = new ComputeBuffer(IntermediateBufferSize, sizeof(uint));
 
                 // Clear intermediate buffer
                 var zeros = new uint[IntermediateBufferSize];
@@ -351,13 +348,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 if (needsFast)
                 {
-                    DispatchFastKernels(
-                        width,
-                        height,
-                        groupsX16,
-                        groupsY16,
-                        intermediateBuffer
-                    );
+                    DispatchFastKernels(width, height, groupsX16, groupsY16, intermediateBuffer);
                 }
 
                 if (needsHighAcc)
@@ -367,7 +358,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 if (needsPerceptual)
                 {
-                    DispatchPerceptualKernels(width, height, groupsX16, groupsY16, intermediateBuffer);
+                    DispatchPerceptualKernels(
+                        width,
+                        height,
+                        groupsX16,
+                        groupsY16,
+                        intermediateBuffer
+                    );
                 }
             }
 
@@ -465,8 +462,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var blockVarData = new uint[2]; // sum, count at indices 528-529
             intermediateBuffer.GetData(blockVarData, 0, 528, 2);
             float bvCount = blockVarData[1];
-            float avgBlockVariance =
-                bvCount > 0 ? (blockVarData[0] / 100000f) / bvCount : 0f;
+            float avgBlockVariance = bvCount > 0 ? (blockVarData[0] / 100000f) / bvCount : 0f;
             _shader.SetFloat("_AvgBlockVariance", avgBlockVariance);
 
             // Detail density: one thread group per 16x16 block

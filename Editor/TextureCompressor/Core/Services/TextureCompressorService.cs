@@ -330,12 +330,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (processedTextures.ContainsKey(originalTexture))
                     continue;
 
-                if (
-                    !preprocessResults.TryGetValue(
-                        originalTexture,
-                        out var preprocessed
-                    )
-                )
+                if (!preprocessResults.TryGetValue(originalTexture, out var preprocessed))
                     continue;
 
                 var resizedTexture = preprocessed.Resized;
@@ -410,7 +405,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Resolves analysis settings for a texture (frozen override or analysis result).
         /// </summary>
         /// <returns>Resolved analysis and format override, or null if the texture should be skipped.</returns>
-        private (TextureAnalysisResult Analysis, FrozenTextureFormat? FormatOverride)? ResolveAnalysis(
+        private (
+            TextureAnalysisResult Analysis,
+            FrozenTextureFormat? FormatOverride
+        )? ResolveAnalysis(
             Texture2D originalTexture,
             TextureInfo textureInfo,
             Dictionary<Texture2D, TextureAnalysisResult> analysisResults,

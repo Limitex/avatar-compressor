@@ -227,9 +227,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             )
                                 rtFormat = RenderTextureFormat.ARGBFloat;
                             else if (
-                                SystemInfo.SupportsRenderTextureFormat(
-                                    RenderTextureFormat.ARGBHalf
-                                )
+                                SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf)
                             )
                                 rtFormat = RenderTextureFormat.ARGBHalf;
                         }
@@ -352,11 +350,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                                     TextureFormat.RGBA32,
                                     texture.mipmapCount > 1
                                 );
-                                readable.ReadPixels(
-                                    new Rect(0, 0, rt.width, rt.height),
-                                    0,
-                                    0
-                                );
+                                readable.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
                                 readable.Apply(texture.mipmapCount > 1);
 
                                 result[texture] = readable.GetPixels();

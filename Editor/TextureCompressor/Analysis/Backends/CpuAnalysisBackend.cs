@@ -81,10 +81,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var results = new ConcurrentDictionary<Texture2D, TextureAnalysisResult>();
             var parallelOptions = new ParallelOptions
             {
-                MaxDegreeOfParallelism = System.Math.Max(
-                    1,
-                    System.Environment.ProcessorCount / 2
-                ),
+                MaxDegreeOfParallelism = System.Math.Max(1, System.Environment.ProcessorCount / 2),
             };
 
             Parallel.ForEach(
