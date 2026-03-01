@@ -38,11 +38,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         /// <summary>
         /// Analyzes a batch of textures in parallel.
+        /// Pixel data is pre-loaded in a single lock scope on the main thread,
+        /// then analysis runs in true parallel with no lock contention.
         /// </summary>
         public Dictionary<Texture2D, TextureAnalysisResult> AnalyzeBatch(
             Dictionary<Texture2D, TextureInfo> textures
         )
         {
+            // Phase 1: Batch pixel reading on main thread (single lock acquisition)
+            var allPixels = _processor.GetReadablePixelsBatch(textures.Keys);
+
+            // Phase 2: Build analysis work items from pre-loaded pixel data
             var pixelDataList =
                 new List<(
                     Texture2D Texture,
@@ -54,9 +60,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 var texture = kvp.Key;
                 var info = kvp.Value;
-                var pixels = _processor.GetReadablePixels(texture);
 
-                if (pixels.Length == 0)
+                if (
+                    !allPixels.TryGetValue(texture, out var pixels)
+                    || pixels == null
+                    || pixels.Length == 0
+                )
                     continue;
 
                 var data = new TexturePixelData
@@ -73,6 +82,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 pixelDataList.Add((texture, data, analyzer));
             }
 
+            // Phase 3: Truly parallel analysis (no lock contention)
             var results = new ConcurrentDictionary<Texture2D, TextureAnalysisResult>();
 
             Parallel.ForEach(
