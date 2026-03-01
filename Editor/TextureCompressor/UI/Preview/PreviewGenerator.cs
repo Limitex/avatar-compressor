@@ -12,6 +12,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// </summary>
     public class PreviewGenerator
     {
+        private static readonly LruCache<(string guid, int analysisHash), TextureAnalysisResult>
+            AnalysisCache = new(256);
+
         /// <summary>
         /// Number of textures that will be processed.
         /// </summary>
@@ -114,10 +117,49 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 complexityCalc
             );
 
-            var analysisResults =
-                processedTextures.Count > 0
-                    ? analyzer.AnalyzeBatch(processedTextures)
-                    : new Dictionary<Texture2D, TextureAnalysisResult>();
+            // Use cache to avoid re-analyzing unchanged textures
+            int analysisHash = ComputeAnalysisHash(config);
+            var analysisResults = new Dictionary<Texture2D, TextureAnalysisResult>();
+
+            if (processedTextures.Count > 0)
+            {
+                var needsAnalysis = new Dictionary<Texture2D, TextureInfo>();
+
+                foreach (var kvp in processedTextures)
+                {
+                    string path = AssetDatabase.GetAssetPath(kvp.Key);
+                    string guid = AssetDatabase.AssetPathToGUID(path);
+                    var cacheKey = (guid, analysisHash);
+
+                    if (
+                        !string.IsNullOrEmpty(guid)
+                        && AnalysisCache.TryGetValue(cacheKey, out var cached)
+                    )
+                    {
+                        analysisResults[kvp.Key] = cached;
+                    }
+                    else
+                    {
+                        needsAnalysis[kvp.Key] = kvp.Value;
+                    }
+                }
+
+                if (needsAnalysis.Count > 0)
+                {
+                    var newResults = analyzer.AnalyzeBatch(needsAnalysis);
+                    foreach (var kvp in newResults)
+                    {
+                        analysisResults[kvp.Key] = kvp.Value;
+
+                        string path = AssetDatabase.GetAssetPath(kvp.Key);
+                        string guid = AssetDatabase.AssetPathToGUID(path);
+                        if (!string.IsNullOrEmpty(guid))
+                        {
+                            AnalysisCache.Set((guid, analysisHash), kvp.Value);
+                        }
+                    }
+                }
+            }
 
             var processedList = new List<TexturePreviewData>();
             var frozenList = new List<TexturePreviewData>();
@@ -324,6 +366,30 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             allPreviewData.AddRange(skippedList);
 
             return allPreviewData.ToArray();
+        }
+
+        /// <summary>
+        /// Computes a hash of analysis-affecting settings only (Strategy, Weights, Thresholds, Resolution).
+        /// Used as the cache key for analysis results.
+        /// </summary>
+        public static int ComputeAnalysisHash(TextureCompressor config)
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 31 + config.Strategy.GetHashCode();
+                hash = hash * 31 + config.FastWeight.GetHashCode();
+                hash = hash * 31 + config.HighAccuracyWeight.GetHashCode();
+                hash = hash * 31 + config.PerceptualWeight.GetHashCode();
+                hash = hash * 31 + config.HighComplexityThreshold.GetHashCode();
+                hash = hash * 31 + config.LowComplexityThreshold.GetHashCode();
+                hash = hash * 31 + config.MinDivisor;
+                hash = hash * 31 + config.MaxDivisor;
+                hash = hash * 31 + config.MaxResolution;
+                hash = hash * 31 + config.MinResolution;
+                hash = hash * 31 + config.ForcePowerOfTwo.GetHashCode();
+                return hash;
+            }
         }
 
         /// <summary>
