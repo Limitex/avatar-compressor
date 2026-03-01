@@ -181,6 +181,101 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
+        /// Resizes multiple textures in a single lock scope for efficiency.
+        /// </summary>
+        public Dictionary<Texture2D, Texture2D> ResizeBatch(
+            IEnumerable<(Texture2D Source, TextureAnalysisResult Analysis, bool IsNormalMap)> items
+        )
+        {
+            var result = new Dictionary<Texture2D, Texture2D>();
+
+            lock (RenderTextureLock)
+            {
+                RenderTexture previous = RenderTexture.active;
+                try
+                {
+                    foreach (var item in items)
+                    {
+                        int newWidth,
+                            newHeight;
+                        if (
+                            item.Analysis.RecommendedDivisor <= 1
+                            && item.Source.width <= _maxResolution
+                            && item.Source.height <= _maxResolution
+                        )
+                        {
+                            newWidth = EnsureMultipleOf4(item.Source.width);
+                            newHeight = EnsureMultipleOf4(item.Source.height);
+                        }
+                        else
+                        {
+                            newWidth = item.Analysis.RecommendedResolution.x;
+                            newHeight = item.Analysis.RecommendedResolution.y;
+                        }
+
+                        var colorSpace = item.IsNormalMap
+                            ? RenderTextureReadWrite.Linear
+                            : RenderTextureReadWrite.Default;
+
+                        var rtFormat = RenderTextureFormat.ARGB32;
+                        if (item.IsNormalMap)
+                        {
+                            if (
+                                SystemInfo.SupportsRenderTextureFormat(
+                                    RenderTextureFormat.ARGBFloat
+                                )
+                            )
+                                rtFormat = RenderTextureFormat.ARGBFloat;
+                            else if (
+                                SystemInfo.SupportsRenderTextureFormat(
+                                    RenderTextureFormat.ARGBHalf
+                                )
+                            )
+                                rtFormat = RenderTextureFormat.ARGBHalf;
+                        }
+
+                        RenderTexture rt = RenderTexture.GetTemporary(
+                            newWidth,
+                            newHeight,
+                            0,
+                            rtFormat,
+                            colorSpace
+                        );
+                        rt.filterMode = FilterMode.Bilinear;
+
+                        RenderTexture.active = rt;
+                        Graphics.Blit(item.Source, rt);
+
+                        Texture2D resized = new Texture2D(
+                            newWidth,
+                            newHeight,
+                            TextureFormat.RGBA32,
+                            item.Source.mipmapCount > 1,
+                            item.IsNormalMap
+                        );
+                        resized.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
+                        resized.Apply(item.Source.mipmapCount > 1);
+
+                        resized.wrapModeU = item.Source.wrapModeU;
+                        resized.wrapModeV = item.Source.wrapModeV;
+                        resized.wrapModeW = item.Source.wrapModeW;
+                        resized.filterMode = item.Source.filterMode;
+                        resized.anisoLevel = item.Source.anisoLevel;
+
+                        RenderTexture.ReleaseTemporary(rt);
+                        result[item.Source] = resized;
+                    }
+                }
+                finally
+                {
+                    RenderTexture.active = previous;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Gets readable pixels from multiple textures in a single lock scope for efficiency.
         /// Readable textures are processed without locking; non-readable textures are batched
         /// under a single lock acquisition to minimize RenderTexture lock contention.
