@@ -20,17 +20,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ComplexityCalculator complexityCalc
         )
         {
-            var standardAnalyzer = AnalyzerFactory.Create(
+            _backend = AnalysisBackendFactory.Create(
                 strategy,
                 fastWeight,
                 highAccuracyWeight,
-                perceptualWeight
-            );
-            var normalMapAnalyzer = AnalyzerFactory.CreateNormalMapAnalyzer();
-
-            _backend = new CpuAnalysisBackend(
-                standardAnalyzer,
-                normalMapAnalyzer,
+                perceptualWeight,
                 processor,
                 complexityCalc
             );
