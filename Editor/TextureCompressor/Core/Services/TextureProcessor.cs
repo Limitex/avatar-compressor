@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
@@ -177,6 +178,118 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 return result;
             }
+        }
+
+        /// <summary>
+        /// Gets readable pixels from multiple textures in a single lock scope for efficiency.
+        /// Readable textures are processed without locking; non-readable textures are batched
+        /// under a single lock acquisition to minimize RenderTexture lock contention.
+        /// </summary>
+        public Dictionary<Texture2D, Color[]> GetReadablePixelsBatch(
+            IEnumerable<Texture2D> textures
+        )
+        {
+            var result = new Dictionary<Texture2D, Color[]>();
+            var nonReadable = new List<Texture2D>();
+
+            // First pass: collect readable textures without lock
+            foreach (var texture in textures)
+            {
+                if (texture == null)
+                    continue;
+
+                if (texture.isReadable)
+                {
+                    try
+                    {
+                        result[texture] = texture.GetPixels();
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning(
+                            $"[TextureCompressor] Failed to read pixels from readable texture: {e.Message}"
+                        );
+                        result[texture] = new Color[0];
+                    }
+                }
+                else
+                {
+                    nonReadable.Add(texture);
+                }
+            }
+
+            // Second pass: batch all non-readable textures under a single lock
+            if (nonReadable.Count > 0)
+            {
+                lock (RenderTextureLock)
+                {
+                    RenderTexture previous = RenderTexture.active;
+                    try
+                    {
+                        foreach (var texture in nonReadable)
+                        {
+                            RenderTexture rt = null;
+                            Texture2D readable = null;
+                            try
+                            {
+                                rt = RenderTexture.GetTemporary(
+                                    texture.width,
+                                    texture.height,
+                                    0,
+                                    RenderTextureFormat.ARGB32
+                                );
+
+                                if (rt == null)
+                                {
+                                    Debug.LogWarning(
+                                        "[TextureCompressor] Failed to create temporary RenderTexture"
+                                    );
+                                    result[texture] = new Color[0];
+                                    continue;
+                                }
+
+                                Graphics.Blit(texture, rt);
+                                RenderTexture.active = rt;
+
+                                readable = new Texture2D(
+                                    texture.width,
+                                    texture.height,
+                                    TextureFormat.RGBA32,
+                                    texture.mipmapCount > 1
+                                );
+                                readable.ReadPixels(
+                                    new Rect(0, 0, rt.width, rt.height),
+                                    0,
+                                    0
+                                );
+                                readable.Apply(texture.mipmapCount > 1);
+
+                                result[texture] = readable.GetPixels();
+                            }
+                            catch (System.Exception e)
+                            {
+                                Debug.LogWarning(
+                                    $"[TextureCompressor] Failed to read pixels from texture '{texture.name}': {e.Message}"
+                                );
+                                result[texture] = new Color[0];
+                            }
+                            finally
+                            {
+                                if (rt != null)
+                                    RenderTexture.ReleaseTemporary(rt);
+                                if (readable != null)
+                                    Object.DestroyImmediate(readable);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        RenderTexture.active = previous;
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
