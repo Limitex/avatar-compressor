@@ -158,6 +158,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         public const int PerceptualBlockSize = 4;
 
+        /// <summary>
+        /// Block size for detail density calculation in perceptual analysis.
+        /// Must match DETAIL_DENSITY_BLOCK_SIZE in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const int DetailDensityBlockSize = 16;
+
         #endregion
 
         #region Perceptual Strategy Normalization Bounds
@@ -210,6 +216,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// 0.5 represents medium complexity (conservative approach).
         /// </summary>
         public const float DefaultComplexityScore = 0.5f;
+
+        /// <summary>
+        /// Divisor applied to emission texture scores to boost their effective complexity.
+        /// Emission textures tend to have lower raw scores but require higher quality
+        /// to preserve glow detail. Dividing by this value raises the score toward 1.0.
+        /// </summary>
+        public const float EmissionScoreBoostDivisor = 0.9f;
 
         #endregion
 

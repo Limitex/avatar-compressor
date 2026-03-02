@@ -47,6 +47,25 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
+        /// Resolves the target format for a texture, applying the full priority chain:
+        /// frozen format override → already compressed source → prediction from analysis.
+        /// </summary>
+        public TextureFormat ResolveTargetFormat(
+            TextureFormat sourceFormat,
+            bool isNormalMap,
+            float complexity,
+            bool hasAlpha,
+            FrozenTextureFormat? frozenFormat
+        )
+        {
+            if (frozenFormat.HasValue && frozenFormat.Value != FrozenTextureFormat.Auto)
+                return ConvertFrozenFormat(frozenFormat.Value);
+            if (IsCompressedFormat(sourceFormat))
+                return sourceFormat;
+            return PredictFormat(isNormalMap, complexity, hasAlpha);
+        }
+
+        /// <summary>
         /// Converts FrozenTextureFormat enum to Unity TextureFormat.
         /// </summary>
         public static TextureFormat ConvertFrozenFormat(FrozenTextureFormat format)

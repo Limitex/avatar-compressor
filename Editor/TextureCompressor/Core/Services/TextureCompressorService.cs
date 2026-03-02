@@ -25,23 +25,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly NormalMapPreprocessor _normalMapPreprocessor;
         private readonly Dictionary<string, FrozenTextureSettings> _frozenLookup;
 
-        // Flag to avoid repeating the same warning for every texture
-        private static bool _streamingMipmapsWarningShown;
+        // Flag to avoid repeating the same warning for every texture (per-build instance)
+        private bool _streamingMipmapsWarningShown;
 
-        // Flag to avoid repeating build context warning
-        private static bool _buildContextWarningShown;
+        // Flag to avoid repeating build context warning (per-build instance)
+        private bool _buildContextWarningShown;
 
         public TextureCompressorService(TextureCompressor config)
         {
             _config = config;
 
-            // Build frozen texture lookup (GUID -> Settings)
-            _frozenLookup = new Dictionary<string, FrozenTextureSettings>();
-            foreach (var frozen in config.FrozenTextures)
-            {
-                if (!string.IsNullOrEmpty(frozen.TextureGuid))
-                    _frozenLookup[frozen.TextureGuid] = frozen;
-            }
+            _frozenLookup = FrozenTextureSettings.BuildLookup(config.FrozenTextures);
 
             // Get frozen skip GUIDs (textures with Skip=true should be excluded from collection)
             var frozenSkipGuids = config
@@ -261,28 +255,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     return hasAlpha;
                 }
 
-                TextureFormat targetFormat;
-                if (
-                    item.FormatOverride.HasValue
-                    && item.FormatOverride.Value != FrozenTextureFormat.Auto
-                )
-                {
-                    targetFormat = TextureFormatSelector.ConvertFrozenFormat(
-                        item.FormatOverride.Value
-                    );
-                }
-                else if (TextureFormatSelector.IsCompressedFormat(item.SourceFormat))
-                {
-                    targetFormat = item.SourceFormat;
-                }
-                else
-                {
-                    targetFormat = _formatSelector.PredictFormat(
-                        item.IsNormalMap,
-                        item.Analysis.NormalizedComplexity,
-                        GetHasAlpha()
-                    );
-                }
+                TextureFormat targetFormat = _formatSelector.ResolveTargetFormat(
+                    item.SourceFormat,
+                    item.IsNormalMap,
+                    item.Analysis.NormalizedComplexity,
+                    GetHasAlpha(),
+                    item.FormatOverride
+                );
 
                 var sourceLayout = item.IsNormalMap
                     ? NormalMapSourceLayoutDetector.Resolve(item.Source, item.SourceFormat)

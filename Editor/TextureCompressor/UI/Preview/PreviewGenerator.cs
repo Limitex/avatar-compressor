@@ -37,13 +37,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// </summary>
         public TexturePreviewData[] Generate(TextureCompressor config)
         {
-            // Build frozen texture lookup (GUID -> Settings)
-            var frozenLookup = new Dictionary<string, FrozenTextureSettings>();
-            foreach (var frozen in config.FrozenTextures)
-            {
-                if (!string.IsNullOrEmpty(frozen.TextureGuid))
-                    frozenLookup[frozen.TextureGuid] = frozen;
-            }
+            var frozenLookup = FrozenTextureSettings.BuildLookup(config.FrozenTextures);
 
             var collector = new TextureCollector(
                 config.MinSourceSize,
@@ -207,43 +201,25 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                             tex.height,
                             divisor
                         );
-
-                        if (frozenSettings.Format != FrozenTextureFormat.Auto)
-                        {
-                            targetFormat = TextureFormatSelector.ConvertFrozenFormat(
-                                frozenSettings.Format
-                            );
-                        }
-                        else if (TextureFormatSelector.IsCompressedFormat(tex.format))
-                        {
-                            targetFormat = tex.format;
-                        }
-                        else
-                        {
-                            targetFormat = formatSelector.PredictFormat(
-                                isNormalMap,
-                                0.5f,
-                                hasAlpha
-                            );
-                        }
+                        targetFormat = formatSelector.ResolveTargetFormat(
+                            tex.format,
+                            isNormalMap,
+                            0.5f,
+                            hasAlpha,
+                            frozenSettings.Format
+                        );
                     }
                     else
                     {
                         divisor = analysis.RecommendedDivisor;
                         recommendedSize = analysis.RecommendedResolution;
-
-                        if (TextureFormatSelector.IsCompressedFormat(tex.format))
-                        {
-                            targetFormat = tex.format;
-                        }
-                        else
-                        {
-                            targetFormat = formatSelector.PredictFormat(
-                                isNormalMap,
-                                analysis.NormalizedComplexity,
-                                hasAlpha
-                            );
-                        }
+                        targetFormat = formatSelector.ResolveTargetFormat(
+                            tex.format,
+                            isNormalMap,
+                            analysis.NormalizedComplexity,
+                            hasAlpha,
+                            null
+                        );
                     }
 
                     long estimatedMemory = MemoryCalculator.CalculateCompressedMemory(
@@ -403,19 +379,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             unchecked
             {
-                int hash = 17;
+                // Start from analysis hash (Strategy, Weights, Thresholds, Resolution)
+                int hash = ComputeAnalysisHash(config);
                 hash = hash * 31 + config.Preset.GetHashCode();
-                hash = hash * 31 + config.Strategy.GetHashCode();
-                hash = hash * 31 + config.FastWeight.GetHashCode();
-                hash = hash * 31 + config.HighAccuracyWeight.GetHashCode();
-                hash = hash * 31 + config.PerceptualWeight.GetHashCode();
-                hash = hash * 31 + config.HighComplexityThreshold.GetHashCode();
-                hash = hash * 31 + config.LowComplexityThreshold.GetHashCode();
-                hash = hash * 31 + config.MinDivisor;
-                hash = hash * 31 + config.MaxDivisor;
-                hash = hash * 31 + config.MaxResolution;
-                hash = hash * 31 + config.MinResolution;
-                hash = hash * 31 + config.ForcePowerOfTwo.GetHashCode();
                 hash = hash * 31 + config.ProcessMainTextures.GetHashCode();
                 hash = hash * 31 + config.ProcessNormalMaps.GetHashCode();
                 hash = hash * 31 + config.ProcessEmissionMaps.GetHashCode();

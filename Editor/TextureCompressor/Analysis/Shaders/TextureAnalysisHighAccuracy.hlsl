@@ -261,8 +261,8 @@ void EntropyFinalize(uint3 gtid : SV_GroupThreadID)
 
     if (idx == 0)
     {
-        // Store entropy as fixed-point
-        _IntermediateBuffer[IDX_ENTROPY_VALID_COUNT] = (uint)(gs_EntropyPartial[0] * FIXED_POINT_SCALE);
+        // Store entropy as fixed-point in dedicated result slot
+        _IntermediateBuffer[IDX_ENTROPY_RESULT] = (uint)(gs_EntropyPartial[0] * FIXED_POINT_SCALE);
     }
 }
 

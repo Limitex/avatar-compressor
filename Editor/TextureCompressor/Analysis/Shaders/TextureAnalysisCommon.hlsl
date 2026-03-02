@@ -64,25 +64,26 @@ RWStructuredBuffer<uint> _IntermediateBuffer;
 #define IDX_GLCM_PAIRS          270
 #define IDX_ENTROPY_HISTOGRAM   271  // 271..526 (256 bins)
 #define IDX_ENTROPY_VALID_COUNT 527
+#define IDX_ENTROPY_RESULT      528
 
 // Perceptual strategy
-#define IDX_BLOCK_VAR_SUM       528
-#define IDX_BLOCK_VAR_COUNT     529
-#define IDX_EDGE_SUM            530
-#define IDX_EDGE_COUNT          531
-#define IDX_DETAIL_BLOCKS       532
-#define IDX_DETAIL_TOTAL        533
+#define IDX_BLOCK_VAR_SUM       529
+#define IDX_BLOCK_VAR_COUNT     530
+#define IDX_EDGE_SUM            531
+#define IDX_EDGE_COUNT          532
+#define IDX_DETAIL_BLOCKS       533
+#define IDX_DETAIL_TOTAL        534
 
 // Normal map
-#define IDX_NORMAL_VAR_SUM      534
-#define IDX_NORMAL_VAR_COUNT    535
+#define IDX_NORMAL_VAR_SUM      535
+#define IDX_NORMAL_VAR_COUNT    536
 
 // Common
-#define IDX_OPAQUE_COUNT        536
-#define IDX_HAS_SIGNIFICANT_ALPHA 537
+#define IDX_OPAQUE_COUNT        537
+#define IDX_HAS_SIGNIFICANT_ALPHA 538
 
 // Total intermediate buffer size
-#define INTERMEDIATE_BUFFER_SIZE 538
+#define INTERMEDIATE_BUFFER_SIZE 539
 
 // Utility Functions
 

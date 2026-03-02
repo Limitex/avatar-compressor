@@ -13,9 +13,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// </summary>
     public class GpuAnalysisBackend : ITextureAnalysisBackend
     {
-        private const int IntermediateBufferSize = 538;
-        private const int ResultBufferSize = 3;
-        private const float FixedPointScale = 1000f;
+        private const int IntermediateBufferSize = GpuBufferLayout.IntermediateBufferSize;
+        private const int ResultBufferSize = GpuBufferLayout.ResultBufferSize;
+        private const float FixedPointScale = GpuBufferLayout.FixedPointScale;
 
         private readonly ComputeShader _shader;
         private readonly AnalysisStrategyType _strategyType;
@@ -132,35 +132,56 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         sizeof(uint)
                     );
 
-                    // Clear intermediate buffer
-                    var zeros = new uint[IntermediateBufferSize];
-                    intermediateBuffer.SetData(zeros);
+                    try
+                    {
+                        // Clear intermediate buffer
+                        var zeros = new uint[IntermediateBufferSize];
+                        intermediateBuffer.SetData(zeros);
 
-                    // Set shared parameters
-                    SetSharedParameters(
-                        texture,
-                        sampledWidth,
-                        sampledHeight,
-                        info.IsNormalMap,
-                        resultBuffer,
-                        intermediateBuffer
-                    );
+                        // Set shared parameters
+                        SetSharedParameters(
+                            texture,
+                            sampledWidth,
+                            sampledHeight,
+                            info.IsNormalMap,
+                            resultBuffer,
+                            intermediateBuffer
+                        );
 
-                    // Dispatch kernels
-                    DispatchAnalysis(
-                        texture,
-                        info,
-                        sampledWidth,
-                        sampledHeight,
-                        resultBuffer,
-                        intermediateBuffer
-                    );
+                        // Dispatch kernels
+                        DispatchAnalysis(
+                            texture,
+                            info,
+                            sampledWidth,
+                            sampledHeight,
+                            resultBuffer,
+                            intermediateBuffer
+                        );
 
-                    // Queue async readback
-                    var request = AsyncGPUReadback.Request(resultBuffer);
-                    pendingReadbacks.Add(
-                        (texture, request, resultBuffer, intermediateBuffer, info)
-                    );
+                        // Queue async readback
+                        var request = AsyncGPUReadback.Request(resultBuffer);
+                        pendingReadbacks.Add(
+                            (texture, request, resultBuffer, intermediateBuffer, info)
+                        );
+                    }
+                    catch (System.Exception e)
+                    {
+                        resultBuffer.Release();
+                        intermediateBuffer.Release();
+                        Debug.LogWarning(
+                            $"[TextureCompressor] GPU analysis failed for '{texture.name}': {e.Message}"
+                        );
+                        results[texture] = AnalysisResultHelper.BuildResult(
+                            AnalysisConstants.DefaultComplexityScore,
+                            texture.width,
+                            texture.height,
+                            info.IsEmission,
+                            info.IsNormalMap,
+                            false,
+                            _complexityCalc,
+                            _processor
+                        );
+                    }
                 }
 
                 // Wait for all readbacks and assemble results
@@ -171,8 +192,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     if (!pending.Request.hasError)
                     {
                         var data = pending.Request.GetData<float>();
-                        float score = Mathf.Clamp01(data[0]);
-                        bool hasAlpha = data[2] > 0.5f;
+                        float score = Mathf.Clamp01(data[GpuBufferLayout.ResultIdxScore]);
+                        bool hasAlpha = data[GpuBufferLayout.ResultIdxHasAlpha] > 0.5f;
 
                         results[pending.Tex] = AnalysisResultHelper.BuildResult(
                             score,
@@ -392,8 +413,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             // Read back color mean for pass 2
             // We need to synchronize and read the intermediate buffer
-            var colorData = new uint[4]; // sumR, sumG, sumB, count at indices 6-9
-            intermediateBuffer.GetData(colorData, 0, 6, 4);
+            var colorData = new uint[GpuBufferLayout.ColorMeanFieldCount];
+            intermediateBuffer.GetData(colorData, 0, GpuBufferLayout.IdxColorSumR, GpuBufferLayout.ColorMeanFieldCount);
             float count = colorData[3];
             if (count > 0)
             {
@@ -460,16 +481,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
             _shader.Dispatch(_kernelEdgeDensity, groupsX16, groupsY16, 1);
 
             // Read back block variance average for detail density threshold
-            var blockVarData = new uint[2]; // sum, count at indices 528-529
-            intermediateBuffer.GetData(blockVarData, 0, 528, 2);
+            var blockVarData = new uint[GpuBufferLayout.BlockVarFieldCount];
+            intermediateBuffer.GetData(blockVarData, 0, GpuBufferLayout.IdxBlockVarSum, GpuBufferLayout.BlockVarFieldCount);
             float bvCount = blockVarData[1];
             float avgBlockVariance =
                 bvCount > 0 ? (blockVarData[0] / FixedPointScale) / bvCount : 0f;
             _shader.SetFloat("_AvgBlockVariance", avgBlockVariance);
 
-            // Detail density: one thread group per 16x16 block
-            int ddBlocksX = width / 16;
-            int ddBlocksY = height / 16;
+            // Detail density: one thread group per block
+            int ddBlocksX = width / AnalysisConstants.DetailDensityBlockSize;
+            int ddBlocksY = height / AnalysisConstants.DetailDensityBlockSize;
             if (ddBlocksX > 0 && ddBlocksY > 0)
             {
                 _shader.Dispatch(_kernelDetailDensity, ddBlocksX, ddBlocksY, 1);

@@ -121,62 +121,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             lock (RenderTextureLock)
             {
-                // Normal maps store vector data, not color, so they must be processed in linear space
-                // to avoid sRGB gamma correction that would corrupt the normal vectors.
-                var colorSpace = isNormalMap
-                    ? RenderTextureReadWrite.Linear
-                    : RenderTextureReadWrite.Default;
-
-                // For normal maps, prefer float/half RT to reduce interpolation quantization during resize.
-                var rtFormat = RenderTextureFormat.ARGB32;
-                if (isNormalMap)
-                {
-                    if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBFloat))
-                    {
-                        rtFormat = RenderTextureFormat.ARGBFloat;
-                    }
-                    else if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf))
-                    {
-                        rtFormat = RenderTextureFormat.ARGBHalf;
-                    }
-                }
-
-                RenderTexture rt = RenderTexture.GetTemporary(
-                    newWidth,
-                    newHeight,
-                    0,
-                    rtFormat,
-                    colorSpace
-                );
-                rt.filterMode = FilterMode.Bilinear;
-
                 RenderTexture previous = RenderTexture.active;
-                RenderTexture.active = rt;
-                Graphics.Blit(source, rt);
-
-                // Preserve mipmap setting from source texture
-                // For normal maps, use linear color space to prevent gamma correction
-                Texture2D result = new Texture2D(
-                    newWidth,
-                    newHeight,
-                    TextureFormat.RGBA32,
-                    source.mipmapCount > 1,
-                    isNormalMap
-                );
-                result.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
-                result.Apply(source.mipmapCount > 1);
-
-                // Copy texture settings from source
-                result.wrapModeU = source.wrapModeU;
-                result.wrapModeV = source.wrapModeV;
-                result.wrapModeW = source.wrapModeW;
-                result.filterMode = source.filterMode;
-                result.anisoLevel = source.anisoLevel;
-
-                RenderTexture.active = previous;
-                RenderTexture.ReleaseTemporary(rt);
-
-                return result;
+                try
+                {
+                    return BlitResize(source, newWidth, newHeight, isNormalMap);
+                }
+                finally
+                {
+                    RenderTexture.active = previous;
+                }
             }
         }
 
@@ -196,82 +149,29 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     foreach (var item in items)
                     {
-                        RenderTexture rt = null;
-                        try
+                        int newWidth,
+                            newHeight;
+                        if (
+                            item.Analysis.RecommendedDivisor <= 1
+                            && item.Source.width <= _maxResolution
+                            && item.Source.height <= _maxResolution
+                        )
                         {
-                            int newWidth,
-                                newHeight;
-                            if (
-                                item.Analysis.RecommendedDivisor <= 1
-                                && item.Source.width <= _maxResolution
-                                && item.Source.height <= _maxResolution
-                            )
-                            {
-                                newWidth = EnsureMultipleOf4(item.Source.width);
-                                newHeight = EnsureMultipleOf4(item.Source.height);
-                            }
-                            else
-                            {
-                                newWidth = item.Analysis.RecommendedResolution.x;
-                                newHeight = item.Analysis.RecommendedResolution.y;
-                            }
-
-                            var colorSpace = item.IsNormalMap
-                                ? RenderTextureReadWrite.Linear
-                                : RenderTextureReadWrite.Default;
-
-                            var rtFormat = RenderTextureFormat.ARGB32;
-                            if (item.IsNormalMap)
-                            {
-                                if (
-                                    SystemInfo.SupportsRenderTextureFormat(
-                                        RenderTextureFormat.ARGBFloat
-                                    )
-                                )
-                                    rtFormat = RenderTextureFormat.ARGBFloat;
-                                else if (
-                                    SystemInfo.SupportsRenderTextureFormat(
-                                        RenderTextureFormat.ARGBHalf
-                                    )
-                                )
-                                    rtFormat = RenderTextureFormat.ARGBHalf;
-                            }
-
-                            rt = RenderTexture.GetTemporary(
-                                newWidth,
-                                newHeight,
-                                0,
-                                rtFormat,
-                                colorSpace
-                            );
-                            rt.filterMode = FilterMode.Bilinear;
-
-                            RenderTexture.active = rt;
-                            Graphics.Blit(item.Source, rt);
-
-                            Texture2D resized = new Texture2D(
-                                newWidth,
-                                newHeight,
-                                TextureFormat.RGBA32,
-                                item.Source.mipmapCount > 1,
-                                item.IsNormalMap
-                            );
-                            resized.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
-                            resized.Apply(item.Source.mipmapCount > 1);
-
-                            resized.wrapModeU = item.Source.wrapModeU;
-                            resized.wrapModeV = item.Source.wrapModeV;
-                            resized.wrapModeW = item.Source.wrapModeW;
-                            resized.filterMode = item.Source.filterMode;
-                            resized.anisoLevel = item.Source.anisoLevel;
-
-                            result[item.Source] = resized;
+                            newWidth = EnsureMultipleOf4(item.Source.width);
+                            newHeight = EnsureMultipleOf4(item.Source.height);
                         }
-                        finally
+                        else
                         {
-                            if (rt != null)
-                                RenderTexture.ReleaseTemporary(rt);
+                            newWidth = item.Analysis.RecommendedResolution.x;
+                            newHeight = item.Analysis.RecommendedResolution.y;
                         }
+
+                        result[item.Source] = BlitResize(
+                            item.Source,
+                            newWidth,
+                            newHeight,
+                            item.IsNormalMap
+                        );
                     }
                 }
                 finally
@@ -281,6 +181,74 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Core blit logic: creates a resized Texture2D from source using RenderTexture.
+        /// Caller must hold RenderTextureLock and manage RenderTexture.active save/restore.
+        /// </summary>
+        private static Texture2D BlitResize(
+            Texture2D source,
+            int newWidth,
+            int newHeight,
+            bool isNormalMap
+        )
+        {
+            // Normal maps store vector data, not color, so they must be processed in linear space
+            // to avoid sRGB gamma correction that would corrupt the normal vectors.
+            var colorSpace = isNormalMap
+                ? RenderTextureReadWrite.Linear
+                : RenderTextureReadWrite.Default;
+
+            var rtFormat = SelectNormalMapRTFormat(isNormalMap);
+
+            var rt = RenderTexture.GetTemporary(newWidth, newHeight, 0, rtFormat, colorSpace);
+            try
+            {
+                rt.filterMode = FilterMode.Bilinear;
+                RenderTexture.active = rt;
+                Graphics.Blit(source, rt);
+
+                var resized = new Texture2D(
+                    newWidth,
+                    newHeight,
+                    TextureFormat.RGBA32,
+                    source.mipmapCount > 1,
+                    isNormalMap
+                );
+                resized.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
+                resized.Apply(source.mipmapCount > 1);
+
+                CopyTextureSettings(source, resized);
+                return resized;
+            }
+            finally
+            {
+                RenderTexture.ReleaseTemporary(rt);
+            }
+        }
+
+        /// <summary>
+        /// Selects the best RenderTextureFormat for normal map resize (float > half > ARGB32).
+        /// </summary>
+        private static RenderTextureFormat SelectNormalMapRTFormat(bool isNormalMap)
+        {
+            if (!isNormalMap)
+                return RenderTextureFormat.ARGB32;
+            if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBFloat))
+                return RenderTextureFormat.ARGBFloat;
+            if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf))
+                return RenderTextureFormat.ARGBHalf;
+            return RenderTextureFormat.ARGB32;
+        }
+
+        private static void CopyTextureSettings(Texture2D source, Texture2D dest)
+        {
+            dest.wrapModeU = source.wrapModeU;
+            dest.wrapModeV = source.wrapModeV;
+            dest.wrapModeW = source.wrapModeW;
+            dest.filterMode = source.filterMode;
+            dest.anisoLevel = source.anisoLevel;
         }
 
         /// <summary>

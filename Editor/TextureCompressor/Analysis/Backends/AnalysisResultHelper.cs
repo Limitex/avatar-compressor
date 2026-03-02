@@ -21,7 +21,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             if (isEmission && !isNormalMap)
             {
-                score = Mathf.Clamp01(score / 0.9f);
+                score = Mathf.Clamp01(score / AnalysisConstants.EmissionScoreBoostDivisor);
             }
 
             float clamped = Mathf.Clamp01(score);

@@ -37,13 +37,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Minimum vector length threshold for normalization.
-        /// Vectors with length below this are considered degenerate and will be
-        /// reset to the default flat normal (0, 0, 1).
-        /// </summary>
-        private const float MinVectorLength = 0.0001f;
-
-        /// <summary>
         /// Determines whether semantic alpha should be preserved in BC7 normal-map output.
         /// </summary>
         /// <remarks>

@@ -52,7 +52,7 @@ void CombineResults(uint3 id : SV_DispatchThreadID)
         float normalizedContrast = NormalizeWithPercentile(contrast, _ContrastLow, _ContrastHigh);
 
         // Entropy (stored by EntropyFinalize kernel)
-        float entropy = (float)_IntermediateBuffer[IDX_ENTROPY_VALID_COUNT] / FIXED_POINT_SCALE;
+        float entropy = (float)_IntermediateBuffer[IDX_ENTROPY_RESULT] / FIXED_POINT_SCALE;
         float normalizedEntropy = NormalizeWithPercentile(entropy, _EntropyLow, _EntropyHigh);
 
         highAccScore = clamp(
