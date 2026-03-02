@@ -196,72 +196,82 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     foreach (var item in items)
                     {
-                        int newWidth,
-                            newHeight;
-                        if (
-                            item.Analysis.RecommendedDivisor <= 1
-                            && item.Source.width <= _maxResolution
-                            && item.Source.height <= _maxResolution
-                        )
+                        RenderTexture rt = null;
+                        try
                         {
-                            newWidth = EnsureMultipleOf4(item.Source.width);
-                            newHeight = EnsureMultipleOf4(item.Source.height);
-                        }
-                        else
-                        {
-                            newWidth = item.Analysis.RecommendedResolution.x;
-                            newHeight = item.Analysis.RecommendedResolution.y;
-                        }
-
-                        var colorSpace = item.IsNormalMap
-                            ? RenderTextureReadWrite.Linear
-                            : RenderTextureReadWrite.Default;
-
-                        var rtFormat = RenderTextureFormat.ARGB32;
-                        if (item.IsNormalMap)
-                        {
+                            int newWidth,
+                                newHeight;
                             if (
-                                SystemInfo.SupportsRenderTextureFormat(
-                                    RenderTextureFormat.ARGBFloat
+                                item.Analysis.RecommendedDivisor <= 1
+                                && item.Source.width <= _maxResolution
+                                && item.Source.height <= _maxResolution
+                            )
+                            {
+                                newWidth = EnsureMultipleOf4(item.Source.width);
+                                newHeight = EnsureMultipleOf4(item.Source.height);
+                            }
+                            else
+                            {
+                                newWidth = item.Analysis.RecommendedResolution.x;
+                                newHeight = item.Analysis.RecommendedResolution.y;
+                            }
+
+                            var colorSpace = item.IsNormalMap
+                                ? RenderTextureReadWrite.Linear
+                                : RenderTextureReadWrite.Default;
+
+                            var rtFormat = RenderTextureFormat.ARGB32;
+                            if (item.IsNormalMap)
+                            {
+                                if (
+                                    SystemInfo.SupportsRenderTextureFormat(
+                                        RenderTextureFormat.ARGBFloat
+                                    )
                                 )
-                            )
-                                rtFormat = RenderTextureFormat.ARGBFloat;
-                            else if (
-                                SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf)
-                            )
-                                rtFormat = RenderTextureFormat.ARGBHalf;
+                                    rtFormat = RenderTextureFormat.ARGBFloat;
+                                else if (
+                                    SystemInfo.SupportsRenderTextureFormat(
+                                        RenderTextureFormat.ARGBHalf
+                                    )
+                                )
+                                    rtFormat = RenderTextureFormat.ARGBHalf;
+                            }
+
+                            rt = RenderTexture.GetTemporary(
+                                newWidth,
+                                newHeight,
+                                0,
+                                rtFormat,
+                                colorSpace
+                            );
+                            rt.filterMode = FilterMode.Bilinear;
+
+                            RenderTexture.active = rt;
+                            Graphics.Blit(item.Source, rt);
+
+                            Texture2D resized = new Texture2D(
+                                newWidth,
+                                newHeight,
+                                TextureFormat.RGBA32,
+                                item.Source.mipmapCount > 1,
+                                item.IsNormalMap
+                            );
+                            resized.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
+                            resized.Apply(item.Source.mipmapCount > 1);
+
+                            resized.wrapModeU = item.Source.wrapModeU;
+                            resized.wrapModeV = item.Source.wrapModeV;
+                            resized.wrapModeW = item.Source.wrapModeW;
+                            resized.filterMode = item.Source.filterMode;
+                            resized.anisoLevel = item.Source.anisoLevel;
+
+                            result[item.Source] = resized;
                         }
-
-                        RenderTexture rt = RenderTexture.GetTemporary(
-                            newWidth,
-                            newHeight,
-                            0,
-                            rtFormat,
-                            colorSpace
-                        );
-                        rt.filterMode = FilterMode.Bilinear;
-
-                        RenderTexture.active = rt;
-                        Graphics.Blit(item.Source, rt);
-
-                        Texture2D resized = new Texture2D(
-                            newWidth,
-                            newHeight,
-                            TextureFormat.RGBA32,
-                            item.Source.mipmapCount > 1,
-                            item.IsNormalMap
-                        );
-                        resized.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
-                        resized.Apply(item.Source.mipmapCount > 1);
-
-                        resized.wrapModeU = item.Source.wrapModeU;
-                        resized.wrapModeV = item.Source.wrapModeV;
-                        resized.wrapModeW = item.Source.wrapModeW;
-                        resized.filterMode = item.Source.filterMode;
-                        resized.anisoLevel = item.Source.anisoLevel;
-
-                        RenderTexture.ReleaseTemporary(rt);
-                        result[item.Source] = resized;
+                        finally
+                        {
+                            if (rt != null)
+                                RenderTexture.ReleaseTemporary(rt);
+                        }
                     }
                 }
                 finally

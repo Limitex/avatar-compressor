@@ -94,119 +94,132 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // Compute sampled dimensions (capped at 512x512, matching PixelSampler)
             const int maxSampledDim = 512;
 
-            foreach (var kvp in textures)
+            try
             {
-                var texture = kvp.Key;
-                var info = kvp.Value;
-                if (texture == null)
-                    continue;
-
-                int sampledWidth = texture.width;
-                int sampledHeight = texture.height;
-                if (sampledWidth * sampledHeight > AnalysisConstants.MaxSampledPixels)
+                foreach (var kvp in textures)
                 {
-                    float aspect = (float)sampledWidth / sampledHeight;
-                    if (aspect >= 1f)
+                    var texture = kvp.Key;
+                    var info = kvp.Value;
+                    if (texture == null)
+                        continue;
+
+                    int sampledWidth = texture.width;
+                    int sampledHeight = texture.height;
+                    if (sampledWidth * sampledHeight > AnalysisConstants.MaxSampledPixels)
                     {
-                        sampledWidth = Mathf.Min(sampledWidth, maxSampledDim);
-                        sampledHeight = Mathf.Max(
-                            AnalysisConstants.MinSampledDimension,
-                            Mathf.RoundToInt(sampledWidth / aspect)
+                        float aspect = (float)sampledWidth / sampledHeight;
+                        if (aspect >= 1f)
+                        {
+                            sampledWidth = Mathf.Min(sampledWidth, maxSampledDim);
+                            sampledHeight = Mathf.Max(
+                                AnalysisConstants.MinSampledDimension,
+                                Mathf.RoundToInt(sampledWidth / aspect)
+                            );
+                        }
+                        else
+                        {
+                            sampledHeight = Mathf.Min(sampledHeight, maxSampledDim);
+                            sampledWidth = Mathf.Max(
+                                AnalysisConstants.MinSampledDimension,
+                                Mathf.RoundToInt(sampledHeight * aspect)
+                            );
+                        }
+                    }
+
+                    var resultBuffer = new ComputeBuffer(ResultBufferSize, sizeof(float));
+                    var intermediateBuffer = new ComputeBuffer(
+                        IntermediateBufferSize,
+                        sizeof(uint)
+                    );
+
+                    // Clear intermediate buffer
+                    var zeros = new uint[IntermediateBufferSize];
+                    intermediateBuffer.SetData(zeros);
+
+                    // Set shared parameters
+                    SetSharedParameters(
+                        texture,
+                        sampledWidth,
+                        sampledHeight,
+                        info.IsNormalMap,
+                        resultBuffer,
+                        intermediateBuffer
+                    );
+
+                    // Dispatch kernels
+                    DispatchAnalysis(
+                        texture,
+                        info,
+                        sampledWidth,
+                        sampledHeight,
+                        resultBuffer,
+                        intermediateBuffer
+                    );
+
+                    // Queue async readback
+                    var request = AsyncGPUReadback.Request(resultBuffer);
+                    pendingReadbacks.Add(
+                        (texture, request, resultBuffer, intermediateBuffer, info)
+                    );
+                }
+
+                // Wait for all readbacks and assemble results
+                foreach (var pending in pendingReadbacks)
+                {
+                    pending.Request.WaitForCompletion();
+
+                    if (!pending.Request.hasError)
+                    {
+                        var data = pending.Request.GetData<float>();
+                        float score = Mathf.Clamp01(data[0]);
+                        bool hasAlpha = data[2] > 0.5f;
+
+                        // Apply emission boost on CPU (trivial)
+                        if (pending.Info.IsEmission && !pending.Info.IsNormalMap)
+                        {
+                            score = Mathf.Clamp01(score / 0.9f);
+                        }
+
+                        int divisor = _complexityCalc.CalculateRecommendedDivisor(score);
+                        Vector2Int resolution = _processor.CalculateNewDimensions(
+                            pending.Tex.width,
+                            pending.Tex.height,
+                            divisor
+                        );
+
+                        results[pending.Tex] = new TextureAnalysisResult(
+                            score,
+                            divisor,
+                            resolution,
+                            hasAlpha
                         );
                     }
                     else
                     {
-                        sampledHeight = Mathf.Min(sampledHeight, maxSampledDim);
-                        sampledWidth = Mathf.Max(
-                            AnalysisConstants.MinSampledDimension,
-                            Mathf.RoundToInt(sampledHeight * aspect)
+                        // Fallback: conservative default
+                        float fallbackScore = AnalysisConstants.DefaultComplexityScore;
+                        int divisor = _complexityCalc.CalculateRecommendedDivisor(fallbackScore);
+                        Vector2Int resolution = _processor.CalculateNewDimensions(
+                            pending.Tex.width,
+                            pending.Tex.height,
+                            divisor
+                        );
+                        results[pending.Tex] = new TextureAnalysisResult(
+                            fallbackScore,
+                            divisor,
+                            resolution,
+                            false
                         );
                     }
                 }
-
-                var resultBuffer = new ComputeBuffer(ResultBufferSize, sizeof(float));
-                var intermediateBuffer = new ComputeBuffer(IntermediateBufferSize, sizeof(uint));
-
-                // Clear intermediate buffer
-                var zeros = new uint[IntermediateBufferSize];
-                intermediateBuffer.SetData(zeros);
-
-                // Set shared parameters
-                SetSharedParameters(
-                    texture,
-                    sampledWidth,
-                    sampledHeight,
-                    info.IsNormalMap,
-                    resultBuffer,
-                    intermediateBuffer
-                );
-
-                // Dispatch kernels
-                DispatchAnalysis(
-                    texture,
-                    info,
-                    sampledWidth,
-                    sampledHeight,
-                    resultBuffer,
-                    intermediateBuffer
-                );
-
-                // Queue async readback
-                var request = AsyncGPUReadback.Request(resultBuffer);
-                pendingReadbacks.Add((texture, request, resultBuffer, intermediateBuffer, info));
             }
-
-            // Wait for all readbacks and assemble results
-            foreach (var pending in pendingReadbacks)
+            finally
             {
-                pending.Request.WaitForCompletion();
-
-                if (!pending.Request.hasError)
+                foreach (var pending in pendingReadbacks)
                 {
-                    var data = pending.Request.GetData<float>();
-                    float score = Mathf.Clamp01(data[0]);
-                    bool hasAlpha = data[2] > 0.5f;
-
-                    // Apply emission boost on CPU (trivial)
-                    if (pending.Info.IsEmission && !pending.Info.IsNormalMap)
-                    {
-                        score = Mathf.Clamp01(score / 0.9f);
-                    }
-
-                    int divisor = _complexityCalc.CalculateRecommendedDivisor(score);
-                    Vector2Int resolution = _processor.CalculateNewDimensions(
-                        pending.Tex.width,
-                        pending.Tex.height,
-                        divisor
-                    );
-
-                    results[pending.Tex] = new TextureAnalysisResult(
-                        score,
-                        divisor,
-                        resolution,
-                        hasAlpha
-                    );
+                    pending.ResultBuf.Release();
+                    pending.IntermediateBuf.Release();
                 }
-                else
-                {
-                    // Fallback: conservative default
-                    float fallbackScore = AnalysisConstants.DefaultComplexityScore;
-                    int divisor = _complexityCalc.CalculateRecommendedDivisor(fallbackScore);
-                    Vector2Int resolution = _processor.CalculateNewDimensions(
-                        pending.Tex.width,
-                        pending.Tex.height,
-                        divisor
-                    );
-                    results[pending.Tex] = new TextureAnalysisResult(
-                        fallbackScore,
-                        divisor,
-                        resolution,
-                        false
-                    );
-                }
-
-                pending.ResultBuf.Release();
-                pending.IntermediateBuf.Release();
             }
 
             return results;
