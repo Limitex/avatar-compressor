@@ -414,7 +414,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // Read back color mean for pass 2
             // We need to synchronize and read the intermediate buffer
             var colorData = new uint[GpuBufferLayout.ColorMeanFieldCount];
-            intermediateBuffer.GetData(colorData, 0, GpuBufferLayout.IdxColorSumR, GpuBufferLayout.ColorMeanFieldCount);
+            intermediateBuffer.GetData(
+                colorData,
+                0,
+                GpuBufferLayout.IdxColorSumR,
+                GpuBufferLayout.ColorMeanFieldCount
+            );
             float count = colorData[3];
             if (count > 0)
             {
@@ -482,7 +487,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             // Read back block variance average for detail density threshold
             var blockVarData = new uint[GpuBufferLayout.BlockVarFieldCount];
-            intermediateBuffer.GetData(blockVarData, 0, GpuBufferLayout.IdxBlockVarSum, GpuBufferLayout.BlockVarFieldCount);
+            intermediateBuffer.GetData(
+                blockVarData,
+                0,
+                GpuBufferLayout.IdxBlockVarSum,
+                GpuBufferLayout.BlockVarFieldCount
+            );
             float bvCount = blockVarData[1];
             float avgBlockVariance =
                 bvCount > 0 ? (blockVarData[0] / FixedPointScale) / bvCount : 0f;
