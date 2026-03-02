@@ -13,7 +13,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     public class PreviewGenerator
     {
         private static readonly LruCache<
-            (string guid, int analysisHash),
+            (string guid, Hash128 contentHash, int analysisHash),
             TextureAnalysisResult
         > AnalysisCache = new(256);
 
@@ -131,7 +131,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 {
                     string path = AssetDatabase.GetAssetPath(kvp.Key);
                     string guid = AssetDatabase.AssetPathToGUID(path);
-                    var cacheKey = (guid, analysisHash);
+                    var contentHash = AssetDatabase.GetAssetDependencyHash(path);
+                    var cacheKey = (guid, contentHash, analysisHash);
 
                     if (
                         !string.IsNullOrEmpty(guid)
@@ -157,7 +158,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         string guid = AssetDatabase.AssetPathToGUID(path);
                         if (!string.IsNullOrEmpty(guid))
                         {
-                            AnalysisCache.Set((guid, analysisHash), kvp.Value);
+                            var contentHash = AssetDatabase.GetAssetDependencyHash(path);
+                            AnalysisCache.Set((guid, contentHash, analysisHash), kvp.Value);
                         }
                     }
                 }
