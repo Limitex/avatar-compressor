@@ -174,41 +174,28 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         float score = Mathf.Clamp01(data[0]);
                         bool hasAlpha = data[2] > 0.5f;
 
-                        // Apply emission boost on CPU (trivial)
-                        if (pending.Info.IsEmission && !pending.Info.IsNormalMap)
-                        {
-                            score = Mathf.Clamp01(score / 0.9f);
-                        }
-
-                        int divisor = _complexityCalc.CalculateRecommendedDivisor(score);
-                        Vector2Int resolution = _processor.CalculateNewDimensions(
+                        results[pending.Tex] = AnalysisResultHelper.BuildResult(
+                            score,
                             pending.Tex.width,
                             pending.Tex.height,
-                            divisor
-                        );
-
-                        results[pending.Tex] = new TextureAnalysisResult(
-                            score,
-                            divisor,
-                            resolution,
-                            hasAlpha
+                            pending.Info.IsEmission,
+                            pending.Info.IsNormalMap,
+                            hasAlpha,
+                            _complexityCalc,
+                            _processor
                         );
                     }
                     else
                     {
-                        // Fallback: conservative default
-                        float fallbackScore = AnalysisConstants.DefaultComplexityScore;
-                        int divisor = _complexityCalc.CalculateRecommendedDivisor(fallbackScore);
-                        Vector2Int resolution = _processor.CalculateNewDimensions(
+                        results[pending.Tex] = AnalysisResultHelper.BuildResult(
+                            AnalysisConstants.DefaultComplexityScore,
                             pending.Tex.width,
                             pending.Tex.height,
-                            divisor
-                        );
-                        results[pending.Tex] = new TextureAnalysisResult(
-                            fallbackScore,
-                            divisor,
-                            resolution,
-                            false
+                            false,
+                            false,
+                            false,
+                            _complexityCalc,
+                            _processor
                         );
                     }
                 }

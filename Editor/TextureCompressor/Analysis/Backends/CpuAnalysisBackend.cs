@@ -170,29 +170,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         IsEmission = data.IsEmission,
                     };
                     complexityResult = analyzer.Analyze(processedData);
-
-                    if (data.IsEmission)
-                    {
-                        // Emission maps get a 10% quality boost
-                        complexityResult = new TextureComplexityResult(
-                            Mathf.Clamp01(complexityResult.Score / 0.9f),
-                            complexityResult.Summary + " (emission boost applied)"
-                        );
-                    }
                 }
             }
 
-            float complexity = Mathf.Clamp01(complexityResult.Score);
-            int divisor = _complexityCalc.CalculateRecommendedDivisor(complexity);
-            Vector2Int resolution = _processor.CalculateNewDimensions(
+            return AnalysisResultHelper.BuildResult(
+                complexityResult.Score,
                 data.Width,
                 data.Height,
-                divisor
+                data.IsEmission,
+                data.IsNormalMap,
+                CheckSignificantAlpha(data.Pixels),
+                _complexityCalc,
+                _processor
             );
-
-            bool hasSignificantAlpha = CheckSignificantAlpha(data.Pixels);
-
-            return new TextureAnalysisResult(complexity, divisor, resolution, hasSignificantAlpha);
         }
 
         /// <summary>
