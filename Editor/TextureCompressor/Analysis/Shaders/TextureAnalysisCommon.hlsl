@@ -21,7 +21,7 @@
 
 // Fixed-point scale for atomic float accumulation.
 // Using 1000 to prevent uint32 overflow at 512x512 resolution.
-// Worst-case: Sobel sum 2.83 * 1000 * 260100 = 736M < 4.29B (uint32 max).
+// Worst-case: Sobel max gradient sqrt(4^2+4^2) = 5.66 * 1000 * 260100 = 1.47B < 4.29B (uint32 max).
 // Precision after averaging 260K samples: ~3.8e-9, well within float32 limits.
 #define FIXED_POINT_SCALE 1000.0
 #define FIXED_POINT_SCALE_UINT 1000

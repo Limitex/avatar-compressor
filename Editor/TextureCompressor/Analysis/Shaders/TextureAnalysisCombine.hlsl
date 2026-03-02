@@ -41,8 +41,8 @@ void CombineResults(uint3 id : SV_DispatchThreadID)
     // HighAccuracy strategy score
     float highAccScore = 0.0;
     {
-        float dctBlockCount = ReadUint(IDX_DCT_BLOCK_COUNT);
-        float dctRatio = dctBlockCount > 0.0 ? ReadFixed(IDX_DCT_HIGH_FREQ) / dctBlockCount : 0.0;
+        float dctTotalEnergy = ReadFixed(IDX_DCT_TOTAL_ENERGY);
+        float dctRatio = dctTotalEnergy > 0.0001 ? ReadFixed(IDX_DCT_HIGH_FREQ) / dctTotalEnergy : 0.0;
 
         // GLCM features (stored by GlcmFeatures kernel)
         float contrast = (float)_IntermediateBuffer[IDX_GLCM_MATRIX + 0] / FIXED_POINT_SCALE;
@@ -96,9 +96,16 @@ void CombineResults(uint3 id : SV_DispatchThreadID)
     // Normal map score
     float normalMapScore = 0.0;
     {
-        float normalCount = ReadUint(IDX_NORMAL_VAR_COUNT);
-        float avgVariation = normalCount > 0.0 ? ReadFixed(IDX_NORMAL_VAR_SUM) / normalCount : 0.0;
-        normalMapScore = clamp(avgVariation * _NormalMapVariationMultiplier, 0.0, 1.0);
+        if (_Width < MIN_NORMAL_MAP_DIMENSION || _Height < MIN_NORMAL_MAP_DIMENSION)
+        {
+            normalMapScore = DEFAULT_COMPLEXITY_SCORE;
+        }
+        else
+        {
+            float normalCount = ReadUint(IDX_NORMAL_VAR_COUNT);
+            float avgVariation = normalCount > 0.0 ? ReadFixed(IDX_NORMAL_VAR_SUM) / normalCount : 0.0;
+            normalMapScore = clamp(avgVariation * _NormalMapVariationMultiplier, 0.0, 1.0);
+        }
     }
 
     // Select final score based on strategy

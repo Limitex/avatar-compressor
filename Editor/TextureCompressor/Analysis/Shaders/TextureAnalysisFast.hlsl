@@ -21,8 +21,8 @@ void Preprocess(uint3 id : SV_DispatchThreadID)
 
     if (pixel.a < SIGNIFICANT_ALPHA_THRESHOLD)
     {
-        // Flag that significant alpha exists (any thread sets this to 1)
-        _IntermediateBuffer[IDX_HAS_SIGNIFICANT_ALPHA] = 1u;
+        uint dummy;
+        InterlockedOr(_IntermediateBuffer[IDX_HAS_SIGNIFICANT_ALPHA], 1u, dummy);
     }
 }
 

@@ -41,9 +41,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         processor
                     );
                 }
-                catch (System.Exception)
+                catch (System.Exception e)
                 {
-                    // Kernel not found or other initialization error — fall through to CPU
+                    Debug.LogWarning(
+                        $"[AvatarCompressor] GPU analysis backend initialization failed, "
+                            + $"falling back to CPU: {e.Message}"
+                    );
                 }
             }
 

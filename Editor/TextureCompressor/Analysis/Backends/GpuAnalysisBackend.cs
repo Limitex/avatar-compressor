@@ -191,8 +191,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             AnalysisConstants.DefaultComplexityScore,
                             pending.Tex.width,
                             pending.Tex.height,
-                            false,
-                            false,
+                            pending.Info.IsEmission,
+                            pending.Info.IsNormalMap,
                             false,
                             _complexityCalc,
                             _processor

@@ -24,7 +24,7 @@ static const float InvSqrt2 = 0.707107;
 // One thread group per 8x8 block.
 // Group thread (tx, ty) computes DCT coefficient (u=tx, v=ty).
 groupshared float gs_DctBlock[8][8];
-groupshared bool gs_BlockValid;
+groupshared uint gs_BlockInvalid;
 
 [numthreads(8, 8, 1)]
 void DctHighFreqRatio(uint3 groupId : SV_GroupID, uint3 gtid : SV_GroupThreadID)
@@ -37,9 +37,9 @@ void DctHighFreqRatio(uint3 groupId : SV_GroupID, uint3 gtid : SV_GroupThreadID)
     uint px = bx * DCT_BLOCK_SIZE + tx;
     uint py = by * DCT_BLOCK_SIZE + ty;
 
-    // Initialize shared flag
+    // Initialize shared flag (0 = valid)
     if (tx == 0 && ty == 0)
-        gs_BlockValid = true;
+        gs_BlockInvalid = 0;
     GroupMemoryBarrierWithGroupSync();
 
     // Load pixel and check transparency
@@ -47,17 +47,17 @@ void DctHighFreqRatio(uint3 groupId : SV_GroupID, uint3 gtid : SV_GroupThreadID)
     {
         float4 pixel = SamplePixel(px, py);
         if (!_IsNormalMap && IsTransparent(pixel))
-            gs_BlockValid = false;
+            InterlockedOr(gs_BlockInvalid, 1u);
         gs_DctBlock[ty][tx] = ToGrayscale(pixel.rgb);
     }
     else
     {
-        gs_BlockValid = false;
+        InterlockedOr(gs_BlockInvalid, 1u);
         gs_DctBlock[ty][tx] = 0.0;
     }
     GroupMemoryBarrierWithGroupSync();
 
-    if (!gs_BlockValid)
+    if (gs_BlockInvalid != 0)
         return;
 
     // Compute 2D DCT coefficient (u=tx, v=ty)
@@ -78,7 +78,9 @@ void DctHighFreqRatio(uint3 groupId : SV_GroupID, uint3 gtid : SV_GroupThreadID)
     gs_DctBlock[ty][tx] = energy;
     GroupMemoryBarrierWithGroupSync();
 
-    // Thread 0 reduces per-block energies and accumulates a single ratio [0,1]
+    // Thread 0 reduces per-block energies and accumulates globally.
+    // Uses global accumulation (not per-block ratio) to match CPU implementation:
+    // final ratio = totalHighFreq / totalEnergy (energy-weighted average).
     if (tx == 0 && ty == 0)
     {
         float totalEnergy = 0.0;
@@ -94,9 +96,8 @@ void DctHighFreqRatio(uint3 groupId : SV_GroupID, uint3 gtid : SV_GroupThreadID)
             }
         }
 
-        float blockRatio = totalEnergy > 0.0001 ? highFreqEnergy / totalEnergy : 0.0;
-        AtomicAddFixed(IDX_DCT_HIGH_FREQ, blockRatio);
-        AtomicIncrement(IDX_DCT_BLOCK_COUNT);
+        AtomicAddFixed(IDX_DCT_HIGH_FREQ, highFreqEnergy);
+        AtomicAddFixed(IDX_DCT_TOTAL_ENERGY, totalEnergy);
     }
 }
 
