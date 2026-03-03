@@ -149,29 +149,38 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     foreach (var item in items)
                     {
-                        int newWidth,
-                            newHeight;
-                        if (
-                            item.Analysis.RecommendedDivisor <= 1
-                            && item.Source.width <= _maxResolution
-                            && item.Source.height <= _maxResolution
-                        )
+                        try
                         {
-                            newWidth = EnsureMultipleOf4(item.Source.width);
-                            newHeight = EnsureMultipleOf4(item.Source.height);
-                        }
-                        else
-                        {
-                            newWidth = item.Analysis.RecommendedResolution.x;
-                            newHeight = item.Analysis.RecommendedResolution.y;
-                        }
+                            int newWidth,
+                                newHeight;
+                            if (
+                                item.Analysis.RecommendedDivisor <= 1
+                                && item.Source.width <= _maxResolution
+                                && item.Source.height <= _maxResolution
+                            )
+                            {
+                                newWidth = EnsureMultipleOf4(item.Source.width);
+                                newHeight = EnsureMultipleOf4(item.Source.height);
+                            }
+                            else
+                            {
+                                newWidth = item.Analysis.RecommendedResolution.x;
+                                newHeight = item.Analysis.RecommendedResolution.y;
+                            }
 
-                        result[item.Source] = BlitResize(
-                            item.Source,
-                            newWidth,
-                            newHeight,
-                            item.IsNormalMap
-                        );
+                            result[item.Source] = BlitResize(
+                                item.Source,
+                                newWidth,
+                                newHeight,
+                                item.IsNormalMap
+                            );
+                        }
+                        catch (System.Exception e)
+                        {
+                            Debug.LogWarning(
+                                $"[TextureCompressor] Failed to resize texture '{item.Source.name}': {e.Message}"
+                            );
+                        }
                     }
                 }
                 finally
@@ -358,6 +367,5 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             return result;
         }
-
     }
 }

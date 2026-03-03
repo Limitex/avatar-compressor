@@ -89,8 +89,27 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 parallelOptions,
                 item =>
                 {
-                    var result = AnalyzeSingle(item.Data, item.Analyzer);
-                    results[item.Texture] = result;
+                    try
+                    {
+                        var result = AnalyzeSingle(item.Data, item.Analyzer);
+                        results[item.Texture] = result;
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning(
+                            $"[TextureCompressor] CPU analysis failed for '{item.Texture.name}': {e.Message}"
+                        );
+                        results[item.Texture] = AnalysisResultHelper.BuildResult(
+                            AnalysisConstants.DefaultComplexityScore,
+                            item.Data.Width,
+                            item.Data.Height,
+                            item.Data.IsEmission,
+                            item.Data.IsNormalMap,
+                            false,
+                            _complexityCalc,
+                            _processor
+                        );
+                    }
                 }
             );
 
