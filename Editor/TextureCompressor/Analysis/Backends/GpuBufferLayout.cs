@@ -6,13 +6,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// </summary>
     internal static class GpuBufferLayout
     {
-        // Fast strategy
+        // Fast strategy — color mean accumulation (indices 6-9: R, G, B, count)
         internal const int IdxColorSumR = 6;
-        internal const int ColorMeanFieldCount = 4; // R, G, B, count (indices 6-9)
+        internal const int ColorMeanFieldCount = 4;
 
-        // Perceptual strategy
+        // Perceptual strategy — block variance accumulation (indices 529-530: sum, count)
         internal const int IdxBlockVarSum = 529;
-        internal const int BlockVarFieldCount = 2; // sum, count (indices 529-530)
+        internal const int BlockVarFieldCount = 2;
 
         // Buffer sizes
         internal const int IntermediateBufferSize = 539;

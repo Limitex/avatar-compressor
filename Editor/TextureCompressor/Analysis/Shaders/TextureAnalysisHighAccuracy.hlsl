@@ -29,10 +29,18 @@ groupshared uint gs_BlockInvalid;
 [numthreads(8, 8, 1)]
 void DctHighFreqRatio(uint3 groupId : SV_GroupID, uint3 gtid : SV_GroupThreadID)
 {
-    uint bx = groupId.x;
-    uint by = groupId.y;
+    // Map dispatch group to actual block position via step (matches CPU blockStep)
+    uint bx = groupId.x * _DctBlockStep;
+    uint by = groupId.y * _DctBlockStep;
     uint tx = gtid.x; // u coordinate
     uint ty = gtid.y; // v coordinate
+
+    uint blocksX = _Width / DCT_BLOCK_SIZE;
+    uint blocksY = _Height / DCT_BLOCK_SIZE;
+
+    // Bounds check (stepped dispatch may overshoot)
+    if (bx >= blocksX || by >= blocksY)
+        return;
 
     uint px = bx * DCT_BLOCK_SIZE + tx;
     uint py = by * DCT_BLOCK_SIZE + ty;
@@ -161,6 +169,8 @@ void GlcmFeatures(uint3 gtid : SV_GroupThreadID)
     uint idx = gtid.x;
     uint pairs = _IntermediateBuffer[IDX_GLCM_PAIRS];
 
+    // Note: no early return here — all threads must reach GroupMemoryBarrierWithGroupSync.
+    // When pairs == 0, groupshared arrays are zeroed; the fallback is applied at the final write.
     if (pairs == 0 || idx >= GLCM_LEVELS * GLCM_LEVELS)
     {
         gs_GlcmContrast[idx] = 0.0;
@@ -196,11 +206,19 @@ void GlcmFeatures(uint3 gtid : SV_GroupThreadID)
     // Reuse GLCM slots for the computed features
     if (idx == 0)
     {
-        // Store GLCM features as fixed-point in specific slots
-        // We reuse the first 3 slots of the GLCM matrix area for output
-        _IntermediateBuffer[IDX_GLCM_MATRIX + 0] = (uint)(gs_GlcmContrast[0] * FIXED_POINT_SCALE);
-        _IntermediateBuffer[IDX_GLCM_MATRIX + 1] = (uint)(gs_GlcmHomogeneity[0] * FIXED_POINT_SCALE);
-        _IntermediateBuffer[IDX_GLCM_MATRIX + 2] = (uint)(gs_GlcmEnergy[0] * FIXED_POINT_SCALE);
+        if (pairs == 0)
+        {
+            // Match CPU fallback: contrast=0, homogeneity=1, energy=1
+            _IntermediateBuffer[IDX_GLCM_MATRIX + 0] = 0u;
+            _IntermediateBuffer[IDX_GLCM_MATRIX + 1] = (uint)(1.0 * FIXED_POINT_SCALE + 0.5);
+            _IntermediateBuffer[IDX_GLCM_MATRIX + 2] = (uint)(1.0 * FIXED_POINT_SCALE + 0.5);
+        }
+        else
+        {
+            _IntermediateBuffer[IDX_GLCM_MATRIX + 0] = (uint)(gs_GlcmContrast[0] * FIXED_POINT_SCALE + 0.5);
+            _IntermediateBuffer[IDX_GLCM_MATRIX + 1] = (uint)(gs_GlcmHomogeneity[0] * FIXED_POINT_SCALE + 0.5);
+            _IntermediateBuffer[IDX_GLCM_MATRIX + 2] = (uint)(gs_GlcmEnergy[0] * FIXED_POINT_SCALE + 0.5);
+        }
     }
 }
 
@@ -262,7 +280,7 @@ void EntropyFinalize(uint3 gtid : SV_GroupThreadID)
     if (idx == 0)
     {
         // Store entropy as fixed-point in dedicated result slot
-        _IntermediateBuffer[IDX_ENTROPY_RESULT] = (uint)(gs_EntropyPartial[0] * FIXED_POINT_SCALE);
+        _IntermediateBuffer[IDX_ENTROPY_RESULT] = (uint)(gs_EntropyPartial[0] * FIXED_POINT_SCALE + 0.5);
     }
 }
 

@@ -36,6 +36,11 @@ void SobelGradient(uint3 id : SV_DispatchThreadID)
     if (x < 1 || x >= _Width - 1 || y < 1 || y >= _Height - 1)
         return;
 
+    // Match CPU sub-sampling: step = max(1, width / 256)
+    uint step = max(1, _Width / 256);
+    if ((x - 1) % step != 0 || (y - 1) % step != 0)
+        return;
+
     // Sample 3x3 neighborhood
     float4 c   = SamplePixel(x, y);
     float4 cUL = SamplePixel(x - 1, y - 1);
@@ -84,16 +89,21 @@ void SpatialFrequency(uint3 id : SV_DispatchThreadID)
     if (x >= _Width || y >= _Height)
         return;
 
+    // Match CPU sub-sampling: step = max(1, width / 256)
+    uint step = max(1, _Width / 256);
+    if (x % step != 0 || y % step != 0)
+        return;
+
     float4 c = SamplePixel(x, y);
     if (!_IsNormalMap && IsTransparent(c))
         return;
 
     float gray = ToGrayscale(c.rgb);
 
-    // Row frequency: horizontal neighbor difference
-    if (x >= 1)
+    // Row frequency: compare with pixel step positions to the left (matches CPU)
+    if (x >= step)
     {
-        float4 cLeft = SamplePixel(x - 1, y);
+        float4 cLeft = SamplePixel(x - step, y);
         if (_IsNormalMap || !IsTransparent(cLeft))
         {
             float grayLeft = ToGrayscale(cLeft.rgb);
@@ -103,10 +113,10 @@ void SpatialFrequency(uint3 id : SV_DispatchThreadID)
         }
     }
 
-    // Column frequency: vertical neighbor difference
-    if (y >= 1)
+    // Column frequency: compare with pixel step positions above (matches CPU)
+    if (y >= step)
     {
-        float4 cUp = SamplePixel(x, y - 1);
+        float4 cUp = SamplePixel(x, y - step);
         if (_IsNormalMap || !IsTransparent(cUp))
         {
             float grayUp = ToGrayscale(cUp.rgb);

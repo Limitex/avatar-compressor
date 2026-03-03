@@ -91,11 +91,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     TextureInfo Info
                 )>();
 
-            // Compute sampled dimensions (capped at 512x512, matching PixelSampler)
-            const int maxSampledDim = 512;
-
             try
             {
+                var zeros = new uint[IntermediateBufferSize];
+
                 foreach (var kvp in textures)
                 {
                     var texture = kvp.Key;
@@ -103,27 +102,23 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     if (texture == null)
                         continue;
 
+                    // Compute sampled dimensions using CPU-matching formula (PixelSampler.SampleIfNeeded)
                     int sampledWidth = texture.width;
                     int sampledHeight = texture.height;
-                    if (sampledWidth * sampledHeight > AnalysisConstants.MaxSampledPixels)
+                    int totalPixels = sampledWidth * sampledHeight;
+                    if (totalPixels > AnalysisConstants.MaxSampledPixels)
                     {
-                        float aspect = (float)sampledWidth / sampledHeight;
-                        if (aspect >= 1f)
-                        {
-                            sampledWidth = Mathf.Min(sampledWidth, maxSampledDim);
-                            sampledHeight = Mathf.Max(
-                                AnalysisConstants.MinSampledDimension,
-                                Mathf.RoundToInt(sampledWidth / aspect)
-                            );
-                        }
-                        else
-                        {
-                            sampledHeight = Mathf.Min(sampledHeight, maxSampledDim);
-                            sampledWidth = Mathf.Max(
-                                AnalysisConstants.MinSampledDimension,
-                                Mathf.RoundToInt(sampledHeight * aspect)
-                            );
-                        }
+                        float ratio = Mathf.Sqrt(
+                            (float)AnalysisConstants.MaxSampledPixels / totalPixels
+                        );
+                        sampledWidth = Mathf.Max(
+                            AnalysisConstants.MinSampledDimension,
+                            (int)(texture.width * ratio)
+                        );
+                        sampledHeight = Mathf.Max(
+                            AnalysisConstants.MinSampledDimension,
+                            (int)(texture.height * ratio)
+                        );
                     }
 
                     var resultBuffer = new ComputeBuffer(ResultBufferSize, sizeof(float));
@@ -135,7 +130,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     try
                     {
                         // Clear intermediate buffer
-                        var zeros = new uint[IntermediateBufferSize];
                         intermediateBuffer.SetData(zeros);
 
                         // Set shared parameters
@@ -244,7 +238,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             _shader.SetInt("_Width", sampledWidth);
             _shader.SetInt("_Height", sampledHeight);
+            _shader.SetInt("_SourceWidth", texture.width);
+            _shader.SetInt("_SourceHeight", texture.height);
             _shader.SetInt("_IsNormalMap", isNormalMap ? 1 : 0);
+            _shader.SetInt("_IsSRGB", texture.isDataSRGB ? 1 : 0);
             _shader.SetInt("_StrategyType", GetStrategyIndex());
 
             // Fast strategy constants
@@ -420,12 +417,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 GpuBufferLayout.IdxColorSumR,
                 GpuBufferLayout.ColorMeanFieldCount
             );
+            // colorData layout: [R_sum, G_sum, B_sum, count] relative to IdxColorSumR
             float count = colorData[3];
             if (count > 0)
             {
-                _shader.SetFloat("_ColorMeanR", (colorData[0] / FixedPointScale) / count);
-                _shader.SetFloat("_ColorMeanG", (colorData[1] / FixedPointScale) / count);
-                _shader.SetFloat("_ColorMeanB", (colorData[2] / FixedPointScale) / count);
+                float rMean = (colorData[0] / FixedPointScale) / count;
+                float gMean = (colorData[1] / FixedPointScale) / count;
+                float bMean = (colorData[2] / FixedPointScale) / count;
+                _shader.SetFloat("_ColorMeanR", rMean);
+                _shader.SetFloat("_ColorMeanG", gMean);
+                _shader.SetFloat("_ColorMeanB", bMean);
             }
             else
             {
@@ -445,12 +446,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
             int groupsY16
         )
         {
-            // DCT: one thread group per 8x8 block
+            // DCT: one thread group per sampled 8x8 block (matches CPU blockStep)
             int dctBlocksX = width / AnalysisConstants.DctBlockSize;
             int dctBlocksY = height / AnalysisConstants.DctBlockSize;
             if (dctBlocksX > 0 && dctBlocksY > 0)
             {
-                _shader.Dispatch(_kernelDctHighFreqRatio, dctBlocksX, dctBlocksY, 1);
+                int blockStep = Mathf.Max(1, dctBlocksX / 16);
+                _shader.SetInt("_DctBlockStep", blockStep);
+                int dispatchX = CeilDiv(dctBlocksX, blockStep);
+                int dispatchY = CeilDiv(dctBlocksY, blockStep);
+                _shader.Dispatch(_kernelDctHighFreqRatio, dispatchX, dispatchY, 1);
             }
 
             // GLCM accumulate
@@ -493,6 +498,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 GpuBufferLayout.IdxBlockVarSum,
                 GpuBufferLayout.BlockVarFieldCount
             );
+            // blockVarData layout: [sum, count] relative to IdxBlockVarSum
             float bvCount = blockVarData[1];
             float avgBlockVariance =
                 bvCount > 0 ? (blockVarData[0] / FixedPointScale) / bvCount : 0f;

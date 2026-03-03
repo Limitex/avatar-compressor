@@ -20,9 +20,8 @@
 #define DEFAULT_COMPLEXITY_SCORE 0.5
 
 // Fixed-point scale for atomic float accumulation.
-// Using 1000 to prevent uint32 overflow at 512x512 resolution.
-// Worst-case: Sobel max gradient sqrt(4^2+4^2) = 5.66 * 1000 * 260100 = 1.47B < 4.29B (uint32 max).
-// Precision after averaging 260K samples: ~3.8e-9, well within float32 limits.
+// Using 1000 to prevent uint32 overflow. With sub-sampling (step=2 at 512x512, ~65K samples):
+// Worst-case: Sobel max 5.66 * 1000 * 65000 + 65000 * 0.5 (rounding) = 3.71B < 4.29B (uint32 max).
 #define FIXED_POINT_SCALE 1000.0
 #define FIXED_POINT_SCALE_UINT 1000
 
@@ -31,9 +30,12 @@
 Texture2D<float4> _InputTexture;
 SamplerState sampler_InputTexture;
 
-uint _Width;    // Sampled analysis width  (max 512)
-uint _Height;   // Sampled analysis height (max 512)
+uint _Width;        // Sampled analysis width
+uint _Height;       // Sampled analysis height
+uint _SourceWidth;  // Original texture width (for nearest-neighbor sampling)
+uint _SourceHeight; // Original texture height
 uint _IsNormalMap;
+uint _IsSRGB;
 
 // Result buffer: [0]=score, [1]=opaqueCount (as float), [2]=hasSignificantAlpha (0 or 1)
 RWStructuredBuffer<float> _ResultBuffer;
@@ -87,15 +89,26 @@ RWStructuredBuffer<uint> _IntermediateBuffer;
 
 // Utility Functions
 
-// Sample a pixel at sampled-space coordinates (bilinear filtering).
-// The hardware sampler performs downsampling when source > 512x512.
+// Fast sRGB to linear approximation (matches Unity's GammaToLinearSpace).
+float3 SRGBToLinear(float3 c)
+{
+    return c * (c * (c * 0.305306011 + 0.682171111) + 0.012522878);
+}
+
+// Sample a pixel at sampled-space coordinates using nearest-neighbor.
+// Matches CPU PixelSampler.SampleIfNeeded index math for identical results.
+// When the source texture is sRGB-encoded, applies gamma-to-linear conversion
+// to match the CPU path (which receives linear values via RenderTexture blit).
 float4 SamplePixel(uint sx, uint sy)
 {
-    float2 uv = float2(
-        ((float)sx + 0.5) / (float)_Width,
-        ((float)sy + 0.5) / (float)_Height
-    );
-    return _InputTexture.SampleLevel(sampler_InputTexture, uv, 0);
+    float xStep = (float)_SourceWidth / (float)_Width;
+    float yStep = (float)_SourceHeight / (float)_Height;
+    int srcX = min((int)(sx * xStep), (int)_SourceWidth - 1);
+    int srcY = min((int)(sy * yStep), (int)_SourceHeight - 1);
+    float4 pixel = _InputTexture.Load(int3(srcX, srcY, 0));
+    if (_IsSRGB)
+        pixel.rgb = SRGBToLinear(pixel.rgb);
+    return pixel;
 }
 
 // Rec.709 luminance
@@ -116,10 +129,10 @@ float NormalizeWithPercentile(float value, float low, float high)
 }
 
 // Atomic add for fixed-point float values.
-// Converts float to fixed-point uint, atomically adds, result is read in CombineResults.
+// Converts float to fixed-point uint with rounding, atomically adds.
 void AtomicAddFixed(uint index, float value)
 {
-    uint fixedVal = (uint)(value * FIXED_POINT_SCALE);
+    uint fixedVal = (uint)(value * FIXED_POINT_SCALE + 0.5);
     uint dummy;
     InterlockedAdd(_IntermediateBuffer[index], fixedVal, dummy);
 }

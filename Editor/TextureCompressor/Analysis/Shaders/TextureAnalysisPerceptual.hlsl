@@ -83,6 +83,11 @@ void EdgeDensity(uint3 id : SV_DispatchThreadID)
     if (x < 1 || x >= _Width - 1 || y < 1 || y >= _Height - 1)
         return;
 
+    // Match CPU sub-sampling: step = max(1, width / 128)
+    uint step = max(1, _Width / 128);
+    if ((x - 1) % step != 0 || (y - 1) % step != 0)
+        return;
+
     float4 c     = SamplePixel(x, y);
     float4 cLeft = SamplePixel(x - 1, y);
     float4 cRight= SamplePixel(x + 1, y);

@@ -55,6 +55,9 @@ float _ColorMeanR;
 float _ColorMeanG;
 float _ColorMeanB;
 
+// DCT block sub-sampling step (matches CPU blockStep = max(1, blocksX / 16))
+uint _DctBlockStep;
+
 // BlockVariance average (set between BlockVariance and DetailDensity dispatches)
 float _AvgBlockVariance;
 
