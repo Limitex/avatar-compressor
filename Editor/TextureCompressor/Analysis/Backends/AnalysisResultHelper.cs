@@ -19,12 +19,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
             TextureProcessor processor
         )
         {
+            float clamped = Mathf.Clamp01(score);
             if (isEmission && !isNormalMap)
             {
-                score = Mathf.Clamp01(score / AnalysisConstants.EmissionScoreBoostDivisor);
+                clamped = Mathf.Clamp01(clamped / AnalysisConstants.EmissionScoreBoostDivisor);
             }
-
-            float clamped = Mathf.Clamp01(score);
             int divisor = complexityCalc.CalculateRecommendedDivisor(clamped);
             Vector2Int resolution = processor.CalculateNewDimensions(
                 sourceWidth,

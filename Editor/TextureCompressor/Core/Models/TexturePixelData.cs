@@ -26,6 +26,5 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public int Height;
         public int OpaqueCount;
         public bool IsNormalMap;
-        public bool IsEmission;
     }
 }

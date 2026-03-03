@@ -234,7 +234,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         TextureFormat TargetFormat,
                         bool IsNormalMap,
                         bool PreserveAlpha,
-                        NormalMapPreprocessor.SourceLayout SourceLayout
+                        NormalMapPreprocessor.SourceLayout SourceLayout,
+                        Color32[] OriginalPixels
                     )
                 >();
 
@@ -243,23 +244,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (!resizedTextures.TryGetValue(item.Source, out var resizedTexture))
                     continue;
 
-                bool hasAlpha = false;
-                bool hasAlphaComputed = false;
-                bool GetHasAlpha()
-                {
-                    if (!hasAlphaComputed)
-                    {
-                        hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
-                        hasAlphaComputed = true;
-                    }
-                    return hasAlpha;
-                }
+                bool hasAlpha = item.Analysis.HasSignificantAlpha;
 
-                TextureFormat targetFormat = _formatSelector.ResolveTargetFormat(
+                var targetFormat = _formatSelector.ResolveTargetFormat(
                     item.SourceFormat,
                     item.IsNormalMap,
                     item.Analysis.NormalizedComplexity,
-                    GetHasAlpha(),
+                    hasAlpha,
                     item.FormatOverride
                 );
 
@@ -272,11 +263,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     && NormalMapPreprocessor.ShouldPreserveSemanticAlpha(
                         targetFormat,
                         sourceLayout,
-                        GetHasAlpha()
+                        hasAlpha
                     );
 
+                // Save original pixels BEFORE destructive normal map preprocessing (for fallback restore)
+                Color32[] originalPixels = null;
                 if (item.IsNormalMap && resizedTexture.isReadable)
                 {
+                    originalPixels = resizedTexture.GetPixels32();
+
                     _normalMapPreprocessor.PrepareForCompression(
                         resizedTexture,
                         item.SourceFormat,
@@ -291,7 +286,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     targetFormat,
                     item.IsNormalMap,
                     preserveAlpha,
-                    sourceLayout
+                    sourceLayout,
+                    originalPixels
                 );
             }
 
@@ -310,7 +306,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 var resizedTexture = preprocessed.Resized;
 
-                // Apply compression (normal map preprocessing already done in parallel step)
+                // Apply compression (normal map preprocessing already done in Step 3)
                 if (resizedTexture.format != preprocessed.TargetFormat)
                 {
                     ApplyCompressionOnly(
@@ -319,7 +315,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         preprocessed.TargetFormat,
                         preprocessed.IsNormalMap,
                         preprocessed.PreserveAlpha,
-                        preprocessed.SourceLayout
+                        preprocessed.SourceLayout,
+                        preprocessed.OriginalPixels
                     );
                 }
 
@@ -407,7 +404,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     divisor
                 );
 
-                var analysis = new TextureAnalysisResult(0.5f, divisor, resolution);
+                bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(originalTexture);
+                var analysis = new TextureAnalysisResult(0.5f, divisor, resolution, hasAlpha);
 
                 if (enableLogging)
                 {
@@ -432,25 +430,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Applies compression only (normal map preprocessing already done in parallel step).
+        /// Applies compression only (normal map preprocessing already done in Step 3).
         /// Falls back to standard compression if the primary format fails.
         /// </summary>
+        /// <param name="originalPixels">Pre-preprocessing pixels saved in Step 3 for fallback restore.</param>
         private bool ApplyCompressionOnly(
             Texture2D texture,
             TextureFormat sourceFormat,
             TextureFormat targetFormat,
             bool isNormalMap,
             bool preserveAlpha,
-            NormalMapPreprocessor.SourceLayout sourceLayout
+            NormalMapPreprocessor.SourceLayout sourceLayout,
+            Color32[] originalPixels
         )
         {
-            // Save original pixels for fallback restore
-            Color32[] originalPixels = null;
-            if (isNormalMap && texture.isReadable)
-            {
-                originalPixels = texture.GetPixels32();
-            }
-
             try
             {
                 EditorUtility.CompressTexture(

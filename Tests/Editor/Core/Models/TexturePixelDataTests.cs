@@ -162,7 +162,6 @@ namespace dev.limitex.avatar.compressor.tests
             var data = default(ProcessedPixelData);
 
             Assert.That(data.IsNormalMap, Is.False);
-            Assert.That(data.IsEmission, Is.False);
         }
 
         #endregion
@@ -212,14 +211,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(data.IsNormalMap, Is.True);
         }
 
-        [Test]
-        public void ProcessedPixelData_SetIsEmission_Works()
-        {
-            var data = new ProcessedPixelData { IsEmission = true };
-
-            Assert.That(data.IsEmission, Is.True);
-        }
-
         #endregion
 
         #region Complete Initialization Tests
@@ -244,7 +235,6 @@ namespace dev.limitex.avatar.compressor.tests
                 Height = 64,
                 OpaqueCount = 64 * 64,
                 IsNormalMap = false,
-                IsEmission = true,
             };
 
             Assert.That(data.OpaquePixels.Length, Is.EqualTo(64 * 64));
@@ -253,7 +243,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(data.Height, Is.EqualTo(64));
             Assert.That(data.OpaqueCount, Is.EqualTo(64 * 64));
             Assert.That(data.IsNormalMap, Is.False);
-            Assert.That(data.IsEmission, Is.True);
         }
 
         #endregion
@@ -274,7 +263,6 @@ namespace dev.limitex.avatar.compressor.tests
                 Height = 1,
                 OpaqueCount = 1,
                 IsNormalMap = true,
-                IsEmission = false,
             };
             var copy = original;
 
@@ -282,7 +270,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(copy.Height, Is.EqualTo(original.Height));
             Assert.That(copy.OpaqueCount, Is.EqualTo(original.OpaqueCount));
             Assert.That(copy.IsNormalMap, Is.EqualTo(original.IsNormalMap));
-            Assert.That(copy.IsEmission, Is.EqualTo(original.IsEmission));
             // Arrays are reference types
             Assert.That(copy.OpaquePixels, Is.SameAs(original.OpaquePixels));
             Assert.That(copy.Grayscale, Is.SameAs(original.Grayscale));

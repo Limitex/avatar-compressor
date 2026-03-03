@@ -133,7 +133,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     Height = sampledHeight,
                     OpaqueCount = totalSampledPixels,
                     IsNormalMap = true,
-                    IsEmission = false,
                 };
                 complexityResult = analyzer.Analyze(processedData);
             }
@@ -167,7 +166,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         Height = sampledHeight,
                         OpaqueCount = opaqueCount,
                         IsNormalMap = false,
-                        IsEmission = data.IsEmission,
                     };
                     complexityResult = analyzer.Analyze(processedData);
                 }

@@ -12,10 +12,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// </summary>
     public class PreviewGenerator
     {
-        private static readonly LruCache<
+        private static LruCache<
             (string guid, Hash128 contentHash, int analysisHash),
             TextureAnalysisResult
         > AnalysisCache = new(256);
+
+        [InitializeOnLoadMethod]
+        private static void ClearCacheOnDomainReload()
+        {
+            AnalysisCache = new(256);
+        }
 
         /// <summary>
         /// Number of textures that will be processed.

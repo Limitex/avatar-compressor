@@ -222,7 +222,6 @@ namespace dev.limitex.avatar.compressor.tests
                 Height = height,
                 OpaqueCount = count,
                 IsNormalMap = false,
-                IsEmission = false,
             };
         }
 
@@ -248,7 +247,6 @@ namespace dev.limitex.avatar.compressor.tests
                 Height = height,
                 OpaqueCount = count,
                 IsNormalMap = false,
-                IsEmission = false,
             };
         }
 
@@ -275,7 +273,6 @@ namespace dev.limitex.avatar.compressor.tests
                 Height = height,
                 OpaqueCount = count,
                 IsNormalMap = true,
-                IsEmission = false,
             };
         }
 
@@ -304,7 +301,6 @@ namespace dev.limitex.avatar.compressor.tests
                 Height = height,
                 OpaqueCount = count,
                 IsNormalMap = true,
-                IsEmission = false,
             };
         }
 
