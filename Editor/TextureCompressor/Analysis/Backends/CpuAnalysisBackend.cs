@@ -190,7 +190,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     // Too few opaque pixels for meaningful analysis
                     complexityResult = new TextureComplexityResult(
-                        AnalysisConstants.DefaultComplexityScore * 0.2f,
+                        AnalysisConstants.DefaultComplexityScore
+                            * AnalysisConstants.SparseTexturePenalty,
                         "Too few opaque pixels for analysis"
                     );
                 }
@@ -228,7 +229,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         private static bool CheckSignificantAlpha(Color[] pixels)
         {
-            int sampleCount = Mathf.Min(pixels.Length, 10000);
+            int sampleCount = Mathf.Min(pixels.Length, AnalysisConstants.MaxAlphaSampleCount);
             int step = Mathf.Max(1, pixels.Length / sampleCount);
 
             for (int i = 0; i < pixels.Length; i += step)

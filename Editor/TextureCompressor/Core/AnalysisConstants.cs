@@ -250,6 +250,22 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         #endregion
 
+        #region Sparse Texture Handling
+
+        /// <summary>
+        /// Penalty multiplier for textures with too few opaque pixels.
+        /// Applied as DefaultComplexityScore * SparseTexturePenalty.
+        /// Must match SPARSE_TEXTURE_PENALTY in TextureAnalysisCombine.hlsl.
+        /// </summary>
+        public const float SparseTexturePenalty = 0.2f;
+
+        /// <summary>
+        /// Maximum pixels to sample for significant alpha detection.
+        /// </summary>
+        public const int MaxAlphaSampleCount = 10000;
+
+        #endregion
+
         #region Mobile Format Selection
 
         /// <summary>

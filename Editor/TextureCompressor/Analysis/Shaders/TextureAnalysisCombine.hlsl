@@ -115,19 +115,19 @@ void CombineResults(uint3 id : SV_DispatchThreadID)
     {
         finalScore = normalMapScore;
     }
-    else if (_StrategyType == 0) // Fast
+    else if (_StrategyType == STRATEGY_FAST)
     {
         finalScore = fastScore;
     }
-    else if (_StrategyType == 1) // HighAccuracy
+    else if (_StrategyType == STRATEGY_HIGH_ACCURACY)
     {
         finalScore = highAccScore;
     }
-    else if (_StrategyType == 2) // Perceptual
+    else if (_StrategyType == STRATEGY_PERCEPTUAL)
     {
         finalScore = perceptualScore;
     }
-    else if (_StrategyType == 3) // Combined
+    else if (_StrategyType == STRATEGY_COMBINED)
     {
         float totalWeight = _CombinedFastWeight + _CombinedHighAccWeight + _CombinedPerceptualWeight;
         if (totalWeight < EPSILON)
@@ -147,7 +147,7 @@ void CombineResults(uint3 id : SV_DispatchThreadID)
     // Handle too few opaque pixels
     if (!_IsNormalMap && opaqueCount < MIN_OPAQUE_PIXELS)
     {
-        finalScore = DEFAULT_COMPLEXITY_SCORE * 0.2;
+        finalScore = DEFAULT_COMPLEXITY_SCORE * SPARSE_TEXTURE_PENALTY;
     }
 
     _ResultBuffer[0] = finalScore;

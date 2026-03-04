@@ -36,8 +36,8 @@ void SobelGradient(uint3 id : SV_DispatchThreadID)
     if (x < 1 || x >= _Width - 1 || y < 1 || y >= _Height - 1)
         return;
 
-    // Match CPU sub-sampling: step = max(1, width / 256)
-    uint step = max(1, _Width / 256);
+    // Match CPU sub-sampling: step = max(1, width / SOBEL_SAMPLING_DENOMINATOR)
+    uint step = max(1, _Width / SOBEL_SAMPLING_DENOMINATOR);
     if ((x - 1) % step != 0 || (y - 1) % step != 0)
         return;
 
@@ -89,8 +89,8 @@ void SpatialFrequency(uint3 id : SV_DispatchThreadID)
     if (x >= _Width || y >= _Height)
         return;
 
-    // Match CPU sub-sampling: step = max(1, width / 256)
-    uint step = max(1, _Width / 256);
+    // Match CPU sub-sampling: step = max(1, width / SOBEL_SAMPLING_DENOMINATOR)
+    uint step = max(1, _Width / SOBEL_SAMPLING_DENOMINATOR);
     if (x % step != 0 || y % step != 0)
         return;
 

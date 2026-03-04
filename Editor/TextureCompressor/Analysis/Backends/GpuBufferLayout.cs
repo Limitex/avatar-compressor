@@ -24,5 +24,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         // Fixed-point scale (must match FIXED_POINT_SCALE in HLSL)
         internal const float FixedPointScale = 1000f;
+
+        // Default thread group dimension (must match [numthreads(16, 16, 1)] in shader kernels)
+        internal const int ThreadGroupSize = 16;
     }
 }

@@ -317,8 +317,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ComputeBuffer intermediateBuffer
         )
         {
-            int groupsX16 = CeilDiv(width, 16);
-            int groupsY16 = CeilDiv(height, 16);
+            int groupsX16 = CeilDiv(width, GpuBufferLayout.ThreadGroupSize);
+            int groupsY16 = CeilDiv(height, GpuBufferLayout.ThreadGroupSize);
 
             // Always run preprocessing
             _shader.Dispatch(_kernelPreprocess, groupsX16, groupsY16, 1);
@@ -326,8 +326,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (info.IsNormalMap)
             {
                 // Normal map: only NormalMapVariation kernel
-                int nmGroupsX = CeilDiv(width / AnalysisConstants.NormalMapSampleStep, 16);
-                int nmGroupsY = CeilDiv(height / AnalysisConstants.NormalMapSampleStep, 16);
+                int nmGroupsX = CeilDiv(
+                    width / AnalysisConstants.NormalMapSampleStep,
+                    GpuBufferLayout.ThreadGroupSize
+                );
+                int nmGroupsY = CeilDiv(
+                    height / AnalysisConstants.NormalMapSampleStep,
+                    GpuBufferLayout.ThreadGroupSize
+                );
                 _shader.Dispatch(
                     _kernelNormalMapVariation,
                     Mathf.Max(1, nmGroupsX),
@@ -493,6 +499,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
         }
 
+        /// <summary>
+        /// Maps strategy enum to HLSL integer index (must match STRATEGY_* defines in TextureAnalysisCommon.hlsl).
+        /// </summary>
         private int GetStrategyIndex()
         {
             switch (_strategyType)

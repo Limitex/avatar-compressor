@@ -22,6 +22,19 @@
 #define DETAIL_DENSITY_MIN_THRESHOLD 0.005
 #define DETAIL_DENSITY_VARIANCE_MULTIPLIER 0.5
 
+// Strategy type indices (must match GpuAnalysisBackend.GetStrategyIndex)
+#define STRATEGY_FAST 0
+#define STRATEGY_HIGH_ACCURACY 1
+#define STRATEGY_PERCEPTUAL 2
+#define STRATEGY_COMBINED 3
+
+// Sparse texture penalty (must match AnalysisConstants.SparseTexturePenalty)
+#define SPARSE_TEXTURE_PENALTY 0.2
+
+// Sub-sampling denominators (must match ImageMath.cs CPU sub-sampling)
+#define SOBEL_SAMPLING_DENOMINATOR 256
+#define EDGE_DENSITY_SAMPLING_DENOMINATOR 128
+
 // Fixed-point scale for atomic float accumulation.
 // Using 1000 to prevent uint32 overflow. With sub-sampling (step=2 at 512x512, ~65K samples):
 // Worst-case: Sobel max 5.66 * 1000 * 65000 + 65000 * 0.5 (rounding) = 3.71B < 4.29B (uint32 max).
