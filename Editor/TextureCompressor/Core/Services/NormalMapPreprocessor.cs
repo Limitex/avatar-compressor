@@ -118,11 +118,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 else
                 {
                     // Degenerate case: XY exceeds unit circle due to quantization.
-                    // Normalize XY to unit circle and set Z to 0.
-                    float invLen = 1f / Mathf.Sqrt(xySqr);
-                    x *= invLen;
-                    y *= invLen;
-                    z = 0f;
+                    // Reset to flat normal (standard convention for degenerate normals).
+                    x = 0f;
+                    y = 0f;
+                    z = 1f;
                 }
 
                 WriteNormalChannels(ref pixels[i], targetLayout, x, y, z, sourceAlpha);
