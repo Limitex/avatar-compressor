@@ -36,30 +36,30 @@ namespace dev.limitex.avatar.compressor.editor.texture
             bool isNormalMap = false
         )
         {
-            Texture2D result;
+            var (width, height) = CalculateResizeDimensions(source, analysis);
+            return ResizeTo(source, width, height, isNormalMap);
+        }
+
+        /// <summary>
+        /// Calculates the target resize dimensions for a texture based on its analysis result.
+        /// When no downscaling is needed and the source fits within max resolution, dimensions are
+        /// kept at the source size (rounded to multiples of 4). Otherwise, uses the recommended resolution.
+        /// </summary>
+        private (int Width, int Height) CalculateResizeDimensions(
+            Texture2D source,
+            TextureAnalysisResult analysis
+        )
+        {
             if (
                 analysis.RecommendedDivisor <= 1
                 && source.width <= _maxResolution
                 && source.height <= _maxResolution
             )
             {
-                // Even when copying, ensure dimensions are multiples of 4 for DXT/BC compression
-                int width = EnsureMultipleOf4(source.width);
-                int height = EnsureMultipleOf4(source.height);
-
-                result = ResizeTo(source, width, height, isNormalMap);
-            }
-            else
-            {
-                result = ResizeTo(
-                    source,
-                    analysis.RecommendedResolution.x,
-                    analysis.RecommendedResolution.y,
-                    isNormalMap
-                );
+                return (EnsureMultipleOf4(source.width), EnsureMultipleOf4(source.height));
             }
 
-            return result;
+            return (analysis.RecommendedResolution.x, analysis.RecommendedResolution.y);
         }
 
         /// <summary>
@@ -151,22 +151,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     {
                         try
                         {
-                            int newWidth,
-                                newHeight;
-                            if (
-                                item.Analysis.RecommendedDivisor <= 1
-                                && item.Source.width <= _maxResolution
-                                && item.Source.height <= _maxResolution
-                            )
-                            {
-                                newWidth = EnsureMultipleOf4(item.Source.width);
-                                newHeight = EnsureMultipleOf4(item.Source.height);
-                            }
-                            else
-                            {
-                                newWidth = item.Analysis.RecommendedResolution.x;
-                                newHeight = item.Analysis.RecommendedResolution.y;
-                            }
+                            var (newWidth, newHeight) = CalculateResizeDimensions(
+                                item.Source,
+                                item.Analysis
+                            );
 
                             result[item.Source] = BlitResize(
                                 item.Source,
