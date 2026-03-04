@@ -6,9 +6,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Shared helper for building TextureAnalysisResult from a raw complexity score.
     /// Centralizes the score → divisor → resolution pipeline used by both CPU and GPU backends.
     /// </summary>
-    internal static class AnalysisResultHelper
+    public static class AnalysisResultHelper
     {
-        internal static TextureAnalysisResult BuildResult(
+        public static TextureAnalysisResult BuildResult(
             float score,
             int sourceWidth,
             int sourceHeight,
