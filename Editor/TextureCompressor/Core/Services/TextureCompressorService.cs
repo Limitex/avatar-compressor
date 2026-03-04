@@ -244,7 +244,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (!resizedTextures.TryGetValue(item.Source, out var resizedTexture))
                     continue;
 
-                bool hasAlpha = item.Analysis.HasSignificantAlpha;
+                // For frozen textures, detect alpha on the resized texture (always readable)
+                // rather than the original which may not be readable.
+                // For analyzed textures, alpha was already computed during analysis.
+                bool hasAlpha = item.FormatOverride.HasValue
+                    ? TextureFormatSelector.HasSignificantAlpha(resizedTexture)
+                    : item.Analysis.HasSignificantAlpha;
 
                 var targetFormat = _formatSelector.ResolveTargetFormat(
                     item.SourceFormat,
@@ -406,8 +411,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     divisor
                 );
 
-                bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(originalTexture);
-                var analysis = new TextureAnalysisResult(0.5f, divisor, resolution, hasAlpha);
+                // Alpha detection deferred to after resize (resized textures are always readable)
+                var analysis = new TextureAnalysisResult(0.5f, divisor, resolution);
 
                 if (enableLogging)
                 {
