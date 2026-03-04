@@ -21,11 +21,13 @@ void NormalMapVariation(uint3 id : SV_DispatchThreadID)
     float4 c4 = SamplePixel(x, y - 1);
 
     // Decode normals: n = normalize(rgb * 2 - 1)
-    float3 n0 = normalize(c0.rgb * 2.0 - 1.0);
-    float3 n1 = normalize(c1.rgb * 2.0 - 1.0);
-    float3 n2 = normalize(c2.rgb * 2.0 - 1.0);
-    float3 n3 = normalize(c3.rgb * 2.0 - 1.0);
-    float3 n4 = normalize(c4.rgb * 2.0 - 1.0);
+    // Use SafeNormalize to handle degenerate (0,0,0) vectors that cause
+    // undefined behavior with normalize(). Matches CPU fix (NormalMapPreprocessor).
+    float3 n0 = SafeNormalize(c0.rgb * 2.0 - 1.0);
+    float3 n1 = SafeNormalize(c1.rgb * 2.0 - 1.0);
+    float3 n2 = SafeNormalize(c2.rgb * 2.0 - 1.0);
+    float3 n3 = SafeNormalize(c3.rgb * 2.0 - 1.0);
+    float3 n4 = SafeNormalize(c4.rgb * 2.0 - 1.0);
 
     float variation = 0.0;
     variation += 1.0 - dot(n0, n1);

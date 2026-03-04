@@ -7,8 +7,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// GPU compute shader-based texture analysis backend.
     /// Dispatches analysis kernels directly on source textures without
-    /// CPU pixel readback. Only the final scalar scores are read back
-    /// via AsyncGPUReadback.
+    /// full CPU pixel readback. Some intermediate values (color mean,
+    /// block variance) are read back synchronously mid-dispatch for
+    /// multi-pass kernels. Final scalar scores are read back via
+    /// AsyncGPUReadback.
     /// Must be called from the main thread (Unity GPU dispatch constraint).
     /// </summary>
     public class GpuAnalysisBackend : ITextureAnalysisBackend
@@ -102,24 +104,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     if (texture == null)
                         continue;
 
-                    // Compute sampled dimensions using CPU-matching formula (PixelSampler.SampleIfNeeded)
-                    int sampledWidth = texture.width;
-                    int sampledHeight = texture.height;
-                    int totalPixels = sampledWidth * sampledHeight;
-                    if (totalPixels > AnalysisConstants.MaxSampledPixels)
-                    {
-                        float ratio = Mathf.Sqrt(
-                            (float)AnalysisConstants.MaxSampledPixels / totalPixels
-                        );
-                        sampledWidth = Mathf.Max(
-                            AnalysisConstants.MinSampledDimension,
-                            (int)(texture.width * ratio)
-                        );
-                        sampledHeight = Mathf.Max(
-                            AnalysisConstants.MinSampledDimension,
-                            (int)(texture.height * ratio)
-                        );
-                    }
+                    var (sampledWidth, sampledHeight) = PixelSampler.CalculateSampledDimensions(
+                        texture.width,
+                        texture.height
+                    );
 
                     var resultBuffer = new ComputeBuffer(ResultBufferSize, sizeof(float));
                     var intermediateBuffer = new ComputeBuffer(
@@ -143,14 +131,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         );
 
                         // Dispatch kernels
-                        DispatchAnalysis(
-                            texture,
-                            info,
-                            sampledWidth,
-                            sampledHeight,
-                            resultBuffer,
-                            intermediateBuffer
-                        );
+                        DispatchAnalysis(info, sampledWidth, sampledHeight, intermediateBuffer);
 
                         // Queue async readback
                         var request = AsyncGPUReadback.Request(resultBuffer);
@@ -202,6 +183,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     }
                     else
                     {
+                        Debug.LogWarning(
+                            $"[TextureCompressor] GPU readback failed for '{pending.Tex.name}', using default score"
+                        );
                         results[pending.Tex] = AnalysisResultHelper.BuildResult(
                             AnalysisConstants.DefaultComplexityScore,
                             pending.Tex.width,
@@ -327,11 +311,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         private void DispatchAnalysis(
-            Texture2D texture,
             TextureInfo info,
             int width,
             int height,
-            ComputeBuffer resultBuffer,
             ComputeBuffer intermediateBuffer
         )
         {
@@ -367,7 +349,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 if (needsFast)
                 {
-                    DispatchFastKernels(width, height, groupsX16, groupsY16, intermediateBuffer);
+                    DispatchFastKernels(groupsX16, groupsY16, intermediateBuffer);
                 }
 
                 if (needsHighAcc)
@@ -392,8 +374,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         private void DispatchFastKernels(
-            int width,
-            int height,
             int groupsX16,
             int groupsY16,
             ComputeBuffer intermediateBuffer

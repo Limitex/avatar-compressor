@@ -18,6 +18,9 @@
 #define MIN_NORMAL_MAP_DIMENSION 4
 #define MIN_OPAQUE_PIXELS 100
 #define DEFAULT_COMPLEXITY_SCORE 0.5
+#define EPSILON 0.0001
+#define DETAIL_DENSITY_MIN_THRESHOLD 0.005
+#define DETAIL_DENSITY_VARIANCE_MULTIPLIER 0.5
 
 // Fixed-point scale for atomic float accumulation.
 // Using 1000 to prevent uint32 overflow. With sub-sampling (step=2 at 512x512, ~65K samples):
@@ -122,10 +125,19 @@ bool IsTransparent(float4 pixel)
     return pixel.a < ALPHA_THRESHOLD;
 }
 
+// Safe normalize: returns flat normal (0,0,1) for degenerate zero vectors.
+// Matches CPU NormalMapPreprocessor behavior (commit cfe11fa).
+float3 SafeNormalize(float3 v)
+{
+    float len = length(v);
+    return len > EPSILON ? v / len : float3(0, 0, 1);
+}
+
 // Percentile normalization (matches MathUtils.NormalizeWithPercentile)
 float NormalizeWithPercentile(float value, float low, float high)
 {
-    return saturate((value - low) / (high - low));
+    float range = high - low;
+    return range > EPSILON ? saturate((value - low) / range) : 0.0;
 }
 
 // Atomic add for fixed-point float values.

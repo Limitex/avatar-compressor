@@ -248,9 +248,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
                 return false;
             }
-            catch
+            catch (System.Exception e)
             {
                 // Assume alpha exists on error to preserve quality
+                Debug.LogWarning(
+                    $"[TextureCompressor] Alpha detection failed, assuming alpha exists: {e.Message}"
+                );
                 return true;
             }
         }

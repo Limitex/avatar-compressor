@@ -172,7 +172,7 @@ void DetailDensity(uint3 groupId : SV_GroupID, uint3 gtid : SV_GroupThreadID)
         if (count > 0)
         {
             float variance = m2 / (float)count;
-            float threshold = max(0.005, _AvgBlockVariance * 0.5);
+            float threshold = max(DETAIL_DENSITY_MIN_THRESHOLD, _AvgBlockVariance * DETAIL_DENSITY_VARIANCE_MULTIPLIER);
 
             AtomicIncrement(IDX_DETAIL_TOTAL);
             if (variance > threshold)

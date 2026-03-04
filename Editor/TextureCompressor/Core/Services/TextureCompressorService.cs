@@ -309,7 +309,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 // Apply compression (normal map preprocessing already done in Step 3)
                 if (resizedTexture.format != preprocessed.TargetFormat)
                 {
-                    ApplyCompressionOnly(
+                    bool compressed = ApplyCompressionOnly(
                         resizedTexture,
                         item.SourceFormat,
                         preprocessed.TargetFormat,
@@ -318,6 +318,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         preprocessed.SourceLayout,
                         preprocessed.OriginalPixels
                     );
+                    if (!compressed)
+                        continue;
                 }
 
                 resizedTexture.name = originalTexture.name + "_compressed";

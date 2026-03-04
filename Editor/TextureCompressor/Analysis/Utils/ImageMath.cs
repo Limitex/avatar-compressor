@@ -608,7 +608,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             int totalBlocks = 0;
             int totalPixels = width * height;
 
-            float threshold = Mathf.Max(0.005f, avgVariance * 0.5f);
+            float threshold = Mathf.Max(
+                AnalysisConstants.DetailDensityMinThreshold,
+                avgVariance * AnalysisConstants.DetailDensityVarianceMultiplier
+            );
 
             int blocksX = width / blockSize;
             int blocksY = height / blockSize;

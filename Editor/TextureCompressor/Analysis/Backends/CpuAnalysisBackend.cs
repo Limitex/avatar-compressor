@@ -50,17 +50,37 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     ITextureComplexityAnalyzer Analyzer
                 )>();
 
+            var results = new ConcurrentDictionary<Texture2D, TextureAnalysisResult>();
+
             foreach (var kvp in textures)
             {
                 var texture = kvp.Key;
                 var info = kvp.Value;
+
+                if (texture == null)
+                    continue;
 
                 if (
                     !allPixels.TryGetValue(texture, out var pixels)
                     || pixels == null
                     || pixels.Length == 0
                 )
+                {
+                    Debug.LogWarning(
+                        $"[TextureCompressor] No pixel data for '{texture.name}', using default analysis"
+                    );
+                    results[texture] = AnalysisResultHelper.BuildResult(
+                        AnalysisConstants.DefaultComplexityScore,
+                        texture.width,
+                        texture.height,
+                        info.IsEmission,
+                        info.IsNormalMap,
+                        false,
+                        _complexityCalc,
+                        _processor
+                    );
                     continue;
+                }
 
                 var data = new TexturePixelData
                 {
@@ -78,7 +98,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             // Phase 3: Truly parallel analysis (no lock contention)
             // Limit outer parallelism to leave threads for inner parallelism (CombinedStrategy)
-            var results = new ConcurrentDictionary<Texture2D, TextureAnalysisResult>();
             var parallelOptions = new ParallelOptions
             {
                 MaxDegreeOfParallelism = System.Math.Max(1, System.Environment.ProcessorCount / 2),
@@ -211,11 +230,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             int sampleCount = Mathf.Min(pixels.Length, 10000);
             int step = Mathf.Max(1, pixels.Length / sampleCount);
-            float threshold = AnalysisConstants.SignificantAlphaThreshold / 255f;
 
             for (int i = 0; i < pixels.Length; i += step)
             {
-                if (pixels[i].a < threshold)
+                if (pixels[i].a < AnalysisConstants.SignificantAlphaThreshold / 255f)
                     return true;
             }
 

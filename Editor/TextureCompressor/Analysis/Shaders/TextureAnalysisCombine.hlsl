@@ -42,7 +42,7 @@ void CombineResults(uint3 id : SV_DispatchThreadID)
     float highAccScore = 0.0;
     {
         float dctTotalEnergy = ReadFixed(IDX_DCT_TOTAL_ENERGY);
-        float dctRatio = dctTotalEnergy > 0.0001 ? ReadFixed(IDX_DCT_HIGH_FREQ) / dctTotalEnergy : 0.0;
+        float dctRatio = dctTotalEnergy > EPSILON ? ReadFixed(IDX_DCT_HIGH_FREQ) / dctTotalEnergy : 0.0;
 
         // GLCM features (stored by GlcmFeatures kernel)
         float contrast = (float)_IntermediateBuffer[IDX_GLCM_MATRIX + 0] / FIXED_POINT_SCALE;
@@ -130,7 +130,7 @@ void CombineResults(uint3 id : SV_DispatchThreadID)
     else if (_StrategyType == 3) // Combined
     {
         float totalWeight = _CombinedFastWeight + _CombinedHighAccWeight + _CombinedPerceptualWeight;
-        if (totalWeight < 0.0001)
+        if (totalWeight < EPSILON)
         {
             finalScore = clamp((fastScore + highAccScore + perceptualScore) / 3.0, 0.0, 1.0);
         }

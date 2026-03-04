@@ -164,6 +164,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         public const int DetailDensityBlockSize = 16;
 
+        /// <summary>
+        /// Minimum variance threshold for detail density classification.
+        /// Blocks with variance below this are never counted as detailed.
+        /// Must match DETAIL_DENSITY_MIN_THRESHOLD in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const float DetailDensityMinThreshold = 0.005f;
+
+        /// <summary>
+        /// Multiplier applied to average block variance to compute detail density threshold.
+        /// Must match DETAIL_DENSITY_VARIANCE_MULTIPLIER in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const float DetailDensityVarianceMultiplier = 0.5f;
+
         #endregion
 
         #region Perceptual Strategy Normalization Bounds

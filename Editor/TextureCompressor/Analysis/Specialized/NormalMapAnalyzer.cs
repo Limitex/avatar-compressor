@@ -73,7 +73,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private Vector3 DecodeNormal(Color c)
         {
             Vector3 n = new Vector3(c.r * 2f - 1f, c.g * 2f - 1f, c.b * 2f - 1f);
-            return n.normalized;
+            float len = n.magnitude;
+            return len > 0.0001f ? n / len : new Vector3(0f, 0f, 1f);
         }
     }
 }

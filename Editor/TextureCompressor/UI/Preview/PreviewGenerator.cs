@@ -123,6 +123,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             int analysisHash = ComputeAnalysisHash(config);
             var analysisResults = new Dictionary<Texture2D, TextureAnalysisResult>();
 
+            var assetInfoCache = new Dictionary<Texture2D, (string guid, Hash128 contentHash)>();
+
             if (processedTextures.Count > 0)
             {
                 var needsAnalysis = new Dictionary<Texture2D, TextureInfo>();
@@ -132,6 +134,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     string path = AssetDatabase.GetAssetPath(kvp.Key);
                     string guid = AssetDatabase.AssetPathToGUID(path);
                     var contentHash = AssetDatabase.GetAssetDependencyHash(path);
+                    assetInfoCache[kvp.Key] = (guid, contentHash);
                     var cacheKey = (guid, contentHash, analysisHash);
 
                     if (
@@ -154,12 +157,15 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     {
                         analysisResults[kvp.Key] = kvp.Value;
 
-                        string path = AssetDatabase.GetAssetPath(kvp.Key);
-                        string guid = AssetDatabase.AssetPathToGUID(path);
-                        if (!string.IsNullOrEmpty(guid))
+                        if (
+                            assetInfoCache.TryGetValue(kvp.Key, out var info)
+                            && !string.IsNullOrEmpty(info.guid)
+                        )
                         {
-                            var contentHash = AssetDatabase.GetAssetDependencyHash(path);
-                            AnalysisCache.Set((guid, contentHash, analysisHash), kvp.Value);
+                            AnalysisCache.Set(
+                                (info.guid, info.contentHash, analysisHash),
+                                kvp.Value
+                            );
                         }
                     }
                 }
@@ -173,8 +179,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 var tex = kvp.Key;
                 var info = kvp.Value;
-                string assetPath = AssetDatabase.GetAssetPath(tex);
-                string guid = AssetDatabase.AssetPathToGUID(assetPath);
+
+                string guid;
+                if (assetInfoCache.TryGetValue(tex, out var cachedAssetInfo))
+                {
+                    guid = cachedAssetInfo.guid;
+                }
+                else
+                {
+                    string assetPath = AssetDatabase.GetAssetPath(tex);
+                    guid = AssetDatabase.AssetPathToGUID(assetPath);
+                }
 
                 // Skip textures with invalid GUID (e.g., runtime-generated textures)
                 if (string.IsNullOrEmpty(guid))
