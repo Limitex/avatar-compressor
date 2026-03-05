@@ -225,7 +225,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         targetFormat = formatSelector.ResolveTargetFormat(
                             tex.format,
                             isNormalMap,
-                            0.5f,
+                            AnalysisConstants.DefaultComplexityScore,
                             hasAlpha,
                             frozenSettings.Format
                         );

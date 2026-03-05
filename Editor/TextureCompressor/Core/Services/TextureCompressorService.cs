@@ -412,7 +412,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 );
 
                 // Alpha detection deferred to after resize (resized textures are always readable)
-                var analysis = new TextureAnalysisResult(0.5f, divisor, resolution);
+                var analysis = new TextureAnalysisResult(
+                    AnalysisConstants.DefaultComplexityScore,
+                    divisor,
+                    resolution
+                );
 
                 if (enableLogging)
                 {
