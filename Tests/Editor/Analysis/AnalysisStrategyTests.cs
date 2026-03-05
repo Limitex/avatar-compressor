@@ -92,7 +92,6 @@ namespace dev.limitex.avatar.compressor.tests
             var result = strategy.Analyze(data);
 
             Assert.That(result.Score, Is.EqualTo(AnalysisConstants.DefaultComplexityScore));
-            Assert.That(result.Summary, Does.Contain("too small"));
         }
 
         [Test]
@@ -130,7 +129,6 @@ namespace dev.limitex.avatar.compressor.tests
             var result = strategy.Analyze(data);
 
             Assert.That(result.Score, Is.InRange(0f, 1f));
-            Assert.That(result.Summary, Does.Contain("equal weights"));
         }
 
         [Test]

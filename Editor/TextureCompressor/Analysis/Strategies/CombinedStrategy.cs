@@ -40,8 +40,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (totalWeight < AnalysisConstants.ZeroWeightThreshold)
             {
                 return new TextureComplexityResult(
-                    Mathf.Clamp01((fast + highAcc + perceptual) / 3f),
-                    "Combined analysis with equal weights (all weights were zero)"
+                    Mathf.Clamp01((fast + highAcc + perceptual) / 3f)
                 );
             }
 

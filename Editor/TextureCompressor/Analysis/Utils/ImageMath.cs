@@ -1,4 +1,3 @@
-using dev.limitex.avatar.compressor.editor;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture

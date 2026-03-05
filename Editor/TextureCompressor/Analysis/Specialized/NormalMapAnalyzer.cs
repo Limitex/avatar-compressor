@@ -11,10 +11,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public TextureComplexityResult Analyze(ProcessedPixelData data)
         {
             float score = CalculateNormalMapComplexity(data.OpaquePixels, data.Width, data.Height);
-            return new TextureComplexityResult(
-                score,
-                "Normal map complexity based on vector variation"
-            );
+            return new TextureComplexityResult(score);
         }
 
         private float CalculateNormalMapComplexity(Color[] pixels, int width, int height)

@@ -191,8 +191,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     // Too few opaque pixels for meaningful analysis
                     complexityResult = new TextureComplexityResult(
                         AnalysisConstants.DefaultComplexityScore
-                            * AnalysisConstants.SparseTexturePenalty,
-                        "Too few opaque pixels for analysis"
+                            * AnalysisConstants.SparseTexturePenalty
                     );
                 }
                 else
