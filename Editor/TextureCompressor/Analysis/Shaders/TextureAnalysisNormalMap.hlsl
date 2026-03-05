@@ -8,8 +8,9 @@
 [numthreads(16, 16, 1)]
 void NormalMapVariation(uint3 id : SV_DispatchThreadID)
 {
-    uint x = id.x * NORMAL_MAP_SAMPLE_STEP;
-    uint y = id.y * NORMAL_MAP_SAMPLE_STEP;
+    // Offset by 1 to match CPU sampling positions (1, 3, 5, ...)
+    uint x = id.x * NORMAL_MAP_SAMPLE_STEP + 1;
+    uint y = id.y * NORMAL_MAP_SAMPLE_STEP + 1;
 
     if (x < 1 || x >= _Width - 1 || y < 1 || y >= _Height - 1)
         return;
