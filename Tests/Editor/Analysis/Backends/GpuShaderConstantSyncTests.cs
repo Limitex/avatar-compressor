@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 
@@ -138,6 +139,30 @@ namespace dev.limitex.avatar.compressor.tests
             );
         }
 
+        [Test]
+        public void AlphaThreshold_MatchesAnalysisConstants()
+        {
+            AssertFloatDefine("ALPHA_THRESHOLD", AnalysisConstants.AlphaThreshold);
+        }
+
+        [Test]
+        public void SobelSamplingDenominator_MatchesAnalysisConstants()
+        {
+            AssertIntDefine(
+                "SOBEL_SAMPLING_DENOMINATOR",
+                AnalysisConstants.SobelSamplingDenominator
+            );
+        }
+
+        [Test]
+        public void EdgeDensitySamplingDenominator_MatchesAnalysisConstants()
+        {
+            AssertIntDefine(
+                "EDGE_DENSITY_SAMPLING_DENOMINATOR",
+                AnalysisConstants.EdgeDensitySamplingDenominator
+            );
+        }
+
         #endregion
 
         #region GpuBufferLayout Sync
@@ -171,27 +196,27 @@ namespace dev.limitex.avatar.compressor.tests
         #region Strategy Index Sync
 
         [Test]
-        public void StrategyFast_MatchesExpectedIndex()
+        public void StrategyFast_MatchesEnumIndex()
         {
-            AssertIntDefine("STRATEGY_FAST", 0);
+            AssertIntDefine("STRATEGY_FAST", (int)AnalysisStrategyType.Fast);
         }
 
         [Test]
-        public void StrategyHighAccuracy_MatchesExpectedIndex()
+        public void StrategyHighAccuracy_MatchesEnumIndex()
         {
-            AssertIntDefine("STRATEGY_HIGH_ACCURACY", 1);
+            AssertIntDefine("STRATEGY_HIGH_ACCURACY", (int)AnalysisStrategyType.HighAccuracy);
         }
 
         [Test]
-        public void StrategyPerceptual_MatchesExpectedIndex()
+        public void StrategyPerceptual_MatchesEnumIndex()
         {
-            AssertIntDefine("STRATEGY_PERCEPTUAL", 2);
+            AssertIntDefine("STRATEGY_PERCEPTUAL", (int)AnalysisStrategyType.Perceptual);
         }
 
         [Test]
-        public void StrategyCombined_MatchesExpectedIndex()
+        public void StrategyCombined_MatchesEnumIndex()
         {
-            AssertIntDefine("STRATEGY_COMBINED", 3);
+            AssertIntDefine("STRATEGY_COMBINED", (int)AnalysisStrategyType.Combined);
         }
 
         #endregion

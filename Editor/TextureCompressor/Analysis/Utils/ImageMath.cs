@@ -47,7 +47,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             float total = 0f;
             int count = 0;
-            int step = Mathf.Max(1, width / 256);
+            int step = Mathf.Max(1, width / AnalysisConstants.SobelSamplingDenominator);
             int totalPixels = width * height;
 
             for (int y = 1; y < height - 1; y += step)
@@ -123,7 +123,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float colFreq = 0f;
             int rowCount = 0;
             int colCount = 0;
-            int step = Mathf.Max(1, width / 256);
+            int step = Mathf.Max(1, width / AnalysisConstants.SobelSamplingDenominator);
             int totalPixels = width * height;
 
             for (int y = 0; y < height; y += step)
@@ -192,7 +192,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             for (int i = 0; i < pixels.Length; i++)
             {
-                if (pixels[i].a < 0.1f)
+                if (pixels[i].a < AnalysisConstants.AlphaThreshold)
                     continue;
                 mean.x += pixels[i].r;
                 mean.y += pixels[i].g;
@@ -207,7 +207,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float variance = 0f;
             for (int i = 0; i < pixels.Length; i++)
             {
-                if (pixels[i].a < 0.1f)
+                if (pixels[i].a < AnalysisConstants.AlphaThreshold)
                     continue;
                 Vector3 diff = new Vector3(
                     pixels[i].r - mean.x,
@@ -553,7 +553,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             float edgeSum = 0f;
             int edgeCount = 0;
-            int step = Mathf.Max(1, width / 128);
+            int step = Mathf.Max(1, width / AnalysisConstants.EdgeDensitySamplingDenominator);
             int totalPixels = width * height;
 
             for (int y = 1; y < height - 1; y += step)

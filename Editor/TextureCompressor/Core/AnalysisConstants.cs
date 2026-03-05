@@ -40,9 +40,30 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         public const int MinSampledDimension = 64;
 
+        /// <summary>
+        /// Denominator for Sobel gradient and spatial frequency sub-sampling.
+        /// step = max(1, width / SobelSamplingDenominator).
+        /// Must match SOBEL_SAMPLING_DENOMINATOR in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const int SobelSamplingDenominator = 256;
+
+        /// <summary>
+        /// Denominator for edge density sub-sampling.
+        /// step = max(1, width / EdgeDensitySamplingDenominator).
+        /// Must match EDGE_DENSITY_SAMPLING_DENOMINATOR in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const int EdgeDensitySamplingDenominator = 128;
+
         #endregion
 
         #region Analysis Thresholds
+
+        /// <summary>
+        /// Alpha threshold for distinguishing opaque from transparent pixels.
+        /// Pixels with alpha below this value are treated as transparent.
+        /// Must match ALPHA_THRESHOLD in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const float AlphaThreshold = 0.1f;
 
         /// <summary>
         /// Minimum texture dimension for perceptual analysis.
