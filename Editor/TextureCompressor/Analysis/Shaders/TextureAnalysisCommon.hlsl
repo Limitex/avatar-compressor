@@ -39,7 +39,6 @@
 // Using 1000 to prevent uint32 overflow. With sub-sampling (step=2 at 512x512, ~65K samples):
 // Worst-case: Sobel max 5.66 * 1000 * 65000 + 65000 * 0.5 (rounding) = 3.71B < 4.29B (uint32 max).
 #define FIXED_POINT_SCALE 1000.0
-#define FIXED_POINT_SCALE_UINT 1000
 
 // Input / Output Bindings
 

@@ -47,7 +47,7 @@ float _CombinedFastWeight;
 float _CombinedHighAccWeight;
 float _CombinedPerceptualWeight;
 
-// Strategy selector: 0=Fast, 1=HighAccuracy, 2=Perceptual, 3=Combined, 4=NormalMap
+// Strategy selector: 0=Fast, 1=HighAccuracy, 2=Perceptual, 3=Combined
 uint _StrategyType;
 
 // Color mean (set between ColorMean and ColorVariance dispatches)
