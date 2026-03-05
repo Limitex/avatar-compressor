@@ -236,7 +236,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             try
             {
                 var pixels = texture.GetPixels32();
-                int sampleCount = Mathf.Min(pixels.Length, 10000);
+                int sampleCount = Mathf.Min(pixels.Length, AnalysisConstants.MaxAlphaSampleCount);
                 int step = Mathf.Max(1, pixels.Length / sampleCount);
 
                 for (int i = 0; i < pixels.Length; i += step)
