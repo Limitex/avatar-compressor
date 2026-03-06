@@ -18,6 +18,11 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 });
 
+const titles: Record<Locale, string> = {
+  en: 'Avatar Compressor - Non-Destructive VRChat Avatar Compression Utilities',
+  ja: 'Avatar Compressor - VRChat 非破壊アバター圧縮ユーティリティ',
+};
+
 const descriptions: Record<Locale, string> = {
   en: 'VRChat non-destructive avatar modification: Become a lightweight avatar that more players can see',
   ja: 'VRChatアバター非破壊改変 より多くのプレイヤーに見てもらえる軽量アバターになろう',
@@ -30,6 +35,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   const locale = lang as Locale;
+  const title = titles[locale] ?? titles.en;
   const description = descriptions[locale] ?? descriptions.en;
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -37,29 +43,30 @@ export async function generateMetadata({
   return {
     metadataBase: new URL(siteUrl),
     title: {
-      default: 'Avatar Compressor',
+      default: title,
       template: '%s | Avatar Compressor',
     },
     description,
     alternates: {
-      canonical: `${siteUrl}/${lang}`,
+      canonical: `${siteUrl}/${lang}/`,
       languages: {
-        en: `${siteUrl}/en`,
-        ja: `${siteUrl}/ja`,
+        'x-default': `${siteUrl}/en/`,
+        en: `${siteUrl}/en/`,
+        ja: `${siteUrl}/ja/`,
       },
     },
     openGraph: {
       type: 'website',
       siteName: 'Avatar Compressor',
-      title: 'Avatar Compressor',
+      title,
       description,
-      url: `${siteUrl}/${lang}`,
+      url: `${siteUrl}/${lang}/`,
       locale: locale === 'ja' ? 'ja_JP' : 'en_US',
       images: `/${lang}/og/home`,
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Avatar Compressor',
+      title,
       description,
       images: `/${lang}/og/home`,
     },
@@ -91,6 +98,18 @@ export default async function LangLayout({
       suppressHydrationWarning
     >
       <body className="flex flex-col min-h-screen">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Avatar Compressor',
+              url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+              inLanguage: lang === 'ja' ? 'ja' : 'en',
+            }).replace(/</g, '\\u003c'),
+          }}
+        />
         <I18nRootProvider lang={lang as Locale}>
           {children}
         </I18nRootProvider>
