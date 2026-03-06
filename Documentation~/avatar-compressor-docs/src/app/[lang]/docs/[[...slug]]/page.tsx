@@ -60,7 +60,7 @@ export async function generateMetadata(props: {
   const slugPath = params.slug ? params.slug.join('/') + '/' : '';
   const pageUrl = `${siteUrl}/${locale}/docs/${slugPath}`;
 
-  const shouldNoIndex = noIndexPaths.has(params.slug?.join('/') ?? '');
+  const shouldNoIndex = params.slug?.some((s) => noIndexPaths.has(s)) ?? false;
 
   return {
     title: page.data.title,
@@ -71,9 +71,10 @@ export async function generateMetadata(props: {
       : {
           canonical: pageUrl,
           languages: {
-            'x-default': `${siteUrl}/en/docs/${slugPath}`,
-            en: `${siteUrl}/en/docs/${slugPath}`,
-            ja: `${siteUrl}/ja/docs/${slugPath}`,
+            'x-default': `${siteUrl}/${i18n.defaultLanguage}/docs/${slugPath}`,
+            ...Object.fromEntries(
+              i18n.languages.map((l) => [l, `${siteUrl}/${l}/docs/${slugPath}`]),
+            ),
           },
         },
     openGraph: {
