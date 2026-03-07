@@ -235,32 +235,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                             tex.height,
                             divisor
                         );
-                        // Match the build pipeline: detect alpha on the resized texture.
-                        // Frozen textures are a small subset, so the temporary resize cost
-                        // is acceptable for accurate format prediction.
-                        if (
-                            recommendedSize.x != tex.width
-                            || recommendedSize.y != tex.height
-                            || !tex.isReadable
-                        )
+                        // Match the build pipeline: frozen textures always flow through
+                        // the resize/copy path before alpha detection, even when dimensions
+                        // are unchanged.
+                        var frozenAnalysis = new TextureAnalysisResult(
+                            AnalysisConstants.DefaultComplexityScore,
+                            divisor,
+                            recommendedSize
+                        );
+                        var resizedTex = processor.ResizeSingle(tex, frozenAnalysis, isNormalMap);
+                        if (resizedTex != null)
                         {
-                            var frozenAnalysis = new TextureAnalysisResult(
-                                AnalysisConstants.DefaultComplexityScore,
-                                divisor,
-                                recommendedSize
-                            );
-                            var resizedBatch = processor.ResizeBatch(
-                                new[] { (tex, frozenAnalysis, isNormalMap) }
-                            );
-                            if (resizedBatch.TryGetValue(tex, out var resizedTex))
-                            {
-                                hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTex);
-                                Object.DestroyImmediate(resizedTex);
-                            }
-                            else
-                            {
-                                hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
-                            }
+                            hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTex);
+                            Object.DestroyImmediate(resizedTex);
                         }
                         else
                         {
