@@ -50,13 +50,6 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void Create_ReturnsITextureAnalysisBackend()
-        {
-            var backend = CreateBackend(AnalysisStrategyType.Fast);
-            Assert.IsInstanceOf<ITextureAnalysisBackend>(backend);
-        }
-
-        [Test]
         public void Create_MultipleCalls_ReturnNewInstances()
         {
             var backend1 = CreateBackend(AnalysisStrategyType.Fast);

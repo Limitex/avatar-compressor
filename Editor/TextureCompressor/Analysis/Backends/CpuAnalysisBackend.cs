@@ -132,12 +132,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
             );
 
-            var output = new Dictionary<Texture2D, TextureAnalysisResult>();
-            foreach (var kvp in results)
-            {
-                output[kvp.Key] = kvp.Value;
-            }
-            return output;
+            return new Dictionary<Texture2D, TextureAnalysisResult>(results);
         }
 
         /// <summary>

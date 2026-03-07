@@ -45,52 +45,6 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region Field Assignment Tests
-
-        [Test]
-        public void TexturePixelData_SetWidth_Works()
-        {
-            var data = new TexturePixelData { Width = 512 };
-
-            Assert.That(data.Width, Is.EqualTo(512));
-        }
-
-        [Test]
-        public void TexturePixelData_SetHeight_Works()
-        {
-            var data = new TexturePixelData { Height = 256 };
-
-            Assert.That(data.Height, Is.EqualTo(256));
-        }
-
-        [Test]
-        public void TexturePixelData_SetPixels_Works()
-        {
-            var pixels = new Color[] { Color.red, Color.green, Color.blue };
-            var data = new TexturePixelData { Pixels = pixels };
-
-            Assert.That(data.Pixels, Is.EqualTo(pixels));
-            Assert.That(data.Pixels.Length, Is.EqualTo(3));
-        }
-
-        [Test]
-        public void TexturePixelData_SetIsNormalMap_Works()
-        {
-            var data = new TexturePixelData { IsNormalMap = true };
-
-            Assert.That(data.IsNormalMap, Is.True);
-        }
-
-        [Test]
-        public void TexturePixelData_SetIsEmission_Works()
-        {
-            var data = new TexturePixelData { IsEmission = true };
-
-            Assert.That(data.IsEmission, Is.True);
-        }
-
-        #endregion
-
         #region Struct Behavior Tests
 
         [Test]
@@ -162,53 +116,6 @@ namespace dev.limitex.avatar.compressor.tests
             var data = default(ProcessedPixelData);
 
             Assert.That(data.IsNormalMap, Is.False);
-        }
-
-        #endregion
-
-        #region Field Assignment Tests
-
-        [Test]
-        public void ProcessedPixelData_SetOpaquePixels_Works()
-        {
-            var pixels = new Color[] { Color.red, Color.green };
-            var data = new ProcessedPixelData { OpaquePixels = pixels };
-
-            Assert.That(data.OpaquePixels, Is.EqualTo(pixels));
-        }
-
-        [Test]
-        public void ProcessedPixelData_SetGrayscale_Works()
-        {
-            var grayscale = new float[] { 0.5f, 0.75f, 1.0f };
-            var data = new ProcessedPixelData { Grayscale = grayscale };
-
-            Assert.That(data.Grayscale, Is.EqualTo(grayscale));
-        }
-
-        [Test]
-        public void ProcessedPixelData_SetDimensions_Works()
-        {
-            var data = new ProcessedPixelData { Width = 128, Height = 64 };
-
-            Assert.That(data.Width, Is.EqualTo(128));
-            Assert.That(data.Height, Is.EqualTo(64));
-        }
-
-        [Test]
-        public void ProcessedPixelData_SetOpaqueCount_Works()
-        {
-            var data = new ProcessedPixelData { OpaqueCount = 1000 };
-
-            Assert.That(data.OpaqueCount, Is.EqualTo(1000));
-        }
-
-        [Test]
-        public void ProcessedPixelData_SetIsNormalMap_Works()
-        {
-            var data = new ProcessedPixelData { IsNormalMap = true };
-
-            Assert.That(data.IsNormalMap, Is.True);
         }
 
         #endregion

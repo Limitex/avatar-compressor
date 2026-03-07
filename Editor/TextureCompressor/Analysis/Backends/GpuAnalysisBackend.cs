@@ -168,6 +168,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     {
                         var data = pending.Request.GetData<float>();
                         float score = Mathf.Clamp01(data[GpuBufferLayout.ResultIdxScore]);
+                        // GPU writes 0.0 (no alpha) or 1.0 (has alpha) to the result buffer
                         bool hasAlpha = data[GpuBufferLayout.ResultIdxHasAlpha] > 0.5f;
 
                         results[pending.Tex] = AnalysisResultHelper.BuildResult(
@@ -515,7 +516,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 case AnalysisStrategyType.Combined:
                     return 3;
                 default:
-                    return 3;
+                    throw new System.ArgumentOutOfRangeException(
+                        nameof(_strategyType),
+                        _strategyType,
+                        "Unknown analysis strategy type"
+                    );
             }
         }
 

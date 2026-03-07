@@ -99,7 +99,7 @@ void DctHighFreqRatio(uint3 groupId : SV_GroupID, uint3 gtid : SV_GroupThreadID)
             {
                 float e = gs_DctBlock[v][u];
                 totalEnergy += e;
-                if (u + v > 2)
+                if (u + v > 2) // exclude DC and lowest AC coefficients in 8x8 DCT
                     highFreqEnergy += e;
             }
         }

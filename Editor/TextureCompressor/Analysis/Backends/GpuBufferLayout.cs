@@ -10,12 +10,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public const int IdxColorSumR = 6;
         public const int ColorMeanFieldCount = 4;
 
-        // Perceptual strategy — block variance accumulation (indices 529-530: sum, count)
-        public const int IdxBlockVarSum = 529;
+        // Perceptual strategy — block variance accumulation (indices 528-529: sum, count)
+        public const int IdxBlockVarSum = 528;
         public const int BlockVarFieldCount = 2;
 
         // Buffer sizes
-        public const int IntermediateBufferSize = 539;
+        public const int IntermediateBufferSize = 538;
         public const int ResultBufferSize = 3;
 
         // Result buffer layout: [0]=score, [1]=opaqueCount, [2]=hasSignificantAlpha

@@ -199,12 +199,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 var originalTexture = kvp.Key;
                 var textureInfo = kvp.Value;
 
-                var resolved = ResolveAnalysis(
-                    originalTexture,
-                    textureInfo,
-                    analysisResults,
-                    enableLogging
-                );
+                var resolved = ResolveAnalysis(originalTexture, analysisResults, enableLogging);
                 if (resolved == null)
                     continue;
 
@@ -273,6 +268,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 // Save original pixels BEFORE destructive normal map preprocessing (for fallback restore)
                 Color32[] originalPixels = null;
+                // isReadable is always true for BlitResize output (new Texture2D); guard is defensive
                 if (item.IsNormalMap && resizedTexture.isReadable)
                 {
                     originalPixels = resizedTexture.GetPixels32();
@@ -303,9 +299,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 var originalTexture = item.Source;
 
-                if (processedTextures.ContainsKey(originalTexture))
-                    continue;
-
                 if (!preprocessResults.TryGetValue(originalTexture, out var preprocessed))
                     continue;
 
@@ -314,17 +307,26 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 // Apply compression (normal map preprocessing already done in Step 3)
                 if (resizedTexture.format != preprocessed.TargetFormat)
                 {
-                    bool compressed = ApplyCompressionOnly(
-                        resizedTexture,
-                        item.SourceFormat,
-                        preprocessed.TargetFormat,
-                        preprocessed.IsNormalMap,
-                        preprocessed.PreserveAlpha,
-                        preprocessed.SourceLayout,
-                        preprocessed.OriginalPixels
-                    );
-                    if (!compressed)
-                        continue;
+                    if (!TryCompress(resizedTexture, preprocessed.TargetFormat))
+                    {
+                        // Primary compression failed — restore pixels and attempt fallback
+                        if (preprocessed.OriginalPixels != null)
+                        {
+                            resizedTexture.SetPixels32(preprocessed.OriginalPixels);
+                            resizedTexture.Apply(resizedTexture.mipmapCount > 1);
+                        }
+
+                        if (
+                            !ApplyFallbackCompression(
+                                resizedTexture,
+                                item.SourceFormat,
+                                preprocessed.IsNormalMap,
+                                preprocessed.PreserveAlpha,
+                                preprocessed.SourceLayout
+                            )
+                        )
+                            continue;
+                    }
                 }
 
                 resizedTexture.name = originalTexture.name + "_compressed";
@@ -389,7 +391,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             FrozenTextureFormat? FormatOverride
         )? ResolveAnalysis(
             Texture2D originalTexture,
-            TextureInfo textureInfo,
             Dictionary<Texture2D, TextureAnalysisResult> analysisResults,
             bool enableLogging
         )
@@ -441,19 +442,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Applies compression only (normal map preprocessing already done in Step 3).
-        /// Falls back to standard compression if the primary format fails.
+        /// Attempts to compress a texture to the target format.
         /// </summary>
-        /// <param name="originalPixels">Pre-preprocessing pixels saved in Step 3 for fallback restore.</param>
-        private bool ApplyCompressionOnly(
-            Texture2D texture,
-            TextureFormat sourceFormat,
-            TextureFormat targetFormat,
-            bool isNormalMap,
-            bool preserveAlpha,
-            NormalMapPreprocessor.SourceLayout sourceLayout,
-            Color32[] originalPixels
-        )
+        /// <returns>True if compression succeeded, false otherwise.</returns>
+        private bool TryCompress(Texture2D texture, TextureFormat targetFormat)
         {
             try
             {
@@ -470,21 +462,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     $"[{Name}] Failed to compress texture to {targetFormat}: {e.Message}. "
                         + "Attempting fallback."
                 );
-
-                // Restore original pixels before fallback re-preprocessing
-                if (originalPixels != null)
-                {
-                    texture.SetPixels32(originalPixels);
-                    texture.Apply(texture.mipmapCount > 1);
-                }
-
-                return ApplyFallbackCompression(
-                    texture,
-                    sourceFormat,
-                    isNormalMap,
-                    preserveAlpha,
-                    sourceLayout
-                );
+                return false;
             }
         }
 

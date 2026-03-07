@@ -301,7 +301,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         {
                             float energy = dct[v, u] * dct[v, u];
                             totalEnergy += energy;
-                            if (u + v > 2)
+                            if (u + v > 2) // exclude DC and lowest AC coefficients in 8x8 DCT
                                 totalHighFreq += energy;
                         }
                     }

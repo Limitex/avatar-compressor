@@ -38,18 +38,6 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region IAnalysisResult Implementation Tests
-
-        [Test]
-        public void Score_ImplementsIAnalysisResult()
-        {
-            var result = new TextureComplexityResult(0.5f);
-
-            Assert.That(result.Score, Is.EqualTo(0.5f));
-        }
-
-        #endregion
-
         #region Struct Behavior Tests
 
         [Test]
