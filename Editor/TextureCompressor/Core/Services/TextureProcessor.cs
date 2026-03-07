@@ -24,23 +24,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Resizes a texture using pre-computed analysis result.
-        /// </summary>
-        /// <param name="source">Source texture to resize</param>
-        /// <param name="analysis">Pre-computed analysis result with recommended settings</param>
-        /// <param name="isNormalMap">Whether this texture is a normal map (uses linear color space)</param>
-        /// <returns>Resized texture (uncompressed RGBA32 format)</returns>
-        public Texture2D Resize(
-            Texture2D source,
-            TextureAnalysisResult analysis,
-            bool isNormalMap = false
-        )
-        {
-            var (width, height) = CalculateResizeDimensions(source, analysis);
-            return ResizeTo(source, width, height, isNormalMap);
-        }
-
-        /// <summary>
         /// Calculates the target resize dimensions for a texture based on its analysis result.
         /// When no downscaling is needed and the source fits within max resolution, dimensions are
         /// kept at the source size (rounded to multiples of 4). Otherwise, uses the recommended resolution.
@@ -101,36 +84,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             return new Vector2Int(newWidth, newHeight);
-        }
-
-        /// <summary>
-        /// Resizes a texture to the specified dimensions.
-        /// Thread-safe: uses lock to protect RenderTexture.active.
-        /// </summary>
-        /// <param name="source">Source texture to resize</param>
-        /// <param name="newWidth">Target width</param>
-        /// <param name="newHeight">Target height</param>
-        /// <param name="isNormalMap">Whether this texture is a normal map (uses linear color space)</param>
-        /// <returns>Resized texture (uncompressed RGBA32 format)</returns>
-        public Texture2D ResizeTo(
-            Texture2D source,
-            int newWidth,
-            int newHeight,
-            bool isNormalMap = false
-        )
-        {
-            lock (RenderTextureLock)
-            {
-                RenderTexture previous = RenderTexture.active;
-                try
-                {
-                    return BlitResize(source, newWidth, newHeight, isNormalMap);
-                }
-                finally
-                {
-                    RenderTexture.active = previous;
-                }
-            }
         }
 
         /// <summary>

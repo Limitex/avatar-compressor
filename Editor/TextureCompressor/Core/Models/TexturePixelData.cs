@@ -7,7 +7,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// </summary>
     public struct TexturePixelData
     {
-        public Texture2D Texture;
         public Color[] Pixels;
         public int Width;
         public int Height;

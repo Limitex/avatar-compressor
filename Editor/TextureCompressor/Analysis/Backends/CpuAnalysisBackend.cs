@@ -87,7 +87,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 var data = new TexturePixelData
                 {
-                    Texture = texture,
                     Pixels = pixels,
                     Width = texture.width,
                     Height = texture.height,

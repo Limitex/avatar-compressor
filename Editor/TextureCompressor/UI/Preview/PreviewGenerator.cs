@@ -377,7 +377,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// Computes a hash of analysis-affecting settings only (Strategy, Weights, Thresholds, Resolution).
         /// Used as the cache key for analysis results.
         /// </summary>
-        public static int ComputeAnalysisHash(TextureCompressor config)
+        private static int ComputeAnalysisHash(TextureCompressor config)
         {
             unchecked
             {

@@ -10,14 +10,6 @@ namespace dev.limitex.avatar.compressor.tests
         #region Default Value Tests
 
         [Test]
-        public void TexturePixelData_DefaultValues_TextureNull()
-        {
-            var data = default(TexturePixelData);
-
-            Assert.That(data.Texture, Is.Null);
-        }
-
-        [Test]
         public void TexturePixelData_DefaultValues_PixelsNull()
         {
             var data = default(TexturePixelData);
