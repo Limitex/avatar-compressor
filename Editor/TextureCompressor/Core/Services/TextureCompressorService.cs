@@ -183,16 +183,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             var analysisResults = _analyzer.AnalyzeBatch(textures);
 
-            // Step 1: Resolve analysis/frozen settings and prepare resize work items
-            var resizeItems =
-                new List<(
-                    Texture2D Source,
-                    TextureFormat SourceFormat,
-                    TextureAnalysisResult Analysis,
-                    bool IsNormalMap,
-                    TextureInfo Info,
-                    FrozenTextureFormat? FormatOverride
-                )>();
+            // Process each texture through the full pipeline (resize → preprocess → compress → register)
+            // one at a time to keep peak memory at O(1) intermediate textures.
+            var processedTextures = new Dictionary<Texture2D, Texture2D>();
 
             foreach (var kvp in textures)
             {
@@ -203,63 +196,41 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (resolved == null)
                     continue;
 
-                resizeItems.Add(
-                    (
-                        originalTexture,
-                        originalTexture.format,
-                        resolved.Value.Analysis,
-                        textureInfo.IsNormalMap,
-                        textureInfo,
-                        resolved.Value.FormatOverride
-                    )
+                var analysis = resolved.Value.Analysis;
+                var formatOverride = resolved.Value.FormatOverride;
+                var sourceFormat = originalTexture.format;
+                bool isNormalMap = textureInfo.IsNormalMap;
+
+                // Resize (lock acquired and released inside ResizeSingle)
+                var resizedTexture = _processor.ResizeSingle(
+                    originalTexture,
+                    analysis,
+                    isNormalMap
                 );
-            }
-
-            // Step 2: Batch resize all textures (single lock acquisition)
-            var resizedTextures = _processor.ResizeBatch(
-                resizeItems.Select(item => (item.Source, item.Analysis, item.IsNormalMap))
-            );
-
-            // Step 3: Resolve format and preprocess normal maps
-            var preprocessResults =
-                new Dictionary<
-                    Texture2D,
-                    (
-                        Texture2D Resized,
-                        TextureFormat TargetFormat,
-                        bool IsNormalMap,
-                        bool PreserveAlpha,
-                        NormalMapPreprocessor.SourceLayout SourceLayout,
-                        Color32[] OriginalPixels
-                    )
-                >();
-
-            foreach (var item in resizeItems)
-            {
-                if (!resizedTextures.TryGetValue(item.Source, out var resizedTexture))
+                if (resizedTexture == null)
                     continue;
 
                 // For frozen textures, detect alpha on the resized texture (always readable)
                 // rather than the original which may not be readable.
                 // For analyzed textures, alpha was already computed during analysis.
-                bool hasAlpha = item.FormatOverride.HasValue
+                bool hasAlpha = formatOverride.HasValue
                     ? TextureFormatSelector.HasSignificantAlpha(resizedTexture)
-                    : item.Analysis.HasSignificantAlpha;
+                    : analysis.HasSignificantAlpha;
 
                 var targetFormat = _formatSelector.ResolveTargetFormat(
-                    item.SourceFormat,
-                    item.IsNormalMap,
-                    item.Analysis.NormalizedComplexity,
+                    sourceFormat,
+                    isNormalMap,
+                    analysis.NormalizedComplexity,
                     hasAlpha,
-                    item.FormatOverride
+                    formatOverride
                 );
 
-                var sourceLayout = item.IsNormalMap
-                    ? NormalMapSourceLayoutDetector.Resolve(item.Source, item.SourceFormat)
+                var sourceLayout = isNormalMap
+                    ? NormalMapSourceLayoutDetector.Resolve(originalTexture, sourceFormat)
                     : NormalMapPreprocessor.SourceLayout.Auto;
 
                 bool preserveAlpha =
-                    item.IsNormalMap
+                    isNormalMap
                     && NormalMapPreprocessor.ShouldPreserveSemanticAlpha(
                         targetFormat,
                         sourceLayout,
@@ -269,60 +240,38 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 // Save original pixels BEFORE destructive normal map preprocessing (for fallback restore)
                 Color32[] originalPixels = null;
                 // isReadable is always true for BlitResize output (new Texture2D); guard is defensive
-                if (item.IsNormalMap && resizedTexture.isReadable)
+                if (isNormalMap && resizedTexture.isReadable)
                 {
                     originalPixels = resizedTexture.GetPixels32();
 
                     _normalMapPreprocessor.PrepareForCompression(
                         resizedTexture,
-                        item.SourceFormat,
+                        sourceFormat,
                         targetFormat,
                         preserveAlpha,
                         sourceLayout
                     );
                 }
 
-                preprocessResults[item.Source] = (
-                    resizedTexture,
-                    targetFormat,
-                    item.IsNormalMap,
-                    preserveAlpha,
-                    sourceLayout,
-                    originalPixels
-                );
-            }
-
-            // Step 4: Sequential compression (EditorUtility.CompressTexture is main-thread-only)
-            var processedTextures = new Dictionary<Texture2D, Texture2D>();
-
-            foreach (var item in resizeItems)
-            {
-                var originalTexture = item.Source;
-
-                if (!preprocessResults.TryGetValue(originalTexture, out var preprocessed))
-                    continue;
-
-                var resizedTexture = preprocessed.Resized;
-
-                // Apply compression (normal map preprocessing already done in Step 3)
-                if (resizedTexture.format != preprocessed.TargetFormat)
+                // Compress
+                if (resizedTexture.format != targetFormat)
                 {
-                    if (!TryCompress(resizedTexture, preprocessed.TargetFormat))
+                    if (!TryCompress(resizedTexture, targetFormat))
                     {
                         // Primary compression failed — restore pixels and attempt fallback
-                        if (preprocessed.OriginalPixels != null)
+                        if (originalPixels != null)
                         {
-                            resizedTexture.SetPixels32(preprocessed.OriginalPixels);
+                            resizedTexture.SetPixels32(originalPixels);
                             resizedTexture.Apply(resizedTexture.mipmapCount > 1);
                         }
 
                         if (
                             !ApplyFallbackCompression(
                                 resizedTexture,
-                                item.SourceFormat,
-                                preprocessed.IsNormalMap,
-                                preprocessed.PreserveAlpha,
-                                preprocessed.SourceLayout
+                                sourceFormat,
+                                isNormalMap,
+                                preserveAlpha,
+                                sourceLayout
                             )
                         )
                         {
@@ -337,16 +286,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (enableLogging)
                 {
                     var frozenInfo =
-                        item.FormatOverride.HasValue
-                        && item.FormatOverride.Value != FrozenTextureFormat.Auto
+                        formatOverride.HasValue && formatOverride.Value != FrozenTextureFormat.Auto
                             ? " [FROZEN]"
                             : "";
                     Debug.Log(
                         $"[{Name}] {originalTexture.name}: "
                             + $"{originalTexture.width}x{originalTexture.height} -> "
                             + $"{resizedTexture.width}x{resizedTexture.height} ({resizedTexture.format}){frozenInfo} "
-                            + $"(Complexity: {item.Analysis.NormalizedComplexity:P0}, "
-                            + $"Divisor: {item.Analysis.RecommendedDivisor}x)"
+                            + $"(Complexity: {analysis.NormalizedComplexity:P0}, "
+                            + $"Divisor: {analysis.RecommendedDivisor}x)"
                     );
                 }
 
@@ -369,7 +317,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 ObjectRegistry.RegisterReplacedObject(originalTexture, resizedTexture);
 
-                foreach (var reference in item.Info.References)
+                foreach (var reference in textureInfo.References)
                 {
                     reference.Material.SetTexture(reference.PropertyName, resizedTexture);
                 }

@@ -87,6 +87,39 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
+        /// Resizes a single texture, acquiring and releasing the RenderTexture lock per call.
+        /// Preferred over ResizeBatch when textures are processed one at a time to reduce peak memory.
+        /// </summary>
+        /// <returns>A new readable RGBA32 Texture2D, or null if resize failed.</returns>
+        public Texture2D ResizeSingle(
+            Texture2D source,
+            TextureAnalysisResult analysis,
+            bool isNormalMap
+        )
+        {
+            lock (RenderTextureLock)
+            {
+                RenderTexture previous = RenderTexture.active;
+                try
+                {
+                    var (newWidth, newHeight) = CalculateResizeDimensions(source, analysis);
+                    return BlitResize(source, newWidth, newHeight, isNormalMap);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning(
+                        $"[TextureCompressor] Failed to resize texture '{source.name}': {e.Message}"
+                    );
+                    return null;
+                }
+                finally
+                {
+                    RenderTexture.active = previous;
+                }
+            }
+        }
+
+        /// <summary>
         /// Resizes multiple textures in a single lock scope for efficiency.
         /// </summary>
         public Dictionary<Texture2D, Texture2D> ResizeBatch(

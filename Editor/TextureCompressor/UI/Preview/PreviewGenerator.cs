@@ -238,7 +238,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         // Match the build pipeline: detect alpha on the resized texture.
                         // Frozen textures are a small subset, so the temporary resize cost
                         // is acceptable for accurate format prediction.
-                        if (recommendedSize.x != tex.width || recommendedSize.y != tex.height)
+                        if (
+                            recommendedSize.x != tex.width
+                            || recommendedSize.y != tex.height
+                            || !tex.isReadable
+                        )
                         {
                             var frozenAnalysis = new TextureAnalysisResult(
                                 AnalysisConstants.DefaultComplexityScore,
