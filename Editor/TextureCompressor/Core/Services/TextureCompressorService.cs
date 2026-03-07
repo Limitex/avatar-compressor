@@ -325,7 +325,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                                 preprocessed.SourceLayout
                             )
                         )
+                        {
+                            Object.DestroyImmediate(resizedTexture);
                             continue;
+                        }
                     }
                 }
 
