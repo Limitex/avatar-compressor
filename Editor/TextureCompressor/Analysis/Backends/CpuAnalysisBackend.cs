@@ -43,9 +43,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var allPixels = _processor.GetReadablePixelsBatch(textures.Keys);
 
             // Phase 2: Build analysis work items from pre-loaded pixel data
+            // Texture name is cached here because Unity API (Object.name) cannot
+            // be called from background threads used by Parallel.ForEach.
             var pixelDataList =
                 new List<(
                     Texture2D Texture,
+                    string TextureName,
                     TexturePixelData Data,
                     ITextureComplexityAnalyzer Analyzer
                 )>();
@@ -93,7 +96,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 };
 
                 var analyzer = info.IsNormalMap ? _normalMapAnalyzer : _standardAnalyzer;
-                pixelDataList.Add((texture, data, analyzer));
+                pixelDataList.Add((texture, texture.name, data, analyzer));
             }
 
             // Phase 3: Truly parallel analysis (no lock contention)
@@ -116,7 +119,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     catch (System.Exception e)
                     {
                         Debug.LogWarning(
-                            $"[TextureCompressor] CPU analysis failed for '{item.Texture.name}': {e.Message}"
+                            $"[TextureCompressor] CPU analysis failed for '{item.TextureName}': {e.Message}"
                         );
                         results[item.Texture] = AnalysisResultHelper.BuildResult(
                             AnalysisConstants.DefaultComplexityScore,

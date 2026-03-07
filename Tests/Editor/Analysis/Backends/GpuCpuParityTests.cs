@@ -16,6 +16,12 @@ namespace dev.limitex.avatar.compressor.tests
     public class GpuCpuParityTests
     {
         private const float ScoreTolerance = 0.05f;
+
+        // sRGB textures allow wider tolerance because CPU (RenderTexture blit)
+        // and GPU (shader SRGBToLinear approximation) use different gamma conversion paths.
+        // Perceptual strategy is most affected (~0.11 divergence) since block variance
+        // is sensitive to absolute pixel values after gamma correction.
+        private const float SRGBScoreTolerance = 0.12f;
         private const string ShaderPath =
             "Packages/dev.limitex.avatar-compressor/"
             + "Editor/TextureCompressor/Analysis/Shaders/TextureAnalysis.compute";
@@ -215,6 +221,66 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region sRGB Parity
+
+        [Test]
+        public void BothBackends_SRGBNoiseTexture_ScoresWithinTolerance()
+        {
+            var texture = TrackTexture(CreateSRGBNoiseTexture(64, 64, 42));
+            var textures = MakeBatch(texture, isNormalMap: false, isEmission: false);
+
+            var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
+
+            Assert.That(
+                gpuResult[texture].NormalizedComplexity,
+                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(SRGBScoreTolerance),
+                "sRGB noise texture: scores diverged between GPU and CPU"
+            );
+        }
+
+        [Test]
+        public void BothBackends_SRGBGradientTexture_ScoresWithinTolerance()
+        {
+            var texture = TrackTexture(CreateSRGBGradientTexture(64, 64));
+            var textures = MakeBatch(texture, isNormalMap: false, isEmission: false);
+
+            var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
+
+            Assert.That(
+                gpuResult[texture].NormalizedComplexity,
+                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(SRGBScoreTolerance),
+                "sRGB gradient texture: scores diverged between GPU and CPU"
+            );
+        }
+
+        [Test]
+        public void BothBackends_SRGBTexture_AllStrategies_ScoresWithinTolerance()
+        {
+            var strategies = new[]
+            {
+                AnalysisStrategyType.Fast,
+                AnalysisStrategyType.HighAccuracy,
+                AnalysisStrategyType.Perceptual,
+                AnalysisStrategyType.Combined,
+            };
+
+            var texture = TrackTexture(CreateSRGBNoiseTexture(64, 64, 42));
+            var textures = MakeBatch(texture, isNormalMap: false, isEmission: false);
+
+            foreach (var strategy in strategies)
+            {
+                var (cpuResult, gpuResult) = AnalyzeBoth(strategy, textures);
+
+                Assert.That(
+                    gpuResult[texture].NormalizedComplexity,
+                    Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(SRGBScoreTolerance),
+                    $"sRGB strategy {strategy}: scores diverged between GPU and CPU"
+                );
+            }
+        }
+
+        #endregion
+
         #region Helpers
 
         private (
@@ -324,6 +390,40 @@ namespace dev.limitex.avatar.compressor.tests
         private static Texture2D CreateGradientTexture(int width, int height)
         {
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, 1, true);
+            var pixels = new Color[width * height];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    float t = (float)x / (width - 1);
+                    pixels[y * width + x] = new Color(t, t, t, 1f);
+                }
+            }
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D CreateSRGBNoiseTexture(int width, int height, int seed)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, 1, false);
+            var pixels = new Color[width * height];
+            var random = new System.Random(seed);
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                float r = (float)random.NextDouble();
+                float g = (float)random.NextDouble();
+                float b = (float)random.NextDouble();
+                pixels[i] = new Color(r, g, b, 1f);
+            }
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D CreateSRGBGradientTexture(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, 1, false);
             var pixels = new Color[width * height];
             for (int y = 0; y < height; y++)
             {

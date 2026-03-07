@@ -404,6 +404,110 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Error Handling
+
+        [Test]
+        public void AnalyzeBatch_AnalysisException_ReturnsDefaultFallback()
+        {
+            var throwingAnalyzer = new ThrowingAnalyzer();
+            var normalMapAnalyzer = AnalyzerFactory.CreateNormalMapAnalyzer();
+            var backend = new CpuAnalysisBackend(
+                throwingAnalyzer,
+                normalMapAnalyzer,
+                _processor,
+                _complexityCalc
+            );
+
+            var texture = TrackTexture(CreateNoiseTexture(64, 64, 42));
+            var textures = new Dictionary<Texture2D, TextureInfo>
+            {
+                {
+                    texture,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
+            };
+
+            var result = backend.AnalyzeBatch(textures);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+            Assert.That(result[texture].NormalizedComplexity, Is.InRange(0f, 1f));
+            Assert.IsTrue(result[texture].HasSignificantAlpha);
+        }
+
+        [Test]
+        public void AnalyzeBatch_AnalysisException_DoesNotPropagate()
+        {
+            var throwingAnalyzer = new ThrowingAnalyzer();
+            var normalMapAnalyzer = AnalyzerFactory.CreateNormalMapAnalyzer();
+            var backend = new CpuAnalysisBackend(
+                throwingAnalyzer,
+                normalMapAnalyzer,
+                _processor,
+                _complexityCalc
+            );
+
+            var tex1 = TrackTexture(CreateNoiseTexture(64, 64, 1));
+            var tex2 = TrackTexture(CreateNoiseTexture(64, 64, 2));
+            var textures = new Dictionary<Texture2D, TextureInfo>
+            {
+                {
+                    tex1,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
+                {
+                    tex2,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
+            };
+
+            Assert.DoesNotThrow(() => backend.AnalyzeBatch(textures));
+
+            var result = backend.AnalyzeBatch(textures);
+
+            Assert.AreEqual(2, result.Count);
+            Assert.IsTrue(result.ContainsKey(tex1));
+            Assert.IsTrue(result.ContainsKey(tex2));
+        }
+
+        [Test]
+        public void AnalyzeBatch_NormalMapAnalysisException_ReturnsDefaultFallback()
+        {
+            var standardAnalyzer = AnalyzerFactory.Create(AnalysisStrategyType.Fast);
+            var throwingAnalyzer = new ThrowingAnalyzer();
+            var backend = new CpuAnalysisBackend(
+                standardAnalyzer,
+                throwingAnalyzer,
+                _processor,
+                _complexityCalc
+            );
+
+            var texture = TrackTexture(CreateFlatNormalMapTexture(64, 64));
+            var textures = new Dictionary<Texture2D, TextureInfo>
+            {
+                {
+                    texture,
+                    new TextureInfo { IsNormalMap = true, IsEmission = false }
+                },
+            };
+
+            var result = backend.AnalyzeBatch(textures);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+            Assert.That(result[texture].NormalizedComplexity, Is.InRange(0f, 1f));
+        }
+
+        private class ThrowingAnalyzer : ITextureComplexityAnalyzer
+        {
+            public TextureComplexityResult Analyze(ProcessedPixelData data)
+            {
+                throw new System.Exception("Simulated analysis failure");
+            }
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private Texture2D TrackTexture(Texture2D texture)
