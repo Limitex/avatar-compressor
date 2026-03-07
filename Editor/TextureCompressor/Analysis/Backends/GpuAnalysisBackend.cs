@@ -152,7 +152,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             texture.height,
                             info.IsEmission,
                             info.IsNormalMap,
-                            false,
+                            true,
                             _complexityCalc,
                             _processor
                         );
@@ -193,7 +193,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             pending.Tex.height,
                             pending.Info.IsEmission,
                             pending.Info.IsNormalMap,
-                            false,
+                            true,
                             _complexityCalc,
                             _processor
                         );
