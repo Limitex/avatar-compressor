@@ -490,15 +490,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 if (isNormalMap)
                 {
-                    // Recalculate alpha preservation for fallback format
-                    // (DXT5/ASTC never preserve alpha, only BC7 can)
-                    bool fallbackPreserveAlpha =
-                        preserveAlpha && fallbackFormat == TextureFormat.BC7;
+                    // Fallback formats (DXT5/ASTC) never preserve alpha; only BC7 can.
                     _normalMapPreprocessor.PrepareForCompression(
                         texture,
                         sourceFormat,
                         fallbackFormat,
-                        fallbackPreserveAlpha,
+                        preserveAlpha: false,
                         sourceLayout
                     );
                 }
