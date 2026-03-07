@@ -14,6 +14,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public const int DctBlockSize = 8;
 
         /// <summary>
+        /// Minimum sum of DCT frequency indices (u + v) to classify as high-frequency.
+        /// Coefficients with u + v &lt;= this value are considered low-frequency (DC and lowest AC).
+        /// Must match the threshold in TextureAnalysisHighAccuracy.hlsl.
+        /// </summary>
+        public const int DctHighFrequencyThreshold = 2;
+
+        /// <summary>
         /// Number of gray levels for GLCM (Gray Level Co-occurrence Matrix).
         /// 16 levels provides good balance between accuracy and performance.
         /// </summary>

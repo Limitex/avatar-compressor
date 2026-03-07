@@ -256,10 +256,10 @@ namespace dev.limitex.avatar.compressor.tests
             var resultNormal = analyzer.AnalyzeBatch(texturesNormal);
             var resultEmission = analyzer.AnalyzeBatch(texturesEmission);
 
-            // Emission should have lower or equal complexity due to 10% boost
+            // Emission boost (/ 0.9) raises complexity score
             Assert.That(
                 resultEmission[textureEmission].NormalizedComplexity,
-                Is.LessThanOrEqualTo(resultNormal[textureNormal].NormalizedComplexity)
+                Is.GreaterThanOrEqualTo(resultNormal[textureNormal].NormalizedComplexity)
             );
 
             Object.DestroyImmediate(textureNormal);

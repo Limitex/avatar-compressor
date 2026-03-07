@@ -21,9 +21,9 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void ResultBufferSize_IsThree()
+        public void ResultBufferSize_IsTwo()
         {
-            Assert.AreEqual(3, GpuBufferLayout.ResultBufferSize);
+            Assert.AreEqual(2, GpuBufferLayout.ResultBufferSize);
         }
 
         #endregion

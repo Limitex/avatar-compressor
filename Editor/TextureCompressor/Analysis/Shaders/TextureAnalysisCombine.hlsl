@@ -151,8 +151,7 @@ void CombineResults(uint3 id : SV_DispatchThreadID)
     }
 
     _ResultBuffer[0] = finalScore;
-    _ResultBuffer[1] = (float)opaqueCount;
-    _ResultBuffer[2] = (float)hasAlpha;
+    _ResultBuffer[1] = (float)hasAlpha;
 }
 
 #endif // TEXTURE_ANALYSIS_COMBINE_INCLUDED

@@ -21,6 +21,7 @@
 #define EPSILON 0.0001
 #define DETAIL_DENSITY_MIN_THRESHOLD 0.005
 #define DETAIL_DENSITY_VARIANCE_MULTIPLIER 0.5
+#define DCT_HIGH_FREQ_THRESHOLD 2
 
 // Strategy type indices (must match GpuAnalysisBackend.GetStrategyIndex)
 #define STRATEGY_FAST 0
@@ -52,7 +53,7 @@ uint _SourceHeight; // Original texture height
 uint _IsNormalMap;
 uint _IsSRGB;
 
-// Result buffer: [0]=score, [1]=opaqueCount (as float), [2]=hasSignificantAlpha (0 or 1)
+// Result buffer: [0]=score, [1]=hasSignificantAlpha (0 or 1)
 RWStructuredBuffer<float> _ResultBuffer;
 
 // Intermediate accumulation buffer (uint for InterlockedAdd)

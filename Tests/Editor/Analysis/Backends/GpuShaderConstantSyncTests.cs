@@ -48,6 +48,12 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void DctHighFrequencyThreshold_MatchesAnalysisConstants()
+        {
+            AssertIntDefine("DCT_HIGH_FREQ_THRESHOLD", AnalysisConstants.DctHighFrequencyThreshold);
+        }
+
+        [Test]
         public void HistogramBins_MatchesAnalysisConstants()
         {
             AssertIntDefine("HISTOGRAM_BINS", AnalysisConstants.HistogramBins);
