@@ -43,6 +43,11 @@ namespace dev.limitex.avatar.compressor.tests
                 Assert.Ignore("Compute shaders not supported on this platform");
             }
 
+            if (!SystemInfo.supportsAsyncGPUReadback)
+            {
+                Assert.Ignore("Async GPU readback not supported on this platform");
+            }
+
             _shader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderPath);
             if (_shader == null)
             {

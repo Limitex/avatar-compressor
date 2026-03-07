@@ -27,7 +27,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ComplexityCalculator complexityCalc
         )
         {
-            if (SystemInfo.supportsComputeShaders && TryLoadShader(out var shader))
+            if (
+                SystemInfo.supportsComputeShaders
+                && SystemInfo.supportsAsyncGPUReadback
+                && TryLoadShader(out var shader)
+            )
             {
                 try
                 {

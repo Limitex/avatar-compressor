@@ -13,7 +13,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     public class PreviewGenerator
     {
         private static LruCache<
-            (string guid, Hash128 contentHash, int analysisHash),
+            (string guid, Hash128 contentHash, int analysisHash, bool isNormalMap, bool isEmission),
             TextureAnalysisResult
         > AnalysisCache = new(256);
 
@@ -135,7 +135,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     string guid = AssetDatabase.AssetPathToGUID(path);
                     var contentHash = AssetDatabase.GetAssetDependencyHash(path);
                     assetInfoCache[kvp.Key] = (guid, contentHash);
-                    var cacheKey = (guid, contentHash, analysisHash);
+                    var cacheKey = (
+                        guid,
+                        contentHash,
+                        analysisHash,
+                        kvp.Value.IsNormalMap,
+                        kvp.Value.IsEmission
+                    );
 
                     if (
                         !string.IsNullOrEmpty(guid)
@@ -160,10 +166,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         if (
                             assetInfoCache.TryGetValue(kvp.Key, out var info)
                             && !string.IsNullOrEmpty(info.guid)
+                            && processedTextures.TryGetValue(kvp.Key, out var texInfo)
                         )
                         {
                             AnalysisCache.Set(
-                                (info.guid, info.contentHash, analysisHash),
+                                (
+                                    info.guid,
+                                    info.contentHash,
+                                    analysisHash,
+                                    texInfo.IsNormalMap,
+                                    texInfo.IsEmission
+                                ),
                                 kvp.Value
                             );
                         }
@@ -222,9 +235,33 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                             tex.height,
                             divisor
                         );
-                        // Detect alpha directly from the texture for frozen textures,
-                        // matching the build pipeline which detects alpha after resize.
-                        hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
+                        // Match the build pipeline: detect alpha on the resized texture.
+                        // Frozen textures are a small subset, so the temporary resize cost
+                        // is acceptable for accurate format prediction.
+                        if (recommendedSize.x != tex.width || recommendedSize.y != tex.height)
+                        {
+                            var frozenAnalysis = new TextureAnalysisResult(
+                                AnalysisConstants.DefaultComplexityScore,
+                                divisor,
+                                recommendedSize
+                            );
+                            var resizedBatch = processor.ResizeBatch(
+                                new[] { (tex, frozenAnalysis, isNormalMap) }
+                            );
+                            if (resizedBatch.TryGetValue(tex, out var resizedTex))
+                            {
+                                hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTex);
+                                Object.DestroyImmediate(resizedTex);
+                            }
+                            else
+                            {
+                                hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
+                            }
+                        }
+                        else
+                        {
+                            hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
+                        }
                         targetFormat = formatSelector.ResolveTargetFormat(
                             tex.format,
                             isNormalMap,
