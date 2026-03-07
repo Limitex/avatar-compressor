@@ -208,11 +208,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         tex.mipmapCount
                     );
                     bool isNormalMap = info.TextureType == "Normal";
-                    bool hasAlpha = analysis.HasSignificantAlpha;
 
                     int divisor;
                     Vector2Int recommendedSize;
                     TextureFormat targetFormat;
+                    bool hasAlpha;
 
                     if (isFrozen && !frozenSettings.Skip)
                     {
@@ -222,6 +222,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                             tex.height,
                             divisor
                         );
+                        // Detect alpha directly from the texture for frozen textures,
+                        // matching the build pipeline which detects alpha after resize.
+                        hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
                         targetFormat = formatSelector.ResolveTargetFormat(
                             tex.format,
                             isNormalMap,
@@ -234,6 +237,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     {
                         divisor = analysis.RecommendedDivisor;
                         recommendedSize = analysis.RecommendedResolution;
+                        hasAlpha = analysis.HasSignificantAlpha;
                         targetFormat = formatSelector.ResolveTargetFormat(
                             tex.format,
                             isNormalMap,
