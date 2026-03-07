@@ -54,6 +54,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         public const int EdgeDensitySamplingDenominator = 128;
 
+        /// <summary>
+        /// Denominator for DCT block sub-sampling.
+        /// blockStep = max(1, blocksX / DctBlockSamplingDenominator).
+        /// </summary>
+        public const int DctBlockSamplingDenominator = 16;
+
         #endregion
 
         #region Analysis Thresholds

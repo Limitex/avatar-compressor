@@ -438,7 +438,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             int dctBlocksY = height / AnalysisConstants.DctBlockSize;
             if (dctBlocksX > 0 && dctBlocksY > 0)
             {
-                int blockStep = Mathf.Max(1, dctBlocksX / 16);
+                int blockStep = Mathf.Max(
+                    1,
+                    dctBlocksX / AnalysisConstants.DctBlockSamplingDenominator
+                );
                 _shader.SetInt("_DctBlockStep", blockStep);
                 int dispatchX = CeilDiv(dctBlocksX, blockStep);
                 int dispatchY = CeilDiv(dctBlocksY, blockStep);

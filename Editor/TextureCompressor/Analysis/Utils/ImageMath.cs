@@ -247,7 +247,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float totalEnergy = 0f;
             int totalPixels = width * height;
 
-            int blockStep = Mathf.Max(1, blocksX / 16);
+            int blockStep = Mathf.Max(1, blocksX / AnalysisConstants.DctBlockSamplingDenominator);
             float[,] block = new float[DctBlockSize, DctBlockSize];
             float[,] dct = new float[DctBlockSize, DctBlockSize];
 
@@ -602,7 +602,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (opaqueCount == 0)
                 return 0f;
 
-            const int blockSize = 16;
+            const int blockSize = AnalysisConstants.DetailDensityBlockSize;
             int detailBlocks = 0;
             int totalBlocks = 0;
             int totalPixels = width * height;
