@@ -301,7 +301,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
 
                 // Enable mipmap streaming to avoid NDMF warnings
-                var serializedTexture = new SerializedObject(resizedTexture);
+                using var serializedTexture = new SerializedObject(resizedTexture);
                 var streamingMipmaps = serializedTexture.FindProperty("m_StreamingMipmaps");
                 if (streamingMipmaps != null)
                 {
