@@ -53,6 +53,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 serializedObject.FindProperty(nameof(TextureCompressor.ForceCpuBackend)),
                 new GUIContent("Force CPU Backend", "Disable GPU acceleration for texture analysis")
             );
+
+            var backendName = AnalysisBackendFactory.ResolveBackendName(config.ForceCpuBackend);
+            EditorGUILayout.LabelField("Analysis Backend", backendName, EditorStyles.miniLabel);
             EditorGUILayout.Space(10);
 
             // Excluded paths

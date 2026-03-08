@@ -91,6 +91,27 @@ namespace dev.limitex.avatar.compressor.editor.texture
             );
         }
 
+        /// <summary>
+        /// Returns a display name indicating which backend would be selected
+        /// given the current system capabilities and the force-CPU flag.
+        /// </summary>
+        public static string ResolveBackendName(bool forceCpu)
+        {
+            if (forceCpu)
+                return "CPU (forced)";
+
+            if (
+                SystemInfo.supportsComputeShaders
+                && SystemInfo.supportsAsyncGPUReadback
+                && TryLoadShader(out _)
+            )
+            {
+                return "GPU";
+            }
+
+            return "CPU (GPU unavailable)";
+        }
+
         private static bool TryLoadShader(out ComputeShader shader)
         {
             shader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderPath);
