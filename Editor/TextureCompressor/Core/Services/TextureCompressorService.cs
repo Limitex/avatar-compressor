@@ -244,20 +244,22 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (isNormalMap && resizedTexture.isReadable)
                 {
                     originalPixels = resizedTexture.GetPixels32();
-
-                    _normalMapPreprocessor.PrepareForCompression(
-                        resizedTexture,
-                        sourceFormat,
-                        targetFormat,
-                        preserveAlpha,
-                        sourceLayout
-                    );
                 }
 
-                // Compress
+                // Preprocess + Compress (both inside protection so PrepareForCompression
+                // failures also trigger pixel restore and fallback)
                 if (resizedTexture.format != targetFormat)
                 {
-                    if (!TryCompress(resizedTexture, targetFormat))
+                    if (
+                        !TryPreprocessAndCompress(
+                            resizedTexture,
+                            sourceFormat,
+                            targetFormat,
+                            isNormalMap,
+                            preserveAlpha,
+                            sourceLayout
+                        )
+                    )
                     {
                         // Primary compression failed — restore pixels and attempt fallback
                         if (originalPixels != null)
@@ -394,13 +396,32 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Attempts to compress a texture to the target format.
+        /// Applies normal map preprocessing (if applicable) and compresses the texture.
+        /// Both steps are protected so that a failure in either triggers fallback.
         /// </summary>
-        /// <returns>True if compression succeeded, false otherwise.</returns>
-        private bool TryCompress(Texture2D texture, TextureFormat targetFormat)
+        /// <returns>True if preprocessing and compression both succeeded, false otherwise.</returns>
+        private bool TryPreprocessAndCompress(
+            Texture2D texture,
+            TextureFormat sourceFormat,
+            TextureFormat targetFormat,
+            bool isNormalMap,
+            bool preserveAlpha,
+            NormalMapPreprocessor.SourceLayout sourceLayout
+        )
         {
             try
             {
+                if (isNormalMap)
+                {
+                    _normalMapPreprocessor.PrepareForCompression(
+                        texture,
+                        sourceFormat,
+                        targetFormat,
+                        preserveAlpha,
+                        sourceLayout
+                    );
+                }
+
                 EditorUtility.CompressTexture(
                     texture,
                     targetFormat,
