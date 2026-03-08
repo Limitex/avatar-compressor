@@ -158,6 +158,36 @@ namespace dev.limitex.avatar.compressor.tests
             );
         }
 
+        [Test]
+        public void BothBackends_PartiallyTransparentTexture_ScoresWithinTolerance()
+        {
+            var texture = TrackTexture(CreatePartiallyTransparentTexture(64, 64));
+            var textures = MakeBatch(texture, isNormalMap: false, isEmission: false);
+
+            var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
+
+            Assert.That(
+                gpuResult[texture].NormalizedComplexity,
+                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(ScoreTolerance),
+                "Partially transparent texture complexity scores diverged between GPU and CPU"
+            );
+        }
+
+        [Test]
+        public void BothBackends_VariedNormalMap_ScoresWithinTolerance()
+        {
+            var texture = TrackTexture(CreateVariedNormalMapTexture(64, 64));
+            var textures = MakeBatch(texture, isNormalMap: true, isEmission: false);
+
+            var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
+
+            Assert.That(
+                gpuResult[texture].NormalizedComplexity,
+                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(ScoreTolerance),
+                "Varied normal map complexity scores diverged between GPU and CPU"
+            );
+        }
+
         #endregion
 
         #region Strategy Parity
@@ -401,6 +431,36 @@ namespace dev.limitex.avatar.compressor.tests
                     float t = (float)x / (width - 1);
                     pixels[y * width + x] = new Color(t, t, t, 1f);
                 }
+            }
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D CreateVariedNormalMapTexture(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, 1, true);
+            var pixels = new Color[width * height];
+            var random = new System.Random(42);
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                float nx = (float)(random.NextDouble() * 2.0 - 1.0);
+                float ny = (float)(random.NextDouble() * 2.0 - 1.0);
+                float sqLen = nx * nx + ny * ny;
+                float nz;
+                if (sqLen >= 1f)
+                {
+                    float invLen = 1f / Mathf.Sqrt(sqLen);
+                    nx *= invLen;
+                    ny *= invLen;
+                    nz = 0f;
+                }
+                else
+                {
+                    nz = Mathf.Sqrt(1f - sqLen);
+                }
+
+                pixels[i] = new Color(nx * 0.5f + 0.5f, ny * 0.5f + 0.5f, nz * 0.5f + 0.5f, 1f);
             }
             texture.SetPixels(pixels);
             texture.Apply();
