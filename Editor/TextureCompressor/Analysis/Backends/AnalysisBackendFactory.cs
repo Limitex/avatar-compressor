@@ -24,11 +24,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float highAccuracyWeight,
             float perceptualWeight,
             TextureProcessor processor,
-            ComplexityCalculator complexityCalc
+            ComplexityCalculator complexityCalc,
+            bool forceCpu = false
         )
         {
             if (
-                SystemInfo.supportsComputeShaders
+                !forceCpu
+                && SystemInfo.supportsComputeShaders
                 && SystemInfo.supportsAsyncGPUReadback
                 && TryLoadShader(out var shader)
             )

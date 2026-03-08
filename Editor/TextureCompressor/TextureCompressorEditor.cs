@@ -44,10 +44,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
             FilterSection.DrawTextureFilters(config);
             EditorGUILayout.Space(10);
 
-            // Enable logging
+            // Debug options
             EditorGUILayout.PropertyField(
                 serializedObject.FindProperty(nameof(TextureCompressor.EnableLogging)),
                 new GUIContent("Enable Logging")
+            );
+            EditorGUILayout.PropertyField(
+                serializedObject.FindProperty(nameof(TextureCompressor.ForceCpuBackend)),
+                new GUIContent("Force CPU Backend", "Disable GPU acceleration for texture analysis")
             );
             EditorGUILayout.Space(10);
 

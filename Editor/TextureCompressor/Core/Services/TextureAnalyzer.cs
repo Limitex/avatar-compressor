@@ -17,7 +17,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float highAccuracyWeight,
             float perceptualWeight,
             TextureProcessor processor,
-            ComplexityCalculator complexityCalc
+            ComplexityCalculator complexityCalc,
+            bool forceCpu = false
         )
         {
             _backend = AnalysisBackendFactory.Create(
@@ -26,7 +27,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 highAccuracyWeight,
                 perceptualWeight,
                 processor,
-                complexityCalc
+                complexityCalc,
+                forceCpu
             );
         }
 

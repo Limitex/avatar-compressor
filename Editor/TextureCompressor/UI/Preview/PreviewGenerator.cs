@@ -116,7 +116,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.HighAccuracyWeight,
                 config.PerceptualWeight,
                 processor,
-                complexityCalc
+                complexityCalc,
+                config.ForceCpuBackend
             );
 
             // Use cache to avoid re-analyzing unchanged textures
@@ -421,6 +422,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 hash = hash * 31 + config.MaxResolution;
                 hash = hash * 31 + config.MinResolution;
                 hash = hash * 31 + config.ForcePowerOfTwo.GetHashCode();
+                hash = hash * 31 + config.ForceCpuBackend.GetHashCode();
                 return hash;
             }
         }

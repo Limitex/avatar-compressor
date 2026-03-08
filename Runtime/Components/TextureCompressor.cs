@@ -92,6 +92,9 @@ namespace dev.limitex.avatar.compressor
         [Header("Debug")]
         public bool EnableLogging = true;
 
+        [Tooltip("Force CPU backend for texture analysis (disable GPU acceleration)")]
+        public bool ForceCpuBackend = false;
+
         [Header("Frozen Textures")]
         [Tooltip("Textures with manually specified compression settings")]
         public List<FrozenTextureSettings> FrozenTextures = new List<FrozenTextureSettings>();

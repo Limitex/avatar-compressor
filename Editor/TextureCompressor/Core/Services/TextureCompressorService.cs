@@ -78,7 +78,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 config.HighAccuracyWeight,
                 config.PerceptualWeight,
                 _processor,
-                _complexityCalc
+                _complexityCalc,
+                config.ForceCpuBackend
             );
 
             _normalMapPreprocessor = new NormalMapPreprocessor();
