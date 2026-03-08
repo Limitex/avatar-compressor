@@ -211,12 +211,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (resizedTexture == null)
                     continue;
 
-                // For frozen textures, detect alpha on the resized texture (always readable)
-                // rather than the original which may not be readable.
-                // For analyzed textures, alpha was already computed during analysis.
-                bool hasAlpha = formatOverride.HasValue
-                    ? TextureFormatSelector.HasSignificantAlpha(resizedTexture)
-                    : analysis.HasSignificantAlpha;
+                // Always detect alpha on the resized texture (the actual data being compressed).
+                // Original-resolution alpha regions may be lost during downscaling, so checking
+                // the resized output avoids choosing an alpha-capable format (BC7 at 8bpp)
+                // when the compressed texture has no meaningful alpha (DXT1 at 4bpp suffices).
+                bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTexture);
 
                 var targetFormat = _formatSelector.ResolveTargetFormat(
                     sourceFormat,

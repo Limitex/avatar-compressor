@@ -129,23 +129,6 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void SignificantAlphaThreshold_MatchesAnalysisConstants()
-        {
-            Assert.IsTrue(
-                _hlslDefines.ContainsKey("SIGNIFICANT_ALPHA_THRESHOLD"),
-                "SIGNIFICANT_ALPHA_THRESHOLD not found in HLSL"
-            );
-            // HLSL defines as (250.0 / 255.0), C# stores as byte 250
-            float expected = AnalysisConstants.SignificantAlphaThreshold / 255f;
-            float hlslValue = EvaluateExpression(_hlslDefines["SIGNIFICANT_ALPHA_THRESHOLD"]);
-            Assert.That(
-                hlslValue,
-                Is.EqualTo(expected).Within(0.0001f),
-                "SIGNIFICANT_ALPHA_THRESHOLD mismatch"
-            );
-        }
-
-        [Test]
         public void AlphaThreshold_MatchesAnalysisConstants()
         {
             AssertFloatDefine("ALPHA_THRESHOLD", AnalysisConstants.AlphaThreshold);

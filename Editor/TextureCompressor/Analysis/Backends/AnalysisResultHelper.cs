@@ -14,7 +14,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             int sourceHeight,
             bool isEmission,
             bool isNormalMap,
-            bool hasSignificantAlpha,
             ComplexityCalculator complexityCalc,
             TextureProcessor processor
         )
@@ -31,7 +30,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 divisor
             );
 
-            return new TextureAnalysisResult(clamped, divisor, resolution, hasSignificantAlpha);
+            return new TextureAnalysisResult(clamped, divisor, resolution);
         }
     }
 }

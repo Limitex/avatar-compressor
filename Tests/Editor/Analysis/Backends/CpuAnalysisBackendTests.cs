@@ -292,42 +292,6 @@ namespace dev.limitex.avatar.compressor.tests
             };
 
             var result = _backend.AnalyzeBatch(textures);
-
-            Assert.IsFalse(result[texture].HasSignificantAlpha);
-        }
-
-        [Test]
-        public void AnalyzeBatch_PartiallyTransparentTexture_HasSignificantAlpha()
-        {
-            var texture = TrackTexture(CreatePartiallyTransparentTexture(64, 64));
-            var textures = new Dictionary<Texture2D, TextureInfo>
-            {
-                {
-                    texture,
-                    new TextureInfo { IsNormalMap = false, IsEmission = false }
-                },
-            };
-
-            var result = _backend.AnalyzeBatch(textures);
-
-            Assert.IsTrue(result[texture].HasSignificantAlpha);
-        }
-
-        [Test]
-        public void AnalyzeBatch_FullyTransparentTexture_HasSignificantAlpha()
-        {
-            var texture = TrackTexture(CreateTransparentTexture(64, 64));
-            var textures = new Dictionary<Texture2D, TextureInfo>
-            {
-                {
-                    texture,
-                    new TextureInfo { IsNormalMap = false, IsEmission = false }
-                },
-            };
-
-            var result = _backend.AnalyzeBatch(textures);
-
-            Assert.IsTrue(result[texture].HasSignificantAlpha);
         }
 
         #endregion
@@ -432,7 +396,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(texture));
             Assert.That(result[texture].NormalizedComplexity, Is.InRange(0f, 1f));
-            Assert.IsTrue(result[texture].HasSignificantAlpha);
         }
 
         [Test]

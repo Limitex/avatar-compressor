@@ -90,24 +90,6 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region Alpha Flag
-
-        [Test]
-        public void BuildResult_HasSignificantAlphaTrue_IsPreserved()
-        {
-            var result = Build(score: 0.5f, hasSignificantAlpha: true);
-            Assert.IsTrue(result.HasSignificantAlpha);
-        }
-
-        [Test]
-        public void BuildResult_HasSignificantAlphaFalse_IsPreserved()
-        {
-            var result = Build(score: 0.5f, hasSignificantAlpha: false);
-            Assert.IsFalse(result.HasSignificantAlpha);
-        }
-
-        #endregion
-
         #region Divisor and Resolution
 
         [Test]
@@ -157,8 +139,7 @@ namespace dev.limitex.avatar.compressor.tests
             int sourceWidth = 256,
             int sourceHeight = 256,
             bool isEmission = false,
-            bool isNormalMap = false,
-            bool hasSignificantAlpha = false
+            bool isNormalMap = false
         )
         {
             return AnalysisResultHelper.BuildResult(
@@ -167,7 +148,6 @@ namespace dev.limitex.avatar.compressor.tests
                 sourceHeight,
                 isEmission,
                 isNormalMap,
-                hasSignificantAlpha,
                 _complexityCalc,
                 _processor
             );

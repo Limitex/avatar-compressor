@@ -160,42 +160,6 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region Alpha Detection Parity
-
-        [Test]
-        public void BothBackends_PartiallyTransparent_AlphaDetectionMatches()
-        {
-            var texture = TrackTexture(CreatePartiallyTransparentTexture(64, 64));
-            var textures = MakeBatch(texture, isNormalMap: false, isEmission: false);
-
-            var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
-
-            Assert.AreEqual(
-                cpuResult[texture].HasSignificantAlpha,
-                gpuResult[texture].HasSignificantAlpha,
-                "Alpha detection mismatch between GPU and CPU"
-            );
-        }
-
-        [Test]
-        public void BothBackends_FullyOpaque_AlphaDetectionMatches()
-        {
-            var texture = TrackTexture(
-                CreateUniformTexture(64, 64, new Color(0.5f, 0.5f, 0.5f, 1f))
-            );
-            var textures = MakeBatch(texture, isNormalMap: false, isEmission: false);
-
-            var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
-
-            Assert.AreEqual(
-                cpuResult[texture].HasSignificantAlpha,
-                gpuResult[texture].HasSignificantAlpha,
-                "Alpha detection mismatch for fully opaque texture"
-            );
-        }
-
-        #endregion
-
         #region Strategy Parity
 
         [Test]

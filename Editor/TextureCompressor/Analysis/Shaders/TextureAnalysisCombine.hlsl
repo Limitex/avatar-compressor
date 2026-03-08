@@ -11,7 +11,6 @@
 void CombineResults(uint3 id : SV_DispatchThreadID)
 {
     uint opaqueCount = _IntermediateBuffer[IDX_OPAQUE_COUNT];
-    uint hasAlpha = _IntermediateBuffer[IDX_HAS_SIGNIFICANT_ALPHA];
 
     // Fast strategy score
     float fastScore = 0.0;
@@ -151,7 +150,6 @@ void CombineResults(uint3 id : SV_DispatchThreadID)
     }
 
     _ResultBuffer[0] = finalScore;
-    _ResultBuffer[1] = (float)hasAlpha;
 }
 
 #endif // TEXTURE_ANALYSIS_COMBINE_INCLUDED

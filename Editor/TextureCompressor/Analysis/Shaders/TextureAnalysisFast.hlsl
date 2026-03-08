@@ -5,7 +5,7 @@
 #ifndef TEXTURE_ANALYSIS_FAST_INCLUDED
 #define TEXTURE_ANALYSIS_FAST_INCLUDED
 
-// Kernel 0: Preprocess — opaque count + significant alpha detection
+// Kernel 0: Preprocess — opaque count
 [numthreads(16, 16, 1)]
 void Preprocess(uint3 id : SV_DispatchThreadID)
 {
@@ -17,12 +17,6 @@ void Preprocess(uint3 id : SV_DispatchThreadID)
     if (!IsTransparent(pixel))
     {
         AtomicIncrement(IDX_OPAQUE_COUNT);
-    }
-
-    if (pixel.a < SIGNIFICANT_ALPHA_THRESHOLD)
-    {
-        uint dummy;
-        InterlockedOr(_IntermediateBuffer[IDX_HAS_SIGNIFICANT_ALPHA], 1u, dummy);
     }
 }
 

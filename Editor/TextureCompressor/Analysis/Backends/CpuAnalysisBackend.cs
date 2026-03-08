@@ -78,7 +78,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         texture.height,
                         info.IsEmission,
                         info.IsNormalMap,
-                        true,
                         _complexityCalc,
                         _processor
                     );
@@ -126,7 +125,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             item.Data.Height,
                             item.Data.IsEmission,
                             item.Data.IsNormalMap,
-                            true,
                             _complexityCalc,
                             _processor
                         );
@@ -212,29 +210,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 data.Height,
                 data.IsEmission,
                 data.IsNormalMap,
-                CheckSignificantAlpha(data.Pixels),
                 _complexityCalc,
                 _processor
             );
-        }
-
-        /// <summary>
-        /// Checks if the pixel data contains significant alpha using sampling.
-        /// Replicates TextureFormatSelector.HasSignificantAlpha logic on pre-loaded pixels
-        /// to avoid redundant GPU readback.
-        /// </summary>
-        private static bool CheckSignificantAlpha(Color[] pixels)
-        {
-            int sampleCount = Mathf.Min(pixels.Length, AnalysisConstants.MaxAlphaSampleCount);
-            int step = Mathf.Max(1, pixels.Length / sampleCount);
-
-            for (int i = 0; i < pixels.Length; i += step)
-            {
-                if (pixels[i].a < AnalysisConstants.SignificantAlphaThreshold / 255f)
-                    return true;
-            }
-
-            return false;
         }
     }
 }

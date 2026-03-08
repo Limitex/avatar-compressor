@@ -266,7 +266,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     {
                         divisor = analysis.RecommendedDivisor;
                         recommendedSize = analysis.RecommendedResolution;
-                        hasAlpha = analysis.HasSignificantAlpha;
+                        hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
                         targetFormat = formatSelector.ResolveTargetFormat(
                             tex.format,
                             isNormalMap,

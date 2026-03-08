@@ -7,7 +7,6 @@
 // Constants (must match AnalysisConstants.cs)
 
 #define ALPHA_THRESHOLD 0.1
-#define SIGNIFICANT_ALPHA_THRESHOLD (250.0 / 255.0)
 #define GLCM_LEVELS 16
 #define DCT_BLOCK_SIZE 8
 #define HISTOGRAM_BINS 256
@@ -53,7 +52,7 @@ uint _SourceHeight; // Original texture height
 uint _IsNormalMap;
 uint _IsSRGB;
 
-// Result buffer: [0]=score, [1]=hasSignificantAlpha (0 or 1)
+// Result buffer: [0]=score
 RWStructuredBuffer<float> _ResultBuffer;
 
 // Intermediate accumulation buffer (uint for InterlockedAdd)
@@ -97,10 +96,9 @@ RWStructuredBuffer<uint> _IntermediateBuffer;
 
 // Common
 #define IDX_OPAQUE_COUNT        536
-#define IDX_HAS_SIGNIFICANT_ALPHA 537
 
 // Total intermediate buffer size
-#define INTERMEDIATE_BUFFER_SIZE 538
+#define INTERMEDIATE_BUFFER_SIZE 537
 
 // Utility Functions
 

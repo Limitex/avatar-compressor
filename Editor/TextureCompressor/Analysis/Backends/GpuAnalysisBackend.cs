@@ -152,7 +152,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             texture.height,
                             info.IsEmission,
                             info.IsNormalMap,
-                            true,
                             _complexityCalc,
                             _processor
                         );
@@ -168,8 +167,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     {
                         var data = pending.Request.GetData<float>();
                         float score = Mathf.Clamp01(data[GpuBufferLayout.ResultIdxScore]);
-                        // GPU writes 0.0 (no alpha) or 1.0 (has alpha) to the result buffer
-                        bool hasAlpha = data[GpuBufferLayout.ResultIdxHasAlpha] > 0.5f;
 
                         results[pending.Tex] = AnalysisResultHelper.BuildResult(
                             score,
@@ -177,7 +174,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             pending.Tex.height,
                             pending.Info.IsEmission,
                             pending.Info.IsNormalMap,
-                            hasAlpha,
                             _complexityCalc,
                             _processor
                         );
@@ -193,7 +189,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             pending.Tex.height,
                             pending.Info.IsEmission,
                             pending.Info.IsNormalMap,
-                            true,
                             _complexityCalc,
                             _processor
                         );

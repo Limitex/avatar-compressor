@@ -21,9 +21,9 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void ResultBufferSize_IsTwo()
+        public void ResultBufferSize_IsOne()
         {
-            Assert.AreEqual(2, GpuBufferLayout.ResultBufferSize);
+            Assert.AreEqual(1, GpuBufferLayout.ResultBufferSize);
         }
 
         #endregion
@@ -63,7 +63,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(GpuBufferLayout.IdxColorSumR, Is.GreaterThanOrEqualTo(0));
             Assert.That(GpuBufferLayout.IdxBlockVarSum, Is.GreaterThanOrEqualTo(0));
             Assert.That(GpuBufferLayout.ResultIdxScore, Is.GreaterThanOrEqualTo(0));
-            Assert.That(GpuBufferLayout.ResultIdxHasAlpha, Is.GreaterThanOrEqualTo(0));
         }
 
         #endregion
@@ -74,15 +73,6 @@ namespace dev.limitex.avatar.compressor.tests
         public void ResultIdxScore_IsZero()
         {
             Assert.AreEqual(0, GpuBufferLayout.ResultIdxScore);
-        }
-
-        [Test]
-        public void ResultIdxHasAlpha_IsWithinResultBuffer()
-        {
-            Assert.That(
-                GpuBufferLayout.ResultIdxHasAlpha,
-                Is.LessThan(GpuBufferLayout.ResultBufferSize)
-            );
         }
 
         #endregion

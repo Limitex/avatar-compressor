@@ -15,12 +15,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public const int BlockVarFieldCount = 2;
 
         // Buffer sizes
-        public const int IntermediateBufferSize = 538;
-        public const int ResultBufferSize = 2;
+        public const int IntermediateBufferSize = 537;
+        public const int ResultBufferSize = 1;
 
-        // Result buffer layout: [0]=score, [1]=hasSignificantAlpha
+        // Result buffer layout: [0]=score
         public const int ResultIdxScore = 0;
-        public const int ResultIdxHasAlpha = 1;
 
         // Fixed-point scale (must match FIXED_POINT_SCALE in HLSL)
         public const float FixedPointScale = 1000f;
