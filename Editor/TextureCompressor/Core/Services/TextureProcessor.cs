@@ -99,7 +99,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             lock (RenderTextureLock)
             {
-                RenderTexture previous = RenderTexture.active;
                 try
                 {
                     var (newWidth, newHeight) = CalculateResizeDimensions(source, analysis);
@@ -111,10 +110,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         $"[TextureCompressor] Failed to resize texture '{source.name}': {e.Message}"
                     );
                     return null;
-                }
-                finally
-                {
-                    RenderTexture.active = previous;
                 }
             }
         }
@@ -130,36 +125,28 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             lock (RenderTextureLock)
             {
-                RenderTexture previous = RenderTexture.active;
-                try
+                foreach (var item in items)
                 {
-                    foreach (var item in items)
+                    try
                     {
-                        try
-                        {
-                            var (newWidth, newHeight) = CalculateResizeDimensions(
-                                item.Source,
-                                item.Analysis
-                            );
+                        var (newWidth, newHeight) = CalculateResizeDimensions(
+                            item.Source,
+                            item.Analysis
+                        );
 
-                            result[item.Source] = BlitResize(
-                                item.Source,
-                                newWidth,
-                                newHeight,
-                                item.IsNormalMap
-                            );
-                        }
-                        catch (System.Exception e)
-                        {
-                            Debug.LogWarning(
-                                $"[TextureCompressor] Failed to resize texture '{item.Source.name}': {e.Message}"
-                            );
-                        }
+                        result[item.Source] = BlitResize(
+                            item.Source,
+                            newWidth,
+                            newHeight,
+                            item.IsNormalMap
+                        );
                     }
-                }
-                finally
-                {
-                    RenderTexture.active = previous;
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning(
+                            $"[TextureCompressor] Failed to resize texture '{item.Source.name}': {e.Message}"
+                        );
+                    }
                 }
             }
 
@@ -168,7 +155,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         /// <summary>
         /// Core blit logic: creates a resized Texture2D from source using RenderTexture.
-        /// Caller must hold RenderTextureLock and manage RenderTexture.active save/restore.
+        /// Caller must hold RenderTextureLock. This method manages RenderTexture.active save/restore internally.
         /// </summary>
         private static Texture2D BlitResize(
             Texture2D source,
@@ -185,9 +172,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             var rtFormat = SelectNormalMapRTFormat(isNormalMap);
 
-            var rt = RenderTexture.GetTemporary(newWidth, newHeight, 0, rtFormat, colorSpace);
+            var rt = new RenderTexture(newWidth, newHeight, 0, rtFormat, colorSpace);
+            RenderTexture previous = RenderTexture.active;
             try
             {
+                rt.Create();
                 rt.filterMode = FilterMode.Bilinear;
                 RenderTexture.active = rt;
                 Graphics.Blit(source, rt);
@@ -207,7 +196,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
             finally
             {
-                RenderTexture.ReleaseTemporary(rt);
+                RenderTexture.active = previous;
+                rt.Release();
+                Object.DestroyImmediate(rt);
             }
         }
 
@@ -235,111 +226,81 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Gets readable pixels from multiple textures in a single lock scope for efficiency.
-        /// Readable textures are processed without locking; non-readable textures are batched
-        /// under a single lock acquisition to minimize RenderTexture lock contention.
+        /// Gets readable pixels from a single texture.
+        /// For non-readable textures, performs GPU→CPU readback via RenderTexture.
+        /// The temporary resources are released immediately, keeping peak memory low.
         /// </summary>
-        public Dictionary<Texture2D, Color[]> GetReadablePixelsBatch(
-            IEnumerable<Texture2D> textures
-        )
+        public Color[] GetReadablePixelsSingle(Texture2D texture)
         {
-            var result = new Dictionary<Texture2D, Color[]>();
-            var nonReadable = new List<Texture2D>();
+            if (texture == null)
+                return new Color[0];
 
-            // First pass: collect readable textures without lock
-            foreach (var texture in textures)
+            if (texture.isReadable)
             {
-                if (texture == null)
-                    continue;
-
-                if (texture.isReadable)
+                try
                 {
-                    try
-                    {
-                        result[texture] = texture.GetPixels();
-                    }
-                    catch (System.Exception e)
-                    {
-                        Debug.LogWarning(
-                            $"[TextureCompressor] Failed to read pixels from readable texture: {e.Message}"
-                        );
-                        result[texture] = new Color[0];
-                    }
+                    return texture.GetPixels();
                 }
-                else
+                catch (System.Exception e)
                 {
-                    nonReadable.Add(texture);
+                    Debug.LogWarning(
+                        $"[TextureCompressor] Failed to read pixels from readable texture: {e.Message}"
+                    );
+                    return new Color[0];
                 }
             }
 
-            // Second pass: batch all non-readable textures under a single lock
-            if (nonReadable.Count > 0)
+            lock (RenderTextureLock)
             {
-                lock (RenderTextureLock)
+                RenderTexture previous = RenderTexture.active;
+                RenderTexture rt = null;
+                Texture2D readable = null;
+                try
                 {
-                    RenderTexture previous = RenderTexture.active;
-                    try
+                    // Use explicit RenderTexture lifecycle instead of GetTemporary/ReleaseTemporary
+                    // so that native GPU memory is freed immediately by DestroyImmediate,
+                    // rather than being held in Unity's RT pool across calls.
+                    rt = new RenderTexture(
+                        texture.width,
+                        texture.height,
+                        0,
+                        RenderTextureFormat.ARGB32
+                    );
+                    rt.Create();
+
+                    Graphics.Blit(texture, rt);
+                    RenderTexture.active = rt;
+
+                    readable = new Texture2D(
+                        texture.width,
+                        texture.height,
+                        TextureFormat.RGBA32,
+                        texture.mipmapCount > 1
+                    );
+                    readable.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+                    readable.Apply(texture.mipmapCount > 1);
+
+                    return readable.GetPixels();
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning(
+                        $"[TextureCompressor] Failed to read pixels from texture '{texture.name}': {e.Message}"
+                    );
+                    return new Color[0];
+                }
+                finally
+                {
+                    RenderTexture.active = previous;
+                    if (readable != null)
+                        Object.DestroyImmediate(readable);
+                    if (rt != null)
                     {
-                        foreach (var texture in nonReadable)
-                        {
-                            RenderTexture rt = null;
-                            Texture2D readable = null;
-                            try
-                            {
-                                rt = RenderTexture.GetTemporary(
-                                    texture.width,
-                                    texture.height,
-                                    0,
-                                    RenderTextureFormat.ARGB32
-                                );
-
-                                if (rt == null)
-                                {
-                                    Debug.LogWarning(
-                                        "[TextureCompressor] Failed to create temporary RenderTexture"
-                                    );
-                                    result[texture] = new Color[0];
-                                    continue;
-                                }
-
-                                Graphics.Blit(texture, rt);
-                                RenderTexture.active = rt;
-
-                                readable = new Texture2D(
-                                    texture.width,
-                                    texture.height,
-                                    TextureFormat.RGBA32,
-                                    texture.mipmapCount > 1
-                                );
-                                readable.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
-                                readable.Apply(texture.mipmapCount > 1);
-
-                                result[texture] = readable.GetPixels();
-                            }
-                            catch (System.Exception e)
-                            {
-                                Debug.LogWarning(
-                                    $"[TextureCompressor] Failed to read pixels from texture '{texture.name}': {e.Message}"
-                                );
-                                result[texture] = new Color[0];
-                            }
-                            finally
-                            {
-                                if (rt != null)
-                                    RenderTexture.ReleaseTemporary(rt);
-                                if (readable != null)
-                                    Object.DestroyImmediate(readable);
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        RenderTexture.active = previous;
+                        rt.Release();
+                        Object.DestroyImmediate(rt);
                     }
                 }
             }
-
-            return result;
         }
     }
 }

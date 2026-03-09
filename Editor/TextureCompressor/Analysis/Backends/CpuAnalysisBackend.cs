@@ -32,26 +32,24 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         /// <summary>
         /// Analyzes a batch of textures in parallel.
-        /// Pixel data is pre-loaded in a single lock scope on the main thread,
-        /// then analysis runs in true parallel with no lock contention.
+        /// Phase 1 (main thread): reads pixels one texture at a time, immediately
+        /// samples down to analysis resolution, then releases the full-resolution
+        /// array so it can be GC'd before the next texture is read.
+        /// Phase 2 (thread pool): runs analysis strategies on the small sampled data.
+        /// Each work item's pixel data is released immediately after analysis to
+        /// keep peak memory proportional to the degree of parallelism, not to the
+        /// total number of textures.
         /// </summary>
         public Dictionary<Texture2D, TextureAnalysisResult> AnalyzeBatch(
             Dictionary<Texture2D, TextureInfo> textures
         )
         {
-            // Phase 1: Batch pixel reading on main thread (single lock acquisition)
-            var allPixels = _processor.GetReadablePixelsBatch(textures.Keys);
-
-            // Phase 2: Build analysis work items from pre-loaded pixel data
+            // Phase 1: Read pixels one at a time and downsample immediately.
+            // Only the small ProcessedPixelData (~512×512) is retained; full-resolution
+            // Color[] is released after each texture, keeping peak memory at O(1 texture).
             // Texture name is cached here because Unity API (Object.name) cannot
             // be called from background threads used by Parallel.ForEach.
-            var pixelDataList =
-                new List<(
-                    Texture2D Texture,
-                    string TextureName,
-                    TexturePixelData Data,
-                    ITextureComplexityAnalyzer Analyzer
-                )>();
+            var workItems = new List<AnalysisWorkItem>();
 
             var results = new ConcurrentDictionary<Texture2D, TextureAnalysisResult>();
 
@@ -63,11 +61,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (texture == null)
                     continue;
 
-                if (
-                    !allPixels.TryGetValue(texture, out var pixels)
-                    || pixels == null
-                    || pixels.Length == 0
-                )
+                var pixels = _processor.GetReadablePixelsSingle(texture);
+
+                if (pixels == null || pixels.Length == 0)
                 {
                     Debug.LogWarning(
                         $"[TextureCompressor] No pixel data for '{texture.name}', using default analysis"
@@ -84,20 +80,31 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     continue;
                 }
 
-                var data = new TexturePixelData
-                {
-                    Pixels = pixels,
-                    Width = texture.width,
-                    Height = texture.height,
-                    IsNormalMap = info.IsNormalMap,
-                    IsEmission = info.IsEmission,
-                };
+                // Downsample and preprocess immediately, then discard full-res pixels
+                var processed = PreprocessPixels(
+                    pixels,
+                    texture.width,
+                    texture.height,
+                    info.IsNormalMap
+                );
 
                 var analyzer = info.IsNormalMap ? _normalMapAnalyzer : _standardAnalyzer;
-                pixelDataList.Add((texture, texture.name, data, analyzer));
+                workItems.Add(
+                    new AnalysisWorkItem
+                    {
+                        Texture = texture,
+                        TextureName = texture.name,
+                        Data = processed,
+                        OriginalWidth = texture.width,
+                        OriginalHeight = texture.height,
+                        IsEmission = info.IsEmission,
+                        IsNormalMap = info.IsNormalMap,
+                        Analyzer = analyzer,
+                    }
+                );
             }
 
-            // Phase 3: Truly parallel analysis (no lock contention)
+            // Phase 2: Truly parallel analysis on small sampled data (no lock contention)
             // Limit outer parallelism to leave threads for inner parallelism (CombinedStrategy)
             var parallelOptions = new ParallelOptions
             {
@@ -105,14 +112,37 @@ namespace dev.limitex.avatar.compressor.editor.texture
             };
 
             Parallel.ForEach(
-                pixelDataList,
+                workItems,
                 parallelOptions,
                 item =>
                 {
                     try
                     {
-                        var result = AnalyzeSingle(item.Data, item.Analyzer);
-                        results[item.Texture] = result;
+                        float score;
+                        if (
+                            !item.IsNormalMap
+                            && item.Data.OpaqueCount
+                                < AnalysisConstants.MinOpaquePixelsForStandardAnalysis
+                        )
+                        {
+                            score =
+                                AnalysisConstants.DefaultComplexityScore
+                                * AnalysisConstants.SparseTexturePenalty;
+                        }
+                        else
+                        {
+                            score = item.Analyzer.Analyze(item.Data).Score;
+                        }
+
+                        results[item.Texture] = AnalysisResultHelper.BuildResult(
+                            score,
+                            item.OriginalWidth,
+                            item.OriginalHeight,
+                            item.IsEmission,
+                            item.IsNormalMap,
+                            _complexityCalc,
+                            _processor
+                        );
                     }
                     catch (System.Exception e)
                     {
@@ -121,13 +151,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         );
                         results[item.Texture] = AnalysisResultHelper.BuildResult(
                             AnalysisConstants.DefaultComplexityScore,
-                            item.Data.Width,
-                            item.Data.Height,
-                            item.Data.IsEmission,
-                            item.Data.IsNormalMap,
+                            item.OriginalWidth,
+                            item.OriginalHeight,
+                            item.IsEmission,
+                            item.IsNormalMap,
                             _complexityCalc,
                             _processor
                         );
+                    }
+                    finally
+                    {
+                        // Release pixel arrays immediately so they can be GC'd while
+                        // other items are still being analyzed.  Peak retained memory
+                        // becomes O(parallelism) instead of O(total textures).
+                        item.Data = default;
                     }
                 }
             );
@@ -136,29 +173,48 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Analyzes a single texture's complexity.
+        /// Mutable work item that allows pixel data to be released after analysis.
+        /// A class (not struct/tuple) so that Parallel.ForEach can null out the Data
+        /// field to release Color[] and float[] references while other items are
+        /// still being processed.
         /// </summary>
-        private TextureAnalysisResult AnalyzeSingle(
-            TexturePixelData data,
-            ITextureComplexityAnalyzer analyzer
+        private sealed class AnalysisWorkItem
+        {
+            public Texture2D Texture;
+            public string TextureName;
+            public ProcessedPixelData Data;
+            public int OriginalWidth;
+            public int OriginalHeight;
+            public bool IsEmission;
+            public bool IsNormalMap;
+            public ITextureComplexityAnalyzer Analyzer;
+        }
+
+        /// <summary>
+        /// Downsamples full-resolution pixels and preprocesses them into analysis-ready data.
+        /// Called on the main thread so the full-res Color[] can be released immediately after.
+        /// </summary>
+        private static ProcessedPixelData PreprocessPixels(
+            Color[] pixels,
+            int width,
+            int height,
+            bool isNormalMap
         )
         {
             PixelSampler.SampleIfNeeded(
-                data.Pixels,
-                data.Width,
-                data.Height,
+                pixels,
+                width,
+                height,
                 out Color[] sampledPixels,
                 out int sampledWidth,
                 out int sampledHeight
             );
 
-            TextureComplexityResult complexityResult;
             int totalSampledPixels = sampledWidth * sampledHeight;
 
-            if (data.IsNormalMap)
+            if (isNormalMap)
             {
-                // Normal maps use all pixels (no alpha extraction)
-                var processedData = new ProcessedPixelData
+                return new ProcessedPixelData
                 {
                     OpaquePixels = sampledPixels,
                     Grayscale = AlphaExtractor.ConvertToGrayscale(sampledPixels),
@@ -167,52 +223,26 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     OpaqueCount = totalSampledPixels,
                     IsNormalMap = true,
                 };
-                complexityResult = analyzer.Analyze(processedData);
-            }
-            else
-            {
-                // Extract opaque pixels while preserving 2D structure
-                AlphaExtractor.ExtractOpaquePixels(
-                    sampledPixels,
-                    sampledWidth,
-                    sampledHeight,
-                    out Color[] opaquePixels,
-                    out float[] grayscale,
-                    out int opaqueCount
-                );
-
-                if (opaqueCount < AnalysisConstants.MinOpaquePixelsForStandardAnalysis)
-                {
-                    // Too few opaque pixels for meaningful analysis
-                    complexityResult = new TextureComplexityResult(
-                        AnalysisConstants.DefaultComplexityScore
-                            * AnalysisConstants.SparseTexturePenalty
-                    );
-                }
-                else
-                {
-                    var processedData = new ProcessedPixelData
-                    {
-                        OpaquePixels = opaquePixels,
-                        Grayscale = grayscale,
-                        Width = sampledWidth,
-                        Height = sampledHeight,
-                        OpaqueCount = opaqueCount,
-                        IsNormalMap = false,
-                    };
-                    complexityResult = analyzer.Analyze(processedData);
-                }
             }
 
-            return AnalysisResultHelper.BuildResult(
-                complexityResult.Score,
-                data.Width,
-                data.Height,
-                data.IsEmission,
-                data.IsNormalMap,
-                _complexityCalc,
-                _processor
+            AlphaExtractor.ExtractOpaquePixels(
+                sampledPixels,
+                sampledWidth,
+                sampledHeight,
+                out Color[] opaquePixels,
+                out float[] grayscale,
+                out int opaqueCount
             );
+
+            return new ProcessedPixelData
+            {
+                OpaquePixels = opaquePixels,
+                Grayscale = grayscale,
+                Width = sampledWidth,
+                Height = sampledHeight,
+                OpaqueCount = opaqueCount,
+                IsNormalMap = false,
+            };
         }
     }
 }

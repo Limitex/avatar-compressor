@@ -3,18 +3,6 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
-    /// Raw pixel data from a texture for analysis.
-    /// </summary>
-    public struct TexturePixelData
-    {
-        public Color[] Pixels;
-        public int Width;
-        public int Height;
-        public bool IsNormalMap;
-        public bool IsEmission;
-    }
-
-    /// <summary>
     /// Processed pixel data ready for complexity analysis.
     /// </summary>
     public struct ProcessedPixelData

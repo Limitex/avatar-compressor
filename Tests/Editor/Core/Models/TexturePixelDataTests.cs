@@ -5,66 +5,6 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class TexturePixelDataTests
-    {
-        #region Default Value Tests
-
-        [Test]
-        public void TexturePixelData_DefaultValues_PixelsNull()
-        {
-            var data = default(TexturePixelData);
-
-            Assert.That(data.Pixels, Is.Null);
-        }
-
-        [Test]
-        public void TexturePixelData_DefaultValues_DimensionsZero()
-        {
-            var data = default(TexturePixelData);
-
-            Assert.That(data.Width, Is.EqualTo(0));
-            Assert.That(data.Height, Is.EqualTo(0));
-        }
-
-        [Test]
-        public void TexturePixelData_DefaultValues_FlagsAreFalse()
-        {
-            var data = default(TexturePixelData);
-
-            Assert.That(data.IsNormalMap, Is.False);
-            Assert.That(data.IsEmission, Is.False);
-        }
-
-        #endregion
-
-        #region Struct Behavior Tests
-
-        [Test]
-        public void TexturePixelData_Assignment_CopiesValues()
-        {
-            var pixels = new Color[] { Color.white };
-            var original = new TexturePixelData
-            {
-                Pixels = pixels,
-                Width = 64,
-                Height = 64,
-                IsNormalMap = true,
-                IsEmission = false,
-            };
-            var copy = original;
-
-            Assert.That(copy.Width, Is.EqualTo(original.Width));
-            Assert.That(copy.Height, Is.EqualTo(original.Height));
-            Assert.That(copy.IsNormalMap, Is.EqualTo(original.IsNormalMap));
-            Assert.That(copy.IsEmission, Is.EqualTo(original.IsEmission));
-            // Note: Pixels array is a reference type, so it's the same reference
-            Assert.That(copy.Pixels, Is.SameAs(original.Pixels));
-        }
-
-        #endregion
-    }
-
-    [TestFixture]
     public class ProcessedPixelDataTests
     {
         #region Default Value Tests
