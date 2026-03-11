@@ -50,7 +50,6 @@ uint _Height;       // Sampled analysis height
 uint _SourceWidth;  // Original texture width (for nearest-neighbor sampling)
 uint _SourceHeight; // Original texture height
 uint _IsNormalMap;
-uint _IsSRGB;
 
 // Result buffer: [0]=score
 RWStructuredBuffer<float> _ResultBuffer;
@@ -102,30 +101,17 @@ RWStructuredBuffer<uint> _IntermediateBuffer;
 
 // Utility Functions
 
-// Exact IEC 61966-2-1 sRGB to linear conversion.
-// Matches hardware sRGB decode used by CPU Graphics.Blit path.
-float3 SRGBToLinear(float3 c)
-{
-    float3 linearLow = c / 12.92;
-    float3 linearHigh = pow((c + 0.055) / 1.055, 2.4);
-    float3 cutoff = step(0.04045, c);
-    return lerp(linearLow, linearHigh, cutoff);
-}
-
 // Sample a pixel at sampled-space coordinates using nearest-neighbor.
 // Matches CPU PixelSampler.SampleIfNeeded index math for identical results.
-// When the source texture is sRGB-encoded, applies gamma-to-linear conversion
-// to match the CPU path (which receives linear values via RenderTexture blit).
+// sRGB-to-linear conversion is handled on the C# side by blitting sRGB textures
+// to a linear RenderTexture before binding, so no shader-side conversion is needed.
 float4 SamplePixel(uint sx, uint sy)
 {
     float xStep = (float)_SourceWidth / (float)_Width;
     float yStep = (float)_SourceHeight / (float)_Height;
     int srcX = min((int)(sx * xStep), (int)_SourceWidth - 1);
     int srcY = min((int)(sy * yStep), (int)_SourceHeight - 1);
-    float4 pixel = _InputTexture.Load(int3(srcX, srcY, 0));
-    if (_IsSRGB)
-        pixel.rgb = SRGBToLinear(pixel.rgb);
-    return pixel;
+    return _InputTexture.Load(int3(srcX, srcY, 0));
 }
 
 // Rec.709 luminance

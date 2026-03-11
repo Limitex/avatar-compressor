@@ -90,7 +90,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     AsyncGPUReadbackRequest Request,
                     ComputeBuffer ResultBuf,
                     ComputeBuffer IntermediateBuf,
-                    TextureInfo Info
+                    TextureInfo Info,
+                    RenderTexture LinearRT
                 )>();
 
             try
@@ -115,14 +116,38 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         sizeof(uint)
                     );
 
+                    RenderTexture linearRT = null;
+
                     try
                     {
+                        // For sRGB textures, blit to a linear RenderTexture to ensure
+                        // consistent sRGB-to-linear conversion across all platforms.
+                        // This matches the CPU path (Graphics.Blit auto-decodes sRGB)
+                        // and avoids platform-dependent Load() behavior in compute shaders.
+                        Texture sourceTexture = texture;
+                        if (texture.isDataSRGB)
+                        {
+                            linearRT = new RenderTexture(
+                                texture.width,
+                                texture.height,
+                                0,
+                                RenderTextureFormat.ARGB32
+                            );
+                            linearRT.Create();
+                            var prev = RenderTexture.active;
+                            Graphics.Blit(texture, linearRT);
+                            RenderTexture.active = prev;
+                            sourceTexture = linearRT;
+                        }
+
                         // Clear intermediate buffer
                         intermediateBuffer.SetData(zeros);
 
                         // Set shared parameters
                         SetSharedParameters(
-                            texture,
+                            sourceTexture,
+                            texture.width,
+                            texture.height,
                             sampledWidth,
                             sampledHeight,
                             info.IsNormalMap,
@@ -136,13 +161,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         // Queue async readback
                         var request = AsyncGPUReadback.Request(resultBuffer);
                         pendingReadbacks.Add(
-                            (texture, request, resultBuffer, intermediateBuffer, info)
+                            (texture, request, resultBuffer, intermediateBuffer, info, linearRT)
                         );
+                        linearRT = null; // Ownership transferred to pendingReadbacks
                     }
                     catch (System.Exception e)
                     {
                         resultBuffer.Release();
                         intermediateBuffer.Release();
+                        if (linearRT != null)
+                        {
+                            linearRT.Release();
+                            Object.DestroyImmediate(linearRT);
+                        }
                         Debug.LogWarning(
                             $"[TextureCompressor] GPU analysis failed for '{texture.name}': {e.Message}"
                         );
@@ -201,6 +232,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     pending.ResultBuf.Release();
                     pending.IntermediateBuf.Release();
+                    if (pending.LinearRT != null)
+                    {
+                        pending.LinearRT.Release();
+                        Object.DestroyImmediate(pending.LinearRT);
+                    }
                 }
             }
 
@@ -208,7 +244,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         private void SetSharedParameters(
-            Texture2D texture,
+            Texture sourceTexture,
+            int sourceWidth,
+            int sourceHeight,
             int sampledWidth,
             int sampledHeight,
             bool isNormalMap,
@@ -218,10 +256,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             _shader.SetInt("_Width", sampledWidth);
             _shader.SetInt("_Height", sampledHeight);
-            _shader.SetInt("_SourceWidth", texture.width);
-            _shader.SetInt("_SourceHeight", texture.height);
+            _shader.SetInt("_SourceWidth", sourceWidth);
+            _shader.SetInt("_SourceHeight", sourceHeight);
             _shader.SetInt("_IsNormalMap", isNormalMap ? 1 : 0);
-            _shader.SetInt("_IsSRGB", texture.isDataSRGB ? 1 : 0);
             _shader.SetInt("_StrategyType", GetStrategyIndex());
 
             // Fast strategy constants
@@ -300,7 +337,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             foreach (int kernel in allKernels)
             {
-                _shader.SetTexture(kernel, "_InputTexture", texture);
+                _shader.SetTexture(kernel, "_InputTexture", sourceTexture);
                 _shader.SetBuffer(kernel, "_ResultBuffer", resultBuffer);
                 _shader.SetBuffer(kernel, "_IntermediateBuffer", intermediateBuffer);
             }
