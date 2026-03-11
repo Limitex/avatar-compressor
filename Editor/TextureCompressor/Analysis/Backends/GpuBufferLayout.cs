@@ -22,7 +22,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public const int ResultIdxScore = 0;
 
         // Fixed-point scale (must match FIXED_POINT_SCALE in HLSL)
-        public const float FixedPointScale = 1000f;
+        public const float FixedPointScale = 4000f;
 
         // Default thread group dimension (must match [numthreads(16, 16, 1)] in shader kernels)
         public const int ThreadGroupSize = 16;

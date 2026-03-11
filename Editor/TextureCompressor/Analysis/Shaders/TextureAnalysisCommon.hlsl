@@ -36,9 +36,9 @@
 #define EDGE_DENSITY_SAMPLING_DENOMINATOR 128
 
 // Fixed-point scale for atomic float accumulation.
-// Using 1000 to prevent uint32 overflow. With sub-sampling (step=2 at 512x512, ~65K samples):
-// Worst-case: Sobel max 5.66 * 1000 * 65000 + 65000 * 0.5 (rounding) = 3.71B < 4.29B (uint32 max).
-#define FIXED_POINT_SCALE 1000.0
+// Using 4000 for high precision while preventing uint32 overflow.
+// Worst-case: ColorVariance max 3.0 * 4000 * 262144 = 3.15B < 4.29B (uint32 max).
+#define FIXED_POINT_SCALE 4000.0
 
 // Input / Output Bindings
 
@@ -102,10 +102,14 @@ RWStructuredBuffer<uint> _IntermediateBuffer;
 
 // Utility Functions
 
-// Fast sRGB to linear approximation (matches Unity's GammaToLinearSpace).
+// Exact IEC 61966-2-1 sRGB to linear conversion.
+// Matches hardware sRGB decode used by CPU Graphics.Blit path.
 float3 SRGBToLinear(float3 c)
 {
-    return c * (c * (c * 0.305306011 + 0.682171111) + 0.012522878);
+    float3 linearLow = c / 12.92;
+    float3 linearHigh = pow((c + 0.055) / 1.055, 2.4);
+    float3 cutoff = step(0.04045, c);
+    return lerp(linearLow, linearHigh, cutoff);
 }
 
 // Sample a pixel at sampled-space coordinates using nearest-neighbor.

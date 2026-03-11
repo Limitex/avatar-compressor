@@ -86,9 +86,9 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void FixedPointScale_Is1000()
+        public void FixedPointScale_Is4000()
         {
-            Assert.AreEqual(1000f, GpuBufferLayout.FixedPointScale);
+            Assert.AreEqual(4000f, GpuBufferLayout.FixedPointScale);
         }
 
         #endregion
