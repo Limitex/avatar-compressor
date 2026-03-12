@@ -19,6 +19,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private const int ResultBufferSize = GpuBufferLayout.ResultBufferSize;
         private const float FixedPointScale = GpuBufferLayout.FixedPointScale;
 
+        // Shared zero-fill array for clearing intermediate GPU buffers between textures.
+        private static readonly uint[] Zeros = new uint[IntermediateBufferSize];
+
         private readonly ComputeShader _shader;
         private readonly AnalysisStrategyType _strategyType;
         private readonly float _fastWeight;
@@ -50,8 +53,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float fastWeight,
             float highAccuracyWeight,
             float perceptualWeight,
-            ComplexityCalculator complexityCalc,
-            TextureProcessor processor
+            TextureProcessor processor,
+            ComplexityCalculator complexityCalc
         )
         {
             _shader = shader;
@@ -111,8 +114,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             try
             {
-                var zeros = new uint[IntermediateBufferSize];
-
+                // Textures are dispatched sequentially because the compute shader's
+                // global uniforms (_Width, _Height, etc.) and buffer bindings are
+                // shared state on the ComputeShader instance. Concurrent dispatches
+                // would overwrite each other's parameters.
                 foreach (var kvp in textures)
                 {
                     var texture = kvp.Key;
@@ -163,7 +168,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         }
 
                         // Clear intermediate buffer
-                        intermediateBuffer.SetData(zeros);
+                        intermediateBuffer.SetData(Zeros);
 
                         // Set shared parameters
                         SetSharedParameters(

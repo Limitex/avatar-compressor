@@ -272,7 +272,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                                 resizedTexture,
                                 sourceFormat,
                                 isNormalMap,
-                                preserveAlpha,
                                 sourceLayout
                             )
                         )
@@ -445,7 +444,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             Texture2D texture,
             TextureFormat sourceFormat,
             bool isNormalMap,
-            bool preserveAlpha,
             NormalMapPreprocessor.SourceLayout sourceLayout
         )
         {

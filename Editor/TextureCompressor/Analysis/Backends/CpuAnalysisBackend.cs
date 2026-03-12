@@ -108,7 +108,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // Limit outer parallelism to leave threads for inner parallelism (CombinedStrategy)
             var parallelOptions = new ParallelOptions
             {
-                MaxDegreeOfParallelism = System.Math.Max(1, System.Environment.ProcessorCount / 2),
+                MaxDegreeOfParallelism = System.Math.Min(
+                    8,
+                    System.Math.Max(1, System.Environment.ProcessorCount / 2)
+                ),
             };
 
             Parallel.ForEach(

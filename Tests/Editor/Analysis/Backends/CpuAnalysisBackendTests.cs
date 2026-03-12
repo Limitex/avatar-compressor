@@ -151,20 +151,33 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void AnalyzeBatch_NoiseTexture_HigherComplexity()
+        public void AnalyzeBatch_NoiseTexture_HigherComplexityThanUniform()
         {
-            var texture = TrackTexture(CreateNoiseTexture(64, 64, 42));
-            var textures = new Dictionary<Texture2D, TextureInfo>
+            var uniformTex = TrackTexture(CreateUniformTexture(64, 64, Color.gray));
+            var noiseTex = TrackTexture(CreateNoiseTexture(64, 64, 42));
+            var uniformBatch = new Dictionary<Texture2D, TextureInfo>
             {
                 {
-                    texture,
+                    uniformTex,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
+            };
+            var noiseBatch = new Dictionary<Texture2D, TextureInfo>
+            {
+                {
+                    noiseTex,
                     new TextureInfo { IsNormalMap = false, IsEmission = false }
                 },
             };
 
-            var result = _backend.AnalyzeBatch(textures);
+            var uniformResult = _backend.AnalyzeBatch(uniformBatch);
+            var noiseResult = _backend.AnalyzeBatch(noiseBatch);
 
-            Assert.That(result[texture].NormalizedComplexity, Is.GreaterThan(0.1f));
+            Assert.That(
+                noiseResult[noiseTex].NormalizedComplexity,
+                Is.GreaterThan(uniformResult[uniformTex].NormalizedComplexity),
+                "Noise texture should have higher complexity than uniform texture"
+            );
         }
 
         [Test]
@@ -207,7 +220,7 @@ namespace dev.limitex.avatar.compressor.tests
             var resultNormal = _backend.AnalyzeBatch(normalBatch);
             var resultEmission = _backend.AnalyzeBatch(emissionBatch);
 
-            // Emission boost (/ 0.9) raises complexity score
+            // Emission boost (/ 0.9) raises complexity score, but both are clamped to [0,1]
             Assert.That(
                 resultEmission[texEmission].NormalizedComplexity,
                 Is.GreaterThanOrEqualTo(resultNormal[texNormal].NormalizedComplexity)

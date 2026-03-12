@@ -187,6 +187,48 @@ namespace dev.limitex.avatar.compressor.tests
             );
         }
 
+        [Test]
+        public void BothBackends_MultipleMixedTextures_AllScoresWithinTolerance()
+        {
+            var uniform = TrackTexture(CreateUniformTexture(64, 64, Color.red));
+            var noise = TrackTexture(CreateNoiseTexture(64, 64, 123));
+            var gradient = TrackTexture(CreateGradientTexture(64, 64));
+
+            var textures = new Dictionary<Texture2D, TextureInfo>
+            {
+                {
+                    uniform,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
+                {
+                    noise,
+                    new TextureInfo { IsNormalMap = false, IsEmission = true }
+                },
+                {
+                    gradient,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
+            };
+
+            var cpuBackend = CreateCpuBackend(AnalysisStrategyType.Combined);
+            var gpuBackend = CreateGpuBackend(AnalysisStrategyType.Combined);
+
+            var cpuResult = cpuBackend.AnalyzeBatch(textures);
+            var gpuResult = gpuBackend.AnalyzeBatch(textures);
+
+            Assert.That(cpuResult.Count, Is.EqualTo(3), "CPU should analyze all 3 textures");
+            Assert.That(gpuResult.Count, Is.EqualTo(3), "GPU should analyze all 3 textures");
+
+            foreach (var tex in new[] { uniform, noise, gradient })
+            {
+                Assert.That(
+                    gpuResult[tex].NormalizedComplexity,
+                    Is.EqualTo(cpuResult[tex].NormalizedComplexity).Within(ScoreTolerance),
+                    $"Multi-texture batch: '{tex.name}' scores diverged between GPU and CPU"
+                );
+            }
+        }
+
         #endregion
 
         #region Strategy Parity
@@ -315,8 +357,8 @@ namespace dev.limitex.avatar.compressor.tests
                 AnalysisConstants.CombinedDefaultFastWeight,
                 AnalysisConstants.CombinedDefaultHighAccuracyWeight,
                 AnalysisConstants.CombinedDefaultPerceptualWeight,
-                _complexityCalc,
-                _processor
+                _processor,
+                _complexityCalc
             );
         }
 

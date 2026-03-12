@@ -43,15 +43,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         fastWeight,
                         highAccuracyWeight,
                         perceptualWeight,
-                        complexityCalc,
-                        processor
+                        processor,
+                        complexityCalc
                     );
                 }
                 catch (System.Exception e)
                 {
                     Debug.LogWarning(
                         $"[AvatarCompressor] GPU analysis backend initialization failed, "
-                            + $"falling back to CPU: {e.Message}"
+                            + $"falling back to CPU: {e}"
                     );
                 }
             }

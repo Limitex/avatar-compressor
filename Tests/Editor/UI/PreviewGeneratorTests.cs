@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor.texture.ui;
 using NUnit.Framework;
@@ -279,16 +280,108 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(hash1, Is.Not.EqualTo(hash2));
         }
 
-        [Test]
-        public void ComputeSettingsHash_DifferentStrategyWeights_ReturnsDifferentHash()
+        [TestCase("FastWeight", 0.3f, 0.5f)]
+        [TestCase("HighAccuracyWeight", 0.3f, 0.7f)]
+        [TestCase("PerceptualWeight", 0.2f, 0.8f)]
+        [TestCase("LowComplexityThreshold", 0.2f, 0.4f)]
+        public void ComputeSettingsHash_DifferentFloatSetting_ReturnsDifferentHash(
+            string propertyName,
+            float value1,
+            float value2
+        )
         {
-            _config.FastWeight = 0.3f;
+            var field = typeof(TextureCompressor).GetField(propertyName);
+            field.SetValue(_config, value1);
             int hash1 = PreviewGenerator.ComputeSettingsHash(_config);
 
-            _config.FastWeight = 0.5f;
+            field.SetValue(_config, value2);
+            int hash2 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            Assert.That(
+                hash1,
+                Is.Not.EqualTo(hash2),
+                $"{propertyName} change should invalidate hash"
+            );
+        }
+
+        [TestCase("ForceCpuBackend", false, true)]
+        [TestCase("ProcessEmissionMaps", true, false)]
+        [TestCase("ProcessOtherTextures", true, false)]
+        [TestCase("UseHighQualityFormatForHighComplexity", true, false)]
+        public void ComputeSettingsHash_DifferentBoolSetting_ReturnsDifferentHash(
+            string propertyName,
+            bool value1,
+            bool value2
+        )
+        {
+            var field = typeof(TextureCompressor).GetField(propertyName);
+            field.SetValue(_config, value1);
+            int hash1 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            field.SetValue(_config, value2);
+            int hash2 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            Assert.That(
+                hash1,
+                Is.Not.EqualTo(hash2),
+                $"{propertyName} change should invalidate hash"
+            );
+        }
+
+        [Test]
+        public void ComputeSettingsHash_DifferentSkipIfSmallerThan_ReturnsDifferentHash()
+        {
+            _config.SkipIfSmallerThan = 128;
+            int hash1 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            _config.SkipIfSmallerThan = 256;
             int hash2 = PreviewGenerator.ComputeSettingsHash(_config);
 
             Assert.That(hash1, Is.Not.EqualTo(hash2));
+        }
+
+        [Test]
+        public void ComputeSettingsHash_DifferentFrozenTextureFormat_ReturnsDifferentHash()
+        {
+            _config.FrozenTextures.Add(
+                new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false)
+            );
+            int hash1 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            _config.FrozenTextures.Clear();
+            _config.FrozenTextures.Add(
+                new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.DXT1, false)
+            );
+            int hash2 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            Assert.That(hash1, Is.Not.EqualTo(hash2));
+        }
+
+        [Test]
+        public void ComputeSettingsHash_DifferentFrozenTextureSkip_ReturnsDifferentHash()
+        {
+            _config.FrozenTextures.Add(
+                new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, false)
+            );
+            int hash1 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            _config.FrozenTextures.Clear();
+            _config.FrozenTextures.Add(
+                new FrozenTextureSettings("test-guid", 2, FrozenTextureFormat.Auto, true)
+            );
+            int hash2 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            Assert.That(hash1, Is.Not.EqualTo(hash2));
+        }
+
+        [Test]
+        public void ComputeSettingsHash_SameConfig_ReturnsDeterministicHash()
+        {
+            _config.Strategy = AnalysisStrategyType.Combined;
+            int hash1 = PreviewGenerator.ComputeSettingsHash(_config);
+            int hash2 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            Assert.That(hash1, Is.EqualTo(hash2));
         }
 
         #endregion
