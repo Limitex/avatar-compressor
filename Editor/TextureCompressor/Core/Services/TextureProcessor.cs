@@ -227,7 +227,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         /// <summary>
         /// Gets readable pixels from a single texture.
-        /// For non-readable textures, performs GPU→CPU readback via RenderTexture.
+        /// For non-readable or sRGB textures, performs GPU→CPU readback via RenderTexture.
+        /// sRGB textures always go through the blit path with an explicit linear RT
+        /// so that hardware sRGB-to-linear decode is applied, matching the GPU analysis
+        /// backend which also blits sRGB textures to a linear RenderTexture.
         /// The temporary resources are released immediately, keeping peak memory low.
         /// </summary>
         public Color[] GetReadablePixelsSingle(Texture2D texture)
@@ -235,7 +238,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (texture == null)
                 return new Color[0];
 
-            if (texture.isReadable)
+            // sRGB textures must go through the blit path for consistent linear decode.
+            if (texture.isReadable && !texture.isDataSRGB)
             {
                 try
                 {
@@ -260,11 +264,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     // Use explicit RenderTexture lifecycle instead of GetTemporary/ReleaseTemporary
                     // so that native GPU memory is freed immediately by DestroyImmediate,
                     // rather than being held in Unity's RT pool across calls.
+                    // Force Linear color space so that sRGB textures are decoded to linear
+                    // by the hardware during blit, matching the GPU analysis backend.
                     rt = new RenderTexture(
                         texture.width,
                         texture.height,
                         0,
-                        RenderTextureFormat.ARGB32
+                        RenderTextureFormat.ARGB32,
+                        RenderTextureReadWrite.Linear
                     );
                     rt.Create();
 
@@ -275,7 +282,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         texture.width,
                         texture.height,
                         TextureFormat.RGBA32,
-                        texture.mipmapCount > 1
+                        texture.mipmapCount > 1,
+                        linear: true
                     );
                     readable.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
                     readable.Apply(texture.mipmapCount > 1);

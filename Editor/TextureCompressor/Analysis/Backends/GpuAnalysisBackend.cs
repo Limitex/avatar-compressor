@@ -131,7 +131,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                                 texture.width,
                                 texture.height,
                                 0,
-                                RenderTextureFormat.ARGB32
+                                RenderTextureFormat.ARGB32,
+                                RenderTextureReadWrite.Linear
                             );
                             linearRT.Create();
                             var prev = RenderTexture.active;
