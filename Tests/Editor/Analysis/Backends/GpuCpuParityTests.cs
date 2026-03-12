@@ -15,12 +15,12 @@ namespace dev.limitex.avatar.compressor.tests
     [TestFixture]
     public class GpuCpuParityTests
     {
-        private const float ScoreTolerance = 0.03f;
+        private const float ScoreTolerance = 0.02f;
 
         // sRGB textures use slightly wider tolerance than linear because GPU pow()
         // and CPU hardware sRGB decode may differ by a few ULP at float32 precision.
         // With the exact piecewise formula on GPU, divergence is typically <0.02.
-        private const float SRGBScoreTolerance = 0.04f;
+        private const float SRGBScoreTolerance = 0.03f;
         private const string ShaderPath =
             "Packages/dev.limitex.avatar-compressor/"
             + "Editor/TextureCompressor/Analysis/Shaders/TextureAnalysis.compute";

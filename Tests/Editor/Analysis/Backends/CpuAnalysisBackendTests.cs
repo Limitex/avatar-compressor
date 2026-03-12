@@ -278,7 +278,7 @@ namespace dev.limitex.avatar.compressor.tests
         #region Alpha Detection
 
         [Test]
-        public void AnalyzeBatch_FullyOpaqueTexture_ReturnsValidResult()
+        public void AnalyzeBatch_FullyOpaqueTexture_NoSignificantAlphaAfterResize()
         {
             var texture = TrackTexture(
                 CreateUniformTexture(64, 64, new Color(0.5f, 0.5f, 0.5f, 1f))
@@ -296,6 +296,66 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(texture));
             Assert.That(result[texture].NormalizedComplexity, Is.InRange(0f, 1f));
+
+            // Alpha detection must run on the resized texture to match the build pipeline
+            // (TextureCompressorService detects alpha post-resize).
+            var resized = _processor.ResizeSingle(texture, result[texture], false);
+            Assert.IsNotNull(resized);
+            _createdObjects.Add(resized);
+            Assert.IsFalse(
+                TextureFormatSelector.HasSignificantAlpha(resized),
+                "Fully opaque texture should have no significant alpha after resize"
+            );
+        }
+
+        [Test]
+        public void AnalyzeBatch_TransparentTexture_HasSignificantAlphaAfterResize()
+        {
+            var texture = TrackTexture(CreateTransparentTexture(64, 64));
+            var textures = new Dictionary<Texture2D, TextureInfo>
+            {
+                {
+                    texture,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
+            };
+
+            var result = _backend.AnalyzeBatch(textures);
+
+            Assert.AreEqual(1, result.Count);
+
+            var resized = _processor.ResizeSingle(texture, result[texture], false);
+            Assert.IsNotNull(resized);
+            _createdObjects.Add(resized);
+            Assert.IsTrue(
+                TextureFormatSelector.HasSignificantAlpha(resized),
+                "Fully transparent texture should have significant alpha after resize"
+            );
+        }
+
+        [Test]
+        public void AnalyzeBatch_PartiallyTransparentTexture_HasSignificantAlphaAfterResize()
+        {
+            var texture = TrackTexture(CreatePartiallyTransparentTexture(64, 64));
+            var textures = new Dictionary<Texture2D, TextureInfo>
+            {
+                {
+                    texture,
+                    new TextureInfo { IsNormalMap = false, IsEmission = false }
+                },
+            };
+
+            var result = _backend.AnalyzeBatch(textures);
+
+            Assert.AreEqual(1, result.Count);
+
+            var resized = _processor.ResizeSingle(texture, result[texture], false);
+            Assert.IsNotNull(resized);
+            _createdObjects.Add(resized);
+            Assert.IsTrue(
+                TextureFormatSelector.HasSignificantAlpha(resized),
+                "Partially transparent texture should have significant alpha after resize"
+            );
         }
 
         #endregion
