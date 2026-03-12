@@ -104,10 +104,22 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             var processedTextures = new Dictionary<Texture2D, TextureInfo>();
             foreach (var kvp in allTextures)
             {
-                if (kvp.Value.IsProcessed)
+                if (!kvp.Value.IsProcessed)
+                    continue;
+
+                // Skip frozen-skip textures to avoid unnecessary analysis work
+                string texPath = AssetDatabase.GetAssetPath(kvp.Key);
+                string texGuid = AssetDatabase.AssetPathToGUID(texPath);
+                if (
+                    !string.IsNullOrEmpty(texGuid)
+                    && frozenLookup.TryGetValue(texGuid, out var fs)
+                    && fs.Skip
+                )
                 {
-                    processedTextures[kvp.Key] = kvp.Value;
+                    continue;
                 }
+
+                processedTextures[kvp.Key] = kvp.Value;
             }
 
             var analyzer = new TextureAnalyzer(
@@ -266,7 +278,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     {
                         divisor = analysis.RecommendedDivisor;
                         recommendedSize = analysis.RecommendedResolution;
-                        hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
+                        // Match the build pipeline: detect alpha on the resized texture
+                        // so that alpha regions lost during downscaling don't cause an
+                        // unnecessary alpha-capable format (e.g. BC7 instead of DXT1).
+                        var resizedTex = processor.ResizeSingle(tex, analysis, isNormalMap);
+                        if (resizedTex != null)
+                        {
+                            hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTex);
+                            Object.DestroyImmediate(resizedTex);
+                        }
+                        else
+                        {
+                            hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
+                        }
                         targetFormat = formatSelector.ResolveTargetFormat(
                             tex.format,
                             isNormalMap,

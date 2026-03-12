@@ -278,7 +278,7 @@ namespace dev.limitex.avatar.compressor.tests
         #region Alpha Detection
 
         [Test]
-        public void AnalyzeBatch_FullyOpaqueTexture_NoSignificantAlpha()
+        public void AnalyzeBatch_FullyOpaqueTexture_ReturnsValidResult()
         {
             var texture = TrackTexture(
                 CreateUniformTexture(64, 64, new Color(0.5f, 0.5f, 0.5f, 1f))
@@ -292,6 +292,10 @@ namespace dev.limitex.avatar.compressor.tests
             };
 
             var result = _backend.AnalyzeBatch(textures);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+            Assert.That(result[texture].NormalizedComplexity, Is.InRange(0f, 1f));
         }
 
         #endregion

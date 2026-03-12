@@ -62,21 +62,36 @@ namespace dev.limitex.avatar.compressor.editor.texture
             _complexityCalc = complexityCalc;
             _processor = processor;
 
-            _kernelPreprocess = shader.FindKernel("Preprocess");
-            _kernelSobelGradient = shader.FindKernel("SobelGradient");
-            _kernelSpatialFrequency = shader.FindKernel("SpatialFrequency");
-            _kernelColorMean = shader.FindKernel("ColorMean");
-            _kernelColorVariance = shader.FindKernel("ColorVariance");
-            _kernelDctHighFreqRatio = shader.FindKernel("DctHighFreqRatio");
-            _kernelGlcmAccumulate = shader.FindKernel("GlcmAccumulate");
-            _kernelGlcmFeatures = shader.FindKernel("GlcmFeatures");
-            _kernelEntropy = shader.FindKernel("Entropy");
-            _kernelEntropyFinalize = shader.FindKernel("EntropyFinalize");
-            _kernelBlockVariance = shader.FindKernel("BlockVariance");
-            _kernelEdgeDensity = shader.FindKernel("EdgeDensity");
-            _kernelDetailDensity = shader.FindKernel("DetailDensity");
-            _kernelNormalMapVariation = shader.FindKernel("NormalMapVariation");
-            _kernelCombineResults = shader.FindKernel("CombineResults");
+            _kernelPreprocess = FindRequiredKernel(shader, "Preprocess");
+            _kernelSobelGradient = FindRequiredKernel(shader, "SobelGradient");
+            _kernelSpatialFrequency = FindRequiredKernel(shader, "SpatialFrequency");
+            _kernelColorMean = FindRequiredKernel(shader, "ColorMean");
+            _kernelColorVariance = FindRequiredKernel(shader, "ColorVariance");
+            _kernelDctHighFreqRatio = FindRequiredKernel(shader, "DctHighFreqRatio");
+            _kernelGlcmAccumulate = FindRequiredKernel(shader, "GlcmAccumulate");
+            _kernelGlcmFeatures = FindRequiredKernel(shader, "GlcmFeatures");
+            _kernelEntropy = FindRequiredKernel(shader, "Entropy");
+            _kernelEntropyFinalize = FindRequiredKernel(shader, "EntropyFinalize");
+            _kernelBlockVariance = FindRequiredKernel(shader, "BlockVariance");
+            _kernelEdgeDensity = FindRequiredKernel(shader, "EdgeDensity");
+            _kernelDetailDensity = FindRequiredKernel(shader, "DetailDensity");
+            _kernelNormalMapVariation = FindRequiredKernel(shader, "NormalMapVariation");
+            _kernelCombineResults = FindRequiredKernel(shader, "CombineResults");
+        }
+
+        private static int FindRequiredKernel(ComputeShader shader, string name)
+        {
+            try
+            {
+                return shader.FindKernel(name);
+            }
+            catch (System.Exception e)
+            {
+                throw new System.ArgumentException(
+                    $"Required kernel '{name}' not found in compute shader '{shader.name}'",
+                    e
+                );
+            }
         }
 
         public Dictionary<Texture2D, TextureAnalysisResult> AnalyzeBatch(
@@ -136,8 +151,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             );
                             linearRT.Create();
                             var prev = RenderTexture.active;
-                            Graphics.Blit(texture, linearRT);
-                            RenderTexture.active = prev;
+                            try
+                            {
+                                Graphics.Blit(texture, linearRT);
+                            }
+                            finally
+                            {
+                                RenderTexture.active = prev;
+                            }
                             sourceTexture = linearRT;
                         }
 
