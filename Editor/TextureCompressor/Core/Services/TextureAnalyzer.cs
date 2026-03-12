@@ -33,14 +33,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Constructor for dependency injection (testing).
-        /// </summary>
-        internal TextureAnalyzer(ITextureAnalysisBackend backend)
-        {
-            _backend = backend;
-        }
-
-        /// <summary>
         /// Analyzes a batch of textures in parallel.
         /// </summary>
         public Dictionary<Texture2D, TextureAnalysisResult> AnalyzeBatch(
