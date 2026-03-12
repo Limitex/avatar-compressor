@@ -45,6 +45,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             var frozenLookup = FrozenTextureSettings.BuildLookup(config.FrozenTextures);
 
+            var frozenSkipGuids = config
+                .FrozenTextures.Where(f => f.Skip && !string.IsNullOrEmpty(f.TextureGuid))
+                .Select(f => f.TextureGuid);
+
             var collector = new TextureCollector(
                 config.MinSourceSize,
                 config.SkipIfSmallerThan,
@@ -52,7 +56,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.ProcessNormalMaps,
                 config.ProcessEmissionMaps,
                 config.ProcessOtherTextures,
-                config.ExcludedPaths
+                config.ExcludedPaths,
+                frozenSkipGuids
             );
 
             var processor = new TextureProcessor(
@@ -106,18 +111,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 if (!kvp.Value.IsProcessed)
                     continue;
-
-                // Skip frozen-skip textures to avoid unnecessary analysis work
-                string texPath = AssetDatabase.GetAssetPath(kvp.Key);
-                string texGuid = AssetDatabase.AssetPathToGUID(texPath);
-                if (
-                    !string.IsNullOrEmpty(texGuid)
-                    && frozenLookup.TryGetValue(texGuid, out var fs)
-                    && fs.Skip
-                )
-                {
-                    continue;
-                }
 
                 processedTextures[kvp.Key] = kvp.Value;
             }
@@ -327,31 +320,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         FrozenSettings = frozenSettings,
                     };
 
-                    if (isFrozen && frozenSettings.Skip)
-                    {
-                        skippedList.Add(
-                            new TexturePreviewData
-                            {
-                                Texture = tex,
-                                Guid = guid,
-                                Complexity = 0f,
-                                RecommendedDivisor = 1,
-                                OriginalSize = new Vector2Int(tex.width, tex.height),
-                                RecommendedSize = new Vector2Int(tex.width, tex.height),
-                                TextureType = info.TextureType,
-                                IsProcessed = false,
-                                SkipReason = SkipReason.FrozenSkip,
-                                OriginalMemory = originalMemory,
-                                EstimatedMemory = originalMemory,
-                                IsNormalMap = isNormalMap,
-                                PredictedFormat = null,
-                                HasAlpha = false,
-                                IsFrozen = true,
-                                FrozenSettings = frozenSettings,
-                            }
-                        );
-                    }
-                    else if (isFrozen)
+                    if (isFrozen)
                     {
                         frozenList.Add(previewData);
                     }

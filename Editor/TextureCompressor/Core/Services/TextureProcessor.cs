@@ -174,6 +174,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             var rt = new RenderTexture(newWidth, newHeight, 0, rtFormat, colorSpace);
             RenderTexture previous = RenderTexture.active;
+            Texture2D resized = null;
             try
             {
                 rt.Create();
@@ -181,7 +182,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 RenderTexture.active = rt;
                 Graphics.Blit(source, rt);
 
-                var resized = new Texture2D(
+                resized = new Texture2D(
                     newWidth,
                     newHeight,
                     TextureFormat.RGBA32,
@@ -192,13 +193,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 resized.Apply(source.mipmapCount > 1);
 
                 CopyTextureSettings(source, resized);
-                return resized;
+                var result = resized;
+                resized = null;
+                return result;
             }
             finally
             {
                 RenderTexture.active = previous;
                 rt.Release();
                 Object.DestroyImmediate(rt);
+                if (resized != null)
+                    Object.DestroyImmediate(resized);
             }
         }
 

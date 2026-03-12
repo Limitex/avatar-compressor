@@ -189,13 +189,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     }
                     catch (System.Exception e)
                     {
-                        resultBuffer.Release();
-                        intermediateBuffer.Release();
-                        if (linearRT != null)
-                        {
-                            linearRT.Release();
-                            Object.DestroyImmediate(linearRT);
-                        }
+                        ReleaseBuffer(resultBuffer);
+                        ReleaseBuffer(intermediateBuffer);
+                        DestroyRT(linearRT);
                         Debug.LogWarning(
                             $"[TextureCompressor] GPU analysis failed for '{texture.name}': {e.Message}"
                         );
@@ -252,13 +248,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 foreach (var pending in pendingReadbacks)
                 {
-                    pending.ResultBuf.Release();
-                    pending.IntermediateBuf.Release();
-                    if (pending.LinearRT != null)
-                    {
-                        pending.LinearRT.Release();
-                        Object.DestroyImmediate(pending.LinearRT);
-                    }
+                    ReleaseBuffer(pending.ResultBuf);
+                    ReleaseBuffer(pending.IntermediateBuf);
+                    DestroyRT(pending.LinearRT);
                 }
             }
 
@@ -584,6 +576,37 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private static int CeilDiv(int a, int b)
         {
             return (a + b - 1) / b;
+        }
+
+        private static void ReleaseBuffer(ComputeBuffer buffer)
+        {
+            try
+            {
+                buffer?.Release();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning(
+                    $"[TextureCompressor] Failed to release ComputeBuffer: {e.Message}"
+                );
+            }
+        }
+
+        private static void DestroyRT(RenderTexture rt)
+        {
+            if (rt == null)
+                return;
+            try
+            {
+                rt.Release();
+                Object.DestroyImmediate(rt);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning(
+                    $"[TextureCompressor] Failed to destroy RenderTexture: {e.Message}"
+                );
+            }
         }
     }
 }
