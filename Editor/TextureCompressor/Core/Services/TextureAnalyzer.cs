@@ -18,7 +18,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float perceptualWeight,
             TextureProcessor processor,
             ComplexityCalculator complexityCalc,
-            bool forceCpu = false
+            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
         )
         {
             _backend = AnalysisBackendFactory.Create(
@@ -28,7 +28,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 perceptualWeight,
                 processor,
                 complexityCalc,
-                forceCpu
+                backendPreference
             );
         }
 

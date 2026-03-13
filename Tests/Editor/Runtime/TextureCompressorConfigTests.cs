@@ -257,12 +257,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.IsTrue(_config.ForcePowerOfTwo);
         }
 
-        [Test]
-        public void DefaultValues_EnableLoggingEnabled()
-        {
-            Assert.IsTrue(_config.EnableLogging);
-        }
-
         #endregion
 
         #region Enum Value Tests

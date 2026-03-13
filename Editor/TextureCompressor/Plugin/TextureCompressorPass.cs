@@ -30,10 +30,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var materialReferences = MaterialCollector.CollectAll(ctx);
 
             // Create service and compress textures
-            var service = new TextureCompressorService(config);
+            var service = new TextureCompressorService(
+                config,
+                AvatarCompressorPreferences.AnalysisBackend
+            );
             var (processedTextures, clonedMaterials) = service.CompressWithMappings(
                 materialReferences,
-                config.EnableLogging
+                AvatarCompressorPreferences.EnableLogging
             );
 
             // Update animation curves with replaced materials and textures

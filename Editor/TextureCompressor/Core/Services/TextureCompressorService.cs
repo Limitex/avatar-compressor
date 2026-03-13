@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using dev.limitex.avatar.compressor.editor;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
@@ -31,7 +30,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
         // Flag to avoid repeating build context warning (per-build instance)
         private bool _buildContextWarningShown;
 
-        public TextureCompressorService(TextureCompressor config)
+        public TextureCompressorService(
+            TextureCompressor config,
+            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
+        )
         {
             _config = config;
 
@@ -79,7 +81,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 config.PerceptualWeight,
                 _processor,
                 _complexityCalc,
-                config.ForceCpuBackend
+                backendPreference
             );
 
             _normalMapPreprocessor = new NormalMapPreprocessor();

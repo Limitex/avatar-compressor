@@ -25,11 +25,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float perceptualWeight,
             TextureProcessor processor,
             ComplexityCalculator complexityCalc,
-            bool forceCpu = false
+            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
         )
         {
             if (
-                !forceCpu
+                backendPreference != AnalysisBackendPreference.CPU
                 && SystemInfo.supportsComputeShaders
                 && SystemInfo.supportsAsyncGPUReadback
                 && TryLoadShader(out var shader)
@@ -93,12 +93,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         /// <summary>
         /// Returns a display name indicating which backend would be selected
-        /// given the current system capabilities and the force-CPU flag.
+        /// given the current system capabilities and the backend preference.
         /// </summary>
-        public static string ResolveBackendName(bool forceCpu)
+        public static string ResolveBackendName(AnalysisBackendPreference backendPreference)
         {
-            if (forceCpu)
-                return "CPU (forced)";
+            if (backendPreference == AnalysisBackendPreference.CPU)
+                return "CPU";
 
             if (
                 SystemInfo.supportsComputeShaders

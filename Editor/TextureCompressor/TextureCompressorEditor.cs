@@ -44,20 +44,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             FilterSection.DrawTextureFilters(config);
             EditorGUILayout.Space(10);
 
-            // Debug options
-            EditorGUILayout.PropertyField(
-                serializedObject.FindProperty(nameof(TextureCompressor.EnableLogging)),
-                new GUIContent("Enable Logging")
-            );
-            EditorGUILayout.PropertyField(
-                serializedObject.FindProperty(nameof(TextureCompressor.ForceCpuBackend)),
-                new GUIContent("Force CPU Backend", "Disable GPU acceleration for texture analysis")
-            );
-
-            var backendName = AnalysisBackendFactory.ResolveBackendName(config.ForceCpuBackend);
-            EditorGUILayout.LabelField("Analysis Backend", backendName, EditorStyles.miniLabel);
-            EditorGUILayout.Space(10);
-
             // Excluded paths
             FilterSection.DrawExcludedPaths(config, ref _showExcludedPathsSection);
             EditorGUILayout.Space(15);

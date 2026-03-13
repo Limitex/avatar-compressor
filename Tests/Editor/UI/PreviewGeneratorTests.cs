@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using dev.limitex.avatar.compressor;
+using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.editor.texture.ui;
 using NUnit.Framework;
 using UnityEditor;
@@ -304,7 +305,6 @@ namespace dev.limitex.avatar.compressor.tests
             );
         }
 
-        [TestCase("ForceCpuBackend", false, true)]
         [TestCase("ProcessEmissionMaps", true, false)]
         [TestCase("ProcessOtherTextures", true, false)]
         [TestCase("UseHighQualityFormatForHighComplexity", true, false)]
@@ -382,6 +382,25 @@ namespace dev.limitex.avatar.compressor.tests
             int hash2 = PreviewGenerator.ComputeSettingsHash(_config);
 
             Assert.That(hash1, Is.EqualTo(hash2));
+        }
+
+        [Test]
+        public void ComputeSettingsHash_DifferentBackendPreference_ReturnsDifferentHash()
+        {
+            int hash1 = PreviewGenerator.ComputeSettingsHash(
+                _config,
+                AnalysisBackendPreference.Auto
+            );
+            int hash2 = PreviewGenerator.ComputeSettingsHash(
+                _config,
+                AnalysisBackendPreference.CPU
+            );
+
+            Assert.That(
+                hash1,
+                Is.Not.EqualTo(hash2),
+                "Backend preference change should invalidate hash"
+            );
         }
 
         #endregion

@@ -41,7 +41,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// <summary>
         /// Generates preview data for the given configuration.
         /// </summary>
-        public TexturePreviewData[] Generate(TextureCompressor config)
+        public TexturePreviewData[] Generate(
+            TextureCompressor config,
+            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
+        )
         {
             var frozenLookup = FrozenTextureSettings.BuildLookup(config.FrozenTextures);
 
@@ -122,11 +125,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.PerceptualWeight,
                 processor,
                 complexityCalc,
-                config.ForceCpuBackend
+                backendPreference
             );
 
             // Use cache to avoid re-analyzing unchanged textures
-            int analysisHash = ComputeAnalysisHash(config);
+            int analysisHash = ComputeAnalysisHash(config, backendPreference);
             var analysisResults = new Dictionary<Texture2D, TextureAnalysisResult>();
 
             var assetInfoCache = new Dictionary<Texture2D, (string guid, Hash128 contentHash)>();
@@ -399,7 +402,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// Computes a hash of analysis-affecting settings only (Strategy, Weights, Thresholds, Resolution).
         /// Used as the cache key for analysis results.
         /// </summary>
-        private static int ComputeAnalysisHash(TextureCompressor config)
+        private static int ComputeAnalysisHash(
+            TextureCompressor config,
+            AnalysisBackendPreference backendPreference
+        )
         {
             unchecked
             {
@@ -415,7 +421,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 hash = hash * 31 + config.MaxResolution;
                 hash = hash * 31 + config.MinResolution;
                 hash = hash * 31 + config.ForcePowerOfTwo.GetHashCode();
-                hash = hash * 31 + config.ForceCpuBackend.GetHashCode();
+                hash = hash * 31 + backendPreference.GetHashCode();
                 return hash;
             }
         }
@@ -423,12 +429,15 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// <summary>
         /// Computes a hash of the configuration for change detection.
         /// </summary>
-        public static int ComputeSettingsHash(TextureCompressor config)
+        public static int ComputeSettingsHash(
+            TextureCompressor config,
+            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
+        )
         {
             unchecked
             {
                 // Start from analysis hash (Strategy, Weights, Thresholds, Resolution)
-                int hash = ComputeAnalysisHash(config);
+                int hash = ComputeAnalysisHash(config, backendPreference);
                 hash = hash * 31 + config.Preset.GetHashCode();
                 hash = hash * 31 + config.ProcessMainTextures.GetHashCode();
                 hash = hash * 31 + config.ProcessNormalMaps.GetHashCode();
