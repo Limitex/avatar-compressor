@@ -135,6 +135,12 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void Epsilon_MatchesAnalysisConstants()
+        {
+            AssertFloatDefine("EPSILON", AnalysisConstants.Epsilon);
+        }
+
+        [Test]
         public void SobelSamplingDenominator_MatchesAnalysisConstants()
         {
             AssertIntDefine(

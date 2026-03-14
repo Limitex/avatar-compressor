@@ -308,7 +308,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
             }
 
-            return totalEnergy > 0.0001f ? totalHighFreq / totalEnergy : 0f;
+            return totalEnergy > AnalysisConstants.Epsilon ? totalHighFreq / totalEnergy : 0f;
         }
 
         #endregion

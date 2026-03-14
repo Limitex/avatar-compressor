@@ -100,6 +100,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         public const float ZeroWeightThreshold = 0.0001f;
 
+        /// <summary>
+        /// Small epsilon for safe division and vector normalization.
+        /// Used to guard against division by zero in both CPU and GPU analysis.
+        /// Must match EPSILON in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const float Epsilon = 0.0001f;
+
         #endregion
 
         #region Fast Strategy Weights

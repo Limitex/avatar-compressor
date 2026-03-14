@@ -142,9 +142,11 @@ float NormalizeWithPercentile(float value, float low, float high)
 
 // Atomic add for fixed-point float values.
 // Converts float to fixed-point uint with rounding, atomically adds.
+// Clamps negative values to zero to prevent undefined behavior from
+// floating-point rounding errors (e.g. Welford's m2/count going slightly negative).
 void AtomicAddFixed(uint index, float value)
 {
-    uint fixedVal = (uint)(value * FIXED_POINT_SCALE + 0.5);
+    uint fixedVal = (uint)(max(0.0, value) * FIXED_POINT_SCALE + 0.5);
     uint dummy;
     InterlockedAdd(_IntermediateBuffer[index], fixedVal, dummy);
 }
