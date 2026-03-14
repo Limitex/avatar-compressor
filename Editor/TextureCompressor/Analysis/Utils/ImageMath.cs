@@ -1,4 +1,3 @@
-using dev.limitex.avatar.compressor.editor;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
@@ -47,7 +46,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             float total = 0f;
             int count = 0;
-            int step = Mathf.Max(1, width / 256);
+            int step = Mathf.Max(1, width / AnalysisConstants.SobelSamplingDenominator);
             int totalPixels = width * height;
 
             for (int y = 1; y < height - 1; y += step)
@@ -123,7 +122,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float colFreq = 0f;
             int rowCount = 0;
             int colCount = 0;
-            int step = Mathf.Max(1, width / 256);
+            int step = Mathf.Max(1, width / AnalysisConstants.SobelSamplingDenominator);
             int totalPixels = width * height;
 
             for (int y = 0; y < height; y += step)
@@ -192,7 +191,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             for (int i = 0; i < pixels.Length; i++)
             {
-                if (pixels[i].a < 0.1f)
+                if (pixels[i].a < AnalysisConstants.AlphaThreshold)
                     continue;
                 mean.x += pixels[i].r;
                 mean.y += pixels[i].g;
@@ -207,7 +206,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float variance = 0f;
             for (int i = 0; i < pixels.Length; i++)
             {
-                if (pixels[i].a < 0.1f)
+                if (pixels[i].a < AnalysisConstants.AlphaThreshold)
                     continue;
                 Vector3 diff = new Vector3(
                     pixels[i].r - mean.x,
@@ -248,7 +247,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float totalEnergy = 0f;
             int totalPixels = width * height;
 
-            int blockStep = Mathf.Max(1, blocksX / 16);
+            int blockStep = Mathf.Max(1, blocksX / AnalysisConstants.DctBlockSamplingDenominator);
             float[,] block = new float[DctBlockSize, DctBlockSize];
             float[,] dct = new float[DctBlockSize, DctBlockSize];
 
@@ -302,14 +301,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         {
                             float energy = dct[v, u] * dct[v, u];
                             totalEnergy += energy;
-                            if (u + v > 2)
+                            if (u + v > AnalysisConstants.DctHighFrequencyThreshold)
                                 totalHighFreq += energy;
                         }
                     }
                 }
             }
 
-            return totalEnergy > 0.0001f ? totalHighFreq / totalEnergy : 0f;
+            return totalEnergy > AnalysisConstants.Epsilon ? totalHighFreq / totalEnergy : 0f;
         }
 
         #endregion
@@ -505,8 +504,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 for (int bx = 0; bx < blocksX; bx++)
                 {
-                    float blockMean = 0f;
-                    int validPixels = 0;
+                    // Welford's online algorithm: single-pass mean + variance
+                    int n = 0;
+                    float mean = 0f;
+                    float m2 = 0f;
 
                     for (int y = 0; y < blockSize; y++)
                     {
@@ -515,32 +516,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             int idx = (by * blockSize + y) * width + (bx * blockSize + x);
                             if (idx < totalPixels && !AlphaExtractor.IsTransparent(grayscale[idx]))
                             {
-                                blockMean += grayscale[idx];
-                                validPixels++;
+                                n++;
+                                float delta = grayscale[idx] - mean;
+                                mean += delta / n;
+                                float delta2 = grayscale[idx] - mean;
+                                m2 += delta * delta2;
                             }
                         }
                     }
 
-                    if (validPixels == 0)
+                    if (n == 0)
                         continue;
-                    blockMean /= validPixels;
 
-                    float blockVariance = 0f;
-                    for (int y = 0; y < blockSize; y++)
-                    {
-                        for (int x = 0; x < blockSize; x++)
-                        {
-                            int idx = (by * blockSize + y) * width + (bx * blockSize + x);
-                            if (idx < totalPixels && !AlphaExtractor.IsTransparent(grayscale[idx]))
-                            {
-                                float diff = grayscale[idx] - blockMean;
-                                blockVariance += diff * diff;
-                            }
-                        }
-                    }
-                    blockVariance /= validPixels;
-
-                    totalVariance += blockVariance;
+                    totalVariance += m2 / n;
                     blockCount++;
                 }
             }
@@ -564,7 +552,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             float edgeSum = 0f;
             int edgeCount = 0;
-            int step = Mathf.Max(1, width / 128);
+            int step = Mathf.Max(1, width / AnalysisConstants.EdgeDensitySamplingDenominator);
             int totalPixels = width * height;
 
             for (int y = 1; y < height - 1; y += step)
@@ -614,12 +602,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (opaqueCount == 0)
                 return 0f;
 
-            const int blockSize = 16;
+            const int blockSize = AnalysisConstants.DetailDensityBlockSize;
             int detailBlocks = 0;
             int totalBlocks = 0;
             int totalPixels = width * height;
 
-            float threshold = Mathf.Max(0.005f, avgVariance * 0.5f);
+            float threshold = Mathf.Max(
+                AnalysisConstants.DetailDensityMinThreshold,
+                avgVariance * AnalysisConstants.DetailDensityVarianceMultiplier
+            );
 
             int blocksX = width / blockSize;
             int blocksY = height / blockSize;
@@ -628,8 +619,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 for (int bx = 0; bx < blocksX; bx++)
                 {
+                    // Welford's online algorithm: single-pass mean + variance
+                    int n = 0;
                     float mean = 0f;
-                    int validPixels = 0;
+                    float m2 = 0f;
 
                     for (int y = 0; y < blockSize; y++)
                     {
@@ -638,30 +631,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             int idx = (by * blockSize + y) * width + (bx * blockSize + x);
                             if (idx < totalPixels && !AlphaExtractor.IsTransparent(grayscale[idx]))
                             {
-                                mean += grayscale[idx];
-                                validPixels++;
+                                n++;
+                                float delta = grayscale[idx] - mean;
+                                mean += delta / n;
+                                float delta2 = grayscale[idx] - mean;
+                                m2 += delta * delta2;
                             }
                         }
                     }
 
-                    if (validPixels == 0)
+                    if (n == 0)
                         continue;
-                    mean /= validPixels;
 
-                    float variance = 0f;
-                    for (int y = 0; y < blockSize; y++)
-                    {
-                        for (int x = 0; x < blockSize; x++)
-                        {
-                            int idx = (by * blockSize + y) * width + (bx * blockSize + x);
-                            if (idx < totalPixels && !AlphaExtractor.IsTransparent(grayscale[idx]))
-                            {
-                                float diff = grayscale[idx] - mean;
-                                variance += diff * diff;
-                            }
-                        }
-                    }
-                    variance /= validPixels;
+                    float variance = m2 / n;
 
                     if (variance > threshold)
                         detailBlocks++;

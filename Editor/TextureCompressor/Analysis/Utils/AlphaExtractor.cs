@@ -8,7 +8,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// </summary>
     public static class AlphaExtractor
     {
-        private const float AlphaThreshold = 0.1f;
         private const float TransparentMarker = -1f;
 
         /// <summary>
@@ -30,7 +29,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             for (int i = 0; i < pixels.Length; i++)
             {
-                if (pixels[i].a >= AlphaThreshold)
+                if (pixels[i].a >= AnalysisConstants.AlphaThreshold)
                 {
                     opaquePixels[i] = pixels[i];
                     grayscale[i] =

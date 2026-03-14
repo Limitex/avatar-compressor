@@ -37,13 +37,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Minimum vector length threshold for normalization.
-        /// Vectors with length below this are considered degenerate and will be
-        /// reset to the default flat normal (0, 0, 1).
-        /// </summary>
-        private const float MinVectorLength = 0.0001f;
-
-        /// <summary>
         /// Determines whether semantic alpha should be preserved in BC7 normal-map output.
         /// </summary>
         /// <remarks>
@@ -99,6 +92,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var targetLayout = GetChannelLayout(targetFormat, preserveAlpha);
             var pixels = texture.GetPixels32();
 
+            bool isRgbSource = sourceChannelLayout == NormalChannelLayout.RGB;
+
             for (int i = 0; i < pixels.Length; i++)
             {
                 byte sourceAlpha = pixels[i].a;
@@ -108,28 +103,22 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     originalZ;
                 ReadNormalChannels(pixels[i], sourceChannelLayout, out x, out y, out originalZ);
 
-                // Recalculate Z magnitude from unit sphere constraint
-                float zSquared = 1f - x * x - y * y;
-                float zMagnitude = zSquared > 0f ? Mathf.Sqrt(zSquared) : 0f;
+                float xySqr = x * x + y * y;
+                float z;
 
-                // Determine Z sign based on source format
-                // 2-channel formats (BC5, DXTnm) don't store Z, assume positive (Tangent Space)
-                // 3-channel formats preserve original Z sign (Object Space support)
-                float z =
-                    sourceChannelLayout == NormalChannelLayout.RGB && originalZ < 0f
-                        ? -zMagnitude
-                        : zMagnitude;
-
-                // Normalize the vector
-                float length = Mathf.Sqrt(x * x + y * y + z * z);
-                if (length > MinVectorLength)
+                if (xySqr < 1f)
                 {
-                    x /= length;
-                    y /= length;
-                    z /= length;
+                    // Normal case: reconstruct Z from unit sphere constraint.
+                    // The resulting vector (x, y, z) is unit-length by construction,
+                    // so the second Sqrt for normalization is unnecessary.
+                    z = Mathf.Sqrt(1f - xySqr);
+                    if (isRgbSource && originalZ < 0f)
+                        z = -z;
                 }
                 else
                 {
+                    // Degenerate case: XY exceeds unit circle due to quantization.
+                    // Reset to flat normal (standard convention for degenerate normals).
                     x = 0f;
                     y = 0f;
                     z = 1f;

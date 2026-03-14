@@ -46,31 +46,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(result.Score, Is.EqualTo(result.NormalizedComplexity));
         }
 
-        [Test]
-        public void Summary_ContainsComplexityValue()
-        {
-            var result = new TextureAnalysisResult(0.5f, 2, new Vector2Int(512, 512));
-
-            Assert.That(result.Summary, Does.Contain("50%").Or.Contain("0.5"));
-        }
-
-        [Test]
-        public void Summary_ContainsDivisor()
-        {
-            var result = new TextureAnalysisResult(0.5f, 4, new Vector2Int(256, 256));
-
-            Assert.That(result.Summary, Does.Contain("4"));
-        }
-
-        [Test]
-        public void Summary_ContainsResolution()
-        {
-            var result = new TextureAnalysisResult(0.5f, 2, new Vector2Int(512, 256));
-
-            Assert.That(result.Summary, Does.Contain("512"));
-            Assert.That(result.Summary, Does.Contain("256"));
-        }
-
         #endregion
 
         #region Boundary Value Tests

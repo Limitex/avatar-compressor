@@ -10,10 +10,5 @@ namespace dev.limitex.avatar.compressor.editor
         /// Higher values typically mean more optimization can be applied.
         /// </summary>
         float Score { get; }
-
-        /// <summary>
-        /// Human-readable summary of the analysis result.
-        /// </summary>
-        string Summary { get; }
     }
 }

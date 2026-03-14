@@ -12,6 +12,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// </summary>
     public class PreviewGenerator
     {
+        private static LruCache<
+            (string guid, Hash128 contentHash, int analysisHash, bool isNormalMap, bool isEmission),
+            TextureAnalysisResult
+        > AnalysisCache = new(256);
+
+        [InitializeOnLoadMethod]
+        private static void ClearCacheOnDomainReload()
+        {
+            AnalysisCache = new(256);
+        }
+
         /// <summary>
         /// Number of textures that will be processed.
         /// </summary>
@@ -30,15 +41,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// <summary>
         /// Generates preview data for the given configuration.
         /// </summary>
-        public TexturePreviewData[] Generate(TextureCompressor config)
+        public TexturePreviewData[] Generate(
+            TextureCompressor config,
+            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
+        )
         {
-            // Build frozen texture lookup (GUID -> Settings)
-            var frozenLookup = new Dictionary<string, FrozenTextureSettings>();
-            foreach (var frozen in config.FrozenTextures)
-            {
-                if (!string.IsNullOrEmpty(frozen.TextureGuid))
-                    frozenLookup[frozen.TextureGuid] = frozen;
-            }
+            var frozenLookup = FrozenTextureSettings.BuildLookup(config.FrozenTextures);
+
+            var frozenSkipGuids = config
+                .FrozenTextures.Where(f => f.Skip && !string.IsNullOrEmpty(f.TextureGuid))
+                .Select(f => f.TextureGuid);
 
             var collector = new TextureCollector(
                 config.MinSourceSize,
@@ -47,7 +59,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.ProcessNormalMaps,
                 config.ProcessEmissionMaps,
                 config.ProcessOtherTextures,
-                config.ExcludedPaths
+                config.ExcludedPaths,
+                frozenSkipGuids
             );
 
             var processor = new TextureProcessor(
@@ -99,10 +112,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             var processedTextures = new Dictionary<Texture2D, TextureInfo>();
             foreach (var kvp in allTextures)
             {
-                if (kvp.Value.IsProcessed)
-                {
-                    processedTextures[kvp.Key] = kvp.Value;
-                }
+                if (!kvp.Value.IsProcessed)
+                    continue;
+
+                processedTextures[kvp.Key] = kvp.Value;
             }
 
             var analyzer = new TextureAnalyzer(
@@ -111,13 +124,74 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.HighAccuracyWeight,
                 config.PerceptualWeight,
                 processor,
-                complexityCalc
+                complexityCalc,
+                backendPreference
             );
 
-            var analysisResults =
-                processedTextures.Count > 0
-                    ? analyzer.AnalyzeBatch(processedTextures)
-                    : new Dictionary<Texture2D, TextureAnalysisResult>();
+            // Use cache to avoid re-analyzing unchanged textures
+            int analysisHash = ComputeAnalysisHash(config, backendPreference);
+            var analysisResults = new Dictionary<Texture2D, TextureAnalysisResult>();
+
+            var assetInfoCache = new Dictionary<Texture2D, (string guid, Hash128 contentHash)>();
+
+            if (processedTextures.Count > 0)
+            {
+                var needsAnalysis = new Dictionary<Texture2D, TextureInfo>();
+
+                foreach (var kvp in processedTextures)
+                {
+                    string path = AssetDatabase.GetAssetPath(kvp.Key);
+                    string guid = AssetDatabase.AssetPathToGUID(path);
+                    var contentHash = AssetDatabase.GetAssetDependencyHash(path);
+                    assetInfoCache[kvp.Key] = (guid, contentHash);
+                    var cacheKey = (
+                        guid,
+                        contentHash,
+                        analysisHash,
+                        kvp.Value.IsNormalMap,
+                        kvp.Value.IsEmission
+                    );
+
+                    if (
+                        !string.IsNullOrEmpty(guid)
+                        && AnalysisCache.TryGetValue(cacheKey, out var cached)
+                    )
+                    {
+                        analysisResults[kvp.Key] = cached;
+                    }
+                    else
+                    {
+                        needsAnalysis[kvp.Key] = kvp.Value;
+                    }
+                }
+
+                if (needsAnalysis.Count > 0)
+                {
+                    var newResults = analyzer.AnalyzeBatch(needsAnalysis);
+                    foreach (var kvp in newResults)
+                    {
+                        analysisResults[kvp.Key] = kvp.Value;
+
+                        if (
+                            assetInfoCache.TryGetValue(kvp.Key, out var info)
+                            && !string.IsNullOrEmpty(info.guid)
+                            && processedTextures.TryGetValue(kvp.Key, out var texInfo)
+                        )
+                        {
+                            AnalysisCache.Set(
+                                (
+                                    info.guid,
+                                    info.contentHash,
+                                    analysisHash,
+                                    texInfo.IsNormalMap,
+                                    texInfo.IsEmission
+                                ),
+                                kvp.Value
+                            );
+                        }
+                    }
+                }
+            }
 
             var processedList = new List<TexturePreviewData>();
             var frozenList = new List<TexturePreviewData>();
@@ -127,8 +201,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 var tex = kvp.Key;
                 var info = kvp.Value;
-                string assetPath = AssetDatabase.GetAssetPath(tex);
-                string guid = AssetDatabase.AssetPathToGUID(assetPath);
+
+                string guid;
+                if (assetInfoCache.TryGetValue(tex, out var cachedAssetInfo))
+                {
+                    guid = cachedAssetInfo.guid;
+                }
+                else
+                {
+                    string assetPath = AssetDatabase.GetAssetPath(tex);
+                    guid = AssetDatabase.AssetPathToGUID(assetPath);
+                }
 
                 // Skip textures with invalid GUID (e.g., runtime-generated textures)
                 if (string.IsNullOrEmpty(guid))
@@ -147,11 +230,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         tex.mipmapCount
                     );
                     bool isNormalMap = info.TextureType == "Normal";
-                    bool hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
 
                     int divisor;
                     Vector2Int recommendedSize;
                     TextureFormat targetFormat;
+                    bool hasAlpha;
 
                     if (isFrozen && !frozenSettings.Skip)
                     {
@@ -161,43 +244,56 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                             tex.height,
                             divisor
                         );
-
-                        if (frozenSettings.Format != FrozenTextureFormat.Auto)
+                        // Match the build pipeline: frozen textures always flow through
+                        // the resize/copy path before alpha detection, even when dimensions
+                        // are unchanged.
+                        var frozenAnalysis = new TextureAnalysisResult(
+                            AnalysisConstants.DefaultComplexityScore,
+                            divisor,
+                            recommendedSize
+                        );
+                        var resizedTex = processor.ResizeSingle(tex, frozenAnalysis, isNormalMap);
+                        if (resizedTex != null)
                         {
-                            targetFormat = TextureFormatSelector.ConvertFrozenFormat(
-                                frozenSettings.Format
-                            );
-                        }
-                        else if (TextureFormatSelector.IsCompressedFormat(tex.format))
-                        {
-                            targetFormat = tex.format;
+                            hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTex);
+                            Object.DestroyImmediate(resizedTex);
                         }
                         else
                         {
-                            targetFormat = formatSelector.PredictFormat(
-                                isNormalMap,
-                                0.5f,
-                                hasAlpha
-                            );
+                            hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
                         }
+                        targetFormat = formatSelector.ResolveTargetFormat(
+                            tex.format,
+                            isNormalMap,
+                            AnalysisConstants.DefaultComplexityScore,
+                            hasAlpha,
+                            frozenSettings.Format
+                        );
                     }
                     else
                     {
                         divisor = analysis.RecommendedDivisor;
                         recommendedSize = analysis.RecommendedResolution;
-
-                        if (TextureFormatSelector.IsCompressedFormat(tex.format))
+                        // Match the build pipeline: detect alpha on the resized texture
+                        // so that alpha regions lost during downscaling don't cause an
+                        // unnecessary alpha-capable format (e.g. BC7 instead of DXT1).
+                        var resizedTex = processor.ResizeSingle(tex, analysis, isNormalMap);
+                        if (resizedTex != null)
                         {
-                            targetFormat = tex.format;
+                            hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTex);
+                            Object.DestroyImmediate(resizedTex);
                         }
                         else
                         {
-                            targetFormat = formatSelector.PredictFormat(
-                                isNormalMap,
-                                analysis.NormalizedComplexity,
-                                hasAlpha
-                            );
+                            hasAlpha = TextureFormatSelector.HasSignificantAlpha(tex);
                         }
+                        targetFormat = formatSelector.ResolveTargetFormat(
+                            tex.format,
+                            isNormalMap,
+                            analysis.NormalizedComplexity,
+                            hasAlpha,
+                            null
+                        );
                     }
 
                     long estimatedMemory = MemoryCalculator.CalculateCompressedMemory(
@@ -227,31 +323,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         FrozenSettings = frozenSettings,
                     };
 
-                    if (isFrozen && frozenSettings.Skip)
-                    {
-                        skippedList.Add(
-                            new TexturePreviewData
-                            {
-                                Texture = tex,
-                                Guid = guid,
-                                Complexity = 0f,
-                                RecommendedDivisor = 1,
-                                OriginalSize = new Vector2Int(tex.width, tex.height),
-                                RecommendedSize = new Vector2Int(tex.width, tex.height),
-                                TextureType = info.TextureType,
-                                IsProcessed = false,
-                                SkipReason = SkipReason.FrozenSkip,
-                                OriginalMemory = originalMemory,
-                                EstimatedMemory = originalMemory,
-                                IsNormalMap = isNormalMap,
-                                PredictedFormat = null,
-                                HasAlpha = false,
-                                IsFrozen = true,
-                                FrozenSettings = frozenSettings,
-                            }
-                        );
-                    }
-                    else if (isFrozen)
+                    if (isFrozen)
                     {
                         frozenList.Add(previewData);
                     }
@@ -327,14 +399,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         }
 
         /// <summary>
-        /// Computes a hash of the configuration for change detection.
+        /// Computes a hash of analysis-affecting settings only (Strategy, Weights, Thresholds, Resolution).
+        /// Used as the cache key for analysis results.
         /// </summary>
-        public static int ComputeSettingsHash(TextureCompressor config)
+        private static int ComputeAnalysisHash(
+            TextureCompressor config,
+            AnalysisBackendPreference backendPreference
+        )
         {
             unchecked
             {
                 int hash = 17;
-                hash = hash * 31 + config.Preset.GetHashCode();
                 hash = hash * 31 + config.Strategy.GetHashCode();
                 hash = hash * 31 + config.FastWeight.GetHashCode();
                 hash = hash * 31 + config.HighAccuracyWeight.GetHashCode();
@@ -346,6 +421,24 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 hash = hash * 31 + config.MaxResolution;
                 hash = hash * 31 + config.MinResolution;
                 hash = hash * 31 + config.ForcePowerOfTwo.GetHashCode();
+                hash = hash * 31 + backendPreference.GetHashCode();
+                return hash;
+            }
+        }
+
+        /// <summary>
+        /// Computes a hash of the configuration for change detection.
+        /// </summary>
+        public static int ComputeSettingsHash(
+            TextureCompressor config,
+            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
+        )
+        {
+            unchecked
+            {
+                // Start from analysis hash (Strategy, Weights, Thresholds, Resolution)
+                int hash = ComputeAnalysisHash(config, backendPreference);
+                hash = hash * 31 + config.Preset.GetHashCode();
                 hash = hash * 31 + config.ProcessMainTextures.GetHashCode();
                 hash = hash * 31 + config.ProcessNormalMaps.GetHashCode();
                 hash = hash * 31 + config.ProcessEmissionMaps.GetHashCode();

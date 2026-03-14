@@ -4,6 +4,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Combined analysis strategy using weighted average of Fast, HighAccuracy, and Perceptual strategies.
+    /// Sub-strategies run sequentially; outer-level parallelism (CpuAnalysisBackend.Parallel.ForEach)
+    /// provides throughput by processing multiple textures concurrently.
     /// </summary>
     public class CombinedStrategy : ITextureComplexityAnalyzer
     {
@@ -38,8 +40,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (totalWeight < AnalysisConstants.ZeroWeightThreshold)
             {
                 return new TextureComplexityResult(
-                    Mathf.Clamp01((fast + highAcc + perceptual) / 3f),
-                    "Combined analysis with equal weights (all weights were zero)"
+                    Mathf.Clamp01((fast + highAcc + perceptual) / 3f)
                 );
             }
 

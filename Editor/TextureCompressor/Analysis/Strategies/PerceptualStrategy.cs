@@ -15,10 +15,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 || data.Height < AnalysisConstants.MinAnalysisDimension
             )
             {
-                return new TextureComplexityResult(
-                    AnalysisConstants.DefaultComplexityScore,
-                    "Texture too small for perceptual analysis"
-                );
+                return new TextureComplexityResult(AnalysisConstants.DefaultComplexityScore);
             }
 
             float avgVariance = ImageMath.CalculateBlockVariance(

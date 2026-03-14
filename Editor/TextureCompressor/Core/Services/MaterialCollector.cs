@@ -161,7 +161,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 try
                 {
-                    var serializedObject = new SerializedObject(component);
+                    using var serializedObject = new SerializedObject(component);
                     var iterator = serializedObject.GetIterator();
 
                     while (iterator.NextVisible(true))

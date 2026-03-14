@@ -5,6 +5,68 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **GPU analysis backend** - Compute shader-based texture complexity analysis
+  - 15 GPU kernels mirroring all CPU analysis strategies (Fast, HighAccuracy, Perceptual, NormalMap, Combined)
+  - Fixed-point atomic accumulation (scale 4000) for uint32-safe parallel reduction
+  - sRGB-to-linear conversion unified via RenderTexture blit (matches CPU path)
+  - AsyncGPUReadback for non-blocking result retrieval
+  - Automatic GPU→CPU fallback when compute shaders are unavailable
+- **Analysis backend abstraction** - `ITextureAnalysisBackend` interface with `AnalysisBackendFactory`
+  - `CpuAnalysisBackend` extracted from `TextureAnalyzer` for clean separation
+  - `GpuAnalysisBackend` dispatches compute shader kernels directly on source textures
+  - `AnalysisResultHelper` centralizes score→divisor→resolution pipeline for both backends
+  - `GpuBufferLayout` mirrors HLSL intermediate buffer layout in C#
+- **Editor preferences** - Edit > Preferences > Avatar Compressor settings panel
+  - Analysis backend selection (Auto / Software)
+  - Debug logging toggle
+  - Context-sensitive help text per backend option
+- **GPU/CPU parity tests** - Comprehensive verification that GPU and CPU backends produce matching results
+  - Constant sync tests validate HLSL `#define` values match `AnalysisConstants.cs`
+  - Parity tests for transparent textures, varied normal maps, and all strategy types
+- **Analysis backend tests** - Unit tests for `CpuAnalysisBackend`, `AnalysisBackendFactory`, `AnalysisResultHelper`, `GpuBufferLayout`
+- **Editor preferences tests** - Unit tests for `AvatarCompressorPreferences`
+- **Preview LRU analysis cache** - LRU cache (capacity 256) for analysis results in `PreviewGenerator` to avoid redundant recomputation
+
+### Changed
+
+- **Streaming texture pipeline** - Reduced peak memory from O(all textures) to O(parallelism) intermediate textures
+  - Pixel reading streams one texture at a time, downsamples immediately, then releases full-resolution data
+  - Build pipeline processes textures sequentially (resize→preprocess→compress→register) instead of batching all resizes upfront
+  - `Parallel.ForEach` analysis releases pixel arrays per-item via `finally` block
+- **RenderTexture lifecycle** - Replaced `GetTemporary`/`ReleaseTemporary` with explicit `new`/`DestroyImmediate`
+  - Native GPU memory freed immediately instead of pooled across calls
+- **sRGB-to-linear decode unified** - Both CPU and GPU backends blit sRGB textures to linear RenderTexture
+  - Ensures identical hardware decode path regardless of backend
+  - `GetReadablePixelsSingle` forces blit path for sRGB textures even when readable
+- **CPU analysis optimization** - Texture-level parallelism via `CpuAnalysisBackend.Parallel.ForEach`
+  - Welford's algorithm for single-pass block variance computation
+  - Sobel gradient sqrt calls reduced from 2 to 1 per pixel in `NormalMapPreprocessor`
+  - `HasSignificantAlpha` computed during analysis to eliminate redundant GPU readback
+- **Magic numbers replaced with constants** - `AnalysisConstants` expanded with all shared thresholds
+  - DCT high-frequency threshold, emission boost divisor, sparse texture penalty, alpha threshold, epsilon
+  - Sub-sampling denominators for Sobel, edge density, and DCT blocks
+  - Detail density block size, min threshold, and variance multiplier
+- **Warning flags scoped to instance** - `_streamingMipmapsWarningShown` and `_buildContextWarningShown` changed from `static` to instance fields
+- **Debug settings migrated** - Moved from `TextureCompressorEditor` inline UI to `AvatarCompressorPreferences` with DI injection
+- **Dead code removed** - Unused `Summary` property from `IAnalysisResult`, `TexturePixelData`, `TextureComplexityResult` fields, frozen-skip dead code in preview
+
+### Fixed
+
+- **Negative float-to-uint UB** - `AtomicAddFixed` now clamps to zero before conversion to prevent undefined behavior from Welford's rounding errors
+- **GPU uint32 overflow** - Fixed-point scale tuned to 4000 and DCT accumulation restructured to stay within uint32 range
+- **Alpha detection on resized texture** - Alpha now detected after resize instead of on original, avoiding unnecessary BC7 selection when downscaling removes alpha regions
+- **Frozen texture alpha parity** - Frozen preview alpha detection deferred to after resize to match build pipeline
+- **Degenerate normal reset** - Zero-length normals reset to flat normal (0, 0, 1) instead of z=0
+- **Compression failure resource leak** - Resized texture destroyed on compression failure to prevent native resource leak
+- **SerializedObject native memory leak** - Preview `SerializedObject` wrapped in `using` to prevent native memory leak
+- **Preview analysis cache key** - Added asset dependency hash to cache key to invalidate on texture changes
+- **GPU normal map sampling offset** - Aligned GPU normal map sampling to start at 1 (not 0), matching CPU backend
+- **Per-texture error handling** - Analysis and resize failures caught per-texture instead of aborting entire batch
+
 ## [v0.6.0] - 2026-03-06
 
 ### Added

@@ -14,6 +14,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public const int DctBlockSize = 8;
 
         /// <summary>
+        /// Minimum sum of DCT frequency indices (u + v) to classify as high-frequency.
+        /// Coefficients with u + v &lt;= this value are considered low-frequency (DC and lowest AC).
+        /// Must match the threshold in TextureAnalysisHighAccuracy.hlsl.
+        /// </summary>
+        public const int DctHighFrequencyThreshold = 2;
+
+        /// <summary>
         /// Number of gray levels for GLCM (Gray Level Co-occurrence Matrix).
         /// 16 levels provides good balance between accuracy and performance.
         /// </summary>
@@ -40,9 +47,36 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         public const int MinSampledDimension = 64;
 
+        /// <summary>
+        /// Denominator for Sobel gradient and spatial frequency sub-sampling.
+        /// step = max(1, width / SobelSamplingDenominator).
+        /// Must match SOBEL_SAMPLING_DENOMINATOR in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const int SobelSamplingDenominator = 256;
+
+        /// <summary>
+        /// Denominator for edge density sub-sampling.
+        /// step = max(1, width / EdgeDensitySamplingDenominator).
+        /// Must match EDGE_DENSITY_SAMPLING_DENOMINATOR in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const int EdgeDensitySamplingDenominator = 128;
+
+        /// <summary>
+        /// Denominator for DCT block sub-sampling.
+        /// blockStep = max(1, blocksX / DctBlockSamplingDenominator).
+        /// </summary>
+        public const int DctBlockSamplingDenominator = 16;
+
         #endregion
 
         #region Analysis Thresholds
+
+        /// <summary>
+        /// Alpha threshold for distinguishing opaque from transparent pixels.
+        /// Pixels with alpha below this value are treated as transparent.
+        /// Must match ALPHA_THRESHOLD in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const float AlphaThreshold = 0.1f;
 
         /// <summary>
         /// Minimum texture dimension for perceptual analysis.
@@ -65,6 +99,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Threshold for considering total weight as zero in combined strategy.
         /// </summary>
         public const float ZeroWeightThreshold = 0.0001f;
+
+        /// <summary>
+        /// Small epsilon for safe division and vector normalization.
+        /// Used to guard against division by zero in both CPU and GPU analysis.
+        /// Must match EPSILON in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const float Epsilon = 0.0001f;
 
         #endregion
 
@@ -158,6 +199,25 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         public const int PerceptualBlockSize = 4;
 
+        /// <summary>
+        /// Block size for detail density calculation in perceptual analysis.
+        /// Must match DETAIL_DENSITY_BLOCK_SIZE in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const int DetailDensityBlockSize = 16;
+
+        /// <summary>
+        /// Minimum variance threshold for detail density classification.
+        /// Blocks with variance below this are never counted as detailed.
+        /// Must match DETAIL_DENSITY_MIN_THRESHOLD in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const float DetailDensityMinThreshold = 0.005f;
+
+        /// <summary>
+        /// Multiplier applied to average block variance to compute detail density threshold.
+        /// Must match DETAIL_DENSITY_VARIANCE_MULTIPLIER in TextureAnalysisCommon.hlsl.
+        /// </summary>
+        public const float DetailDensityVarianceMultiplier = 0.5f;
+
         #endregion
 
         #region Perceptual Strategy Normalization Bounds
@@ -211,6 +271,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         public const float DefaultComplexityScore = 0.5f;
 
+        /// <summary>
+        /// Divisor applied to emission texture scores to boost their effective complexity.
+        /// Emission textures tend to have lower raw scores but require higher quality
+        /// to preserve glow detail. Dividing by this value raises the score toward 1.0.
+        /// </summary>
+        public const float EmissionScoreBoostDivisor = 0.9f;
+
         #endregion
 
         #region Alpha Detection
@@ -221,6 +288,22 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// 250 allows for near-opaque pixels while detecting meaningful transparency.
         /// </summary>
         public const byte SignificantAlphaThreshold = 250;
+
+        #endregion
+
+        #region Sparse Texture Handling
+
+        /// <summary>
+        /// Penalty multiplier for textures with too few opaque pixels.
+        /// Applied as DefaultComplexityScore * SparseTexturePenalty.
+        /// Must match SPARSE_TEXTURE_PENALTY in TextureAnalysisCombine.hlsl.
+        /// </summary>
+        public const float SparseTexturePenalty = 0.2f;
+
+        /// <summary>
+        /// Maximum pixels to sample for significant alpha detection.
+        /// </summary>
+        public const int MaxAlphaSampleCount = 10000;
 
         #endregion
 

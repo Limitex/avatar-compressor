@@ -10,6 +10,32 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private const int MaxSampledPixels = AnalysisConstants.MaxSampledPixels;
 
         /// <summary>
+        /// Calculates the sampled dimensions for a texture.
+        /// Used by both CPU (SampleIfNeeded) and GPU (GpuAnalysisBackend) paths
+        /// to ensure identical sampling behavior.
+        /// </summary>
+        public static (int Width, int Height) CalculateSampledDimensions(int width, int height)
+        {
+            int totalPixels = width * height;
+
+            if (totalPixels <= MaxSampledPixels)
+            {
+                return (width, height);
+            }
+
+            float ratio = Mathf.Sqrt((float)MaxSampledPixels / totalPixels);
+            int sampledWidth = Mathf.Max(
+                AnalysisConstants.MinSampledDimension,
+                (int)(width * ratio)
+            );
+            int sampledHeight = Mathf.Max(
+                AnalysisConstants.MinSampledDimension,
+                (int)(height * ratio)
+            );
+            return (sampledWidth, sampledHeight);
+        }
+
+        /// <summary>
         /// Samples pixels if the texture exceeds the maximum sample size.
         /// </summary>
         public static void SampleIfNeeded(
@@ -21,19 +47,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
             out int sampledHeight
         )
         {
-            int totalPixels = width * height;
+            var (sw, sh) = CalculateSampledDimensions(width, height);
+            sampledWidth = sw;
+            sampledHeight = sh;
 
-            if (totalPixels <= MaxSampledPixels)
+            if (sampledWidth == width && sampledHeight == height)
             {
                 sampledPixels = pixels;
-                sampledWidth = width;
-                sampledHeight = height;
                 return;
             }
-
-            float ratio = Mathf.Sqrt((float)MaxSampledPixels / totalPixels);
-            sampledWidth = Mathf.Max(AnalysisConstants.MinSampledDimension, (int)(width * ratio));
-            sampledHeight = Mathf.Max(AnalysisConstants.MinSampledDimension, (int)(height * ratio));
 
             sampledPixels = new Color[sampledWidth * sampledHeight];
 

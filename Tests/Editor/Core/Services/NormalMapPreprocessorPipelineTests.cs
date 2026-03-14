@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEditor;
@@ -41,6 +42,19 @@ namespace dev.limitex.avatar.compressor.tests
             _createdObjects.Clear();
         }
 
+        private Texture2D ResizeToSize(
+            Texture2D source,
+            int newWidth,
+            int newHeight,
+            bool isNormalMap = false
+        )
+        {
+            // Use divisor=2 to force ResizeBatch to use RecommendedResolution
+            var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(newWidth, newHeight));
+            var results = _processor.ResizeBatch(new[] { (source, analysis, isNormalMap) });
+            return results[source];
+        }
+
         #region RGB -> BC5 Pipeline
 
         [Test]
@@ -49,7 +63,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateFlat(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.BC5);
@@ -67,7 +81,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.BC5);
@@ -93,7 +107,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateFlat(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.DXT5);
@@ -116,7 +130,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateWithAlpha(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             var beforePixels = resized.GetPixels32();
@@ -158,7 +172,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateWithAlpha(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(
@@ -188,7 +202,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphereAG(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(
@@ -215,7 +229,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             // Save original pixels (as the service would)
@@ -247,7 +261,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateNegativeZ(32);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 16, 16, isNormalMap: true);
+            var resized = ResizeToSize(source, 16, 16, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.BC5);
@@ -268,7 +282,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateMixedZ(32);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 16, 16, isNormalMap: true);
+            var resized = ResizeToSize(source, 16, 16, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.BC5);
@@ -302,7 +316,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(TextureFormat.BC5, bc5Source.format);
 
-            var resized = _processor.ResizeTo(bc5Source, 256, 256, isNormalMap: true);
+            var resized = ResizeToSize(bc5Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.BC5, TextureFormat.BC5);
@@ -326,7 +340,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(TextureFormat.DXT5, dxt5Source.format);
 
-            var resized = _processor.ResizeTo(dxt5Source, 256, 256, isNormalMap: true);
+            var resized = ResizeToSize(dxt5Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.DXT5, TextureFormat.BC5);
@@ -350,7 +364,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(TextureFormat.BC7, bc7Source.format);
 
-            var resized = _processor.ResizeTo(bc7Source, 256, 256, isNormalMap: true);
+            var resized = ResizeToSize(bc7Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.BC7, TextureFormat.BC5);
@@ -378,7 +392,7 @@ namespace dev.limitex.avatar.compressor.tests
             var bc5Source = CreateActualCompressedTexture(originalSource, TextureFormat.BC5);
             _createdObjects.Add(bc5Source);
 
-            var resized = _processor.ResizeTo(bc5Source, targetSize, targetSize, isNormalMap: true);
+            var resized = ResizeToSize(bc5Source, targetSize, targetSize, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.BC5, TextureFormat.BC5);
@@ -401,7 +415,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(TextureFormat.DXT5, dxt5Source.format);
 
-            var resized = _processor.ResizeTo(dxt5Source, 256, 256, isNormalMap: true);
+            var resized = ResizeToSize(dxt5Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.DXT5, TextureFormat.DXT5);
@@ -425,7 +439,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(TextureFormat.BC7, bc7Source.format);
 
-            var resized = _processor.ResizeTo(bc7Source, 256, 256, isNormalMap: true);
+            var resized = ResizeToSize(bc7Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.BC7, TextureFormat.BC7);
@@ -462,7 +476,7 @@ namespace dev.limitex.avatar.compressor.tests
             source.SetPixels32(pixels);
             source.Apply();
 
-            var resized = _processor.ResizeTo(source, 64, 64, isNormalMap: true);
+            var resized = ResizeToSize(source, 64, 64, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.DXT5);
@@ -500,7 +514,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(sourceSize);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, targetSize, targetSize, isNormalMap: true);
+            var resized = ResizeToSize(source, targetSize, targetSize, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.BC5);
@@ -536,7 +550,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateFlat(32);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.BC5);
@@ -566,7 +580,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.BC5);
@@ -605,7 +619,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateFlat(32);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.DXT5);
@@ -635,7 +649,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateGradient(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(resized, TextureFormat.RGBA32, TextureFormat.DXT5);
@@ -667,7 +681,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateWithAlpha(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(
@@ -705,7 +719,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateFlat(32);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             _preprocessor.PrepareForCompression(
@@ -744,7 +758,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphereAG(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             // AG source -> DXT5 target (same AG layout, but re-normalized)
@@ -781,7 +795,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphereAG(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             // AG source -> BC5 target (converts from AG to RG layout)
@@ -822,7 +836,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(64);
             _createdObjects.Add(source);
 
-            var resized = _processor.ResizeTo(source, 32, 32, isNormalMap: true);
+            var resized = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(resized);
 
             // Save original pixels
@@ -860,7 +874,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(TextureFormat.DXT5, dxt5Source.format);
 
-            var resized = _processor.ResizeTo(dxt5Source, 256, 256, isNormalMap: true);
+            var resized = ResizeToSize(dxt5Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
             var sourceLayout = NormalMapSourceLayoutDetector.Resolve(
@@ -897,7 +911,7 @@ namespace dev.limitex.avatar.compressor.tests
             var dxt5Source = CreateAGCompressedTexture(rgbSource, TextureFormat.DXT5);
             _createdObjects.Add(dxt5Source);
 
-            var resized = _processor.ResizeTo(dxt5Source, 256, 256, isNormalMap: true);
+            var resized = ResizeToSize(dxt5Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
             var sourceLayout = NormalMapSourceLayoutDetector.Resolve(
@@ -936,7 +950,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(TextureFormat.BC7, bc7Source.format);
 
-            var resized = _processor.ResizeTo(bc7Source, 256, 256, isNormalMap: true);
+            var resized = ResizeToSize(bc7Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
             var sourceLayout = NormalMapSourceLayoutDetector.Resolve(bc7Source, TextureFormat.BC7);
@@ -970,7 +984,7 @@ namespace dev.limitex.avatar.compressor.tests
             var bc7Source = CreateActualCompressedTexture(rgbAlphaSource, TextureFormat.BC7);
             _createdObjects.Add(bc7Source);
 
-            var resized = _processor.ResizeTo(bc7Source, 256, 256, isNormalMap: true);
+            var resized = ResizeToSize(bc7Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
             var sourceLayout = NormalMapSourceLayoutDetector.Resolve(bc7Source, TextureFormat.BC7);
@@ -1049,7 +1063,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(TextureFormat.BC7, bc7Source.format);
 
-            var resized = _processor.ResizeTo(bc7Source, 256, 256, isNormalMap: true);
+            var resized = ResizeToSize(bc7Source, 256, 256, isNormalMap: true);
             _createdObjects.Add(resized);
 
             var sourceLayout = NormalMapSourceLayoutDetector.Resolve(bc7Source, TextureFormat.BC7);

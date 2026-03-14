@@ -47,6 +47,25 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
+        /// Resolves the target format for a texture, applying the full priority chain:
+        /// frozen format override → already compressed source → prediction from analysis.
+        /// </summary>
+        public TextureFormat ResolveTargetFormat(
+            TextureFormat sourceFormat,
+            bool isNormalMap,
+            float complexity,
+            bool hasAlpha,
+            FrozenTextureFormat? frozenFormat
+        )
+        {
+            if (frozenFormat.HasValue && frozenFormat.Value != FrozenTextureFormat.Auto)
+                return ConvertFrozenFormat(frozenFormat.Value);
+            if (IsCompressedFormat(sourceFormat))
+                return sourceFormat;
+            return PredictFormat(isNormalMap, complexity, hasAlpha);
+        }
+
+        /// <summary>
         /// Converts FrozenTextureFormat enum to Unity TextureFormat.
         /// </summary>
         public static TextureFormat ConvertFrozenFormat(FrozenTextureFormat format)
@@ -217,7 +236,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             try
             {
                 var pixels = texture.GetPixels32();
-                int sampleCount = Mathf.Min(pixels.Length, 10000);
+                int sampleCount = Mathf.Min(pixels.Length, AnalysisConstants.MaxAlphaSampleCount);
                 int step = Mathf.Max(1, pixels.Length / sampleCount);
 
                 for (int i = 0; i < pixels.Length; i += step)
@@ -229,9 +248,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
                 return false;
             }
-            catch
+            catch (System.Exception e)
             {
                 // Assume alpha exists on error to preserve quality
+                Debug.LogWarning(
+                    $"[TextureCompressor] Alpha detection failed, assuming alpha exists: {e.Message}"
+                );
                 return true;
             }
         }

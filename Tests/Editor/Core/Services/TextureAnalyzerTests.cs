@@ -256,10 +256,10 @@ namespace dev.limitex.avatar.compressor.tests
             var resultNormal = analyzer.AnalyzeBatch(texturesNormal);
             var resultEmission = analyzer.AnalyzeBatch(texturesEmission);
 
-            // Emission should have lower or equal complexity due to 10% boost
+            // Emission boost (/ 0.9) raises complexity score
             Assert.That(
                 resultEmission[textureEmission].NormalizedComplexity,
-                Is.LessThanOrEqualTo(resultNormal[textureNormal].NormalizedComplexity)
+                Is.GreaterThanOrEqualTo(resultNormal[textureNormal].NormalizedComplexity)
             );
 
             Object.DestroyImmediate(textureNormal);
@@ -460,7 +460,7 @@ namespace dev.limitex.avatar.compressor.tests
         #region Strategy Comparison Tests
 
         [Test]
-        public void AnalyzeBatch_DifferentStrategies_ProduceDifferentResults()
+        public void AnalyzeBatch_DifferentStrategies_ProduceValidResults()
         {
             var analyzerFast = new TextureAnalyzer(
                 AnalysisStrategyType.Fast,
@@ -492,7 +492,6 @@ namespace dev.limitex.avatar.compressor.tests
             var resultFast = analyzerFast.AnalyzeBatch(textures);
             var resultHighAccuracy = analyzerHighAccuracy.AnalyzeBatch(textures);
 
-            // Both should be valid but may differ
             Assert.That(resultFast[texture].NormalizedComplexity, Is.InRange(0f, 1f));
             Assert.That(resultHighAccuracy[texture].NormalizedComplexity, Is.InRange(0f, 1f));
 

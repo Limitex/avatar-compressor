@@ -1,3 +1,4 @@
+using dev.limitex.avatar.compressor.editor.texture;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.tests
@@ -482,7 +483,7 @@ namespace dev.limitex.avatar.compressor.tests
                         if (cy > 0)
                             nz = -nz;
                         float len = Mathf.Sqrt(nx * nx + ny * ny + nz * nz);
-                        if (len > 0.0001f)
+                        if (len > AnalysisConstants.Epsilon)
                         {
                             nx /= len;
                             ny /= len;

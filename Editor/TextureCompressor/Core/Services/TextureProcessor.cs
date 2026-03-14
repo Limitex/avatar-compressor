@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
@@ -23,42 +24,25 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Resizes a texture using pre-computed analysis result.
+        /// Calculates the target resize dimensions for a texture based on its analysis result.
+        /// When no downscaling is needed and the source fits within max resolution, dimensions are
+        /// kept at the source size (rounded to multiples of 4). Otherwise, uses the recommended resolution.
         /// </summary>
-        /// <param name="source">Source texture to resize</param>
-        /// <param name="analysis">Pre-computed analysis result with recommended settings</param>
-        /// <param name="isNormalMap">Whether this texture is a normal map (uses linear color space)</param>
-        /// <returns>Resized texture (uncompressed RGBA32 format)</returns>
-        public Texture2D Resize(
+        private (int Width, int Height) CalculateResizeDimensions(
             Texture2D source,
-            TextureAnalysisResult analysis,
-            bool isNormalMap = false
+            TextureAnalysisResult analysis
         )
         {
-            Texture2D result;
             if (
                 analysis.RecommendedDivisor <= 1
                 && source.width <= _maxResolution
                 && source.height <= _maxResolution
             )
             {
-                // Even when copying, ensure dimensions are multiples of 4 for DXT/BC compression
-                int width = EnsureMultipleOf4(source.width);
-                int height = EnsureMultipleOf4(source.height);
-
-                result = ResizeTo(source, width, height, isNormalMap);
-            }
-            else
-            {
-                result = ResizeTo(
-                    source,
-                    analysis.RecommendedResolution.x,
-                    analysis.RecommendedResolution.y,
-                    isNormalMap
-                );
+                return (EnsureMultipleOf4(source.width), EnsureMultipleOf4(source.height));
             }
 
-            return result;
+            return (analysis.RecommendedResolution.x, analysis.RecommendedResolution.y);
         }
 
         /// <summary>
@@ -103,95 +87,164 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Resizes a texture to the specified dimensions.
-        /// Thread-safe: uses lock to protect RenderTexture.active.
+        /// Resizes a single texture, acquiring and releasing the RenderTexture lock per call.
+        /// Preferred over ResizeBatch when textures are processed one at a time to reduce peak memory.
         /// </summary>
-        /// <param name="source">Source texture to resize</param>
-        /// <param name="newWidth">Target width</param>
-        /// <param name="newHeight">Target height</param>
-        /// <param name="isNormalMap">Whether this texture is a normal map (uses linear color space)</param>
-        /// <returns>Resized texture (uncompressed RGBA32 format)</returns>
-        public Texture2D ResizeTo(
+        /// <returns>A new readable RGBA32 Texture2D, or null if resize failed.</returns>
+        public Texture2D ResizeSingle(
             Texture2D source,
-            int newWidth,
-            int newHeight,
-            bool isNormalMap = false
+            TextureAnalysisResult analysis,
+            bool isNormalMap
         )
         {
             lock (RenderTextureLock)
             {
-                // Normal maps store vector data, not color, so they must be processed in linear space
-                // to avoid sRGB gamma correction that would corrupt the normal vectors.
-                var colorSpace = isNormalMap
-                    ? RenderTextureReadWrite.Linear
-                    : RenderTextureReadWrite.Default;
-
-                // For normal maps, prefer float/half RT to reduce interpolation quantization during resize.
-                var rtFormat = RenderTextureFormat.ARGB32;
-                if (isNormalMap)
+                try
                 {
-                    if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBFloat))
+                    var (newWidth, newHeight) = CalculateResizeDimensions(source, analysis);
+                    return BlitResize(source, newWidth, newHeight, isNormalMap);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning(
+                        $"[TextureCompressor] Failed to resize texture '{source.name}': {e.Message}"
+                    );
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Resizes multiple textures in a single lock scope for efficiency.
+        /// </summary>
+        public Dictionary<Texture2D, Texture2D> ResizeBatch(
+            IEnumerable<(Texture2D Source, TextureAnalysisResult Analysis, bool IsNormalMap)> items
+        )
+        {
+            var result = new Dictionary<Texture2D, Texture2D>();
+
+            lock (RenderTextureLock)
+            {
+                foreach (var item in items)
+                {
+                    try
                     {
-                        rtFormat = RenderTextureFormat.ARGBFloat;
+                        var (newWidth, newHeight) = CalculateResizeDimensions(
+                            item.Source,
+                            item.Analysis
+                        );
+
+                        result[item.Source] = BlitResize(
+                            item.Source,
+                            newWidth,
+                            newHeight,
+                            item.IsNormalMap
+                        );
                     }
-                    else if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf))
+                    catch (System.Exception e)
                     {
-                        rtFormat = RenderTextureFormat.ARGBHalf;
+                        Debug.LogWarning(
+                            $"[TextureCompressor] Failed to resize texture '{item.Source.name}': {e.Message}"
+                        );
                     }
                 }
+            }
 
-                RenderTexture rt = RenderTexture.GetTemporary(
-                    newWidth,
-                    newHeight,
-                    0,
-                    rtFormat,
-                    colorSpace
-                );
+            return result;
+        }
+
+        /// <summary>
+        /// Core blit logic: creates a resized Texture2D from source using RenderTexture.
+        /// Caller must hold RenderTextureLock. This method manages RenderTexture.active save/restore internally.
+        /// </summary>
+        private static Texture2D BlitResize(
+            Texture2D source,
+            int newWidth,
+            int newHeight,
+            bool isNormalMap
+        )
+        {
+            // Normal maps store vector data, not color, so they must be processed in linear space
+            // to avoid sRGB gamma correction that would corrupt the normal vectors.
+            var colorSpace = isNormalMap
+                ? RenderTextureReadWrite.Linear
+                : RenderTextureReadWrite.Default;
+
+            var rtFormat = SelectNormalMapRTFormat(isNormalMap);
+
+            var rt = new RenderTexture(newWidth, newHeight, 0, rtFormat, colorSpace);
+            RenderTexture previous = RenderTexture.active;
+            Texture2D resized = null;
+            try
+            {
+                rt.Create();
                 rt.filterMode = FilterMode.Bilinear;
-
-                RenderTexture previous = RenderTexture.active;
                 RenderTexture.active = rt;
                 Graphics.Blit(source, rt);
 
-                // Preserve mipmap setting from source texture
-                // For normal maps, use linear color space to prevent gamma correction
-                Texture2D result = new Texture2D(
+                resized = new Texture2D(
                     newWidth,
                     newHeight,
                     TextureFormat.RGBA32,
                     source.mipmapCount > 1,
                     isNormalMap
                 );
-                result.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
-                result.Apply(source.mipmapCount > 1);
+                resized.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
+                resized.Apply(source.mipmapCount > 1);
 
-                // Copy texture settings from source
-                result.wrapModeU = source.wrapModeU;
-                result.wrapModeV = source.wrapModeV;
-                result.wrapModeW = source.wrapModeW;
-                result.filterMode = source.filterMode;
-                result.anisoLevel = source.anisoLevel;
-
-                RenderTexture.active = previous;
-                RenderTexture.ReleaseTemporary(rt);
-
+                CopyTextureSettings(source, resized);
+                var result = resized;
+                resized = null;
                 return result;
+            }
+            finally
+            {
+                RenderTexture.active = previous;
+                rt.Release();
+                Object.DestroyImmediate(rt);
+                if (resized != null)
+                    Object.DestroyImmediate(resized);
             }
         }
 
         /// <summary>
-        /// Gets readable pixels from a texture.
-        /// Thread-safe: uses lock to protect RenderTexture.active when needed.
+        /// Selects the best RenderTextureFormat for normal map resize (float > half > ARGB32).
         /// </summary>
-        public Color[] GetReadablePixels(Texture2D texture)
+        private static RenderTextureFormat SelectNormalMapRTFormat(bool isNormalMap)
+        {
+            if (!isNormalMap)
+                return RenderTextureFormat.ARGB32;
+            if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBFloat))
+                return RenderTextureFormat.ARGBFloat;
+            if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf))
+                return RenderTextureFormat.ARGBHalf;
+            return RenderTextureFormat.ARGB32;
+        }
+
+        private static void CopyTextureSettings(Texture2D source, Texture2D dest)
+        {
+            dest.wrapModeU = source.wrapModeU;
+            dest.wrapModeV = source.wrapModeV;
+            dest.wrapModeW = source.wrapModeW;
+            dest.filterMode = source.filterMode;
+            dest.anisoLevel = source.anisoLevel;
+        }
+
+        /// <summary>
+        /// Gets readable pixels from a single texture.
+        /// For non-readable or sRGB textures, performs GPU→CPU readback via RenderTexture.
+        /// sRGB textures always go through the blit path with an explicit linear RT
+        /// so that hardware sRGB-to-linear decode is applied, matching the GPU analysis
+        /// backend which also blits sRGB textures to a linear RenderTexture.
+        /// The temporary resources are released immediately, keeping peak memory low.
+        /// </summary>
+        public Color[] GetReadablePixelsSingle(Texture2D texture)
         {
             if (texture == null)
-            {
-                Debug.LogWarning("[TextureCompressor] GetReadablePixels: texture is null");
                 return new Color[0];
-            }
 
-            if (texture.isReadable)
+            // sRGB textures must go through the blit path for consistent linear decode.
+            if (texture.isReadable && !texture.isDataSRGB)
             {
                 try
                 {
@@ -206,39 +259,36 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
             }
 
-            // Non-readable texture requires RenderTexture operations
             lock (RenderTextureLock)
             {
-                RenderTexture rt = null;
                 RenderTexture previous = RenderTexture.active;
+                RenderTexture rt = null;
                 Texture2D readable = null;
-
                 try
                 {
-                    rt = RenderTexture.GetTemporary(
+                    // Use explicit RenderTexture lifecycle instead of GetTemporary/ReleaseTemporary
+                    // so that native GPU memory is freed immediately by DestroyImmediate,
+                    // rather than being held in Unity's RT pool across calls.
+                    // Force Linear color space so that sRGB textures are decoded to linear
+                    // by the hardware during blit, matching the GPU analysis backend.
+                    rt = new RenderTexture(
                         texture.width,
                         texture.height,
                         0,
-                        RenderTextureFormat.ARGB32
+                        RenderTextureFormat.ARGB32,
+                        RenderTextureReadWrite.Linear
                     );
-
-                    if (rt == null)
-                    {
-                        Debug.LogWarning(
-                            "[TextureCompressor] Failed to create temporary RenderTexture"
-                        );
-                        return new Color[0];
-                    }
+                    rt.Create();
 
                     Graphics.Blit(texture, rt);
                     RenderTexture.active = rt;
 
-                    // Preserve mipmap setting from source texture
                     readable = new Texture2D(
                         texture.width,
                         texture.height,
                         TextureFormat.RGBA32,
-                        texture.mipmapCount > 1
+                        texture.mipmapCount > 1,
+                        linear: true
                     );
                     readable.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
                     readable.Apply(texture.mipmapCount > 1);
@@ -255,15 +305,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 finally
                 {
                     RenderTexture.active = previous;
-
+                    if (readable != null)
+                        Object.DestroyImmediate(readable);
                     if (rt != null)
                     {
-                        RenderTexture.ReleaseTemporary(rt);
-                    }
-
-                    if (readable != null)
-                    {
-                        Object.DestroyImmediate(readable);
+                        rt.Release();
+                        Object.DestroyImmediate(rt);
                     }
                 }
             }

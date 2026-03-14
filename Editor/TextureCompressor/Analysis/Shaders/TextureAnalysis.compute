@@ -1,0 +1,86 @@
+// TextureAnalysis.compute
+// GPU compute shader kernels for texture complexity analysis.
+// Each kernel corresponds to a specific analysis metric.
+// Results are accumulated via atomic operations in _IntermediateBuffer,
+// then combined in a final single-thread kernel.
+
+#include "TextureAnalysisCommon.hlsl"
+
+// Strategy weights and normalization bounds (set from C#)
+
+// Fast strategy
+float _FastGradientWeight;
+float _FastSpatialFreqWeight;
+float _FastColorVarWeight;
+float _GradientLow;
+float _GradientHigh;
+float _SpatialFreqLow;
+float _SpatialFreqHigh;
+float _ColorVarLow;
+float _ColorVarHigh;
+
+// HighAccuracy strategy
+float _HighAccDctWeight;
+float _HighAccContrastWeight;
+float _HighAccHomogeneityWeight;
+float _HighAccEnergyWeight;
+float _HighAccEntropyWeight;
+float _EntropyLow;
+float _EntropyHigh;
+float _ContrastLow;
+float _ContrastHigh;
+
+// Perceptual strategy
+float _PerceptualVarianceWeight;
+float _PerceptualEdgeWeight;
+float _PerceptualDetailWeight;
+float _VarianceLow;
+float _VarianceHigh;
+float _EdgeLow;
+float _EdgeHigh;
+
+// Normal map
+float _NormalMapVariationMultiplier;
+
+// Combined strategy weights
+float _CombinedFastWeight;
+float _CombinedHighAccWeight;
+float _CombinedPerceptualWeight;
+
+// Strategy selector: 0=Fast, 1=HighAccuracy, 2=Perceptual, 3=Combined
+uint _StrategyType;
+
+// Color mean (set between ColorMean and ColorVariance dispatches)
+float _ColorMeanR;
+float _ColorMeanG;
+float _ColorMeanB;
+
+// DCT block sub-sampling step (matches CPU blockStep = max(1, blocksX / 16))
+uint _DctBlockStep;
+
+// BlockVariance average (set between BlockVariance and DetailDensity dispatches)
+float _AvgBlockVariance;
+
+// Kernel declarations
+#pragma kernel Preprocess
+#pragma kernel SobelGradient
+#pragma kernel SpatialFrequency
+#pragma kernel ColorMean
+#pragma kernel ColorVariance
+#pragma kernel DctHighFreqRatio
+#pragma kernel GlcmAccumulate
+#pragma kernel GlcmFeatures
+#pragma kernel Entropy
+#pragma kernel EntropyFinalize
+#pragma kernel BlockVariance
+#pragma kernel EdgeDensity
+#pragma kernel DetailDensity
+#pragma kernel NormalMapVariation
+#pragma kernel CombineResults
+
+// Kernel implementations
+#include "TextureAnalysisFast.hlsl"
+#include "TextureAnalysisHighAccuracy.hlsl"
+#include "TextureAnalysisPerceptual.hlsl"
+#include "TextureAnalysisNormalMap.hlsl"
+#include "TextureAnalysisCombine.hlsl"

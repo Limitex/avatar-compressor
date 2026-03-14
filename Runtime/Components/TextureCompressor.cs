@@ -89,9 +89,6 @@ namespace dev.limitex.avatar.compressor
         [Tooltip("Use BC7/ASTC_4x4 format for high complexity textures (highest quality)")]
         public bool UseHighQualityFormatForHighComplexity = true;
 
-        [Header("Debug")]
-        public bool EnableLogging = true;
-
         [Header("Frozen Textures")]
         [Tooltip("Textures with manually specified compression settings")]
         public List<FrozenTextureSettings> FrozenTextures = new List<FrozenTextureSettings>();

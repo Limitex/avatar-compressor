@@ -46,6 +46,19 @@ namespace dev.limitex.avatar.compressor
         /// </summary>
         public bool Skip = false;
 
+        public static Dictionary<string, FrozenTextureSettings> BuildLookup(
+            IEnumerable<FrozenTextureSettings> frozenTextures
+        )
+        {
+            var lookup = new Dictionary<string, FrozenTextureSettings>();
+            foreach (var frozen in frozenTextures)
+            {
+                if (!string.IsNullOrEmpty(frozen.TextureGuid))
+                    lookup[frozen.TextureGuid] = frozen;
+            }
+            return lookup;
+        }
+
         public FrozenTextureSettings() { }
 
         public FrozenTextureSettings(string textureGuid)

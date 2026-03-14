@@ -44,13 +44,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             FilterSection.DrawTextureFilters(config);
             EditorGUILayout.Space(10);
 
-            // Enable logging
-            EditorGUILayout.PropertyField(
-                serializedObject.FindProperty(nameof(TextureCompressor.EnableLogging)),
-                new GUIContent("Enable Logging")
-            );
-            EditorGUILayout.Space(10);
-
             // Excluded paths
             FilterSection.DrawExcludedPaths(config, ref _showExcludedPathsSection);
             EditorGUILayout.Space(15);

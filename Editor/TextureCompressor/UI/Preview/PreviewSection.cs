@@ -67,8 +67,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private void GeneratePreview(TextureCompressor config)
         {
-            _previewSettingsHash = PreviewGenerator.ComputeSettingsHash(config);
-            _previewData = _generator.Generate(config);
+            var backend = AvatarCompressorPreferences.AnalysisBackend;
+            _previewSettingsHash = PreviewGenerator.ComputeSettingsHash(config, backend);
+            _previewData = _generator.Generate(config, backend);
         }
 
         private bool IsPreviewOutdated(TextureCompressor config)
@@ -76,7 +77,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (!_showPreview || _previewData == null)
                 return false;
 
-            return PreviewGenerator.ComputeSettingsHash(config) != _previewSettingsHash;
+            return PreviewGenerator.ComputeSettingsHash(
+                    config,
+                    AvatarCompressorPreferences.AnalysisBackend
+                ) != _previewSettingsHash;
         }
 
         private void DrawPreview(TextureCompressor config, SearchBoxControl search)

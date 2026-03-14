@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEngine;
@@ -14,6 +15,31 @@ namespace dev.limitex.avatar.compressor.tests
         {
             // Default: min=32, max=2048, forcePowerOfTwo=true
             _processor = new TextureProcessor(32, 2048, true);
+        }
+
+        private Texture2D ResizeSingle(
+            TextureProcessor processor,
+            Texture2D source,
+            TextureAnalysisResult analysis,
+            bool isNormalMap = false
+        )
+        {
+            var results = processor.ResizeBatch(new[] { (source, analysis, isNormalMap) });
+            return results[source];
+        }
+
+        private Texture2D ResizeToSize(
+            TextureProcessor processor,
+            Texture2D source,
+            int newWidth,
+            int newHeight,
+            bool isNormalMap = false
+        )
+        {
+            // Use divisor=2 to force ResizeBatch to use RecommendedResolution
+            var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(newWidth, newHeight));
+            var results = processor.ResizeBatch(new[] { (source, analysis, isNormalMap) });
+            return results[source];
         }
 
         #region CalculateNewDimensions Tests
@@ -290,7 +316,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
 
-            var result = _processor.ResizeTo(sourceTexture, 256, 256);
+            var result = ResizeToSize(_processor, sourceTexture, 256, 256);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(256, result.width);
@@ -309,7 +335,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
 
-            var result = _processor.ResizeTo(sourceTexture, 256, 256);
+            var result = ResizeToSize(_processor, sourceTexture, 256, 256);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(256, result.height);
@@ -333,7 +359,7 @@ namespace dev.limitex.avatar.compressor.tests
             sourceTexture.filterMode = FilterMode.Trilinear;
             sourceTexture.anisoLevel = 4;
 
-            var result = _processor.ResizeTo(sourceTexture, 256, 256);
+            var result = ResizeToSize(_processor, sourceTexture, 256, 256);
 
             Assert.AreEqual(TextureWrapMode.Repeat, result.wrapModeU);
             Assert.AreEqual(TextureWrapMode.Clamp, result.wrapModeV);
@@ -349,7 +375,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
 
-            var result = _processor.ResizeTo(sourceTexture, 512, 512);
+            var result = ResizeToSize(_processor, sourceTexture, 512, 512);
 
             Assert.AreEqual(512, result.width);
             Assert.AreEqual(512, result.height);
@@ -371,7 +397,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
 
-            var result = _processor.ResizeTo(sourceTexture, 256, 256, isNormalMap: true);
+            var result = ResizeToSize(_processor, sourceTexture, 256, 256, isNormalMap: true);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(256, result.width);
@@ -386,7 +412,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var sourceTexture = new Texture2D(256, 256, TextureFormat.RGBA32, false);
 
-            var result = _processor.ResizeTo(sourceTexture, 128, 128, isNormalMap: true);
+            var result = ResizeToSize(_processor, sourceTexture, 128, 128, isNormalMap: true);
 
             Assert.AreEqual(
                 TextureFormat.RGBA32,
@@ -403,7 +429,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
 
-            var result = _processor.ResizeTo(sourceTexture, 256, 256, isNormalMap: true);
+            var result = ResizeToSize(_processor, sourceTexture, 256, 256, isNormalMap: true);
 
             Assert.IsTrue(
                 result.mipmapCount > 1,
@@ -421,7 +447,7 @@ namespace dev.limitex.avatar.compressor.tests
             sourceTexture.wrapModeU = TextureWrapMode.Repeat;
             sourceTexture.filterMode = FilterMode.Trilinear;
 
-            var result = _processor.ResizeTo(sourceTexture, 256, 256, isNormalMap: true);
+            var result = ResizeToSize(_processor, sourceTexture, 256, 256, isNormalMap: true);
 
             Assert.AreEqual(TextureWrapMode.Repeat, result.wrapModeU);
             Assert.AreEqual(FilterMode.Trilinear, result.filterMode);
@@ -436,7 +462,7 @@ namespace dev.limitex.avatar.compressor.tests
             var sourceTexture = CreateNormalMapTexture(64, 64);
             var originalPixels = sourceTexture.GetPixels();
 
-            var result = _processor.ResizeTo(sourceTexture, 64, 64, isNormalMap: true);
+            var result = ResizeToSize(_processor, sourceTexture, 64, 64, isNormalMap: true);
             var resultPixels = result.GetPixels();
 
             for (int i = 0; i < resultPixels.Length; i += 100)
@@ -468,7 +494,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateTexture(512, 512);
             var analysis = new TextureAnalysisResult(0.3f, 2, new Vector2Int(256, 256));
 
-            var result = processorNoPow2.Resize(source, analysis, isNormalMap: true);
+            var result = ResizeSingle(processorNoPow2, source, analysis, isNormalMap: true);
 
             Assert.AreEqual(256, result.width);
             Assert.AreEqual(256, result.height);
@@ -483,7 +509,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateTexture(256, 256);
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(128, 128));
 
-            var result = _processor.Resize(source, analysis, isNormalMap: true);
+            var result = ResizeSingle(_processor, source, analysis, isNormalMap: true);
 
             Assert.AreEqual(
                 TextureFormat.RGBA32,
@@ -502,7 +528,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateTexture(256, 256);
             var analysis = new TextureAnalysisResult(0.8f, 1, new Vector2Int(256, 256));
 
-            var result = processorNoPow2.Resize(source, analysis, isNormalMap: true);
+            var result = ResizeSingle(processorNoPow2, source, analysis, isNormalMap: true);
 
             Assert.AreEqual(256, result.width);
             Assert.AreEqual(256, result.height);
@@ -522,7 +548,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateTexture(512, 512);
             var analysis = new TextureAnalysisResult(0.5f, 1, new Vector2Int(512, 512));
 
-            var result = _processor.Resize(source, analysis);
+            var result = ResizeSingle(_processor, source, analysis);
 
             Assert.AreEqual(512, result.width);
             Assert.AreEqual(512, result.height);
@@ -537,7 +563,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateTexture(512, 512);
             var analysis = new TextureAnalysisResult(0.3f, 2, new Vector2Int(256, 256));
 
-            var result = _processor.Resize(source, analysis);
+            var result = ResizeSingle(_processor, source, analysis);
 
             Assert.AreEqual(256, result.width);
             Assert.AreEqual(256, result.height);
@@ -552,7 +578,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateTexture(256, 256);
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(128, 128));
 
-            var result = _processor.Resize(source, analysis);
+            var result = ResizeSingle(_processor, source, analysis);
 
             Assert.AreEqual(
                 TextureFormat.RGBA32,
@@ -570,7 +596,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateTexture(1024, 512);
             var analysis = new TextureAnalysisResult(0.4f, 4, new Vector2Int(256, 128));
 
-            var result = _processor.Resize(source, analysis);
+            var result = ResizeSingle(_processor, source, analysis);
 
             Assert.AreEqual(256, result.width);
             Assert.AreEqual(128, result.height);
@@ -585,7 +611,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateTexture(256, 256);
             var analysis = new TextureAnalysisResult(0.8f, 1, new Vector2Int(256, 256));
 
-            var result = _processor.Resize(source, analysis);
+            var result = ResizeSingle(_processor, source, analysis);
 
             Assert.AreEqual(256, result.width);
             Assert.AreEqual(256, result.height);
@@ -603,7 +629,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateTexture(300, 300);
             var analysis = new TextureAnalysisResult(0.5f, 1, new Vector2Int(300, 300));
 
-            var result = processorNoPow2.Resize(source, analysis);
+            var result = ResizeSingle(processorNoPow2, source, analysis);
 
             Assert.AreEqual(
                 0,
@@ -631,7 +657,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(256, 256));
 
-            var result = _processor.Resize(source, analysis);
+            var result = ResizeSingle(_processor, source, analysis);
 
             Assert.AreEqual(TextureWrapMode.Repeat, result.wrapModeU);
             Assert.AreEqual(TextureWrapMode.Clamp, result.wrapModeV);
@@ -650,8 +676,8 @@ namespace dev.limitex.avatar.compressor.tests
 
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(256, 256));
 
-            var resultWithMips = _processor.Resize(sourceWithMips, analysis);
-            var resultWithoutMips = _processor.Resize(sourceWithoutMips, analysis);
+            var resultWithMips = ResizeSingle(_processor, sourceWithMips, analysis);
+            var resultWithoutMips = ResizeSingle(_processor, sourceWithoutMips, analysis);
 
             Assert.IsTrue(
                 resultWithMips.mipmapCount > 1,
@@ -675,7 +701,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateTexture(1024, 256);
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(512, 128));
 
-            var result = _processor.Resize(source, analysis);
+            var result = ResizeSingle(_processor, source, analysis);
 
             Assert.AreEqual(512, result.width);
             Assert.AreEqual(128, result.height);
