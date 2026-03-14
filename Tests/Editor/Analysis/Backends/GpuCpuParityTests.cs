@@ -47,6 +47,27 @@ namespace dev.limitex.avatar.compressor.tests
                 Assert.Ignore("Async GPU readback not supported on this platform");
             }
 
+            // Software renderers (e.g. Mesa llvmpipe on CI runners without a GPU)
+            // report compute shader support but produce unreliable results.
+            // GPU/CPU parity can only be validated on real hardware.
+            if (
+                SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.OpenGLCore
+            )
+            {
+                var deviceName = SystemInfo.graphicsDeviceName ?? "";
+                if (
+                    deviceName.Contains("llvmpipe")
+                    || deviceName.Contains("softpipe")
+                    || deviceName.Contains("SwiftShader")
+                    || deviceName.Contains("Mesa")
+                )
+                {
+                    Assert.Ignore(
+                        $"Software renderer detected ({deviceName}); GPU parity tests require real hardware"
+                    );
+                }
+            }
+
             _shader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderPath);
             if (_shader == null)
             {
