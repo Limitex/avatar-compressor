@@ -412,7 +412,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 if (needsHighAcc)
                 {
-                    DispatchHighAccuracyKernels(width, height, groupsX16, groupsY16);
+                    DispatchHighAccuracyKernels(
+                        width,
+                        height,
+                        groupsX16,
+                        groupsY16,
+                        intermediateBuffer
+                    );
                 }
 
                 if (needsPerceptual)
@@ -426,6 +432,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     );
                 }
             }
+
+            // Force GPU pipeline flush so CombineResults reads completed data
+            // from all prior kernels (Preprocess, strategy-specific dispatches).
+            intermediateBuffer.GetData(SyncBarrier, 0, 0, 1);
 
             // Final combine
             _shader.Dispatch(_kernelCombineResults, 1, 1, 1);
@@ -477,11 +487,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
             _shader.Dispatch(_kernelColorVariance, groupsX16, groupsY16, 1);
         }
 
+        // Reusable single-element array for GPU sync barriers.
+        // Reading back one element from the intermediate buffer forces the GPU
+        // to flush its pipeline, ensuring prior dispatches have completed.
+        private static readonly uint[] SyncBarrier = new uint[1];
+
         private void DispatchHighAccuracyKernels(
             int width,
             int height,
             int groupsX16,
-            int groupsY16
+            int groupsY16,
+            ComputeBuffer intermediateBuffer
         )
         {
             // DCT: one thread group per sampled 8x8 block (matches CPU blockStep)
@@ -502,11 +518,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // GLCM accumulate
             _shader.Dispatch(_kernelGlcmAccumulate, groupsX16, groupsY16, 1);
 
+            // Force GPU pipeline flush before GlcmFeatures reads the GLCM matrix.
+            // On OpenGL/Vulkan backends (e.g. Linux CI), consecutive dispatches
+            // may not have implicit UAV barriers, causing read-before-write hazards.
+            intermediateBuffer.GetData(SyncBarrier, 0, 0, 1);
+
             // GLCM features (single workgroup of 256 threads)
             _shader.Dispatch(_kernelGlcmFeatures, 1, 1, 1);
 
             // Entropy histogram
             _shader.Dispatch(_kernelEntropy, groupsX16, groupsY16, 1);
+
+            // Force GPU pipeline flush before EntropyFinalize reads the histogram.
+            intermediateBuffer.GetData(SyncBarrier, 0, 0, 1);
 
             // Entropy finalize (single workgroup of 256 threads)
             _shader.Dispatch(_kernelEntropyFinalize, 1, 1, 1);
