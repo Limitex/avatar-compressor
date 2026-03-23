@@ -16,12 +16,12 @@ MonoBehaviour:
   Description: Better than Aggressive. Improved quality while maintaining efficient compression.
   MenuPath: Built-in/Aggressive+
   MenuOrder: 400
-  Strategy: 0
-  FastWeight: 0.45
-  HighAccuracyWeight: 0.35
+  Strategy: 3
+  FastWeight: 0.35
+  HighAccuracyWeight: 0.45
   PerceptualWeight: 0.2
-  HighComplexityThreshold: 0.75
-  LowComplexityThreshold: 0.25
+  HighComplexityThreshold: 0.7
+  LowComplexityThreshold: 0.2
   MinDivisor: 1
   MaxDivisor: 8
   MaxResolution: 2048
@@ -30,4 +30,4 @@ MonoBehaviour:
   MinSourceSize: 256
   SkipIfSmallerThan: 128
   TargetPlatform: 0
-  UseHighQualityFormatForHighComplexity: 0
+  UseHighQualityFormatForHighComplexity: 1

@@ -279,12 +279,12 @@ namespace dev.limitex.avatar.compressor
 
         private void ApplyAggressivePreset()
         {
-            Strategy = AnalysisStrategyType.Fast;
-            FastWeight = 0.5f;
-            HighAccuracyWeight = 0.3f;
+            Strategy = AnalysisStrategyType.Combined;
+            FastWeight = 0.4f;
+            HighAccuracyWeight = 0.4f;
             PerceptualWeight = 0.2f;
-            HighComplexityThreshold = 0.8f;
-            LowComplexityThreshold = 0.3f;
+            HighComplexityThreshold = 0.70f;
+            LowComplexityThreshold = 0.20f;
             MinDivisor = 2;
             MaxDivisor = 8;
             MaxResolution = 2048;
@@ -302,13 +302,13 @@ namespace dev.limitex.avatar.compressor
 
         private void ApplyMaximumPreset()
         {
-            Strategy = AnalysisStrategyType.Fast;
-            FastWeight = 0.6f;
+            Strategy = AnalysisStrategyType.Combined;
+            FastWeight = 0.5f;
             HighAccuracyWeight = 0.3f;
-            PerceptualWeight = 0.1f;
-            HighComplexityThreshold = 0.9f;
-            LowComplexityThreshold = 0.4f;
-            MinDivisor = 2;
+            PerceptualWeight = 0.2f;
+            HighComplexityThreshold = 0.70f;
+            LowComplexityThreshold = 0.15f;
+            MinDivisor = 4;
             MaxDivisor = 16;
             MaxResolution = 2048;
             MinResolution = 32;
