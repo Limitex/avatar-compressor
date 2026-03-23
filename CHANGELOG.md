@@ -71,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fast ×1.18, HighAccuracy ×1.03, Perceptual ×1.05; Low and High bounds scaled uniformly to preserve score linearity
 - **Preset compression ordering** - Aggressive/Maximum presets switched from Fast to Combined strategy
   - Fast strategy produced ~2× higher complexity scores than Combined, causing Aggressive to compress less than Balanced
-  - All presets now use Combined strategy with calibrated thresholds for monotonic compression progression
+  - All built-in presets now use Combined strategy with calibrated thresholds for monotonic compression progression
   - Maximum preset MinDivisor raised to 4 for guaranteed minimum 4× reduction
   - AggressivePlus/MaximumPlus custom presets updated to match (Combined strategy, recalibrated thresholds)
 
