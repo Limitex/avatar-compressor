@@ -130,12 +130,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         #region Fast Strategy Normalization Bounds
 
-        public const float GradientPercentileLow = 0.05f;
-        public const float GradientPercentileHigh = 0.8f;
-        public const float SpatialFreqPercentileLow = 0.01f;
-        public const float SpatialFreqPercentileHigh = 0.15f;
-        public const float ColorVariancePercentileLow = 0.005f;
-        public const float ColorVariancePercentileHigh = 0.08f;
+        public const float GradientPercentileLow = 0.059f;
+        public const float GradientPercentileHigh = 0.944f;
+        public const float SpatialFreqPercentileLow = 0.012f;
+        public const float SpatialFreqPercentileHigh = 0.177f;
+        public const float ColorVariancePercentileLow = 0.006f;
+        public const float ColorVariancePercentileHigh = 0.094f;
 
         #endregion
 
@@ -170,10 +170,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         #region High Accuracy Strategy Normalization Bounds
 
-        public const float EntropyPercentileLow = 2f;
-        public const float EntropyPercentileHigh = 7f;
-        public const float ContrastPercentileLow = 5f;
-        public const float ContrastPercentileHigh = 80f;
+        public const float EntropyPercentileLow = 2.06f;
+        public const float EntropyPercentileHigh = 7.21f;
+        public const float ContrastPercentileLow = 5.15f;
+        public const float ContrastPercentileHigh = 82.4f;
 
         #endregion
 
@@ -222,10 +222,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         #region Perceptual Strategy Normalization Bounds
 
-        public const float VariancePercentileLow = 0.001f;
-        public const float VariancePercentileHigh = 0.05f;
-        public const float EdgePercentileLow = 0.02f;
-        public const float EdgePercentileHigh = 0.3f;
+        public const float VariancePercentileLow = 0.00105f;
+        public const float VariancePercentileHigh = 0.0525f;
+        public const float EdgePercentileLow = 0.021f;
+        public const float EdgePercentileHigh = 0.315f;
 
         #endregion
 

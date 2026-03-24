@@ -16,12 +16,12 @@ MonoBehaviour:
   Description: Better than Maximum. Strong compression with slightly higher quality.
   MenuPath: Built-in/Maximum+
   MenuOrder: 500
-  Strategy: 0
-  FastWeight: 0.55
-  HighAccuracyWeight: 0.3
-  PerceptualWeight: 0.15
-  HighComplexityThreshold: 0.85
-  LowComplexityThreshold: 0.35
+  Strategy: 3
+  FastWeight: 0.45
+  HighAccuracyWeight: 0.35
+  PerceptualWeight: 0.2
+  HighComplexityThreshold: 0.7
+  LowComplexityThreshold: 0.18
   MinDivisor: 2
   MaxDivisor: 16
   MaxResolution: 2048

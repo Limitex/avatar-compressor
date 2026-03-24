@@ -105,12 +105,12 @@ namespace dev.limitex.avatar.compressor.tests
             _config.ApplyPreset(CompressorPreset.Aggressive);
 
             Assert.AreEqual(CompressorPreset.Aggressive, _config.Preset);
-            Assert.AreEqual(AnalysisStrategyType.Fast, _config.Strategy);
-            Assert.AreEqual(0.5f, _config.FastWeight, 0.001f);
-            Assert.AreEqual(0.3f, _config.HighAccuracyWeight, 0.001f);
+            Assert.AreEqual(AnalysisStrategyType.Combined, _config.Strategy);
+            Assert.AreEqual(0.4f, _config.FastWeight, 0.001f);
+            Assert.AreEqual(0.4f, _config.HighAccuracyWeight, 0.001f);
             Assert.AreEqual(0.2f, _config.PerceptualWeight, 0.001f);
-            Assert.AreEqual(0.8f, _config.HighComplexityThreshold, 0.001f);
-            Assert.AreEqual(0.3f, _config.LowComplexityThreshold, 0.001f);
+            Assert.AreEqual(0.70f, _config.HighComplexityThreshold, 0.001f);
+            Assert.AreEqual(0.20f, _config.LowComplexityThreshold, 0.001f);
             Assert.AreEqual(2, _config.MinDivisor);
             Assert.AreEqual(8, _config.MaxDivisor);
             Assert.AreEqual(2048, _config.MaxResolution);
@@ -127,13 +127,13 @@ namespace dev.limitex.avatar.compressor.tests
             _config.ApplyPreset(CompressorPreset.Maximum);
 
             Assert.AreEqual(CompressorPreset.Maximum, _config.Preset);
-            Assert.AreEqual(AnalysisStrategyType.Fast, _config.Strategy);
-            Assert.AreEqual(0.6f, _config.FastWeight, 0.001f);
+            Assert.AreEqual(AnalysisStrategyType.Combined, _config.Strategy);
+            Assert.AreEqual(0.5f, _config.FastWeight, 0.001f);
             Assert.AreEqual(0.3f, _config.HighAccuracyWeight, 0.001f);
-            Assert.AreEqual(0.1f, _config.PerceptualWeight, 0.001f);
-            Assert.AreEqual(0.9f, _config.HighComplexityThreshold, 0.001f);
-            Assert.AreEqual(0.4f, _config.LowComplexityThreshold, 0.001f);
-            Assert.AreEqual(2, _config.MinDivisor);
+            Assert.AreEqual(0.2f, _config.PerceptualWeight, 0.001f);
+            Assert.AreEqual(0.70f, _config.HighComplexityThreshold, 0.001f);
+            Assert.AreEqual(0.15f, _config.LowComplexityThreshold, 0.001f);
+            Assert.AreEqual(4, _config.MinDivisor);
             Assert.AreEqual(16, _config.MaxDivisor);
             Assert.AreEqual(2048, _config.MaxResolution);
             Assert.AreEqual(32, _config.MinResolution);
