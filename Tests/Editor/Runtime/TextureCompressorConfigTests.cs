@@ -257,6 +257,12 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.IsTrue(_config.ForcePowerOfTwo);
         }
 
+        [Test]
+        public void DefaultValues_SkipUnknownUncompressedTexturesEnabled()
+        {
+            Assert.IsTrue(_config.SkipUnknownUncompressedTextures);
+        }
+
         #endregion
 
         #region Enum Value Tests

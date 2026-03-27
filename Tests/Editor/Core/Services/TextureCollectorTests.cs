@@ -953,7 +953,16 @@ namespace dev.limitex.avatar.compressor.tests
                 "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
             };
 
-            var collector = new TextureCollector(64, 0, true, true, true, true, null, frozenGuids);
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                excludedPathPrefixes: null,
+                frozenSkipGuids: frozenGuids
+            );
 
             Assert.IsNotNull(collector);
         }
@@ -963,7 +972,16 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var collector = new TextureCollector(64, 0, true, true, true, true, null, null);
+                var collector = new TextureCollector(
+                    64,
+                    0,
+                    true,
+                    true,
+                    true,
+                    true,
+                    excludedPathPrefixes: null,
+                    frozenSkipGuids: null
+                );
             });
         }
 
@@ -979,8 +997,8 @@ namespace dev.limitex.avatar.compressor.tests
                     true,
                     true,
                     true,
-                    null,
-                    new string[0]
+                    excludedPathPrefixes: null,
+                    frozenSkipGuids: new string[0]
                 );
             });
         }
@@ -1015,6 +1033,248 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(values, Contains.Item(SkipReason.FrozenSkip));
             Assert.That(values, Contains.Item(SkipReason.RuntimeGenerated));
             Assert.That(values, Contains.Item(SkipReason.ExcludedPath));
+            Assert.That(values, Contains.Item(SkipReason.UnknownUncompressedProperty));
+        }
+
+        [Test]
+        public void SkipReason_UnknownUncompressedProperty_IsDefined()
+        {
+            var info = new TextureInfo
+            {
+                IsProcessed = false,
+                SkipReason = SkipReason.UnknownUncompressedProperty,
+            };
+
+            Assert.AreEqual(SkipReason.UnknownUncompressedProperty, info.SkipReason);
+            Assert.IsFalse(info.IsProcessed);
+        }
+
+        #endregion
+
+        #region SkipUnknownUncompressedTextures Tests
+
+        [Test]
+        public void Collect_UnknownUncompressedPropertyWithSkipEnabled_Skipped()
+        {
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterialWithUnknownProperty();
+            var texture = CreateRGBTexture(128, 128);
+
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.Collect(root);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void Collect_UnknownUncompressedPropertyWithSkipDisabled_Included()
+        {
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                skipUnknownUncompressedTextures: false
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterialWithUnknownProperty();
+            var texture = CreateRGBTexture(128, 128);
+
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.Collect(root);
+
+            Assert.AreEqual(1, result.Count);
+        }
+
+        [Test]
+        public void Collect_UnknownPropertyWithUncompressedRGBATexture_Skipped()
+        {
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterialWithUnknownProperty();
+            var texture = CreateTexture(128, 128); // RGBA32 - uncompressed
+
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.Collect(root);
+
+            // RGBA32 is uncompressed, so it should be skipped on unknown properties
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void Collect_KnownPropertyWithRGBTexture_NotSkipped()
+        {
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial(); // Standard shader - _MainTex is known
+            var texture = CreateRGBTexture(128, 128);
+
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.Collect(root);
+
+            Assert.AreEqual(1, result.Count);
+        }
+
+        [Test]
+        public void CollectAll_UnknownUncompressedPropertyWithSkipEnabled_HasUnknownUncompressedPropertyReason()
+        {
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterialWithUnknownProperty();
+            var texture = CreateRGBTexture(128, 128);
+
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.CollectAll(root);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+            Assert.IsFalse(result[texture].IsProcessed);
+            Assert.AreEqual(SkipReason.UnknownUncompressedProperty, result[texture].SkipReason);
+        }
+
+        [Test]
+        public void Collect_DefaultCollector_SkipsUnknownUncompressedProperty()
+        {
+            // _collector uses default arguments — skipUnknownUncompressedTextures should default to true
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterialWithUnknownProperty();
+            var texture = CreateRGBTexture(128, 128);
+
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.Collect(root);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void CollectAll_DefaultCollector_UnknownUncompressedProperty_HasCorrectSkipReason()
+        {
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterialWithUnknownProperty();
+            var texture = CreateRGBTexture(128, 128);
+
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.CollectAll(root);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+            Assert.IsFalse(result[texture].IsProcessed);
+            Assert.AreEqual(SkipReason.UnknownUncompressedProperty, result[texture].SkipReason);
+        }
+
+        [Test]
+        public void Collect_UnknownPropertyWithDXT5CrunchedTexture_NotSkipped()
+        {
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterialWithUnknownProperty();
+            var texture = CreateTextureWithFormat(128, 128, TextureFormat.DXT5Crunched);
+
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.Collect(root);
+
+            // DXT5Crunched is a compressed format, so it should not be skipped
+            Assert.AreEqual(1, result.Count);
+        }
+
+        [Test]
+        public void Collect_UnknownPropertyWithSingleChannelTexture_Skipped()
+        {
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterialWithUnknownProperty();
+            var texture = CreateTextureWithFormat(128, 128, TextureFormat.R8);
+
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.Collect(root);
+
+            // Single-channel formats have no alpha and are likely data textures — should be skipped
+            Assert.AreEqual(0, result.Count);
         }
 
         #endregion
@@ -1118,6 +1378,64 @@ namespace dev.limitex.avatar.compressor.tests
             // Reload from asset to ensure it has a valid asset path
             var loadedTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
             return loadedTexture;
+        }
+
+        /// <summary>
+        /// Creates an RGB24 texture (no alpha channel) saved as an asset.
+        /// </summary>
+        private Texture2D CreateRGBTexture(int width, int height)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
+            var pixels = new Color[width * height];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = Color.white;
+            }
+            texture.SetPixels(pixels);
+            texture.Apply();
+
+            string assetPath =
+                $"{TestAssetFolder}/TestRGBTexture_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            var loadedTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+            return loadedTexture;
+        }
+
+        /// <summary>
+        /// Creates a texture with a specific format saved as an asset.
+        /// </summary>
+        private Texture2D CreateTextureWithFormat(int width, int height, TextureFormat format)
+        {
+            var texture = new Texture2D(width, height, format, false);
+            string assetPath =
+                $"{TestAssetFolder}/TestTexture_{format}_{width}x{height}_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(texture, assetPath);
+            _createdAssetPaths.Add(assetPath);
+
+            var loadedTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+            return loadedTexture;
+        }
+
+        /// <summary>
+        /// Creates a material with a shader that has only an unknown texture property (_CustomDataMap).
+        /// </summary>
+        private Material CreateMaterialWithUnknownProperty()
+        {
+            var shader = ShaderUtil.CreateShaderAsset(
+                "Shader \"Hidden/Test/"
+                    + System.Guid.NewGuid().ToString("N")
+                    + "\" {"
+                    + " Properties { _CustomDataMap (\"Custom Data\", 2D) = \"white\" {} }"
+                    + " SubShader { Pass { } }"
+                    + "}",
+                false
+            );
+            _createdObjects.Add(shader);
+            var material = new Material(shader);
+            _createdObjects.Add(material);
+            return material;
         }
 
         /// <summary>

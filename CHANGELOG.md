@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Skip uncompressed textures on unknown properties** - Option to exclude uncompressed textures on unrecognized shader properties from compression
+  - Prevents data corruption for non-visual textures (e.g., SPS bake data, masks, LUTs) that use pixel data for non-visual purposes
+  - Already-compressed textures (DXT, BC, ASTC, etc.) on unknown properties are not affected
+  - Configurable per avatar, enabled by default
+  - Known properties from Unity Standard, lilToon, Poiyomi, and UTS shaders are always allowed
+
 ## [v0.7.0] - 2026-03-27
 
 ### Added

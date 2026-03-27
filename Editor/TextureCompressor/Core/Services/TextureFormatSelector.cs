@@ -210,9 +210,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 case TextureFormat.ASTC_10x10:
                 case TextureFormat.ASTC_12x12:
                 case TextureFormat.ETC_RGB4:
+                case TextureFormat.ETC_RGB4Crunched:
                 case TextureFormat.ETC2_RGB:
                 case TextureFormat.ETC2_RGBA1:
                 case TextureFormat.ETC2_RGBA8:
+                case TextureFormat.EAC_R:
+                case TextureFormat.EAC_RG:
+                case TextureFormat.EAC_R_SIGNED:
+                case TextureFormat.EAC_RG_SIGNED:
                 case TextureFormat.PVRTC_RGB2:
                 case TextureFormat.PVRTC_RGB4:
                 case TextureFormat.PVRTC_RGBA2:

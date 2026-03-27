@@ -46,6 +46,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly bool _processNormalMaps;
         private readonly bool _processEmissionMaps;
         private readonly bool _processOtherTextures;
+        private readonly bool _skipUnknownUncompressedTextures;
         private readonly List<string> _excludedPathPrefixes;
         private readonly HashSet<string> _frozenSkipGuids;
 
@@ -56,6 +57,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             bool processNormalMaps,
             bool processEmissionMaps,
             bool processOtherTextures,
+            bool skipUnknownUncompressedTextures = true,
             IEnumerable<string> excludedPathPrefixes = null,
             IEnumerable<string> frozenSkipGuids = null
         )
@@ -66,6 +68,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             _processNormalMaps = processNormalMaps;
             _processEmissionMaps = processEmissionMaps;
             _processOtherTextures = processOtherTextures;
+            _skipUnknownUncompressedTextures = skipUnknownUncompressedTextures;
             _excludedPathPrefixes =
                 excludedPathPrefixes != null
                     ? new List<string>(
@@ -250,6 +253,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 return (false, SkipReason.TooSmall);
             if (maxDim <= _skipIfSmallerThan)
                 return (false, SkipReason.TooSmall);
+
+            // Skip uncompressed textures on unknown shader properties to avoid corrupting
+            // non-visual data (e.g., SPS bake data, masks, LUTs).
+            // Already-compressed textures (DXT, BC, ASTC, etc.) are left alone — they were
+            // intentionally compressed upstream and are likely safe to process.
+            if (
+                _skipUnknownUncompressedTextures
+                && !TextureFormatSelector.IsCompressedFormat(texture.format)
+                && !KnownCompressibleProperties.TextureProperties.Contains(propertyName)
+            )
+                return (false, SkipReason.UnknownUncompressedProperty);
 
             bool shouldProcess;
             if (MainTextureProperties.Contains(propertyName))

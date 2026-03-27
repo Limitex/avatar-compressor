@@ -96,14 +96,11 @@ namespace dev.limitex.avatar.compressor.tests
         #region Excluded Paths Tests
 
         [Test]
-        public void NewConfig_ExcludedPathsHasDefaults()
+        public void NewConfig_ExcludedPathsIsEmpty()
         {
-            // Default paths are set from ExcludedPathPresets.GetDefaultPaths()
+            // Default paths are empty — presets are available via UI menu but not applied by default
             Assert.That(_config.ExcludedPaths, Is.Not.Null);
-            Assert.That(
-                _config.ExcludedPaths.Count,
-                Is.EqualTo(ExcludedPathPresets.Presets.Length)
-            );
+            Assert.That(_config.ExcludedPaths, Is.Empty);
         }
 
         [Test]

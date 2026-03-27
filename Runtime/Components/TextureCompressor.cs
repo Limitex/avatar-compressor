@@ -69,6 +69,13 @@ namespace dev.limitex.avatar.compressor
         [Tooltip("Process other textures (metallic, roughness, etc.)")]
         public bool ProcessOtherTextures = true;
 
+        [Tooltip(
+            "Skip uncompressed textures assigned to unknown shader properties. "
+                + "Uncompressed textures on unrecognized properties may contain non-visual data "
+                + "(e.g., SPS bake data, masks, LUTs) that compression could corrupt."
+        )]
+        public bool SkipUnknownUncompressedTextures = true;
+
         [Header("Size Filters")]
         [Tooltip("Only process textures larger than this size")]
         public int MinSourceSize = 256;

@@ -59,6 +59,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.ProcessNormalMaps,
                 config.ProcessEmissionMaps,
                 config.ProcessOtherTextures,
+                config.SkipUnknownUncompressedTextures,
                 config.ExcludedPaths,
                 frozenSkipGuids
             );
