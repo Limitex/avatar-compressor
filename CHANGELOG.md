@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Configurable per avatar, enabled by default
   - Known properties from Unity Standard, lilToon, Poiyomi, and UTS shaders are always allowed
 
+### Changed
+
+- **Default excluded paths are now empty** - Excluded path presets (e.g., VRCFury temp) are no longer applied by default; they remain available via the UI "Add Path" menu
+
 ## [v0.7.0] - 2026-03-27
 
 ### Added

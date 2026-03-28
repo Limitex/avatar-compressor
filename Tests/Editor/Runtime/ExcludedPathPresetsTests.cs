@@ -9,31 +9,12 @@ namespace dev.limitex.avatar.compressor.tests
         #region GetDefaultPaths Tests
 
         [Test]
-        public void GetDefaultPaths_ReturnsNonEmptyArray()
+        public void GetDefaultPaths_ReturnsEmptyArray()
         {
             var paths = ExcludedPathPresets.GetDefaultPaths();
 
             Assert.That(paths, Is.Not.Null);
-            Assert.That(paths.Length, Is.GreaterThan(0));
-        }
-
-        [Test]
-        public void GetDefaultPaths_ReturnsCorrectCount()
-        {
-            var paths = ExcludedPathPresets.GetDefaultPaths();
-
-            Assert.That(paths.Length, Is.EqualTo(ExcludedPathPresets.Presets.Length));
-        }
-
-        [Test]
-        public void GetDefaultPaths_AllPathsAreNotNullOrEmpty()
-        {
-            var paths = ExcludedPathPresets.GetDefaultPaths();
-
-            foreach (var path in paths)
-            {
-                Assert.That(path, Is.Not.Null.And.Not.Empty);
-            }
+            Assert.That(paths, Is.Empty);
         }
 
         [Test]
@@ -43,14 +24,6 @@ namespace dev.limitex.avatar.compressor.tests
             var paths2 = ExcludedPathPresets.GetDefaultPaths();
 
             Assert.That(paths1, Is.Not.SameAs(paths2));
-        }
-
-        [Test]
-        public void GetDefaultPaths_ContainsVRCFuryTempPath()
-        {
-            var paths = ExcludedPathPresets.GetDefaultPaths();
-
-            Assert.That(paths, Does.Contain("Packages/com.vrcfury.temp/"));
         }
 
         #endregion
