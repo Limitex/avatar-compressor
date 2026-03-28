@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using dev.limitex.avatar.compressor.editor;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 
@@ -182,6 +182,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         IsEmission = isEmission,
                         IsProcessed = processResult.shouldProcess,
                         SkipReason = processResult.skipReason,
+                        AssetGuid = processResult.assetGuid,
                     };
                     textures[texture] = info;
                 }
@@ -220,39 +221,48 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
         }
 
-        private (bool shouldProcess, SkipReason skipReason) GetProcessResult(
+        private (bool shouldProcess, SkipReason skipReason, string assetGuid) GetProcessResult(
             Texture2D texture,
             string propertyName
         )
         {
-            // Resolve asset path through ObjectRegistry replacement chain.
+            // Resolve original asset via ObjectRegistry replacement chain.
             // If another NDMF plugin replaced the texture, the replacement has no asset path;
-            // AssetResolver follows the ObjectRegistry chain back to the original asset.
-            string assetPath = AssetResolver.ResolveAssetPath(texture);
+            // ObjectRegistry follows the chain back to the original asset.
+            Object resolvedObj = texture;
+            var registry = ObjectRegistry.ActiveRegistry;
+            if (registry != null)
+            {
+                var reference = registry.GetReference(texture, create: false);
+                if (reference?.Object != null && reference.Object != texture)
+                    resolvedObj = reference.Object;
+            }
 
-            // Skip runtime-generated textures (no asset path even after ObjectRegistry resolution).
+            string assetPath = AssetDatabase.GetAssetPath(resolvedObj);
+
+            // Skip runtime-generated textures (no asset path).
             // These are dynamically created during build and may use RGB values for non-visual data
             // (e.g., depth, deformation vectors), which compression would corrupt.
             if (string.IsNullOrEmpty(assetPath))
-                return (false, SkipReason.RuntimeGenerated);
+                return (false, SkipReason.RuntimeGenerated, string.Empty);
 
             // Skip textures in excluded paths
             foreach (var prefix in _excludedPathPrefixes)
             {
                 if (assetPath.StartsWith(prefix))
-                    return (false, SkipReason.ExcludedPath);
+                    return (false, SkipReason.ExcludedPath, string.Empty);
             }
 
             // Check frozen skip using GUID for reliable comparison
             string guid = AssetDatabase.AssetPathToGUID(assetPath);
             if (!string.IsNullOrEmpty(guid) && _frozenSkipGuids.Contains(guid))
-                return (false, SkipReason.FrozenSkip);
+                return (false, SkipReason.FrozenSkip, guid);
 
             int maxDim = Mathf.Max(texture.width, texture.height);
             if (maxDim < _minSourceSize)
-                return (false, SkipReason.TooSmall);
+                return (false, SkipReason.TooSmall, guid);
             if (maxDim <= _skipIfSmallerThan)
-                return (false, SkipReason.TooSmall);
+                return (false, SkipReason.TooSmall, guid);
 
             bool shouldProcess;
             if (MainTextureProperties.Contains(propertyName))
@@ -264,7 +274,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
             else
                 shouldProcess = _processOtherTextures;
 
-            return shouldProcess ? (true, SkipReason.None) : (false, SkipReason.FilteredByType);
+            return shouldProcess
+                ? (true, SkipReason.None, guid)
+                : (false, SkipReason.FilteredByType, guid);
         }
 
         private string GetTextureType(string propertyName)

@@ -963,7 +963,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var collector = new TextureCollector(64, 0, true, true, true, true, null, null);
+                var collector = new TextureCollector(64, 0, true, true, true, true);
             });
         }
 
