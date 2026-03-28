@@ -225,9 +225,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
             string propertyName
         )
         {
-            string assetPath = AssetDatabase.GetAssetPath(texture);
+            // Resolve asset path through ObjectRegistry replacement chain.
+            // If another NDMF plugin replaced the texture, the replacement has no asset path;
+            // AssetResolver follows the ObjectRegistry chain back to the original asset.
+            string assetPath = AssetResolver.ResolveAssetPath(texture);
 
-            // Skip runtime-generated textures (no asset path).
+            // Skip runtime-generated textures (no asset path even after ObjectRegistry resolution).
             // These are dynamically created during build and may use RGB values for non-visual data
             // (e.g., depth, deformation vectors), which compression would corrupt.
             if (string.IsNullOrEmpty(assetPath))

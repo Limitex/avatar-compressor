@@ -349,8 +349,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
             bool enableLogging
         )
         {
-            string assetPath = AssetDatabase.GetAssetPath(originalTexture);
-            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            // Resolve GUID through ObjectRegistry replacement chain so that frozen settings
+            // match even when another NDMF plugin has replaced the texture object.
+            string guid = AssetResolver.ResolveAssetGuid(originalTexture);
 
             // Check if texture is frozen (non-skipped frozen textures are still in collection)
             if (
