@@ -45,16 +45,22 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
 
             EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Draws the data protection section (skip unknown uncompressed textures toggle).
+        /// </summary>
+        public static void DrawDataProtection(TextureCompressor config)
+        {
+            EditorGUILayout.LabelField("Data Protection", EditorStyles.boldLabel);
+
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
             EditorGUI.BeginChangeCheck();
             bool skipUnknownUncompressed = GUILayout.Toggle(
                 config.SkipUnknownUncompressedTextures,
-                new GUIContent(
-                    "Skip uncompressed textures on unknown properties",
-                    "Skip uncompressed textures assigned to unknown shader properties. "
-                        + "Uncompressed textures on unrecognized properties may contain non-visual data "
-                        + "(e.g., SPS bake data, masks, LUTs) that compression could corrupt."
-                )
+                "Skip uncompressed textures on unknown properties"
             );
             if (EditorGUI.EndChangeCheck())
             {
@@ -62,6 +68,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.SkipUnknownUncompressedTextures = skipUnknownUncompressed;
                 EditorUtility.SetDirty(config);
             }
+
+            EditorGUILayout.HelpBox(
+                "Uncompressed textures on unrecognized shader properties may contain "
+                    + "non-visual data (e.g., masks, LUTs) that compression could corrupt. "
+                    + "Already-compressed textures on unknown properties are not affected.",
+                MessageType.Info
+            );
 
             EditorGUILayout.EndVertical();
         }

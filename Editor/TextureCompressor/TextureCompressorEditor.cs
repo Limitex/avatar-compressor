@@ -44,6 +44,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             FilterSection.DrawTextureFilters(config);
             EditorGUILayout.Space(10);
 
+            // Data protection
+            FilterSection.DrawDataProtection(config);
+            EditorGUILayout.Space(10);
+
             // Excluded paths
             FilterSection.DrawExcludedPaths(config, ref _showExcludedPathsSection);
             EditorGUILayout.Space(15);

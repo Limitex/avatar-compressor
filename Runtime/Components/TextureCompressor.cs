@@ -72,7 +72,7 @@ namespace dev.limitex.avatar.compressor
         [Tooltip(
             "Skip uncompressed textures assigned to unknown shader properties. "
                 + "Uncompressed textures on unrecognized properties may contain non-visual data "
-                + "(e.g., SPS bake data, masks, LUTs) that compression could corrupt."
+                + "(e.g., masks, LUTs) that compression could corrupt."
         )]
         public bool SkipUnknownUncompressedTextures = true;
 

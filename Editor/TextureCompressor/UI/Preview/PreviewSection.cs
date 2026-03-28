@@ -379,7 +379,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 SkipReason.RuntimeGenerated => "Runtime generated",
                 SkipReason.ExcludedPath => "Excluded by path",
                 SkipReason.UnknownUncompressedProperty =>
-                    "Uncompressed texture on unknown property",
+                    "Uncompressed on unknown property (see Data Protection)",
                 _ => "Skipped",
             };
             EditorGUILayout.LabelField(reasonText, EditorStyles.miniLabel);

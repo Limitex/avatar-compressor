@@ -1277,6 +1277,53 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(0, result.Count);
         }
 
+        [Test]
+        public void Collect_SameTextureOnKnownAndUnknownProperties_IsProcessed()
+        {
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+
+            // Create a shader with both a known (_MainTex) and unknown (_CustomDataMap) property
+            var shader = ShaderUtil.CreateShaderAsset(
+                "Shader \"Hidden/Test/"
+                    + System.Guid.NewGuid().ToString("N")
+                    + "\" {"
+                    + " Properties {"
+                    + " _MainTex (\"Main\", 2D) = \"white\" {}"
+                    + " _CustomDataMap (\"Custom Data\", 2D) = \"white\" {}"
+                    + " }"
+                    + " SubShader { Pass { } }"
+                    + "}",
+                false
+            );
+            _createdObjects.Add(shader);
+            var material = new Material(shader);
+            _createdObjects.Add(material);
+
+            var texture = CreateRGBTexture(128, 128);
+            material.SetTexture("_MainTex", texture);
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.Collect(root);
+
+            // Texture is referenced by a known property, so it should be processed
+            // even though it is also referenced by an unknown property
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+            Assert.IsTrue(result[texture].IsProcessed);
+        }
+
         #endregion
 
         #region RuntimeGenerated Skip Tests
