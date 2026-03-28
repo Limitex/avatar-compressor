@@ -228,10 +228,6 @@ namespace dev.limitex.avatar.compressor
             MaxResolution = 2048;
             MinResolution = 256;
             ForcePowerOfTwo = true;
-            ProcessMainTextures = true;
-            ProcessNormalMaps = true;
-            ProcessEmissionMaps = true;
-            ProcessOtherTextures = true;
             MinSourceSize = 1024;
             SkipIfSmallerThan = 512;
             TargetPlatform = CompressionPlatform.Auto;
@@ -251,10 +247,6 @@ namespace dev.limitex.avatar.compressor
             MaxResolution = 2048;
             MinResolution = 128;
             ForcePowerOfTwo = true;
-            ProcessMainTextures = true;
-            ProcessNormalMaps = true;
-            ProcessEmissionMaps = true;
-            ProcessOtherTextures = true;
             MinSourceSize = 512;
             SkipIfSmallerThan = 256;
             TargetPlatform = CompressionPlatform.Auto;
@@ -274,10 +266,6 @@ namespace dev.limitex.avatar.compressor
             MaxResolution = 2048;
             MinResolution = 64;
             ForcePowerOfTwo = true;
-            ProcessMainTextures = true;
-            ProcessNormalMaps = true;
-            ProcessEmissionMaps = true;
-            ProcessOtherTextures = true;
             MinSourceSize = 256;
             SkipIfSmallerThan = 128;
             TargetPlatform = CompressionPlatform.Auto;
@@ -297,10 +285,6 @@ namespace dev.limitex.avatar.compressor
             MaxResolution = 2048;
             MinResolution = 32;
             ForcePowerOfTwo = true;
-            ProcessMainTextures = true;
-            ProcessNormalMaps = true;
-            ProcessEmissionMaps = true;
-            ProcessOtherTextures = true;
             MinSourceSize = 128;
             SkipIfSmallerThan = 64;
             TargetPlatform = CompressionPlatform.Auto;
@@ -320,10 +304,6 @@ namespace dev.limitex.avatar.compressor
             MaxResolution = 2048;
             MinResolution = 32;
             ForcePowerOfTwo = true;
-            ProcessMainTextures = true;
-            ProcessNormalMaps = true;
-            ProcessEmissionMaps = true;
-            ProcessOtherTextures = true;
             MinSourceSize = 64;
             SkipIfSmallerThan = 32;
             TargetPlatform = CompressionPlatform.Auto;

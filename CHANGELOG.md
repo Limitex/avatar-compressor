@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Default excluded paths are now empty** - Excluded path presets (e.g., VRCFury temp) are no longer applied by default; they remain available via the UI "Add Path" menu
+- **Texture filter flags no longer managed by presets** - `ProcessMainTextures`, `ProcessNormalMaps`, `ProcessEmissionMaps`, and `ProcessOtherTextures` are now per-component settings that persist across preset changes, consistent with other filter settings (Data Protection, Path Exclusions)
 
 ## [v0.7.0] - 2026-03-27
 

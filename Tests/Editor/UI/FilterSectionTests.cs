@@ -231,18 +231,18 @@ namespace dev.limitex.avatar.compressor.tests
         #region Preset Behavior Tests
 
         [Test]
-        public void ApplyPreset_ResetsTextureFiltersToTrue()
+        public void ApplyPreset_DoesNotChangeTextureFilters()
         {
-            // Presets reset texture filters to enabled state
+            // Texture filters are per-component settings, not managed by presets
             _config.ProcessMainTextures = false;
             _config.ProcessNormalMaps = false;
 
-            // Apply preset (non-Custom presets reset filters)
+            // Apply preset
             _config.ApplyPreset(CompressorPreset.Balanced);
 
-            // Filters are reset by preset
-            Assert.That(_config.ProcessMainTextures, Is.True);
-            Assert.That(_config.ProcessNormalMaps, Is.True);
+            // Filters should remain unchanged
+            Assert.That(_config.ProcessMainTextures, Is.False);
+            Assert.That(_config.ProcessNormalMaps, Is.False);
         }
 
         [Test]
