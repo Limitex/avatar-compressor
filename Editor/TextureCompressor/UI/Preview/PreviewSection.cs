@@ -378,6 +378,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 SkipReason.FrozenSkip => "User frozen (skipped)",
                 SkipReason.RuntimeGenerated => "Runtime generated",
                 SkipReason.ExcludedPath => "Excluded by path",
+                SkipReason.ExcludedTexture => "Excluded texture",
                 _ => "Skipped",
             };
             EditorGUILayout.LabelField(reasonText, EditorStyles.miniLabel);

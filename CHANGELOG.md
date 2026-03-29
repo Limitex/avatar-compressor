@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Excluded Textures list** - Exclude specific textures from compression by adding them directly to the exclusion list in the inspector
+
 ## [v0.7.0] - 2026-03-27
 
 ### Added

@@ -942,6 +942,230 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region ExcludedTexture Tests
+
+        [Test]
+        public void Constructor_WithExcludedTextureGuids_AcceptsParameter()
+        {
+            var excludedGuids = new[]
+            {
+                "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+                "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+            };
+
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                null,
+                excludedGuids
+            );
+
+            Assert.IsNotNull(collector);
+        }
+
+        [Test]
+        public void Constructor_WithNullExcludedTextureGuids_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                var collector = new TextureCollector(64, 0, true, true, true, true, null, null);
+            });
+        }
+
+        [Test]
+        public void Constructor_WithEmptyExcludedTextureGuids_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                var collector = new TextureCollector(
+                    64,
+                    0,
+                    true,
+                    true,
+                    true,
+                    true,
+                    null,
+                    new string[0]
+                );
+            });
+        }
+
+        [Test]
+        public void CollectFromMaterials_ExcludedTexture_IsSkippedWithCollectAllFalse()
+        {
+            var texture = CreateTexture(512, 512);
+            var guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(texture));
+
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                null,
+                new[] { guid }
+            );
+
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new[] { material }, textures, collectAll: false);
+
+            Assert.AreEqual(0, textures.Count);
+        }
+
+        [Test]
+        public void CollectFromMaterials_ExcludedTexture_HasExcludedTextureReasonWithCollectAll()
+        {
+            var texture = CreateTexture(512, 512);
+            var guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(texture));
+
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                null,
+                new[] { guid }
+            );
+
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new[] { material }, textures, collectAll: true);
+
+            Assert.AreEqual(1, textures.Count);
+            Assert.IsTrue(textures.ContainsKey(texture));
+            Assert.IsFalse(textures[texture].IsProcessed);
+            Assert.AreEqual(SkipReason.ExcludedTexture, textures[texture].SkipReason);
+        }
+
+        [Test]
+        public void CollectFromMaterials_NonExcludedTexture_IsProcessed()
+        {
+            var texture = CreateTexture(512, 512);
+
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                null,
+                new[] { "00000000000000000000000000000000" }
+            );
+
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new[] { material }, textures, collectAll: false);
+
+            Assert.AreEqual(1, textures.Count);
+            Assert.IsTrue(textures[texture].IsProcessed);
+        }
+
+        [Test]
+        public void CollectFromMaterials_MixedExcludedAndNonExcluded_FiltersCorrectly()
+        {
+            var excludedTexture = CreateTexture(512, 512);
+            var normalTexture = CreateTexture(256, 256);
+            var excludedGuid = AssetDatabase.AssetPathToGUID(
+                AssetDatabase.GetAssetPath(excludedTexture)
+            );
+
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                null,
+                new[] { excludedGuid }
+            );
+
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", excludedTexture);
+            material.SetTexture("_BumpMap", normalTexture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new[] { material }, textures, collectAll: true);
+
+            Assert.AreEqual(2, textures.Count);
+            Assert.IsFalse(textures[excludedTexture].IsProcessed);
+            Assert.AreEqual(SkipReason.ExcludedTexture, textures[excludedTexture].SkipReason);
+            Assert.IsTrue(textures[normalTexture].IsProcessed);
+        }
+
+        #endregion
+
+        #region ToAssetGuids Tests
+
+        [Test]
+        public void ToAssetGuids_WithNull_ReturnsEmpty()
+        {
+            var result = TextureCollector.ToAssetGuids(null);
+
+            Assert.IsNotNull(result);
+            Assert.IsEmpty(result);
+        }
+
+        [Test]
+        public void ToAssetGuids_WithEmptyList_ReturnsEmpty()
+        {
+            var result = TextureCollector.ToAssetGuids(new List<Texture2D>());
+
+            Assert.IsNotNull(result);
+            Assert.IsEmpty(result);
+        }
+
+        [Test]
+        public void ToAssetGuids_WithNullElements_FiltersThemOut()
+        {
+            var textures = new List<Texture2D> { null, null };
+
+            var result = new List<string>(TextureCollector.ToAssetGuids(textures));
+
+            Assert.IsEmpty(result);
+        }
+
+        [Test]
+        public void ToAssetGuids_WithValidTexture_ReturnsGuid()
+        {
+            var texture = CreateTexture(64, 64);
+            var expectedGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(texture));
+
+            var result = new List<string>(TextureCollector.ToAssetGuids(new[] { texture }));
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(expectedGuid, result[0]);
+        }
+
+        [Test]
+        public void ToAssetGuids_WithMixedNullAndValid_ReturnsOnlyValidGuids()
+        {
+            var texture = CreateTexture(64, 64);
+            var textures = new List<Texture2D> { null, texture, null };
+
+            var result = new List<string>(TextureCollector.ToAssetGuids(textures));
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsFalse(string.IsNullOrEmpty(result[0]));
+        }
+
+        #endregion
+
         #region FrozenSkip Tests
 
         [Test]
@@ -953,7 +1177,17 @@ namespace dev.limitex.avatar.compressor.tests
                 "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
             };
 
-            var collector = new TextureCollector(64, 0, true, true, true, true, null, frozenGuids);
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                null,
+                null,
+                frozenGuids
+            );
 
             Assert.IsNotNull(collector);
         }
@@ -963,7 +1197,17 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var collector = new TextureCollector(64, 0, true, true, true, true, null, null);
+                var collector = new TextureCollector(
+                    64,
+                    0,
+                    true,
+                    true,
+                    true,
+                    true,
+                    null,
+                    null,
+                    null
+                );
             });
         }
 
@@ -979,6 +1223,7 @@ namespace dev.limitex.avatar.compressor.tests
                     true,
                     true,
                     true,
+                    null,
                     null,
                     new string[0]
                 );
@@ -1015,6 +1260,7 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(values, Contains.Item(SkipReason.FrozenSkip));
             Assert.That(values, Contains.Item(SkipReason.RuntimeGenerated));
             Assert.That(values, Contains.Item(SkipReason.ExcludedPath));
+            Assert.That(values, Contains.Item(SkipReason.ExcludedTexture));
         }
 
         #endregion

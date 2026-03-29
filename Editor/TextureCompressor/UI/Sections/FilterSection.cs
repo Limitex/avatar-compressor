@@ -49,6 +49,82 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         }
 
         /// <summary>
+        /// Draws the excluded textures section with foldout.
+        /// </summary>
+        public static void DrawExcludedTextures(TextureCompressor config, ref bool showSection)
+        {
+            int count = config.ExcludedTextures.Count;
+            string label = count > 0 ? $"Excluded Textures ({count})" : "Excluded Textures";
+
+            showSection = EditorGUILayout.Foldout(showSection, label, true);
+            if (!showSection)
+                return;
+
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            for (int i = config.ExcludedTextures.Count - 1; i >= 0; i--)
+            {
+                EditorGUILayout.BeginHorizontal();
+
+                EditorGUI.BeginChangeCheck();
+                var newTexture = (Texture2D)
+                    EditorGUILayout.ObjectField(
+                        config.ExcludedTextures[i],
+                        typeof(Texture2D),
+                        false
+                    );
+                if (EditorGUI.EndChangeCheck())
+                {
+                    if (
+                        newTexture != null
+                        && config.ExcludedTextures.IndexOf(newTexture) is int existing
+                        && existing >= 0
+                        && existing != i
+                    )
+                    {
+                        Debug.LogWarning(
+                            $"[LAC] Texture '{newTexture.name}' is already in the excluded list."
+                        );
+                    }
+                    else
+                    {
+                        Undo.RecordObject(config, "Change Excluded Texture");
+                        config.ExcludedTextures[i] = newTexture;
+                        EditorUtility.SetDirty(config);
+                    }
+                }
+
+                if (GUILayout.Button("X", GUILayout.Width(25)))
+                {
+                    Undo.RecordObject(config, "Remove Excluded Texture");
+                    config.ExcludedTextures.RemoveAt(i);
+                    EditorUtility.SetDirty(config);
+                    EditorGUILayout.EndHorizontal();
+                    continue;
+                }
+
+                EditorGUILayout.EndHorizontal();
+            }
+
+            if (GUILayout.Button("+ Add Texture"))
+            {
+                Undo.RecordObject(config, "Add Excluded Texture");
+                config.ExcludedTextures.Add(null);
+                EditorUtility.SetDirty(config);
+            }
+
+            if (config.ExcludedTextures.Count == 0)
+            {
+                EditorGUILayout.HelpBox(
+                    "Textures added here will be excluded from compression.",
+                    MessageType.None
+                );
+            }
+
+            EditorGUILayout.EndVertical();
+        }
+
+        /// <summary>
         /// Draws the excluded paths section with foldout.
         /// </summary>
         public static void DrawExcludedPaths(TextureCompressor config, ref bool showSection)

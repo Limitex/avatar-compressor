@@ -47,6 +47,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly bool _processEmissionMaps;
         private readonly bool _processOtherTextures;
         private readonly List<string> _excludedPathPrefixes;
+        private readonly HashSet<string> _excludedTextureGuids;
         private readonly HashSet<string> _frozenSkipGuids;
 
         public TextureCollector(
@@ -57,6 +58,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             bool processEmissionMaps,
             bool processOtherTextures,
             IEnumerable<string> excludedPathPrefixes = null,
+            IEnumerable<string> excludedTextureGuids = null,
             IEnumerable<string> frozenSkipGuids = null
         )
         {
@@ -72,6 +74,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         excludedPathPrefixes.Where(p => !string.IsNullOrWhiteSpace(p))
                     )
                     : new List<string>();
+            _excludedTextureGuids =
+                excludedTextureGuids != null
+                    ? new HashSet<string>(excludedTextureGuids)
+                    : new HashSet<string>();
             _frozenSkipGuids =
                 frozenSkipGuids != null
                     ? new HashSet<string>(frozenSkipGuids)
@@ -240,8 +246,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     return (false, SkipReason.ExcludedPath);
             }
 
-            // Check frozen skip using GUID for reliable comparison
+            // Check excluded textures using GUID for reliable comparison
             string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            if (!string.IsNullOrEmpty(guid) && _excludedTextureGuids.Contains(guid))
+                return (false, SkipReason.ExcludedTexture);
+
+            // Check frozen skip using GUID for reliable comparison
             if (!string.IsNullOrEmpty(guid) && _frozenSkipGuids.Contains(guid))
                 return (false, SkipReason.FrozenSkip);
 
@@ -262,6 +272,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 shouldProcess = _processOtherTextures;
 
             return shouldProcess ? (true, SkipReason.None) : (false, SkipReason.FilteredByType);
+        }
+
+        /// <summary>
+        /// Converts a list of Texture2D references to their asset GUIDs, filtering nulls and invalid entries.
+        /// </summary>
+        public static IEnumerable<string> ToAssetGuids(IEnumerable<Texture2D> textures)
+        {
+            if (textures == null)
+                return Enumerable.Empty<string>();
+
+            return textures
+                .Where(t => t != null)
+                .Select(t => AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(t)))
+                .Where(g => !string.IsNullOrEmpty(g));
         }
 
         private string GetTextureType(string propertyName)

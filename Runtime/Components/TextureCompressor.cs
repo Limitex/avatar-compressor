@@ -76,6 +76,10 @@ namespace dev.limitex.avatar.compressor
         [Tooltip("Skip textures smaller than or equal to this size")]
         public int SkipIfSmallerThan = 128;
 
+        [Header("Excluded Textures")]
+        [Tooltip("Specific textures to exclude from compression")]
+        public List<Texture2D> ExcludedTextures = new List<Texture2D>();
+
         [Header("Path Exclusions")]
         [Tooltip("Texture paths starting with these prefixes will be excluded from compression")]
         public List<string> ExcludedPaths = new List<string>(ExcludedPathPresets.GetDefaultPaths());

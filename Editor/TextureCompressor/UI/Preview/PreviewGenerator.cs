@@ -48,6 +48,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             var frozenLookup = FrozenTextureSettings.BuildLookup(config.FrozenTextures);
 
+            var excludedTextureGuids = TextureCollector.ToAssetGuids(config.ExcludedTextures);
+
             var frozenSkipGuids = config
                 .FrozenTextures.Where(f => f.Skip && !string.IsNullOrEmpty(f.TextureGuid))
                 .Select(f => f.TextureGuid);
@@ -60,6 +62,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.ProcessEmissionMaps,
                 config.ProcessOtherTextures,
                 config.ExcludedPaths,
+                excludedTextureGuids,
                 frozenSkipGuids
             );
 
@@ -449,6 +452,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 foreach (var path in config.ExcludedPaths)
                 {
                     hash = hash * 31 + (path?.GetHashCode() ?? 0);
+                }
+                hash = hash * 31 + config.ExcludedTextures.Count;
+                foreach (var tex in config.ExcludedTextures)
+                {
+                    hash = hash * 31 + (tex != null ? tex.GetInstanceID() : 0);
                 }
                 hash = hash * 31 + config.TargetPlatform.GetHashCode();
                 hash = hash * 31 + config.UseHighQualityFormatForHighComplexity.GetHashCode();
