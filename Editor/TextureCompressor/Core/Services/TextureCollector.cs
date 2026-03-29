@@ -79,6 +79,22 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
+        /// Resolves the original asset for an object via ObjectRegistry replacement chain.
+        /// If another NDMF plugin replaced the object, the registry maps it back to the original.
+        /// </summary>
+        private static Object ResolveOriginalObject(Object obj)
+        {
+            var registry = ObjectRegistry.ActiveRegistry;
+            if (registry != null)
+            {
+                var reference = registry.GetReference(obj, create: false);
+                if (reference?.Object != null && reference.Object != obj)
+                    return reference.Object;
+            }
+            return obj;
+        }
+
+        /// <summary>
         /// Collects textures that should be processed from the avatar hierarchy.
         /// </summary>
         public Dictionary<Texture2D, TextureInfo> Collect(GameObject root)
@@ -234,14 +250,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // Resolve original asset via ObjectRegistry replacement chain.
             // If another NDMF plugin replaced the texture, the replacement has no asset path;
             // ObjectRegistry follows the chain back to the original asset.
-            Object resolvedObj = texture;
-            var registry = ObjectRegistry.ActiveRegistry;
-            if (registry != null)
-            {
-                var reference = registry.GetReference(texture, create: false);
-                if (reference?.Object != null && reference.Object != texture)
-                    resolvedObj = reference.Object;
-            }
+            Object resolvedObj = ResolveOriginalObject(texture);
 
             string assetPath = AssetDatabase.GetAssetPath(resolvedObj);
 
