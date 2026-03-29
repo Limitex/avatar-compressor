@@ -72,7 +72,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.HelpBox(
                 "Uncompressed textures on unrecognized shader properties may contain "
                     + "non-visual data (e.g., masks, LUTs) that compression could corrupt. "
-                    + "Already-compressed textures on unknown properties are not affected.",
+                    + "Already-compressed textures on unknown properties are not skipped by this option.",
                 MessageType.Info
             );
 

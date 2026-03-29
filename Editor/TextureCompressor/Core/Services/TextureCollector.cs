@@ -256,12 +256,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             // Skip uncompressed textures on unknown shader properties to avoid corrupting
             // non-visual data (e.g., SPS bake data, masks, LUTs).
-            // Already-compressed textures (DXT, BC, ASTC, etc.) are left alone — they were
-            // intentionally compressed upstream and are likely safe to process.
+            // Already-compressed textures (DXT, BC, ASTC, etc.) are not skipped by this check —
+            // they were intentionally compressed upstream and may still be processed by other filters.
             if (
                 _skipUnknownUncompressedTextures
                 && !TextureFormatSelector.IsCompressedFormat(texture.format)
-                && !KnownCompressibleProperties.TextureProperties.Contains(propertyName)
+                && !KnownCompressibleProperties.IsKnownTextureProperty(propertyName)
             )
                 return (false, SkipReason.UnknownUncompressedProperty);
 

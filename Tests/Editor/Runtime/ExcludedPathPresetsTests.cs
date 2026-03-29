@@ -18,12 +18,12 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void GetDefaultPaths_ReturnsNewArrayEachTime()
+        public void GetDefaultPaths_ReturnsSameInstanceEachTime()
         {
             var paths1 = ExcludedPathPresets.GetDefaultPaths();
             var paths2 = ExcludedPathPresets.GetDefaultPaths();
 
-            Assert.That(paths1, Is.Not.SameAs(paths2));
+            Assert.That(paths1, Is.SameAs(paths2));
         }
 
         #endregion

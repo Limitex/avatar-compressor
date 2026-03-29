@@ -9,12 +9,6 @@ namespace dev.limitex.avatar.compressor.tests
         #region Core Properties Tests
 
         [Test]
-        public void TextureProperties_IsNotNull()
-        {
-            Assert.That(KnownCompressibleProperties.TextureProperties, Is.Not.Null);
-        }
-
-        [Test]
         public void TextureProperties_IsNotEmpty()
         {
             Assert.That(KnownCompressibleProperties.TextureProperties.Count, Is.GreaterThan(0));
@@ -36,7 +30,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_ContainsUnityStandardProperty(string propertyName)
         {
             Assert.IsTrue(
-                KnownCompressibleProperties.TextureProperties.Contains(propertyName),
+                KnownCompressibleProperties.IsKnownTextureProperty(propertyName),
                 $"Missing Unity Standard property: {propertyName}"
             );
         }
@@ -53,7 +47,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_ContainsUnityUrpHdrpProperty(string propertyName)
         {
             Assert.IsTrue(
-                KnownCompressibleProperties.TextureProperties.Contains(propertyName),
+                KnownCompressibleProperties.IsKnownTextureProperty(propertyName),
                 $"Missing URP/HDRP property: {propertyName}"
             );
         }
@@ -72,7 +66,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_ContainsLilToonProperty(string propertyName)
         {
             Assert.IsTrue(
-                KnownCompressibleProperties.TextureProperties.Contains(propertyName),
+                KnownCompressibleProperties.IsKnownTextureProperty(propertyName),
                 $"Missing lilToon property: {propertyName}"
             );
         }
@@ -92,7 +86,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_ContainsPoiyomiProperty(string propertyName)
         {
             Assert.IsTrue(
-                KnownCompressibleProperties.TextureProperties.Contains(propertyName),
+                KnownCompressibleProperties.IsKnownTextureProperty(propertyName),
                 $"Missing Poiyomi property: {propertyName}"
             );
         }
@@ -110,7 +104,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_ContainsUtsProperty(string propertyName)
         {
             Assert.IsTrue(
-                KnownCompressibleProperties.TextureProperties.Contains(propertyName),
+                KnownCompressibleProperties.IsKnownTextureProperty(propertyName),
                 $"Missing UTS property: {propertyName}"
             );
         }
@@ -127,7 +121,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_DoesNotContainUnknownProperty(string propertyName)
         {
             Assert.IsFalse(
-                KnownCompressibleProperties.TextureProperties.Contains(propertyName),
+                KnownCompressibleProperties.IsKnownTextureProperty(propertyName),
                 $"Unexpectedly contains unknown property: {propertyName}"
             );
         }
@@ -137,11 +131,13 @@ namespace dev.limitex.avatar.compressor.tests
         #region Consistency Tests
 
         [Test]
-        public void TextureProperties_NoDuplicatesAffectCount()
+        public void TextureProperties_CountIsStableAcrossAccesses()
         {
-            // HashSet inherently prevents duplicates, so count should be stable
-            var count = KnownCompressibleProperties.TextureProperties.Count;
-            Assert.That(count, Is.GreaterThan(100), "Expected a large set of known properties");
+            // Verify multiple accesses return the same count (no mutation between calls)
+            var first = KnownCompressibleProperties.TextureProperties.Count;
+            var second = KnownCompressibleProperties.TextureProperties.Count;
+            Assert.That(first, Is.EqualTo(second), "Count should be stable across accesses");
+            Assert.That(first, Is.GreaterThan(100), "Expected a large set of known properties");
         }
 
         [Test]

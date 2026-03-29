@@ -17,7 +17,7 @@ namespace dev.limitex.avatar.compressor
         /// </summary>
         public static string[] GetDefaultPaths()
         {
-            return new string[0];
+            return System.Array.Empty<string>();
         }
     }
 

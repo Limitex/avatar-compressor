@@ -323,16 +323,25 @@ namespace dev.limitex.avatar.compressor.editor.texture
             "_AngelRing_Sampler",
         };
 
-        /// <summary>
-        /// Merged set of all known texture property names.
-        /// Textures assigned to these properties are recognized and will not be
-        /// skipped by the unknown uncompressed texture safety check.
-        /// </summary>
-        public static readonly HashSet<string> TextureProperties = new HashSet<string>(
+        private static readonly HashSet<string> TexturePropertiesInternal = new HashSet<string>(
             UnityProperties
                 .Concat(LilToonProperties)
                 .Concat(PoiyomiProperties)
                 .Concat(UtsProperties)
         );
+
+        /// <summary>
+        /// Read-only access to all known texture property names.
+        /// </summary>
+        public static System.Collections.Generic.IReadOnlyCollection<string> TextureProperties =>
+            TexturePropertiesInternal;
+
+        /// <summary>
+        /// Returns true if the given property name is a known, compressible texture property.
+        /// </summary>
+        public static bool IsKnownTextureProperty(string propertyName)
+        {
+            return propertyName != null && TexturePropertiesInternal.Contains(propertyName);
+        }
     }
 }
