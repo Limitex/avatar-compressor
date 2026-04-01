@@ -196,7 +196,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 var originalTexture = kvp.Key;
                 var textureInfo = kvp.Value;
 
-                var resolved = ResolveAnalysis(originalTexture, analysisResults, enableLogging);
+                var resolved = ResolveAnalysis(
+                    originalTexture,
+                    textureInfo,
+                    analysisResults,
+                    enableLogging
+                );
                 if (resolved == null)
                     continue;
 
@@ -346,12 +351,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
             FrozenTextureFormat? FormatOverride
         )? ResolveAnalysis(
             Texture2D originalTexture,
+            TextureInfo textureInfo,
             Dictionary<Texture2D, TextureAnalysisResult> analysisResults,
             bool enableLogging
         )
         {
-            string assetPath = AssetDatabase.GetAssetPath(originalTexture);
-            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            string guid = textureInfo.AssetGuid;
 
             // Check if texture is frozen (non-skipped frozen textures are still in collection)
             if (

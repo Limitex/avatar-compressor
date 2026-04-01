@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor.texture;
+using nadena.dev.ndmf;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -972,16 +973,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var collector = new TextureCollector(
-                    64,
-                    0,
-                    true,
-                    true,
-                    true,
-                    true,
-                    excludedPathPrefixes: null,
-                    frozenSkipGuids: null
-                );
+                var collector = new TextureCollector(64, 0, true, true, true, true);
             });
         }
 
@@ -1322,6 +1314,247 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(texture));
             Assert.IsTrue(result[texture].IsProcessed);
+        }
+
+        #endregion
+
+        #region ObjectRegistry Resolution Tests
+
+        [Test]
+        public void Collect_ReplacedTexture_ResolvesOriginalAssetPath()
+        {
+            // Simulate: an upstream NDMF plugin replaced the original asset texture
+            // with a runtime copy. ObjectRegistry maps the runtime copy back to the original.
+            var originalAssetTexture = CreateTexture(128, 128);
+            var runtimeReplacement = CreateRuntimeTexture(128, 128);
+
+            var registry = new ObjectRegistry(null);
+            using (new ObjectRegistryScope(registry))
+            {
+                ObjectRegistry.RegisterReplacedObject(originalAssetTexture, runtimeReplacement);
+
+                var collector = new TextureCollector(64, 0, true, true, true, true);
+
+                var root = CreateGameObject("Root");
+                var renderer = root.AddComponent<MeshRenderer>();
+                var material = CreateMaterial();
+                material.SetTexture("_MainTex", runtimeReplacement);
+                renderer.sharedMaterial = material;
+
+                var result = collector.Collect(root);
+
+                // The runtime texture should be collected and processed
+                // because the registry maps it back to an asset with a valid path
+                Assert.AreEqual(1, result.Count);
+                Assert.IsTrue(result.ContainsKey(runtimeReplacement));
+                Assert.IsTrue(result[runtimeReplacement].IsProcessed);
+                Assert.AreEqual(SkipReason.None, result[runtimeReplacement].SkipReason);
+            }
+        }
+
+        [Test]
+        public void Collect_ReplacedTexture_GetsAssetGuidFromOriginal()
+        {
+            var originalAssetTexture = CreateTexture(256, 256);
+            var runtimeReplacement = CreateRuntimeTexture(256, 256);
+
+            string expectedGuid = AssetDatabase.AssetPathToGUID(
+                AssetDatabase.GetAssetPath(originalAssetTexture)
+            );
+
+            var registry = new ObjectRegistry(null);
+            using (new ObjectRegistryScope(registry))
+            {
+                ObjectRegistry.RegisterReplacedObject(originalAssetTexture, runtimeReplacement);
+
+                var collector = new TextureCollector(64, 0, true, true, true, true);
+
+                var root = CreateGameObject("Root");
+                var renderer = root.AddComponent<MeshRenderer>();
+                var material = CreateMaterial();
+                material.SetTexture("_MainTex", runtimeReplacement);
+                renderer.sharedMaterial = material;
+
+                var result = collector.Collect(root);
+
+                Assert.AreEqual(expectedGuid, result[runtimeReplacement].AssetGuid);
+            }
+        }
+
+        [Test]
+        public void Collect_ReplacedTexture_NoRegistry_SkipsAsRuntimeGenerated()
+        {
+            // Without an active registry, a runtime texture has no asset path and is skipped
+            var runtimeTexture = CreateRuntimeTexture(128, 128);
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", runtimeTexture);
+            renderer.sharedMaterial = material;
+
+            var result = _collector.CollectAll(root);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsFalse(result[runtimeTexture].IsProcessed);
+            Assert.AreEqual(SkipReason.RuntimeGenerated, result[runtimeTexture].SkipReason);
+        }
+
+        [Test]
+        public void Collect_ReplacedTexture_NotRegistered_SkipsAsRuntimeGenerated()
+        {
+            // Runtime texture exists but is not registered in ObjectRegistry
+            var runtimeTexture = CreateRuntimeTexture(128, 128);
+
+            var registry = new ObjectRegistry(null);
+            using (new ObjectRegistryScope(registry))
+            {
+                var collector = new TextureCollector(64, 0, true, true, true, true);
+
+                var root = CreateGameObject("Root");
+                var renderer = root.AddComponent<MeshRenderer>();
+                var material = CreateMaterial();
+                material.SetTexture("_MainTex", runtimeTexture);
+                renderer.sharedMaterial = material;
+
+                var result = collector.CollectAll(root);
+
+                Assert.AreEqual(1, result.Count);
+                Assert.IsFalse(result[runtimeTexture].IsProcessed);
+                Assert.AreEqual(SkipReason.RuntimeGenerated, result[runtimeTexture].SkipReason);
+            }
+        }
+
+        [Test]
+        public void Collect_ReplacedTexture_OriginalInExcludedPath_SkipsAsExcludedPath()
+        {
+            var originalAssetTexture = CreateTexture(128, 128);
+            var runtimeReplacement = CreateRuntimeTexture(128, 128);
+
+            var registry = new ObjectRegistry(null);
+            using (new ObjectRegistryScope(registry))
+            {
+                ObjectRegistry.RegisterReplacedObject(originalAssetTexture, runtimeReplacement);
+
+                // The original asset is in the test folder — exclude it
+                var collector = new TextureCollector(
+                    64,
+                    0,
+                    true,
+                    true,
+                    true,
+                    true,
+                    excludedPathPrefixes: new[] { TestAssetFolder }
+                );
+
+                var root = CreateGameObject("Root");
+                var renderer = root.AddComponent<MeshRenderer>();
+                var material = CreateMaterial();
+                material.SetTexture("_MainTex", runtimeReplacement);
+                renderer.sharedMaterial = material;
+
+                var result = collector.CollectAll(root);
+
+                Assert.AreEqual(1, result.Count);
+                Assert.IsFalse(result[runtimeReplacement].IsProcessed);
+                Assert.AreEqual(SkipReason.ExcludedPath, result[runtimeReplacement].SkipReason);
+            }
+        }
+
+        [Test]
+        public void Collect_ReplacedTexture_OriginalFrozen_SkipsAsFrozenSkip()
+        {
+            var originalAssetTexture = CreateTexture(128, 128);
+            var runtimeReplacement = CreateRuntimeTexture(128, 128);
+
+            string originalGuid = AssetDatabase.AssetPathToGUID(
+                AssetDatabase.GetAssetPath(originalAssetTexture)
+            );
+
+            var registry = new ObjectRegistry(null);
+            using (new ObjectRegistryScope(registry))
+            {
+                ObjectRegistry.RegisterReplacedObject(originalAssetTexture, runtimeReplacement);
+
+                var collector = new TextureCollector(
+                    64,
+                    0,
+                    true,
+                    true,
+                    true,
+                    true,
+                    frozenSkipGuids: new[] { originalGuid }
+                );
+
+                var root = CreateGameObject("Root");
+                var renderer = root.AddComponent<MeshRenderer>();
+                var material = CreateMaterial();
+                material.SetTexture("_MainTex", runtimeReplacement);
+                renderer.sharedMaterial = material;
+
+                var result = collector.CollectAll(root);
+
+                Assert.AreEqual(1, result.Count);
+                Assert.IsFalse(result[runtimeReplacement].IsProcessed);
+                Assert.AreEqual(SkipReason.FrozenSkip, result[runtimeReplacement].SkipReason);
+            }
+        }
+
+        [Test]
+        public void CollectFromMaterials_ReplacedTexture_ResolvesOriginalAssetPath()
+        {
+            var originalAssetTexture = CreateTexture(128, 128);
+            var runtimeReplacement = CreateRuntimeTexture(128, 128);
+
+            var registry = new ObjectRegistry(null);
+            using (new ObjectRegistryScope(registry))
+            {
+                ObjectRegistry.RegisterReplacedObject(originalAssetTexture, runtimeReplacement);
+
+                var collector = new TextureCollector(64, 0, true, true, true, true);
+
+                var material = CreateMaterial();
+                material.SetTexture("_MainTex", runtimeReplacement);
+
+                var textures = new Dictionary<Texture2D, TextureInfo>();
+                collector.CollectFromMaterials(new Material[] { material }, textures);
+
+                Assert.AreEqual(1, textures.Count);
+                Assert.IsTrue(textures.ContainsKey(runtimeReplacement));
+                Assert.IsTrue(textures[runtimeReplacement].IsProcessed);
+            }
+        }
+
+        [Test]
+        public void Collect_MultipleReplacedTextures_AllResolvedCorrectly()
+        {
+            var originalMain = CreateTexture(128, 128);
+            var originalNormal = CreateTexture(128, 128);
+            var runtimeMain = CreateRuntimeTexture(128, 128);
+            var runtimeNormal = CreateRuntimeTexture(128, 128);
+
+            var registry = new ObjectRegistry(null);
+            using (new ObjectRegistryScope(registry))
+            {
+                ObjectRegistry.RegisterReplacedObject(originalMain, runtimeMain);
+                ObjectRegistry.RegisterReplacedObject(originalNormal, runtimeNormal);
+
+                var collector = new TextureCollector(64, 0, true, true, true, true);
+
+                var root = CreateGameObject("Root");
+                var renderer = root.AddComponent<MeshRenderer>();
+                var material = CreateMaterial();
+                material.SetTexture("_MainTex", runtimeMain);
+                material.SetTexture("_BumpMap", runtimeNormal);
+                renderer.sharedMaterial = material;
+
+                var result = collector.Collect(root);
+
+                Assert.AreEqual(2, result.Count);
+                Assert.IsTrue(result[runtimeMain].IsProcessed);
+                Assert.IsTrue(result[runtimeNormal].IsProcessed);
+                Assert.IsTrue(result[runtimeNormal].IsNormalMap);
+            }
         }
 
         #endregion
