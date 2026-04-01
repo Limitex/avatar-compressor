@@ -404,9 +404,57 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void IsCompressedFormat_ETC_RGB4_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ETC_RGB4));
+        }
+
+        [Test]
+        public void IsCompressedFormat_ETC_RGB4Crunched_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ETC_RGB4Crunched));
+        }
+
+        [Test]
         public void IsCompressedFormat_ETC2_RGB_ReturnsTrue()
         {
             Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ETC2_RGB));
+        }
+
+        [Test]
+        public void IsCompressedFormat_ETC2_RGBA1_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ETC2_RGBA1));
+        }
+
+        [Test]
+        public void IsCompressedFormat_ETC2_RGBA8_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ETC2_RGBA8));
+        }
+
+        [Test]
+        public void IsCompressedFormat_EAC_R_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.EAC_R));
+        }
+
+        [Test]
+        public void IsCompressedFormat_EAC_RG_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.EAC_RG));
+        }
+
+        [Test]
+        public void IsCompressedFormat_EAC_R_SIGNED_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.EAC_R_SIGNED));
+        }
+
+        [Test]
+        public void IsCompressedFormat_EAC_RG_SIGNED_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.EAC_RG_SIGNED));
         }
 
         [Test]

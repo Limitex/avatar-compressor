@@ -68,6 +68,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             "_EmissionMap",
             "_EmissiveMap",
+            "_EmissiveColorMap",
+            "_Emission2ndMap",
+            "_EmissionGradTex",
+            "_Emission2ndGradTex",
+            "_EmissionMap1",
+            "_EmissionMap2",
+            "_EmissionMap3",
+            "_Emissive_Tex",
         };
 
         private static readonly HashSet<string> UnityProperties = new HashSet<string>

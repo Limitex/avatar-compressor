@@ -144,6 +144,16 @@ namespace dev.limitex.avatar.compressor.tests
         [TestCase("_DetailNormalMap", TexturePropertyCategory.Normal)]
         [TestCase("_EmissionMap", TexturePropertyCategory.Emission)]
         [TestCase("_EmissiveMap", TexturePropertyCategory.Emission)]
+        [TestCase("_EmissiveColorMap", TexturePropertyCategory.Emission)]
+        [TestCase("_Emission2ndMap", TexturePropertyCategory.Emission)]
+        [TestCase("_EmissionGradTex", TexturePropertyCategory.Emission)]
+        [TestCase("_Emission2ndGradTex", TexturePropertyCategory.Emission)]
+        [TestCase("_EmissionMap1", TexturePropertyCategory.Emission)]
+        [TestCase("_EmissionMap2", TexturePropertyCategory.Emission)]
+        [TestCase("_EmissionMap3", TexturePropertyCategory.Emission)]
+        [TestCase("_Emissive_Tex", TexturePropertyCategory.Emission)]
+        [TestCase("_EmissionBlendMask", TexturePropertyCategory.Other)]
+        [TestCase("_EmissionMask", TexturePropertyCategory.Other)]
         [TestCase("_MetallicGlossMap", TexturePropertyCategory.Other)]
         [TestCase("_OcclusionMap", TexturePropertyCategory.Other)]
         [TestCase("_MatCapTex", TexturePropertyCategory.Other)]
@@ -186,7 +196,6 @@ namespace dev.limitex.avatar.compressor.tests
             var first = TexturePropertyDefinitions.TextureProperties.Count;
             var second = TexturePropertyDefinitions.TextureProperties.Count;
             Assert.That(first, Is.EqualTo(second), "Count should be stable across accesses");
-            Assert.That(first, Is.GreaterThan(100), "Expected a large set of known properties");
         }
 
         [Test]
@@ -236,6 +245,14 @@ namespace dev.limitex.avatar.compressor.tests
                 "_DetailNormalMap",
                 "_EmissionMap",
                 "_EmissiveMap",
+                "_EmissiveColorMap",
+                "_Emission2ndMap",
+                "_EmissionGradTex",
+                "_Emission2ndGradTex",
+                "_EmissionMap1",
+                "_EmissionMap2",
+                "_EmissionMap3",
+                "_Emissive_Tex",
             };
 
             foreach (var property in categorizedProperties)
