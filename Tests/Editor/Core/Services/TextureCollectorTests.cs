@@ -1316,6 +1316,147 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.IsTrue(result[texture].IsProcessed);
         }
 
+        [Test]
+        public void CollectAll_SameTextureOnKnownAndUnknownProperties_IsProcessed()
+        {
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+
+            // Create a shader with both unknown and known properties.
+            // The unknown property is listed first to exercise the upgrade path
+            // when CollectAll adds skipped textures to the dictionary.
+            var shader = ShaderUtil.CreateShaderAsset(
+                "Shader \"Hidden/Test/"
+                    + System.Guid.NewGuid().ToString("N")
+                    + "\" {"
+                    + " Properties {"
+                    + " _CustomDataMap (\"Custom Data\", 2D) = \"white\" {}"
+                    + " _MainTex (\"Main\", 2D) = \"white\" {}"
+                    + " }"
+                    + " SubShader { Pass { } }"
+                    + "}",
+                false
+            );
+            _createdObjects.Add(shader);
+            var material = new Material(shader);
+            _createdObjects.Add(material);
+
+            var texture = CreateRGBTexture(128, 128);
+            material.SetTexture("_CustomDataMap", texture);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.CollectAll(root);
+
+            // Even though the texture was initially encountered on an unknown property,
+            // the known property (_MainTex) should upgrade it to processed
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+            Assert.IsTrue(result[texture].IsProcessed);
+            Assert.AreEqual(SkipReason.None, result[texture].SkipReason);
+        }
+
+        [Test]
+        public void CollectAll_SameTextureOnUnknownAndDisabledKnownProperty_StaysSkipped()
+        {
+            // Main textures disabled — known property should not upgrade
+            var collector = new TextureCollector(
+                64,
+                0,
+                processMainTextures: false,
+                processNormalMaps: true,
+                processEmissionMaps: true,
+                processOtherTextures: true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+
+            var shader = ShaderUtil.CreateShaderAsset(
+                "Shader \"Hidden/Test/"
+                    + System.Guid.NewGuid().ToString("N")
+                    + "\" {"
+                    + " Properties {"
+                    + " _CustomDataMap (\"Custom Data\", 2D) = \"white\" {}"
+                    + " _MainTex (\"Main\", 2D) = \"white\" {}"
+                    + " }"
+                    + " SubShader { Pass { } }"
+                    + "}",
+                false
+            );
+            _createdObjects.Add(shader);
+            var material = new Material(shader);
+            _createdObjects.Add(material);
+
+            var texture = CreateRGBTexture(128, 128);
+            material.SetTexture("_CustomDataMap", texture);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.CollectAll(root);
+
+            // Known property type is disabled, so the upgrade should not trigger
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+            Assert.IsFalse(result[texture].IsProcessed);
+            Assert.AreEqual(SkipReason.UnknownUncompressedProperty, result[texture].SkipReason);
+        }
+
+        [Test]
+        public void Collect_SameTextureOnUnknownAndDisabledKnownProperty_IsSkipped()
+        {
+            // Main textures disabled — known property should not upgrade
+            var collector = new TextureCollector(
+                64,
+                0,
+                processMainTextures: false,
+                processNormalMaps: true,
+                processEmissionMaps: true,
+                processOtherTextures: true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+
+            var shader = ShaderUtil.CreateShaderAsset(
+                "Shader \"Hidden/Test/"
+                    + System.Guid.NewGuid().ToString("N")
+                    + "\" {"
+                    + " Properties {"
+                    + " _CustomDataMap (\"Custom Data\", 2D) = \"white\" {}"
+                    + " _MainTex (\"Main\", 2D) = \"white\" {}"
+                    + " }"
+                    + " SubShader { Pass { } }"
+                    + "}",
+                false
+            );
+            _createdObjects.Add(shader);
+            var material = new Material(shader);
+            _createdObjects.Add(material);
+
+            var texture = CreateRGBTexture(128, 128);
+            material.SetTexture("_CustomDataMap", texture);
+            material.SetTexture("_MainTex", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.Collect(root);
+
+            // Both properties fail: unknown+uncompressed and disabled type — texture is excluded
+            Assert.AreEqual(0, result.Count);
+        }
+
         #endregion
 
         #region ObjectRegistry Resolution Tests

@@ -224,6 +224,18 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         info.IsProcessed = true;
                         info.SkipReason = SkipReason.None;
                     }
+                    // If the texture was skipped because its first property was unknown and
+                    // uncompressed, a subsequent known property reference makes it safe to compress.
+                    if (
+                        !info.IsProcessed
+                        && info.SkipReason == SkipReason.UnknownUncompressedProperty
+                        && KnownCompressibleProperties.IsKnownTextureProperty(propertyName)
+                        && IsTypeEnabled(propertyName)
+                    )
+                    {
+                        info.IsProcessed = true;
+                        info.SkipReason = SkipReason.None;
+                    }
                 }
 
                 info.References.Add(
