@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using dev.limitex.avatar.compressor.editor;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 
@@ -76,6 +76,22 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 frozenSkipGuids != null
                     ? new HashSet<string>(frozenSkipGuids)
                     : new HashSet<string>();
+        }
+
+        /// <summary>
+        /// Resolves the original asset for an object via ObjectRegistry replacement chain.
+        /// If another NDMF plugin replaced the object, the registry maps it back to the original.
+        /// </summary>
+        private static Object ResolveOriginalObject(Object obj)
+        {
+            var registry = ObjectRegistry.ActiveRegistry;
+            if (registry != null)
+            {
+                var reference = registry.GetReference(obj, create: false);
+                if (reference?.Object != null && reference.Object != obj)
+                    return reference.Object;
+            }
+            return obj;
         }
 
         /// <summary>
@@ -163,26 +179,23 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (texture == null)
                     continue;
 
-                string textureType = GetTextureType(propertyName);
                 bool isNormalMap = NormalMapProperties.Contains(propertyName);
                 bool isEmission = EmissionProperties.Contains(propertyName);
-
-                var processResult = GetProcessResult(texture, propertyName);
-
-                if (!collectAll && !processResult.shouldProcess)
-                    continue;
 
                 if (!textures.TryGetValue(texture, out var info))
                 {
                     info = new TextureInfo
                     {
-                        TextureType = textureType,
+                        TextureType = GetTextureType(propertyName),
                         PropertyName = propertyName,
                         IsNormalMap = isNormalMap,
                         IsEmission = isEmission,
-                        IsProcessed = processResult.shouldProcess,
-                        SkipReason = processResult.skipReason,
                     };
+                    EvaluateProcessability(info, texture, propertyName);
+
+                    if (!collectAll && !info.IsProcessed)
+                        continue;
+
                     textures[texture] = info;
                 }
                 else
@@ -199,10 +212,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     {
                         info.IsEmission = true;
                     }
-                    // Update process status if this reference would be processed.
-                    // If the same texture is referenced by multiple properties and any of them
-                    // should be processed, the texture is marked as processed (order-independent).
-                    if (processResult.shouldProcess && !info.IsProcessed)
+                    // If the texture was only skipped due to type filter, a different property
+                    // referencing the same texture with an enabled type can upgrade it to processed.
+                    // Per-texture checks (path, size, frozen) don't change between properties.
+                    if (
+                        !info.IsProcessed
+                        && info.SkipReason == SkipReason.FilteredByType
+                        && IsTypeEnabled(propertyName)
+                    )
                     {
                         info.IsProcessed = true;
                         info.SkipReason = SkipReason.None;
@@ -220,48 +237,82 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
         }
 
-        private (bool shouldProcess, SkipReason skipReason) GetProcessResult(
+        /// <summary>
+        /// Evaluates whether a texture should be processed and populates the TextureInfo accordingly.
+        /// Resolves the original asset via ObjectRegistry for textures replaced by upstream NDMF plugins.
+        /// </summary>
+        private void EvaluateProcessability(
+            TextureInfo info,
             Texture2D texture,
             string propertyName
         )
         {
-            string assetPath = AssetDatabase.GetAssetPath(texture);
+            // Resolve original asset via ObjectRegistry replacement chain.
+            // If another NDMF plugin replaced the texture, the replacement has no asset path;
+            // ObjectRegistry follows the chain back to the original asset.
+            Object resolvedObj = ResolveOriginalObject(texture);
+
+            string assetPath = AssetDatabase.GetAssetPath(resolvedObj);
 
             // Skip runtime-generated textures (no asset path).
             // These are dynamically created during build and may use RGB values for non-visual data
             // (e.g., depth, deformation vectors), which compression would corrupt.
             if (string.IsNullOrEmpty(assetPath))
-                return (false, SkipReason.RuntimeGenerated);
+            {
+                info.IsProcessed = false;
+                info.SkipReason = SkipReason.RuntimeGenerated;
+                return;
+            }
 
             // Skip textures in excluded paths
             foreach (var prefix in _excludedPathPrefixes)
             {
                 if (assetPath.StartsWith(prefix))
-                    return (false, SkipReason.ExcludedPath);
+                {
+                    info.IsProcessed = false;
+                    info.SkipReason = SkipReason.ExcludedPath;
+                    return;
+                }
             }
 
-            // Check frozen skip using GUID for reliable comparison
             string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            info.AssetGuid = guid ?? string.Empty;
+
             if (!string.IsNullOrEmpty(guid) && _frozenSkipGuids.Contains(guid))
-                return (false, SkipReason.FrozenSkip);
+            {
+                info.IsProcessed = false;
+                info.SkipReason = SkipReason.FrozenSkip;
+                return;
+            }
 
             int maxDim = Mathf.Max(texture.width, texture.height);
-            if (maxDim < _minSourceSize)
-                return (false, SkipReason.TooSmall);
-            if (maxDim <= _skipIfSmallerThan)
-                return (false, SkipReason.TooSmall);
+            if (maxDim < _minSourceSize || maxDim <= _skipIfSmallerThan)
+            {
+                info.IsProcessed = false;
+                info.SkipReason = SkipReason.TooSmall;
+                return;
+            }
 
-            bool shouldProcess;
+            if (!IsTypeEnabled(propertyName))
+            {
+                info.IsProcessed = false;
+                info.SkipReason = SkipReason.FilteredByType;
+                return;
+            }
+
+            info.IsProcessed = true;
+            info.SkipReason = SkipReason.None;
+        }
+
+        private bool IsTypeEnabled(string propertyName)
+        {
             if (MainTextureProperties.Contains(propertyName))
-                shouldProcess = _processMainTextures;
-            else if (NormalMapProperties.Contains(propertyName))
-                shouldProcess = _processNormalMaps;
-            else if (EmissionProperties.Contains(propertyName))
-                shouldProcess = _processEmissionMaps;
-            else
-                shouldProcess = _processOtherTextures;
-
-            return shouldProcess ? (true, SkipReason.None) : (false, SkipReason.FilteredByType);
+                return _processMainTextures;
+            if (NormalMapProperties.Contains(propertyName))
+                return _processNormalMaps;
+            if (EmissionProperties.Contains(propertyName))
+                return _processEmissionMaps;
+            return _processOtherTextures;
         }
 
         private string GetTextureType(string propertyName)

@@ -27,6 +27,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public bool IsEmission { get; set; }
         public bool IsProcessed { get; set; } = true;
         public SkipReason SkipReason { get; set; } = SkipReason.None;
+        public string AssetGuid { get; set; } = string.Empty;
         public List<MaterialTextureReference> References { get; } =
             new List<MaterialTextureReference>();
     }

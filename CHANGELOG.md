@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Resolve original asset path via ObjectRegistry for textures replaced by other NDMF plugins
+- Collect all material references for shared textures regardless of per-property type filter
+
 ## [v0.7.0] - 2026-03-27
 
 ### Added
