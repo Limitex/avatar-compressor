@@ -444,6 +444,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 hash = hash * 31 + config.ProcessNormalMaps.GetHashCode();
                 hash = hash * 31 + config.ProcessEmissionMaps.GetHashCode();
                 hash = hash * 31 + config.ProcessOtherTextures.GetHashCode();
+                hash = hash * 31 + config.SkipUnknownUncompressedTextures.GetHashCode();
                 hash = hash * 31 + config.MinSourceSize;
                 hash = hash * 31 + config.SkipIfSmallerThan;
                 hash = hash * 31 + config.ExcludedPaths.Count;
