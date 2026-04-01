@@ -20,7 +20,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             "_AlbedoMap",
             "_Diffuse",
             "_DiffuseMap",
-            "_Color",
             "_ColorMap",
         };
 
@@ -36,8 +35,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             "_EmissionMap",
             "_EmissiveMap",
-            "_Emission",
-            "_EmissiveColor",
         };
 
         private readonly int _minSourceSize;
