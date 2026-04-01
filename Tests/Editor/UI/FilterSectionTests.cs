@@ -236,6 +236,8 @@ namespace dev.limitex.avatar.compressor.tests
             // Texture filters are per-component settings, not managed by presets
             _config.ProcessMainTextures = false;
             _config.ProcessNormalMaps = false;
+            _config.ProcessEmissionMaps = false;
+            _config.ProcessOtherTextures = false;
 
             // Apply preset
             _config.ApplyPreset(CompressorPreset.Balanced);
@@ -243,6 +245,8 @@ namespace dev.limitex.avatar.compressor.tests
             // Filters should remain unchanged
             Assert.That(_config.ProcessMainTextures, Is.False);
             Assert.That(_config.ProcessNormalMaps, Is.False);
+            Assert.That(_config.ProcessEmissionMaps, Is.False);
+            Assert.That(_config.ProcessOtherTextures, Is.False);
         }
 
         [Test]
@@ -251,6 +255,8 @@ namespace dev.limitex.avatar.compressor.tests
             // Custom preset preserves current settings
             _config.ProcessMainTextures = false;
             _config.ProcessNormalMaps = false;
+            _config.ProcessEmissionMaps = false;
+            _config.ProcessOtherTextures = false;
 
             // Apply Custom preset
             _config.ApplyPreset(CompressorPreset.Custom);
@@ -258,6 +264,8 @@ namespace dev.limitex.avatar.compressor.tests
             // Filters should remain unchanged
             Assert.That(_config.ProcessMainTextures, Is.False);
             Assert.That(_config.ProcessNormalMaps, Is.False);
+            Assert.That(_config.ProcessEmissionMaps, Is.False);
+            Assert.That(_config.ProcessOtherTextures, Is.False);
         }
 
         [Test]
