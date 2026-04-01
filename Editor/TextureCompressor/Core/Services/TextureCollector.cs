@@ -11,32 +11,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// </summary>
     public class TextureCollector
     {
-        private static readonly HashSet<string> MainTextureProperties = new HashSet<string>
-        {
-            "_MainTex",
-            "_BaseMap",
-            "_BaseColorMap",
-            "_Albedo",
-            "_AlbedoMap",
-            "_Diffuse",
-            "_DiffuseMap",
-            "_ColorMap",
-        };
-
-        private static readonly HashSet<string> NormalMapProperties = new HashSet<string>
-        {
-            "_BumpMap",
-            "_NormalMap",
-            "_Normal",
-            "_DetailNormalMap",
-        };
-
-        private static readonly HashSet<string> EmissionProperties = new HashSet<string>
-        {
-            "_EmissionMap",
-            "_EmissiveMap",
-        };
-
         private readonly int _minSourceSize;
         private readonly int _skipIfSmallerThan;
         private readonly bool _processMainTextures;
@@ -179,8 +153,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (texture == null)
                     continue;
 
-                bool isNormalMap = NormalMapProperties.Contains(propertyName);
-                bool isEmission = EmissionProperties.Contains(propertyName);
+                var category = TexturePropertyDefinitions.GetCategory(propertyName);
+                bool isNormalMap = category == TexturePropertyCategory.Normal;
+                bool isEmission = category == TexturePropertyCategory.Emission;
 
                 if (!textures.TryGetValue(texture, out var info))
                 {
@@ -296,7 +271,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (
                 _skipUnknownUncompressedTextures
                 && !TextureFormatSelector.IsCompressedFormat(texture.format)
-                && !KnownCompressibleProperties.IsKnownTextureProperty(propertyName)
+                && !TexturePropertyDefinitions.IsKnownTextureProperty(propertyName)
             )
             {
                 info.IsProcessed = false;
@@ -327,7 +302,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 case SkipReason.FilteredByType:
                     return IsTypeEnabled(propertyName);
                 case SkipReason.UnknownUncompressedProperty:
-                    return KnownCompressibleProperties.IsKnownTextureProperty(propertyName)
+                    return TexturePropertyDefinitions.IsKnownTextureProperty(propertyName)
                         && IsTypeEnabled(propertyName);
                 default:
                     return false;
@@ -336,24 +311,22 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         private bool IsTypeEnabled(string propertyName)
         {
-            if (MainTextureProperties.Contains(propertyName))
-                return _processMainTextures;
-            if (NormalMapProperties.Contains(propertyName))
-                return _processNormalMaps;
-            if (EmissionProperties.Contains(propertyName))
-                return _processEmissionMaps;
-            return _processOtherTextures;
+            switch (TexturePropertyDefinitions.GetCategory(propertyName))
+            {
+                case TexturePropertyCategory.Main:
+                    return _processMainTextures;
+                case TexturePropertyCategory.Normal:
+                    return _processNormalMaps;
+                case TexturePropertyCategory.Emission:
+                    return _processEmissionMaps;
+                default:
+                    return _processOtherTextures;
+            }
         }
 
-        private string GetTextureType(string propertyName)
+        private static string GetTextureType(string propertyName)
         {
-            if (MainTextureProperties.Contains(propertyName))
-                return "Main";
-            if (NormalMapProperties.Contains(propertyName))
-                return "Normal";
-            if (EmissionProperties.Contains(propertyName))
-                return "Emission";
-            return "Other";
+            return TexturePropertyDefinitions.GetCategory(propertyName).ToString();
         }
     }
 }

@@ -4,14 +4,14 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class KnownCompressiblePropertiesTests
+    public class TexturePropertyDefinitionsTests
     {
         #region Core Properties Tests
 
         [Test]
         public void TextureProperties_IsNotEmpty()
         {
-            Assert.That(KnownCompressibleProperties.TextureProperties.Count, Is.GreaterThan(0));
+            Assert.That(TexturePropertyDefinitions.TextureProperties.Count, Is.GreaterThan(0));
         }
 
         #endregion
@@ -30,7 +30,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_ContainsUnityStandardProperty(string propertyName)
         {
             Assert.IsTrue(
-                KnownCompressibleProperties.IsKnownTextureProperty(propertyName),
+                TexturePropertyDefinitions.IsKnownTextureProperty(propertyName),
                 $"Missing Unity Standard property: {propertyName}"
             );
         }
@@ -47,7 +47,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_ContainsUnityUrpHdrpProperty(string propertyName)
         {
             Assert.IsTrue(
-                KnownCompressibleProperties.IsKnownTextureProperty(propertyName),
+                TexturePropertyDefinitions.IsKnownTextureProperty(propertyName),
                 $"Missing URP/HDRP property: {propertyName}"
             );
         }
@@ -66,7 +66,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_ContainsLilToonProperty(string propertyName)
         {
             Assert.IsTrue(
-                KnownCompressibleProperties.IsKnownTextureProperty(propertyName),
+                TexturePropertyDefinitions.IsKnownTextureProperty(propertyName),
                 $"Missing lilToon property: {propertyName}"
             );
         }
@@ -86,7 +86,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_ContainsPoiyomiProperty(string propertyName)
         {
             Assert.IsTrue(
-                KnownCompressibleProperties.IsKnownTextureProperty(propertyName),
+                TexturePropertyDefinitions.IsKnownTextureProperty(propertyName),
                 $"Missing Poiyomi property: {propertyName}"
             );
         }
@@ -104,7 +104,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_ContainsUtsProperty(string propertyName)
         {
             Assert.IsTrue(
-                KnownCompressibleProperties.IsKnownTextureProperty(propertyName),
+                TexturePropertyDefinitions.IsKnownTextureProperty(propertyName),
                 $"Missing UTS property: {propertyName}"
             );
         }
@@ -121,8 +121,57 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_DoesNotContainUnknownProperty(string propertyName)
         {
             Assert.IsFalse(
-                KnownCompressibleProperties.IsKnownTextureProperty(propertyName),
+                TexturePropertyDefinitions.IsKnownTextureProperty(propertyName),
                 $"Unexpectedly contains unknown property: {propertyName}"
+            );
+        }
+
+        #endregion
+
+        #region GetCategory Tests
+
+        [TestCase("_MainTex", TexturePropertyCategory.Main)]
+        [TestCase("_BaseMap", TexturePropertyCategory.Main)]
+        [TestCase("_BaseColorMap", TexturePropertyCategory.Main)]
+        [TestCase("_Albedo", TexturePropertyCategory.Main)]
+        [TestCase("_AlbedoMap", TexturePropertyCategory.Main)]
+        [TestCase("_Diffuse", TexturePropertyCategory.Main)]
+        [TestCase("_DiffuseMap", TexturePropertyCategory.Main)]
+        [TestCase("_ColorMap", TexturePropertyCategory.Main)]
+        [TestCase("_BumpMap", TexturePropertyCategory.Normal)]
+        [TestCase("_NormalMap", TexturePropertyCategory.Normal)]
+        [TestCase("_Normal", TexturePropertyCategory.Normal)]
+        [TestCase("_DetailNormalMap", TexturePropertyCategory.Normal)]
+        [TestCase("_EmissionMap", TexturePropertyCategory.Emission)]
+        [TestCase("_EmissiveMap", TexturePropertyCategory.Emission)]
+        [TestCase("_MetallicGlossMap", TexturePropertyCategory.Other)]
+        [TestCase("_OcclusionMap", TexturePropertyCategory.Other)]
+        [TestCase("_MatCapTex", TexturePropertyCategory.Other)]
+        public void GetCategory_ReturnsCorrectCategory(
+            string propertyName,
+            TexturePropertyCategory expected
+        )
+        {
+            Assert.That(TexturePropertyDefinitions.GetCategory(propertyName), Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void GetCategory_NullInput_ReturnsOther()
+        {
+            Assert.That(
+                TexturePropertyDefinitions.GetCategory(null),
+                Is.EqualTo(TexturePropertyCategory.Other)
+            );
+        }
+
+        [TestCase("_UnknownProperty")]
+        [TestCase("_SPSBakeData")]
+        [TestCase("")]
+        public void GetCategory_UnknownProperty_ReturnsOther(string propertyName)
+        {
+            Assert.That(
+                TexturePropertyDefinitions.GetCategory(propertyName),
+                Is.EqualTo(TexturePropertyCategory.Other)
             );
         }
 
@@ -134,8 +183,8 @@ namespace dev.limitex.avatar.compressor.tests
         public void TextureProperties_CountIsStableAcrossAccesses()
         {
             // Verify multiple accesses return the same count (no mutation between calls)
-            var first = KnownCompressibleProperties.TextureProperties.Count;
-            var second = KnownCompressibleProperties.TextureProperties.Count;
+            var first = TexturePropertyDefinitions.TextureProperties.Count;
+            var second = TexturePropertyDefinitions.TextureProperties.Count;
             Assert.That(first, Is.EqualTo(second), "Count should be stable across accesses");
             Assert.That(first, Is.GreaterThan(100), "Expected a large set of known properties");
         }
@@ -143,7 +192,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void TextureProperties_AllEntriesAreNonEmpty()
         {
-            foreach (var property in KnownCompressibleProperties.TextureProperties)
+            foreach (var property in TexturePropertyDefinitions.TextureProperties)
             {
                 Assert.That(
                     property,
@@ -156,12 +205,46 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void TextureProperties_AllEntriesStartWithUnderscore()
         {
-            foreach (var property in KnownCompressibleProperties.TextureProperties)
+            foreach (var property in TexturePropertyDefinitions.TextureProperties)
             {
                 Assert.That(
                     property,
                     Does.StartWith("_"),
                     $"Property '{property}' does not start with underscore"
+                );
+            }
+        }
+
+        [Test]
+        public void GetCategory_AllCategorizedProperties_AreKnown()
+        {
+            // Properties that return a specific category (Main, Normal, Emission)
+            // must also be recognized as known texture properties.
+            var categorizedProperties = new[]
+            {
+                "_MainTex",
+                "_BaseMap",
+                "_BaseColorMap",
+                "_Albedo",
+                "_AlbedoMap",
+                "_Diffuse",
+                "_DiffuseMap",
+                "_ColorMap",
+                "_BumpMap",
+                "_NormalMap",
+                "_Normal",
+                "_DetailNormalMap",
+                "_EmissionMap",
+                "_EmissiveMap",
+            };
+
+            foreach (var property in categorizedProperties)
+            {
+                Assert.IsTrue(
+                    TexturePropertyDefinitions.IsKnownTextureProperty(property),
+                    $"Categorized property '{property}' "
+                        + $"(category: {TexturePropertyDefinitions.GetCategory(property)}) "
+                        + "is not in AllKnownProperties"
                 );
             }
         }

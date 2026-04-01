@@ -4,11 +4,27 @@ using System.Linq;
 namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
+    /// Categories for texture properties, used to control per-type processing toggles.
+    /// </summary>
+    public enum TexturePropertyCategory
+    {
+        Main,
+        Normal,
+        Emission,
+        Other,
+    }
+
+    /// <summary>
     /// Known texture property names from common VRChat shaders.
-    /// Used to identify textures whose purpose is recognized, so they are not
-    /// mistakenly skipped by the "skip unknown uncompressed textures" safety feature.
+    /// Provides both property recognition (known vs unknown) and category classification
+    /// (Main, Normal, Emission, Other) from a single source of truth.
+    ///
+    /// Property recognition is used by the "skip unknown uncompressed textures" safety feature.
     /// Uncompressed textures assigned to unknown properties may contain non-visual data
     /// (e.g., SPS bake data, masks, lookup tables), where compression could corrupt the data.
+    ///
+    /// Category classification is used by per-type processing toggles to let users
+    /// selectively enable or disable compression for each texture category.
     ///
     /// Sources verified against actual repositories:
     ///   - Unity Standard / URP / HDRP (built-in shader documentation)
@@ -16,8 +32,44 @@ namespace dev.limitex.avatar.compressor.editor.texture
     ///   - Poiyomi Toon Shader (https://github.com/poiyomi/PoiyomiToonShader)
     ///   - UTS2 (https://github.com/unity3d-jp/UnityChanToonShaderVer2_Project)
     /// </summary>
-    public static class KnownCompressibleProperties
+    public static class TexturePropertyDefinitions
     {
+        /// <summary>
+        /// Property names classified as main (albedo/diffuse) textures.
+        /// These are the primary color textures used across common shaders.
+        /// </summary>
+        private static readonly HashSet<string> MainProperties = new HashSet<string>
+        {
+            "_MainTex",
+            "_BaseMap",
+            "_BaseColorMap",
+            "_Albedo",
+            "_AlbedoMap",
+            "_Diffuse",
+            "_DiffuseMap",
+            "_ColorMap",
+        };
+
+        /// <summary>
+        /// Property names classified as normal map textures.
+        /// </summary>
+        private static readonly HashSet<string> NormalProperties = new HashSet<string>
+        {
+            "_BumpMap",
+            "_NormalMap",
+            "_Normal",
+            "_DetailNormalMap",
+        };
+
+        /// <summary>
+        /// Property names classified as emission textures.
+        /// </summary>
+        private static readonly HashSet<string> EmissionProperties = new HashSet<string>
+        {
+            "_EmissionMap",
+            "_EmissiveMap",
+        };
+
         private static readonly HashSet<string> UnityProperties = new HashSet<string>
         {
             // Standard
@@ -323,7 +375,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             "_AngelRing_Sampler",
         };
 
-        private static readonly HashSet<string> TexturePropertiesInternal = new HashSet<string>(
+        private static readonly HashSet<string> AllKnownProperties = new HashSet<string>(
             UnityProperties
                 .Concat(LilToonProperties)
                 .Concat(PoiyomiProperties)
@@ -333,15 +385,31 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <summary>
         /// Read-only access to all known texture property names.
         /// </summary>
-        public static System.Collections.Generic.IReadOnlyCollection<string> TextureProperties =>
-            TexturePropertiesInternal;
+        public static IReadOnlyCollection<string> TextureProperties => AllKnownProperties;
 
         /// <summary>
         /// Returns true if the given property name is a known, compressible texture property.
         /// </summary>
         public static bool IsKnownTextureProperty(string propertyName)
         {
-            return propertyName != null && TexturePropertiesInternal.Contains(propertyName);
+            return propertyName != null && AllKnownProperties.Contains(propertyName);
+        }
+
+        /// <summary>
+        /// Returns the category for the given texture property name.
+        /// Properties not in the Main, Normal, or Emission category sets return Other.
+        /// </summary>
+        public static TexturePropertyCategory GetCategory(string propertyName)
+        {
+            if (propertyName == null)
+                return TexturePropertyCategory.Other;
+            if (MainProperties.Contains(propertyName))
+                return TexturePropertyCategory.Main;
+            if (NormalProperties.Contains(propertyName))
+                return TexturePropertyCategory.Normal;
+            if (EmissionProperties.Contains(propertyName))
+                return TexturePropertyCategory.Emission;
+            return TexturePropertyCategory.Other;
         }
     }
 }
