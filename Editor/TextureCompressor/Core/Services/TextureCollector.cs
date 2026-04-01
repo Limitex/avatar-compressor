@@ -212,26 +212,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     {
                         info.IsEmission = true;
                     }
-                    // If the texture was only skipped due to type filter, a different property
-                    // referencing the same texture with an enabled type can upgrade it to processed.
-                    // Per-texture checks (path, size, frozen) don't change between properties.
-                    if (
-                        !info.IsProcessed
-                        && info.SkipReason == SkipReason.FilteredByType
-                        && IsTypeEnabled(propertyName)
-                    )
-                    {
-                        info.IsProcessed = true;
-                        info.SkipReason = SkipReason.None;
-                    }
-                    // If the texture was skipped because its first property was unknown and
-                    // uncompressed, a subsequent known property reference makes it safe to compress.
-                    if (
-                        !info.IsProcessed
-                        && info.SkipReason == SkipReason.UnknownUncompressedProperty
-                        && KnownCompressibleProperties.IsKnownTextureProperty(propertyName)
-                        && IsTypeEnabled(propertyName)
-                    )
+                    // Per-texture checks (path, size, frozen) don't change between properties,
+                    // but property-dependent skip reasons can be upgraded when a subsequent
+                    // property reference satisfies the required conditions.
+                    if (!info.IsProcessed && CanUpgradeSkipReason(info.SkipReason, propertyName))
                     {
                         info.IsProcessed = true;
                         info.SkipReason = SkipReason.None;
@@ -329,6 +313,25 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             info.IsProcessed = true;
             info.SkipReason = SkipReason.None;
+        }
+
+        /// <summary>
+        /// Determines whether a property-dependent skip reason can be upgraded to processed.
+        /// Only skip reasons that depend on the property name are eligible; per-texture
+        /// reasons (path, size, frozen, runtime-generated) are never upgradeable.
+        /// </summary>
+        private bool CanUpgradeSkipReason(SkipReason reason, string propertyName)
+        {
+            switch (reason)
+            {
+                case SkipReason.FilteredByType:
+                    return IsTypeEnabled(propertyName);
+                case SkipReason.UnknownUncompressedProperty:
+                    return KnownCompressibleProperties.IsKnownTextureProperty(propertyName)
+                        && IsTypeEnabled(propertyName);
+                default:
+                    return false;
+            }
         }
 
         private bool IsTypeEnabled(string propertyName)
