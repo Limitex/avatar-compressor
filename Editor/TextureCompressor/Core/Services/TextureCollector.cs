@@ -189,7 +189,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     // Per-texture checks (path, size, frozen) don't change between properties,
                     // but property-dependent skip reasons can be upgraded when a subsequent
                     // property reference satisfies the required conditions.
-                    if (!info.IsProcessed && CanUpgradeSkipReason(info.SkipReason, propertyName))
+                    if (
+                        !info.IsProcessed
+                        && IsPropertyDependentReason(info.SkipReason)
+                        && GetPropertyDependentSkipReason(texture, propertyName) == null
+                    )
                     {
                         info.IsProcessed = true;
                         info.SkipReason = SkipReason.None;
@@ -263,6 +267,26 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 return;
             }
 
+            var propertySkipReason = GetPropertyDependentSkipReason(texture, propertyName);
+            if (propertySkipReason != null)
+            {
+                info.IsProcessed = false;
+                info.SkipReason = propertySkipReason.Value;
+                return;
+            }
+
+            info.IsProcessed = true;
+            info.SkipReason = SkipReason.None;
+        }
+
+        /// <summary>
+        /// Returns the property-dependent skip reason for the given texture and property,
+        /// or null if the property passes all property-dependent checks.
+        /// This is the single source of truth for property-dependent skip logic, used both
+        /// during initial evaluation and when upgrading a previously skipped texture.
+        /// </summary>
+        private SkipReason? GetPropertyDependentSkipReason(Texture2D texture, string propertyName)
+        {
             // Skip uncompressed textures on unknown shader properties to avoid corrupting
             // non-visual data (e.g., SPS bake data, masks, LUTs).
             // Already-compressed textures (DXT, BC, ASTC, etc.) are not skipped by this check —
@@ -272,40 +296,23 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 && !TextureFormatInfo.IsCompressed(texture.format)
                 && !TexturePropertyDefinitions.IsKnownTextureProperty(propertyName)
             )
-            {
-                info.IsProcessed = false;
-                info.SkipReason = SkipReason.UnknownUncompressedProperty;
-                return;
-            }
+                return SkipReason.UnknownUncompressedProperty;
 
             if (!IsTypeEnabled(propertyName))
-            {
-                info.IsProcessed = false;
-                info.SkipReason = SkipReason.FilteredByType;
-                return;
-            }
+                return SkipReason.FilteredByType;
 
-            info.IsProcessed = true;
-            info.SkipReason = SkipReason.None;
+            return null;
         }
 
         /// <summary>
-        /// Determines whether a property-dependent skip reason can be upgraded to processed.
-        /// Only skip reasons that depend on the property name are eligible; per-texture
-        /// reasons (path, size, frozen, runtime-generated) are never upgradeable.
+        /// Returns true if the skip reason depends on the property name and can potentially
+        /// be resolved by a different property referencing the same texture.
+        /// Per-texture reasons (path, size, frozen, runtime-generated) are never upgradeable.
         /// </summary>
-        private bool CanUpgradeSkipReason(SkipReason reason, string propertyName)
+        private static bool IsPropertyDependentReason(SkipReason reason)
         {
-            switch (reason)
-            {
-                case SkipReason.FilteredByType:
-                    return IsTypeEnabled(propertyName);
-                case SkipReason.UnknownUncompressedProperty:
-                    return TexturePropertyDefinitions.IsKnownTextureProperty(propertyName)
-                        && IsTypeEnabled(propertyName);
-                default:
-                    return false;
-            }
+            return reason == SkipReason.FilteredByType
+                || reason == SkipReason.UnknownUncompressedProperty;
         }
 
         private bool IsTypeEnabled(string propertyName)

@@ -1459,6 +1459,101 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(0, result.Count);
         }
 
+        [Test]
+        public void CollectAll_FilteredByTypeThenUnknownUncompressed_StaysSkipped()
+        {
+            // Regression: a texture first skipped as FilteredByType (disabled Main)
+            // must NOT be upgraded by a later unknown+uncompressed property even when
+            // processOtherTextures is enabled and skipUnknownUncompressedTextures is on.
+            var collector = new TextureCollector(
+                64,
+                0,
+                processMainTextures: false,
+                processNormalMaps: true,
+                processEmissionMaps: true,
+                processOtherTextures: true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+
+            // _MainTex is listed first (disabled type → FilteredByType),
+            // _CustomDataMap is listed second (unknown + uncompressed).
+            var shader = ShaderUtil.CreateShaderAsset(
+                "Shader \"Hidden/Test/"
+                    + System.Guid.NewGuid().ToString("N")
+                    + "\" {"
+                    + " Properties {"
+                    + " _MainTex (\"Main\", 2D) = \"white\" {}"
+                    + " _CustomDataMap (\"Custom Data\", 2D) = \"white\" {}"
+                    + " }"
+                    + " SubShader { Pass { } }"
+                    + "}",
+                false
+            );
+            _createdObjects.Add(shader);
+            var material = new Material(shader);
+            _createdObjects.Add(material);
+
+            var texture = CreateRGBTexture(128, 128);
+            material.SetTexture("_MainTex", texture);
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.CollectAll(root);
+
+            // The unknown property must not upgrade the FilteredByType skip because
+            // the texture is uncompressed and the property is unknown.
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+            Assert.IsFalse(result[texture].IsProcessed);
+        }
+
+        [Test]
+        public void Collect_FilteredByTypeThenUnknownUncompressed_IsSkipped()
+        {
+            // Same scenario as above but using Collect (non-collectAll mode).
+            var collector = new TextureCollector(
+                64,
+                0,
+                processMainTextures: false,
+                processNormalMaps: true,
+                processEmissionMaps: true,
+                processOtherTextures: true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+
+            var shader = ShaderUtil.CreateShaderAsset(
+                "Shader \"Hidden/Test/"
+                    + System.Guid.NewGuid().ToString("N")
+                    + "\" {"
+                    + " Properties {"
+                    + " _MainTex (\"Main\", 2D) = \"white\" {}"
+                    + " _CustomDataMap (\"Custom Data\", 2D) = \"white\" {}"
+                    + " }"
+                    + " SubShader { Pass { } }"
+                    + "}",
+                false
+            );
+            _createdObjects.Add(shader);
+            var material = new Material(shader);
+            _createdObjects.Add(material);
+
+            var texture = CreateRGBTexture(128, 128);
+            material.SetTexture("_MainTex", texture);
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.Collect(root);
+
+            // Texture should not appear — both properties fail property-dependent checks.
+            Assert.AreEqual(0, result.Count);
+        }
+
         #endregion
 
         #region ObjectRegistry Resolution Tests
