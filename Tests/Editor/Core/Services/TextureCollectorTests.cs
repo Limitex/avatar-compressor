@@ -1182,7 +1182,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void Collect_DefaultCollector_SkipsUnknownUncompressedProperty()
+        public void Collect_SkipEnabledCollector_SkipsUnknownUncompressedProperty()
         {
             // _collector is initialized with skipUnknownUncompressedTextures=true
             var root = CreateGameObject("Root");
@@ -1199,7 +1199,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CollectAll_DefaultCollector_UnknownUncompressedProperty_HasCorrectSkipReason()
+        public void CollectAll_SkipEnabledCollector_UnknownUncompressedProperty_HasCorrectSkipReason()
         {
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
