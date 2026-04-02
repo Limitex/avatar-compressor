@@ -28,7 +28,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             bool processNormalMaps,
             bool processEmissionMaps,
             bool processOtherTextures,
-            bool skipUnknownUncompressedTextures = true,
+            bool skipUnknownUncompressedTextures,
             IEnumerable<string> excludedPathPrefixes = null,
             IEnumerable<string> frozenSkipGuids = null
         )

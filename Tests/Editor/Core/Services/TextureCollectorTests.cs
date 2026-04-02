@@ -19,7 +19,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void SetUp()
         {
             // Default: minSourceSize=64, skipIfSmallerThan=0, process all texture types
-            _collector = new TextureCollector(64, 0, true, true, true, true);
+            _collector = new TextureCollector(64, 0, true, true, true, true, true);
             _createdObjects = new List<Object>();
             _createdAssetPaths = new List<string>();
 
@@ -186,7 +186,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Collect_TextureBelowMinSize_Skipped()
         {
-            var collector = new TextureCollector(256, 0, true, true, true, true);
+            var collector = new TextureCollector(256, 0, true, true, true, true, true);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -204,7 +204,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Collect_TextureAtSkipThreshold_Skipped()
         {
-            var collector = new TextureCollector(64, 128, true, true, true, true);
+            var collector = new TextureCollector(64, 128, true, true, true, true, true);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -222,7 +222,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Collect_TextureAboveSkipThreshold_Included()
         {
-            var collector = new TextureCollector(64, 128, true, true, true, true);
+            var collector = new TextureCollector(64, 128, true, true, true, true, true);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -240,7 +240,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Collect_MainTexturesDisabled_SkipsMainTextures()
         {
-            var collector = new TextureCollector(64, 0, false, true, true, true);
+            var collector = new TextureCollector(64, 0, false, true, true, true, true);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -262,7 +262,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Collect_NormalMapsDisabled_SkipsNormalMaps()
         {
-            var collector = new TextureCollector(64, 0, true, false, true, true);
+            var collector = new TextureCollector(64, 0, true, false, true, true, true);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -284,7 +284,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Collect_EmissionMapsDisabled_SkipsEmissionMaps()
         {
-            var collector = new TextureCollector(64, 0, true, true, false, true);
+            var collector = new TextureCollector(64, 0, true, true, false, true, true);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -432,7 +432,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Collect_MetallicGlossMap_ClassifiedAsOther()
         {
-            var collector = new TextureCollector(64, 0, true, true, true, true);
+            var collector = new TextureCollector(64, 0, true, true, true, true, true);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -454,7 +454,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Collect_OcclusionMap_ClassifiedAsOther()
         {
-            var collector = new TextureCollector(64, 0, true, true, true, true);
+            var collector = new TextureCollector(64, 0, true, true, true, true, true);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -707,7 +707,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void CollectFromMaterials_WithCollectAllTrue_IncludesSkippedTextures()
         {
             // Use collector that skips small textures
-            var collector = new TextureCollector(256, 0, true, true, true, true);
+            var collector = new TextureCollector(256, 0, true, true, true, true, true);
 
             var material = CreateMaterial();
             var smallTexture = CreateTexture(64, 64); // Below minSourceSize
@@ -726,7 +726,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void CollectFromMaterials_WithCollectAllFalse_ExcludesSkippedTextures()
         {
             // Use collector that skips small textures
-            var collector = new TextureCollector(256, 0, true, true, true, true);
+            var collector = new TextureCollector(256, 0, true, true, true, true, true);
 
             var material = CreateMaterial();
             var smallTexture = CreateTexture(64, 64); // Below minSourceSize
@@ -961,6 +961,7 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 true,
                 true,
+                true,
                 excludedPathPrefixes: null,
                 frozenSkipGuids: frozenGuids
             );
@@ -973,7 +974,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var collector = new TextureCollector(64, 0, true, true, true, true);
+                var collector = new TextureCollector(64, 0, true, true, true, true, true);
             });
         }
 
@@ -985,6 +986,7 @@ namespace dev.limitex.avatar.compressor.tests
                 var collector = new TextureCollector(
                     64,
                     0,
+                    true,
                     true,
                     true,
                     true,
@@ -1182,7 +1184,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Collect_DefaultCollector_SkipsUnknownUncompressedProperty()
         {
-            // _collector uses default arguments — skipUnknownUncompressedTextures should default to true
+            // _collector is initialized with skipUnknownUncompressedTextures=true
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
             var material = CreateMaterialWithUnknownProperty();
@@ -1474,7 +1476,7 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 ObjectRegistry.RegisterReplacedObject(originalAssetTexture, runtimeReplacement);
 
-                var collector = new TextureCollector(64, 0, true, true, true, true);
+                var collector = new TextureCollector(64, 0, true, true, true, true, true);
 
                 var root = CreateGameObject("Root");
                 var renderer = root.AddComponent<MeshRenderer>();
@@ -1508,7 +1510,7 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 ObjectRegistry.RegisterReplacedObject(originalAssetTexture, runtimeReplacement);
 
-                var collector = new TextureCollector(64, 0, true, true, true, true);
+                var collector = new TextureCollector(64, 0, true, true, true, true, true);
 
                 var root = CreateGameObject("Root");
                 var renderer = root.AddComponent<MeshRenderer>();
@@ -1550,7 +1552,7 @@ namespace dev.limitex.avatar.compressor.tests
             var registry = new ObjectRegistry(null);
             using (new ObjectRegistryScope(registry))
             {
-                var collector = new TextureCollector(64, 0, true, true, true, true);
+                var collector = new TextureCollector(64, 0, true, true, true, true, true);
 
                 var root = CreateGameObject("Root");
                 var renderer = root.AddComponent<MeshRenderer>();
@@ -1581,6 +1583,7 @@ namespace dev.limitex.avatar.compressor.tests
                 var collector = new TextureCollector(
                     64,
                     0,
+                    true,
                     true,
                     true,
                     true,
@@ -1624,6 +1627,7 @@ namespace dev.limitex.avatar.compressor.tests
                     true,
                     true,
                     true,
+                    true,
                     frozenSkipGuids: new[] { originalGuid }
                 );
 
@@ -1652,7 +1656,7 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 ObjectRegistry.RegisterReplacedObject(originalAssetTexture, runtimeReplacement);
 
-                var collector = new TextureCollector(64, 0, true, true, true, true);
+                var collector = new TextureCollector(64, 0, true, true, true, true, true);
 
                 var material = CreateMaterial();
                 material.SetTexture("_MainTex", runtimeReplacement);
@@ -1680,7 +1684,7 @@ namespace dev.limitex.avatar.compressor.tests
                 ObjectRegistry.RegisterReplacedObject(originalMain, runtimeMain);
                 ObjectRegistry.RegisterReplacedObject(originalNormal, runtimeNormal);
 
-                var collector = new TextureCollector(64, 0, true, true, true, true);
+                var collector = new TextureCollector(64, 0, true, true, true, true, true);
 
                 var root = CreateGameObject("Root");
                 var renderer = root.AddComponent<MeshRenderer>();
