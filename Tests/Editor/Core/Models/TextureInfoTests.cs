@@ -39,7 +39,6 @@ namespace dev.limitex.avatar.compressor.tests
             var info = new TextureInfo();
 
             Assert.That(info.TextureType, Is.Null);
-            Assert.That(info.PropertyName, Is.Null);
         }
 
         [Test]
@@ -61,14 +60,6 @@ namespace dev.limitex.avatar.compressor.tests
             var info = new TextureInfo { TextureType = "Main" };
 
             Assert.That(info.TextureType, Is.EqualTo("Main"));
-        }
-
-        [Test]
-        public void TextureInfo_SetPropertyName_Works()
-        {
-            var info = new TextureInfo { PropertyName = "_MainTex" };
-
-            Assert.That(info.PropertyName, Is.EqualTo("_MainTex"));
         }
 
         [Test]

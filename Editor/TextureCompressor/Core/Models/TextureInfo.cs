@@ -23,7 +23,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
     public class TextureInfo
     {
         public string TextureType { get; set; }
-        public string PropertyName { get; set; }
         public bool IsNormalMap { get; set; }
         public bool IsEmission { get; set; }
         public bool IsProcessed { get; set; } = true;

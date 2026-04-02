@@ -162,7 +162,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     info = new TextureInfo
                     {
                         TextureType = GetTextureType(propertyName),
-                        PropertyName = propertyName,
                         IsNormalMap = isNormalMap,
                         IsEmission = isEmission,
                     };
