@@ -270,7 +270,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // they were intentionally compressed upstream and may still be processed by other filters.
             if (
                 _skipUnknownUncompressedTextures
-                && !TextureFormatSelector.IsCompressedFormat(texture.format)
+                && !TextureFormatInfo.IsCompressed(texture.format)
                 && !TexturePropertyDefinitions.IsKnownTextureProperty(propertyName)
             )
             {
