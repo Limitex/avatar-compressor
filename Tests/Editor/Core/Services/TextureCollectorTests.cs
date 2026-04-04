@@ -1218,7 +1218,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void Collect_UnknownPropertyWithDXT5CrunchedTexture_NotSkipped()
+        public void Collect_UnknownPropertyWithDXT5Texture_NotSkipped()
         {
             var collector = new TextureCollector(
                 64,
@@ -1233,14 +1233,14 @@ namespace dev.limitex.avatar.compressor.tests
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
             var material = CreateMaterialWithUnknownProperty();
-            var texture = CreateTextureWithFormat(128, 128, TextureFormat.DXT5Crunched);
+            var texture = CreateTextureWithFormat(128, 128, TextureFormat.DXT5);
 
             material.SetTexture("_CustomDataMap", texture);
             renderer.sharedMaterial = material;
 
             var result = collector.Collect(root);
 
-            // DXT5Crunched is a compressed format, so it should not be skipped
+            // DXT5 is a compressed format, so it should not be skipped
             Assert.AreEqual(1, result.Count);
         }
 
