@@ -37,7 +37,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     public static class TexturePropertyDefinitions
     {
         /// <summary>
-        /// Unity Standard / URP / HDRP texture properties and common aliases.
+        /// Unity Standard / URP / HDRP texture properties.
         /// </summary>
         private static readonly (
             string Name,
@@ -57,7 +57,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_DetailAlbedoMap", TexturePropertyCategory.Other),
             // URP Lit
             ("_BaseMap", TexturePropertyCategory.Main),
-            ("_SpecularColorMap", TexturePropertyCategory.Other),
             ("_ClearCoatMap", TexturePropertyCategory.Other),
             // HDRP Lit
             ("_BaseColorMap", TexturePropertyCategory.Main),
@@ -65,9 +64,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_MaskMap", TexturePropertyCategory.Other),
             ("_EmissiveColorMap", TexturePropertyCategory.Emission),
             ("_DetailMap", TexturePropertyCategory.Other),
-            ("_NormalMapOS", TexturePropertyCategory.Other),
-            ("_BentNormalMap", TexturePropertyCategory.Other),
-            ("_BentNormalMapOS", TexturePropertyCategory.Other),
+            ("_NormalMapOS", TexturePropertyCategory.Normal),
+            ("_BentNormalMap", TexturePropertyCategory.Normal),
+            ("_BentNormalMapOS", TexturePropertyCategory.Normal),
             ("_HeightMap", TexturePropertyCategory.Other),
             ("_TangentMap", TexturePropertyCategory.Other),
             ("_TangentMapOS", TexturePropertyCategory.Other),
@@ -78,16 +77,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_IridescenceThicknessMap", TexturePropertyCategory.Other),
             ("_IridescenceMaskMap", TexturePropertyCategory.Other),
             ("_CoatMaskMap", TexturePropertyCategory.Other),
-            ("_SpecularOcclusionMap", TexturePropertyCategory.Other),
-            // Common aliases (used by various third-party shaders)
-            ("_Albedo", TexturePropertyCategory.Main),
-            ("_AlbedoMap", TexturePropertyCategory.Main),
-            ("_Diffuse", TexturePropertyCategory.Main),
-            ("_DiffuseMap", TexturePropertyCategory.Main),
-            ("_ColorMap", TexturePropertyCategory.Main),
-            ("_Normal", TexturePropertyCategory.Normal),
-            ("_NormalMapForMatCap", TexturePropertyCategory.Other),
-            ("_EmissiveMap", TexturePropertyCategory.Emission),
+            ("_SpecularColorMap", TexturePropertyCategory.Other),
+            ("_TransmissionMaskMap", TexturePropertyCategory.Other),
         };
 
         /// <summary>
@@ -99,8 +90,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         )[] LilToonPropertyDefinitions =
         {
             ("_MainTex", TexturePropertyCategory.Main),
-            ("_BaseMap", TexturePropertyCategory.Main),
-            ("_BaseColorMap", TexturePropertyCategory.Main),
             ("_BumpMap", TexturePropertyCategory.Normal),
             ("_EmissionMap", TexturePropertyCategory.Emission),
             ("_MetallicGlossMap", TexturePropertyCategory.Other),
@@ -133,23 +122,23 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_Emission2ndGradTex", TexturePropertyCategory.Emission),
             ("_Bump2ndMap", TexturePropertyCategory.Normal),
             ("_Bump2ndScaleMask", TexturePropertyCategory.Other),
-            ("_AnisotropyTangentMap", TexturePropertyCategory.Other),
+            ("_AnisotropyTangentMap", TexturePropertyCategory.Normal),
             ("_AnisotropyScaleMask", TexturePropertyCategory.Other),
             ("_AnisotropyShiftNoiseMask", TexturePropertyCategory.Other),
             ("_BacklightColorTex", TexturePropertyCategory.Other),
             ("_MatCapTex", TexturePropertyCategory.Other),
             ("_MatCapBlendMask", TexturePropertyCategory.Other),
-            ("_MatCapBumpMap", TexturePropertyCategory.Other),
+            ("_MatCapBumpMap", TexturePropertyCategory.Normal),
             ("_MatCap2ndTex", TexturePropertyCategory.Other),
             ("_MatCap2ndBlendMask", TexturePropertyCategory.Other),
-            ("_MatCap2ndBumpMap", TexturePropertyCategory.Other),
+            ("_MatCap2ndBumpMap", TexturePropertyCategory.Normal),
             ("_OutlineTex", TexturePropertyCategory.Other),
             ("_OutlineWidthMask", TexturePropertyCategory.Other),
-            ("_OutlineVectorTex", TexturePropertyCategory.Other),
+            ("_OutlineVectorTex", TexturePropertyCategory.Normal),
             ("_FurNoiseMask", TexturePropertyCategory.Other),
             ("_FurMask", TexturePropertyCategory.Other),
             ("_FurLengthMask", TexturePropertyCategory.Other),
-            ("_FurVectorTex", TexturePropertyCategory.Other),
+            ("_FurVectorTex", TexturePropertyCategory.Normal),
             ("_AudioLinkMask", TexturePropertyCategory.Other),
             ("_AudioLinkLocalMap", TexturePropertyCategory.Other),
             ("_DissolveMask", TexturePropertyCategory.Other),
@@ -157,6 +146,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_TriMask", TexturePropertyCategory.Other),
             ("_SmoothnessTex", TexturePropertyCategory.Other),
             ("_ReflectionColorTex", TexturePropertyCategory.Other),
+            ("_MainGradationTex", TexturePropertyCategory.Other),
         };
 
         /// <summary>
@@ -229,8 +219,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_BRDFSpecularMap", TexturePropertyCategory.Other),
             ("_ClearCoatMaps", TexturePropertyCategory.Other),
             ("_ClearcoatMap", TexturePropertyCategory.Other),
-            ("_ClearCoatMask", TexturePropertyCategory.Other),
-            ("_ClearCoatSmoothnessMask", TexturePropertyCategory.Other),
             ("_ClothMetallicSmoothnessMap", TexturePropertyCategory.Other),
             ("_SSSThicknessMap", TexturePropertyCategory.Other),
             ("_SkinThicknessMap", TexturePropertyCategory.Other),
@@ -259,10 +247,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_Matcap2Mask", TexturePropertyCategory.Other),
             ("_Matcap3Mask", TexturePropertyCategory.Other),
             ("_Matcap4Mask", TexturePropertyCategory.Other),
-            ("_Matcap0NormalMap", TexturePropertyCategory.Other),
-            ("_Matcap1NormalMap", TexturePropertyCategory.Other),
-            ("_Matcap2NormalMap", TexturePropertyCategory.Other),
-            ("_Matcap3NormalMap", TexturePropertyCategory.Other),
+            ("_Matcap0NormalMap", TexturePropertyCategory.Normal),
+            ("_Matcap1NormalMap", TexturePropertyCategory.Normal),
+            ("_Matcap2NormalMap", TexturePropertyCategory.Normal),
+            ("_Matcap3NormalMap", TexturePropertyCategory.Normal),
             ("_CubeMapMask", TexturePropertyCategory.Other),
             ("_ReflectionColorTex", TexturePropertyCategory.Other),
             ("_RimTex", TexturePropertyCategory.Other),
@@ -275,18 +263,18 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_RimWidthNoiseTexture", TexturePropertyCategory.Other),
             ("_Set_RimLightMask", TexturePropertyCategory.Other),
             ("_Set_Rim2LightMask", TexturePropertyCategory.Other),
-            ("_RgbNormalR", TexturePropertyCategory.Other),
-            ("_RgbNormalG", TexturePropertyCategory.Other),
-            ("_RgbNormalB", TexturePropertyCategory.Other),
-            ("_RgbNormalA", TexturePropertyCategory.Other),
+            ("_RgbNormalR", TexturePropertyCategory.Normal),
+            ("_RgbNormalG", TexturePropertyCategory.Normal),
+            ("_RgbNormalB", TexturePropertyCategory.Normal),
+            ("_RgbNormalA", TexturePropertyCategory.Normal),
             ("_BacklightColorTex", TexturePropertyCategory.Other),
             ("_FurMask", TexturePropertyCategory.Other),
             ("_FurLengthMask", TexturePropertyCategory.Other),
             ("_FurNoiseMask", TexturePropertyCategory.Other),
-            ("_FurVectorTex", TexturePropertyCategory.Other),
+            ("_FurVectorTex", TexturePropertyCategory.Normal),
             ("_IridescenceRamp", TexturePropertyCategory.Other),
             ("_IridescenceMask", TexturePropertyCategory.Other),
-            ("_IridescenceNormalMap", TexturePropertyCategory.Other),
+            ("_IridescenceNormalMap", TexturePropertyCategory.Normal),
             ("_EmissionMap1", TexturePropertyCategory.Emission),
             ("_EmissionMap2", TexturePropertyCategory.Emission),
             ("_EmissionMap3", TexturePropertyCategory.Emission),
@@ -311,7 +299,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_OutlineMask", TexturePropertyCategory.Other),
             ("_PanosphereTexture", TexturePropertyCategory.Other),
             ("_PanoMask", TexturePropertyCategory.Other),
-            ("_PanoMapTexture", TexturePropertyCategory.Other),
             ("_ParallaxHeightMap", TexturePropertyCategory.Other),
             ("_ParallaxHeightMapMask", TexturePropertyCategory.Other),
             ("_ParallaxInternalMap", TexturePropertyCategory.Other),
@@ -333,6 +320,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_VertexGlitchMap", TexturePropertyCategory.Other),
             ("_VertexManipulationHeightMask", TexturePropertyCategory.Other),
             ("_UzumoreMask", TexturePropertyCategory.Other),
+            ("_ClothDFG", TexturePropertyCategory.Other),
+            ("_LightDataSDFMap", TexturePropertyCategory.Other),
+            ("_MainGradationTex", TexturePropertyCategory.Other),
+            ("_SDFShadingTexture", TexturePropertyCategory.Other),
+            ("_SkinLUT", TexturePropertyCategory.Other),
+            ("_TextGlyphs", TexturePropertyCategory.Other),
+            ("_ToonRamp", TexturePropertyCategory.Other),
+            ("_Udon_VideoTex", TexturePropertyCategory.Other),
+            ("_VideoGameboyRamp", TexturePropertyCategory.Other),
         };
 
         /// <summary>
@@ -351,7 +347,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_ClippingMask", TexturePropertyCategory.Other),
             ("_HighColor_Tex", TexturePropertyCategory.Other),
             ("_MatCap_Sampler", TexturePropertyCategory.Other),
-            ("_NormalMapForMatCap", TexturePropertyCategory.Other),
+            ("_NormalMapForMatCap", TexturePropertyCategory.Normal),
             ("_Set_RimLightMask", TexturePropertyCategory.Other),
             ("_Set_MatcapMask", TexturePropertyCategory.Other),
             ("_OutlineTex", TexturePropertyCategory.Other),
@@ -361,7 +357,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_Set_2nd_ShadePosition", TexturePropertyCategory.Other),
             ("_ShadingGradeMap", TexturePropertyCategory.Other),
             ("_Emissive_Tex", TexturePropertyCategory.Emission),
-            ("_BakedNormal", TexturePropertyCategory.Other),
+            ("_BakedNormal", TexturePropertyCategory.Normal),
             ("_AngelRing_Sampler", TexturePropertyCategory.Other),
         };
 

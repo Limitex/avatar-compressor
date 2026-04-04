@@ -44,6 +44,8 @@ namespace dev.limitex.avatar.compressor.tests
         [TestCase("_NormalMap")]
         [TestCase("_MaskMap")]
         [TestCase("_EmissiveColorMap")]
+        [TestCase("_SpecularColorMap")]
+        [TestCase("_TransmissionMaskMap")]
         public void TextureProperties_ContainsUnityUrpHdrpProperty(string propertyName)
         {
             Assert.IsTrue(
@@ -63,6 +65,7 @@ namespace dev.limitex.avatar.compressor.tests
         [TestCase("_OutlineTex")]
         [TestCase("_FurNoiseMask")]
         [TestCase("_EmissionGradTex")]
+        [TestCase("_MainGradationTex")]
         public void TextureProperties_ContainsLilToonProperty(string propertyName)
         {
             Assert.IsTrue(
@@ -83,6 +86,10 @@ namespace dev.limitex.avatar.compressor.tests
         [TestCase("_GlitterTexture")]
         [TestCase("_OutlineTexture")]
         [TestCase("_DissolveNoiseTexture")]
+        [TestCase("_ToonRamp")]
+        [TestCase("_SDFShadingTexture")]
+        [TestCase("_SkinLUT")]
+        [TestCase("_ClothDFG")]
         public void TextureProperties_ContainsPoiyomiProperty(string propertyName)
         {
             Assert.IsTrue(
@@ -133,18 +140,30 @@ namespace dev.limitex.avatar.compressor.tests
         [TestCase("_MainTex", TexturePropertyCategory.Main)]
         [TestCase("_BaseMap", TexturePropertyCategory.Main)]
         [TestCase("_BaseColorMap", TexturePropertyCategory.Main)]
-        [TestCase("_Albedo", TexturePropertyCategory.Main)]
-        [TestCase("_AlbedoMap", TexturePropertyCategory.Main)]
-        [TestCase("_Diffuse", TexturePropertyCategory.Main)]
-        [TestCase("_DiffuseMap", TexturePropertyCategory.Main)]
-        [TestCase("_ColorMap", TexturePropertyCategory.Main)]
         [TestCase("_BumpMap", TexturePropertyCategory.Normal)]
         [TestCase("_NormalMap", TexturePropertyCategory.Normal)]
-        [TestCase("_Normal", TexturePropertyCategory.Normal)]
         [TestCase("_DetailNormalMap", TexturePropertyCategory.Normal)]
         [TestCase("_Bump2ndMap", TexturePropertyCategory.Normal)]
+        [TestCase("_NormalMapForMatCap", TexturePropertyCategory.Normal)]
+        [TestCase("_MatCapBumpMap", TexturePropertyCategory.Normal)]
+        [TestCase("_MatCap2ndBumpMap", TexturePropertyCategory.Normal)]
+        [TestCase("_Matcap0NormalMap", TexturePropertyCategory.Normal)]
+        [TestCase("_Matcap1NormalMap", TexturePropertyCategory.Normal)]
+        [TestCase("_Matcap2NormalMap", TexturePropertyCategory.Normal)]
+        [TestCase("_Matcap3NormalMap", TexturePropertyCategory.Normal)]
+        [TestCase("_RgbNormalR", TexturePropertyCategory.Normal)]
+        [TestCase("_RgbNormalG", TexturePropertyCategory.Normal)]
+        [TestCase("_RgbNormalB", TexturePropertyCategory.Normal)]
+        [TestCase("_RgbNormalA", TexturePropertyCategory.Normal)]
+        [TestCase("_IridescenceNormalMap", TexturePropertyCategory.Normal)]
+        [TestCase("_AnisotropyTangentMap", TexturePropertyCategory.Normal)]
+        [TestCase("_OutlineVectorTex", TexturePropertyCategory.Normal)]
+        [TestCase("_FurVectorTex", TexturePropertyCategory.Normal)]
+        [TestCase("_BakedNormal", TexturePropertyCategory.Normal)]
+        [TestCase("_NormalMapOS", TexturePropertyCategory.Normal)]
+        [TestCase("_BentNormalMap", TexturePropertyCategory.Normal)]
+        [TestCase("_BentNormalMapOS", TexturePropertyCategory.Normal)]
         [TestCase("_EmissionMap", TexturePropertyCategory.Emission)]
-        [TestCase("_EmissiveMap", TexturePropertyCategory.Emission)]
         [TestCase("_EmissiveColorMap", TexturePropertyCategory.Emission)]
         [TestCase("_Emission2ndMap", TexturePropertyCategory.Emission)]
         [TestCase("_EmissionGradTex", TexturePropertyCategory.Emission)]
@@ -235,17 +254,29 @@ namespace dev.limitex.avatar.compressor.tests
                 "_MainTex",
                 "_BaseMap",
                 "_BaseColorMap",
-                "_Albedo",
-                "_AlbedoMap",
-                "_Diffuse",
-                "_DiffuseMap",
-                "_ColorMap",
                 "_BumpMap",
                 "_NormalMap",
-                "_Normal",
                 "_DetailNormalMap",
+                "_NormalMapForMatCap",
+                "_MatCapBumpMap",
+                "_MatCap2ndBumpMap",
+                "_Matcap0NormalMap",
+                "_Matcap1NormalMap",
+                "_Matcap2NormalMap",
+                "_Matcap3NormalMap",
+                "_RgbNormalR",
+                "_RgbNormalG",
+                "_RgbNormalB",
+                "_RgbNormalA",
+                "_IridescenceNormalMap",
+                "_AnisotropyTangentMap",
+                "_OutlineVectorTex",
+                "_FurVectorTex",
+                "_BakedNormal",
+                "_NormalMapOS",
+                "_BentNormalMap",
+                "_BentNormalMapOS",
                 "_EmissionMap",
-                "_EmissiveMap",
                 "_EmissiveColorMap",
                 "_Emission2ndMap",
                 "_EmissionGradTex",
