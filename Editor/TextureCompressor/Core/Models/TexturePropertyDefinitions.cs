@@ -131,7 +131,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             ("_Emission2ndMap", TexturePropertyCategory.Emission),
             ("_Emission2ndBlendMask", TexturePropertyCategory.Other),
             ("_Emission2ndGradTex", TexturePropertyCategory.Emission),
-            ("_Bump2ndMap", TexturePropertyCategory.Other),
+            ("_Bump2ndMap", TexturePropertyCategory.Normal),
             ("_Bump2ndScaleMask", TexturePropertyCategory.Other),
             ("_AnisotropyTangentMap", TexturePropertyCategory.Other),
             ("_AnisotropyScaleMask", TexturePropertyCategory.Other),
@@ -372,8 +372,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         private static readonly Dictionary<string, TexturePropertyCategory> CategoryMap;
 
-        private static readonly HashSet<string> AllKnownProperties;
-
         static TexturePropertyDefinitions()
         {
             CategoryMap = new Dictionary<string, TexturePropertyCategory>();
@@ -381,7 +379,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             RegisterProperties(LilToonPropertyDefinitions);
             RegisterProperties(PoiyomiPropertyDefinitions);
             RegisterProperties(UtsPropertyDefinitions);
-            AllKnownProperties = new HashSet<string>(CategoryMap.Keys);
         }
 
         private static void RegisterProperties(
@@ -398,14 +395,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <summary>
         /// Read-only access to all known texture property names.
         /// </summary>
-        public static IReadOnlyCollection<string> TextureProperties => AllKnownProperties;
+        public static IReadOnlyCollection<string> TextureProperties => CategoryMap.Keys;
 
         /// <summary>
         /// Returns true if the given property name is a known, compressible texture property.
         /// </summary>
         public static bool IsKnownTextureProperty(string propertyName)
         {
-            return propertyName != null && AllKnownProperties.Contains(propertyName);
+            return propertyName != null && CategoryMap.ContainsKey(propertyName);
         }
 
         /// <summary>
