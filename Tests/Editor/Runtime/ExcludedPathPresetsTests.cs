@@ -17,16 +17,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(paths, Is.Empty);
         }
 
-        [Test]
-        public void GetDefaultPaths_ReturnsEmptyArrayEachTime()
-        {
-            var paths1 = ExcludedPathPresets.GetDefaultPaths();
-            var paths2 = ExcludedPathPresets.GetDefaultPaths();
-
-            Assert.That(paths1, Is.Empty);
-            Assert.That(paths2, Is.Empty);
-        }
-
         #endregion
 
         #region Presets Static Field Tests

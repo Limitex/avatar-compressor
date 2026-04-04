@@ -458,6 +458,48 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void IsCompressed_ASTC5x5_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_5x5));
+        }
+
+        [Test]
+        public void IsCompressed_ASTC10x10_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_10x10));
+        }
+
+        [Test]
+        public void IsCompressed_ASTC12x12_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_12x12));
+        }
+
+        [Test]
+        public void IsCompressed_PVRTC_RGB2_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.PVRTC_RGB2));
+        }
+
+        [Test]
+        public void IsCompressed_PVRTC_RGB4_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.PVRTC_RGB4));
+        }
+
+        [Test]
+        public void IsCompressed_PVRTC_RGBA2_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.PVRTC_RGBA2));
+        }
+
+        [Test]
+        public void IsCompressed_PVRTC_RGBA4_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.PVRTC_RGBA4));
+        }
+
+        [Test]
         public void IsCompressed_RGBA32_ReturnsFalse()
         {
             Assert.IsFalse(TextureFormatInfo.IsCompressed(TextureFormat.RGBA32));
