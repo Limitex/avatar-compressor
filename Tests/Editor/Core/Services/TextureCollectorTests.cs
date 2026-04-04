@@ -1554,6 +1554,64 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(0, result.Count);
         }
 
+        [Test]
+        public void CollectAll_OtherDisabledWithSkipEnabled_UnknownPropertyGetsFilteredByType()
+        {
+            // When processOtherTextures is false, unknown properties should be
+            // FilteredByType regardless of skipUnknownUncompressedTextures setting,
+            // because the type check runs before the unknown-uncompressed check.
+            var collector = new TextureCollector(
+                64,
+                0,
+                processMainTextures: true,
+                processNormalMaps: true,
+                processEmissionMaps: true,
+                processOtherTextures: false,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterialWithUnknownProperty();
+            var texture = CreateRGBTexture(128, 128);
+
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.CollectAll(root);
+
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(result.ContainsKey(texture));
+            Assert.IsFalse(result[texture].IsProcessed);
+            Assert.AreEqual(SkipReason.FilteredByType, result[texture].SkipReason);
+        }
+
+        [Test]
+        public void Collect_OtherDisabledWithSkipEnabled_UnknownPropertyIsExcluded()
+        {
+            var collector = new TextureCollector(
+                64,
+                0,
+                processMainTextures: true,
+                processNormalMaps: true,
+                processEmissionMaps: true,
+                processOtherTextures: false,
+                skipUnknownUncompressedTextures: true
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            var material = CreateMaterialWithUnknownProperty();
+            var texture = CreateRGBTexture(128, 128);
+
+            material.SetTexture("_CustomDataMap", texture);
+            renderer.sharedMaterial = material;
+
+            var result = collector.Collect(root);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
         #endregion
 
         #region ObjectRegistry Resolution Tests

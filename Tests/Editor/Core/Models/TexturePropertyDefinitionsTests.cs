@@ -142,6 +142,7 @@ namespace dev.limitex.avatar.compressor.tests
         [TestCase("_NormalMap", TexturePropertyCategory.Normal)]
         [TestCase("_Normal", TexturePropertyCategory.Normal)]
         [TestCase("_DetailNormalMap", TexturePropertyCategory.Normal)]
+        [TestCase("_Bump2ndMap", TexturePropertyCategory.Normal)]
         [TestCase("_EmissionMap", TexturePropertyCategory.Emission)]
         [TestCase("_EmissiveMap", TexturePropertyCategory.Emission)]
         [TestCase("_EmissiveColorMap", TexturePropertyCategory.Emission)]
