@@ -10,29 +10,21 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     public static class FilterSection
     {
         /// <summary>
-        /// Draws texture type filters (Main, Normal, Emission, Other).
+        /// Draws texture type filters (Main, Normal, Emission, Other) with foldout
+        /// and an inline sub-option for skipping uncompressed textures on unknown properties.
         /// </summary>
-        public static void DrawTextureFilters(TextureCompressor config)
+        public static void DrawTextureFilters(TextureCompressor config, ref bool showSection)
         {
-            EditorGUILayout.LabelField("Texture Filters", EditorStyles.boldLabel);
-
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            EditorGUILayout.BeginHorizontal();
+            showSection = EditorGUILayout.Foldout(showSection, "Texture Filters", true);
+            if (!showSection)
+                return;
 
             EditorGUI.BeginChangeCheck();
 
-            bool main = GUILayout.Toggle(config.ProcessMainTextures, "Main", GUILayout.Width(70));
-            bool normal = GUILayout.Toggle(config.ProcessNormalMaps, "Normal", GUILayout.Width(70));
-            bool emission = GUILayout.Toggle(
-                config.ProcessEmissionMaps,
-                "Emission",
-                GUILayout.Width(80)
-            );
-            bool other = GUILayout.Toggle(
-                config.ProcessOtherTextures,
-                "Other",
-                GUILayout.Width(70)
-            );
+            bool main = EditorGUILayout.ToggleLeft("Main Textures", config.ProcessMainTextures);
+            bool normal = EditorGUILayout.ToggleLeft("Normal Maps", config.ProcessNormalMaps);
+            bool emission = EditorGUILayout.ToggleLeft("Emission Maps", config.ProcessEmissionMaps);
+            bool other = EditorGUILayout.ToggleLeft("Other Textures", config.ProcessOtherTextures);
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -44,39 +36,26 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 EditorUtility.SetDirty(config);
             }
 
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
-        }
-
-        /// <summary>
-        /// Draws the data protection section (skip unknown uncompressed textures toggle).
-        /// </summary>
-        public static void DrawDataProtection(TextureCompressor config)
-        {
-            EditorGUILayout.LabelField("Data Protection", EditorStyles.boldLabel);
-
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-
-            EditorGUI.BeginChangeCheck();
-            bool skipUnknownUncompressed = GUILayout.Toggle(
-                config.SkipUnknownUncompressedTextures,
-                "Skip uncompressed textures on unknown properties"
-            );
-            if (EditorGUI.EndChangeCheck())
+            // Sub-option for Other: skip uncompressed textures on unknown properties.
+            // Only meaningful when Other is enabled; disabled state shows the toggle grayed out.
+            using (new EditorGUI.DisabledScope(!config.ProcessOtherTextures))
             {
-                Undo.RecordObject(config, "Change Skip Unknown Uncompressed Textures");
-                config.SkipUnknownUncompressedTextures = skipUnknownUncompressed;
-                EditorUtility.SetDirty(config);
+                EditorGUI.indentLevel++;
+
+                EditorGUI.BeginChangeCheck();
+                bool skipUnknownUncompressed = EditorGUILayout.ToggleLeft(
+                    "Skip uncompressed textures on unknown properties",
+                    config.SkipUnknownUncompressedTextures
+                );
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(config, "Change Skip Unknown Uncompressed Textures");
+                    config.SkipUnknownUncompressedTextures = skipUnknownUncompressed;
+                    EditorUtility.SetDirty(config);
+                }
+
+                EditorGUI.indentLevel--;
             }
-
-            EditorGUILayout.HelpBox(
-                "Uncompressed textures on unrecognized shader properties may contain "
-                    + "non-visual data (e.g., masks, LUTs) that compression could corrupt. "
-                    + "Already-compressed textures on unknown properties are not skipped by this option.",
-                MessageType.Info
-            );
-
-            EditorGUILayout.EndVertical();
         }
 
         /// <summary>

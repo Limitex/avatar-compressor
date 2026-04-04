@@ -287,19 +287,21 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         private SkipReason? GetPropertyDependentSkipReason(Texture2D texture, string propertyName)
         {
-            // Skip uncompressed textures on unknown shader properties to avoid corrupting
-            // non-visual data (e.g., SPS bake data, masks, LUTs).
-            // Already-compressed textures (DXT, BC, ASTC, etc.) are not skipped by this check —
-            // they were intentionally compressed upstream and may still be processed by other filters.
+            if (!IsTypeEnabled(propertyName))
+                return SkipReason.FilteredByType;
+
+            // Sub-check within the Other category: skip uncompressed textures on unknown
+            // shader properties to avoid corrupting non-visual data (e.g., SPS bake data,
+            // masks, LUTs). This mirrors the UI hierarchy where the toggle is nested under
+            // the Other filter and disabled when Other is off.
+            // Already-compressed textures (DXT, BC, ASTC, etc.) are not skipped —
+            // they were intentionally compressed upstream.
             if (
                 _skipUnknownUncompressedTextures
                 && !TextureFormatInfo.IsCompressed(texture.format)
                 && !TexturePropertyDefinitions.IsKnownTextureProperty(propertyName)
             )
                 return SkipReason.UnknownUncompressedProperty;
-
-            if (!IsTypeEnabled(propertyName))
-                return SkipReason.FilteredByType;
 
             return null;
         }
