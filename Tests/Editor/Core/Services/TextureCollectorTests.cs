@@ -138,7 +138,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(texture));
-            Assert.AreEqual("Main", result[texture].TextureType);
+            Assert.AreEqual(TexturePropertyCategory.Main, result[texture].TextureType);
             Assert.IsFalse(result[texture].IsNormalMap);
             Assert.IsFalse(result[texture].IsEmission);
         }
@@ -447,7 +447,7 @@ namespace dev.limitex.avatar.compressor.tests
             // MetallicGlossMap is classified as "Other" texture type
             if (result.Count > 0)
             {
-                Assert.AreEqual("Other", result[texture].TextureType);
+                Assert.AreEqual(TexturePropertyCategory.Other, result[texture].TextureType);
             }
         }
 
@@ -469,7 +469,7 @@ namespace dev.limitex.avatar.compressor.tests
             // OcclusionMap is classified as "Other" texture type
             if (result.Count > 0)
             {
-                Assert.AreEqual("Other", result[texture].TextureType);
+                Assert.AreEqual(TexturePropertyCategory.Other, result[texture].TextureType);
             }
         }
 

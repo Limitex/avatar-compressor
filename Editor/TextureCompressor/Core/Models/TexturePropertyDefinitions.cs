@@ -3,17 +3,6 @@ using System.Collections.Generic;
 namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
-    /// Categories for texture properties, used to control per-type processing toggles.
-    /// </summary>
-    public enum TexturePropertyCategory
-    {
-        Main,
-        Normal,
-        Emission,
-        Other,
-    }
-
-    /// <summary>
     /// Known texture property names from common VRChat shaders.
     /// Provides both property recognition (known vs unknown) and category classification
     /// (Main, Normal, Emission, Other) from a single source of truth.

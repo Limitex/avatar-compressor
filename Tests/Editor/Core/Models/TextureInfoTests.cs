@@ -34,11 +34,11 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void TextureInfo_DefaultValues_PropertiesNull()
+        public void TextureInfo_DefaultValues_TextureTypeIsDefault()
         {
             var info = new TextureInfo();
 
-            Assert.That(info.TextureType, Is.Null);
+            Assert.That(info.TextureType, Is.EqualTo(default(TexturePropertyCategory)));
         }
 
         [Test]
@@ -57,9 +57,9 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void TextureInfo_SetTextureType_Works()
         {
-            var info = new TextureInfo { TextureType = "Main" };
+            var info = new TextureInfo { TextureType = TexturePropertyCategory.Main };
 
-            Assert.That(info.TextureType, Is.EqualTo("Main"));
+            Assert.That(info.TextureType, Is.EqualTo(TexturePropertyCategory.Main));
         }
 
         [Test]
