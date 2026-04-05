@@ -230,7 +230,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         tex.format,
                         tex.mipmapCount
                     );
-                    bool isNormalMap = info.TextureType == "Normal";
+                    bool isNormalMap = info.IsNormalMap;
 
                     int divisor;
                     Vector2Int recommendedSize;
@@ -356,7 +356,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                             SkipReason = info.SkipReason,
                             OriginalMemory = originalMemory,
                             EstimatedMemory = originalMemory,
-                            IsNormalMap = info.TextureType == "Normal",
+                            IsNormalMap = info.IsNormalMap,
                             PredictedFormat = null,
                             HasAlpha = false,
                             IsFrozen = isFrozen && frozenSettings != null && frozenSettings.Skip,

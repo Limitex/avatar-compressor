@@ -161,9 +161,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     info = new TextureInfo
                     {
-                        TextureType = TexturePropertyDefinitions
-                            .GetCategory(propertyName)
-                            .ToString(),
+                        TextureType = category.ToString(),
                         IsNormalMap = isNormalMap,
                         IsEmission = isEmission,
                     };
@@ -181,7 +179,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     if (isNormalMap && !info.IsNormalMap)
                     {
                         info.IsNormalMap = true;
-                        info.TextureType = "Normal";
+                        info.TextureType = TexturePropertyCategory.Normal.ToString();
                     }
                     // Similarly for emission
                     if (isEmission && !info.IsEmission)
