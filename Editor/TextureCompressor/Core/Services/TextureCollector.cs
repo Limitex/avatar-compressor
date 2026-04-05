@@ -161,7 +161,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     info = new TextureInfo
                     {
-                        TextureType = GetTextureType(propertyName),
+                        TextureType = TexturePropertyDefinitions
+                            .GetCategory(propertyName)
+                            .ToString(),
                         IsNormalMap = isNormalMap,
                         IsEmission = isEmission,
                     };
@@ -330,11 +332,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 default:
                     return _processOtherTextures;
             }
-        }
-
-        private static string GetTextureType(string propertyName)
-        {
-            return TexturePropertyDefinitions.GetCategory(propertyName).ToString();
         }
     }
 }
