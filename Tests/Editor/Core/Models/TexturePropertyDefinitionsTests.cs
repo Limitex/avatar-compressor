@@ -6,16 +6,6 @@ namespace dev.limitex.avatar.compressor.tests
     [TestFixture]
     public class TexturePropertyDefinitionsTests
     {
-        #region Core Properties Tests
-
-        [Test]
-        public void TextureProperties_IsNotEmpty()
-        {
-            Assert.That(TexturePropertyDefinitions.TextureProperties.Count, Is.GreaterThan(0));
-        }
-
-        #endregion
-
         #region Unity Standard Properties
 
         [TestCase("_MainTex")]
@@ -208,41 +198,6 @@ namespace dev.limitex.avatar.compressor.tests
         #endregion
 
         #region Consistency Tests
-
-        [Test]
-        public void TextureProperties_CountIsStableAcrossAccesses()
-        {
-            // Verify multiple accesses return the same count (no mutation between calls)
-            var first = TexturePropertyDefinitions.TextureProperties.Count;
-            var second = TexturePropertyDefinitions.TextureProperties.Count;
-            Assert.That(first, Is.EqualTo(second), "Count should be stable across accesses");
-        }
-
-        [Test]
-        public void TextureProperties_AllEntriesAreNonEmpty()
-        {
-            foreach (var property in TexturePropertyDefinitions.TextureProperties)
-            {
-                Assert.That(
-                    property,
-                    Is.Not.Null.And.Not.Empty,
-                    "Found null or empty property name in TextureProperties"
-                );
-            }
-        }
-
-        [Test]
-        public void TextureProperties_AllEntriesStartWithUnderscore()
-        {
-            foreach (var property in TexturePropertyDefinitions.TextureProperties)
-            {
-                Assert.That(
-                    property,
-                    Does.StartWith("_"),
-                    $"Property '{property}' does not start with underscore"
-                );
-            }
-        }
 
         [Test]
         public void GetCategory_AllCategorizedProperties_AreKnown()

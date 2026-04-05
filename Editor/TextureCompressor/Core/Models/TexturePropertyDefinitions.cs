@@ -378,11 +378,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Read-only access to all known texture property names.
-        /// </summary>
-        public static IReadOnlyCollection<string> TextureProperties => CategoryMap.Keys;
-
-        /// <summary>
         /// Returns true if the given property name is a known, compressible texture property.
         /// </summary>
         public static bool IsKnownTextureProperty(string propertyName)
