@@ -320,7 +320,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         IsNormalMap = isNormalMap,
                         PredictedFormat = targetFormat,
                         HasAlpha = hasAlpha,
-                        IsFrozen = isFrozen && !frozenSettings.Skip,
+                        IsFrozen = isFrozen,
                         FrozenSettings = frozenSettings,
                     };
 
@@ -359,7 +359,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                             IsNormalMap = info.IsNormalMap,
                             PredictedFormat = null,
                             HasAlpha = false,
-                            IsFrozen = isFrozen && frozenSettings != null && frozenSettings.Skip,
+                            IsFrozen = isFrozen,
                             FrozenSettings = frozenSettings,
                         }
                     );
