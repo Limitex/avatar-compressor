@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Prevents data corruption for non-visual textures (e.g., SPS bake data, masks, LUTs) that use pixel data for non-visual purposes
   - Already-compressed textures (DXT, BC, ASTC, etc.) on unknown properties are not affected
   - Configurable per avatar, enabled by default
-  - Known properties from Unity Standard, lilToon, Poiyomi, and UTS shaders are always allowed
+  - Known properties from Unity Standard / URP / HDRP, lilToon, Poiyomi, and UTS shaders are always allowed
 
 ### Changed
 
