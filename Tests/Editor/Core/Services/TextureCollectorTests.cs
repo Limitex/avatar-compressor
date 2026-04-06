@@ -961,9 +961,8 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 true,
                 true,
-                true,
-                excludedPathPrefixes: null,
-                excludedTextureGuids: excludedGuids
+                null,
+                excludedGuids
             );
 
             Assert.IsNotNull(collector);
@@ -974,16 +973,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var collector = new TextureCollector(
-                    64,
-                    0,
-                    true,
-                    true,
-                    true,
-                    true,
-                    true,
-                    excludedTextureGuids: null
-                );
+                var collector = new TextureCollector(64, 0, true, true, true, true, null, null);
             });
         }
 
@@ -999,8 +989,8 @@ namespace dev.limitex.avatar.compressor.tests
                     true,
                     true,
                     true,
-                    true,
-                    excludedTextureGuids: new string[0]
+                    null,
+                    new string[0]
                 );
             });
         }
@@ -1018,9 +1008,8 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 true,
                 true,
-                true,
-                excludedPathPrefixes: null,
-                excludedTextureGuids: new[] { guid }
+                null,
+                new[] { guid }
             );
 
             var material = CreateMaterial();
@@ -1045,9 +1034,8 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 true,
                 true,
-                true,
-                excludedPathPrefixes: null,
-                excludedTextureGuids: new[] { guid }
+                null,
+                new[] { guid }
             );
 
             var material = CreateMaterial();
@@ -1074,9 +1062,8 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 true,
                 true,
-                true,
-                excludedPathPrefixes: null,
-                excludedTextureGuids: new[] { "00000000000000000000000000000000" }
+                null,
+                new[] { "00000000000000000000000000000000" }
             );
 
             var material = CreateMaterial();
@@ -1105,9 +1092,8 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 true,
                 true,
-                true,
-                excludedPathPrefixes: null,
-                excludedTextureGuids: new[] { excludedGuid }
+                null,
+                new[] { excludedGuid }
             );
 
             var material = CreateMaterial();
