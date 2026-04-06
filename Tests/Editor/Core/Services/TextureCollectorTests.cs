@@ -961,6 +961,7 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 true,
                 true,
+                false,
                 null,
                 excludedGuids
             );
@@ -973,7 +974,17 @@ namespace dev.limitex.avatar.compressor.tests
         {
             Assert.DoesNotThrow(() =>
             {
-                var collector = new TextureCollector(64, 0, true, true, true, true, null, null);
+                var collector = new TextureCollector(
+                    64,
+                    0,
+                    true,
+                    true,
+                    true,
+                    true,
+                    false,
+                    null,
+                    null
+                );
             });
         }
 
@@ -989,6 +1000,7 @@ namespace dev.limitex.avatar.compressor.tests
                     true,
                     true,
                     true,
+                    false,
                     null,
                     new string[0]
                 );
@@ -1008,6 +1020,7 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 true,
                 true,
+                false,
                 null,
                 new[] { guid }
             );
@@ -1034,6 +1047,7 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 true,
                 true,
+                false,
                 null,
                 new[] { guid }
             );
@@ -1062,6 +1076,7 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 true,
                 true,
+                false,
                 null,
                 new[] { "00000000000000000000000000000000" }
             );
@@ -1092,6 +1107,7 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 true,
                 true,
+                false,
                 null,
                 new[] { excludedGuid }
             );
