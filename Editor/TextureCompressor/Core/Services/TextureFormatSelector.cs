@@ -60,7 +60,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             if (frozenFormat.HasValue && frozenFormat.Value != FrozenTextureFormat.Auto)
                 return ConvertFrozenFormat(frozenFormat.Value);
-            if (IsCompressedFormat(sourceFormat))
+            if (TextureFormatInfo.IsCompressed(sourceFormat))
                 return sourceFormat;
             return PredictFormat(isNormalMap, complexity, hasAlpha);
         }
@@ -185,41 +185,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 // Low complexity opaque: ASTC 8x8 (2 bpp, most efficient)
                 return TextureFormat.ASTC_8x8;
-            }
-        }
-
-        /// <summary>
-        /// Checks if the texture format is a compressed format.
-        /// </summary>
-        public static bool IsCompressedFormat(TextureFormat format)
-        {
-            switch (format)
-            {
-                case TextureFormat.DXT1:
-                case TextureFormat.DXT1Crunched:
-                case TextureFormat.DXT5:
-                case TextureFormat.DXT5Crunched:
-                case TextureFormat.BC4:
-                case TextureFormat.BC5:
-                case TextureFormat.BC6H:
-                case TextureFormat.BC7:
-                case TextureFormat.ASTC_4x4:
-                case TextureFormat.ASTC_5x5:
-                case TextureFormat.ASTC_6x6:
-                case TextureFormat.ASTC_8x8:
-                case TextureFormat.ASTC_10x10:
-                case TextureFormat.ASTC_12x12:
-                case TextureFormat.ETC_RGB4:
-                case TextureFormat.ETC2_RGB:
-                case TextureFormat.ETC2_RGBA1:
-                case TextureFormat.ETC2_RGBA8:
-                case TextureFormat.PVRTC_RGB2:
-                case TextureFormat.PVRTC_RGB4:
-                case TextureFormat.PVRTC_RGBA2:
-                case TextureFormat.PVRTC_RGBA4:
-                    return true;
-                default:
-                    return false;
             }
         }
 

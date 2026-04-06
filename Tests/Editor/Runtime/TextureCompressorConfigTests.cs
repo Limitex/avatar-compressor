@@ -45,10 +45,6 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(2048, _config.MaxResolution);
             Assert.AreEqual(256, _config.MinResolution);
             Assert.IsTrue(_config.ForcePowerOfTwo);
-            Assert.IsTrue(_config.ProcessMainTextures);
-            Assert.IsTrue(_config.ProcessNormalMaps);
-            Assert.IsTrue(_config.ProcessEmissionMaps);
-            Assert.IsTrue(_config.ProcessOtherTextures);
             Assert.AreEqual(1024, _config.MinSourceSize);
             Assert.AreEqual(512, _config.SkipIfSmallerThan);
             Assert.AreEqual(CompressionPlatform.Auto, _config.TargetPlatform);
@@ -255,6 +251,12 @@ namespace dev.limitex.avatar.compressor.tests
         public void DefaultValues_ForcePowerOfTwoEnabled()
         {
             Assert.IsTrue(_config.ForcePowerOfTwo);
+        }
+
+        [Test]
+        public void DefaultValues_SkipUnknownUncompressedTexturesEnabled()
+        {
+            Assert.IsTrue(_config.SkipUnknownUncompressedTextures);
         }
 
         #endregion

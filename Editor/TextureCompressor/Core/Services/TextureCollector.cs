@@ -11,41 +11,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// </summary>
     public class TextureCollector
     {
-        private static readonly HashSet<string> MainTextureProperties = new HashSet<string>
-        {
-            "_MainTex",
-            "_BaseMap",
-            "_BaseColorMap",
-            "_Albedo",
-            "_AlbedoMap",
-            "_Diffuse",
-            "_DiffuseMap",
-            "_Color",
-            "_ColorMap",
-        };
-
-        private static readonly HashSet<string> NormalMapProperties = new HashSet<string>
-        {
-            "_BumpMap",
-            "_NormalMap",
-            "_Normal",
-            "_DetailNormalMap",
-        };
-
-        private static readonly HashSet<string> EmissionProperties = new HashSet<string>
-        {
-            "_EmissionMap",
-            "_EmissiveMap",
-            "_Emission",
-            "_EmissiveColor",
-        };
-
         private readonly int _minSourceSize;
         private readonly int _skipIfSmallerThan;
         private readonly bool _processMainTextures;
         private readonly bool _processNormalMaps;
         private readonly bool _processEmissionMaps;
         private readonly bool _processOtherTextures;
+        private readonly bool _skipUnknownUncompressedTextures;
         private readonly List<string> _excludedPathPrefixes;
         private readonly HashSet<string> _frozenSkipGuids;
 
@@ -56,6 +28,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             bool processNormalMaps,
             bool processEmissionMaps,
             bool processOtherTextures,
+            bool skipUnknownUncompressedTextures,
             IEnumerable<string> excludedPathPrefixes = null,
             IEnumerable<string> frozenSkipGuids = null
         )
@@ -66,6 +39,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             _processNormalMaps = processNormalMaps;
             _processEmissionMaps = processEmissionMaps;
             _processOtherTextures = processOtherTextures;
+            _skipUnknownUncompressedTextures = skipUnknownUncompressedTextures;
             _excludedPathPrefixes =
                 excludedPathPrefixes != null
                     ? new List<string>(
@@ -179,15 +153,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 if (texture == null)
                     continue;
 
-                bool isNormalMap = NormalMapProperties.Contains(propertyName);
-                bool isEmission = EmissionProperties.Contains(propertyName);
+                var category = TexturePropertyDefinitions.GetCategory(propertyName);
+                bool isNormalMap = category == TexturePropertyCategory.Normal;
+                bool isEmission = category == TexturePropertyCategory.Emission;
 
                 if (!textures.TryGetValue(texture, out var info))
                 {
                     info = new TextureInfo
                     {
-                        TextureType = GetTextureType(propertyName),
-                        PropertyName = propertyName,
+                        TextureType = category,
                         IsNormalMap = isNormalMap,
                         IsEmission = isEmission,
                     };
@@ -205,20 +179,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     if (isNormalMap && !info.IsNormalMap)
                     {
                         info.IsNormalMap = true;
-                        info.TextureType = "Normal";
+                        info.TextureType = TexturePropertyCategory.Normal;
                     }
                     // Similarly for emission
                     if (isEmission && !info.IsEmission)
                     {
                         info.IsEmission = true;
                     }
-                    // If the texture was only skipped due to type filter, a different property
-                    // referencing the same texture with an enabled type can upgrade it to processed.
-                    // Per-texture checks (path, size, frozen) don't change between properties.
+                    // Per-texture checks (path, size, frozen) don't change between properties,
+                    // but property-dependent skip reasons can be upgraded when a subsequent
+                    // property reference satisfies the required conditions.
                     if (
                         !info.IsProcessed
-                        && info.SkipReason == SkipReason.FilteredByType
-                        && IsTypeEnabled(propertyName)
+                        && IsPropertyDependentReason(info.SkipReason)
+                        && GetPropertyDependentSkipReason(texture, propertyName) == null
                     )
                     {
                         info.IsProcessed = true;
@@ -293,10 +267,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 return;
             }
 
-            if (!IsTypeEnabled(propertyName))
+            var propertySkipReason = GetPropertyDependentSkipReason(texture, propertyName);
+            if (propertySkipReason != null)
             {
                 info.IsProcessed = false;
-                info.SkipReason = SkipReason.FilteredByType;
+                info.SkipReason = propertySkipReason.Value;
                 return;
             }
 
@@ -304,26 +279,57 @@ namespace dev.limitex.avatar.compressor.editor.texture
             info.SkipReason = SkipReason.None;
         }
 
-        private bool IsTypeEnabled(string propertyName)
+        /// <summary>
+        /// Returns the property-dependent skip reason for the given texture and property,
+        /// or null if the property passes all property-dependent checks.
+        /// This is the single source of truth for property-dependent skip logic, used both
+        /// during initial evaluation and when upgrading a previously skipped texture.
+        /// </summary>
+        private SkipReason? GetPropertyDependentSkipReason(Texture2D texture, string propertyName)
         {
-            if (MainTextureProperties.Contains(propertyName))
-                return _processMainTextures;
-            if (NormalMapProperties.Contains(propertyName))
-                return _processNormalMaps;
-            if (EmissionProperties.Contains(propertyName))
-                return _processEmissionMaps;
-            return _processOtherTextures;
+            if (!IsTypeEnabled(propertyName))
+                return SkipReason.FilteredByType;
+
+            // Sub-check within the Other category: skip uncompressed textures on unknown
+            // shader properties to avoid corrupting non-visual data (e.g., SPS bake data,
+            // masks, LUTs). This mirrors the UI hierarchy where the toggle is nested under
+            // the Other filter and disabled when Other is off.
+            // Already-compressed textures (DXT, BC, ASTC, etc.) are not skipped —
+            // they were intentionally compressed upstream.
+            if (
+                _skipUnknownUncompressedTextures
+                && !TextureFormatInfo.IsCompressed(texture.format)
+                && !TexturePropertyDefinitions.IsKnownTextureProperty(propertyName)
+            )
+                return SkipReason.UnknownUncompressedProperty;
+
+            return null;
         }
 
-        private string GetTextureType(string propertyName)
+        /// <summary>
+        /// Returns true if the skip reason depends on the property name and can potentially
+        /// be resolved by a different property referencing the same texture.
+        /// Per-texture reasons (path, size, frozen, runtime-generated) are never upgradeable.
+        /// </summary>
+        private static bool IsPropertyDependentReason(SkipReason reason)
         {
-            if (MainTextureProperties.Contains(propertyName))
-                return "Main";
-            if (NormalMapProperties.Contains(propertyName))
-                return "Normal";
-            if (EmissionProperties.Contains(propertyName))
-                return "Emission";
-            return "Other";
+            return reason == SkipReason.FilteredByType
+                || reason == SkipReason.UnknownUncompressedProperty;
+        }
+
+        private bool IsTypeEnabled(string propertyName)
+        {
+            switch (TexturePropertyDefinitions.GetCategory(propertyName))
+            {
+                case TexturePropertyCategory.Main:
+                    return _processMainTextures;
+                case TexturePropertyCategory.Normal:
+                    return _processNormalMaps;
+                case TexturePropertyCategory.Emission:
+                    return _processEmissionMaps;
+                default:
+                    return _processOtherTextures;
+            }
         }
     }
 }

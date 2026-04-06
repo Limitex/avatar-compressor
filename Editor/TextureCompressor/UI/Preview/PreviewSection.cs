@@ -245,7 +245,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(data.Texture.name, EditorStyles.boldLabel);
-            EditorGUILayout.LabelField($"[{data.TextureType}]", GUILayout.Width(60));
+            EditorGUILayout.LabelField($"[{data.TextureType.ToString()}]", GUILayout.Width(60));
 
             // Freeze/Unfreeze button
             if (data.IsProcessed)
@@ -378,6 +378,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 SkipReason.FrozenSkip => "User frozen (skipped)",
                 SkipReason.RuntimeGenerated => "Runtime generated",
                 SkipReason.ExcludedPath => "Excluded by path",
+                SkipReason.UnknownUncompressedProperty =>
+                    "Uncompressed on unknown property (see Data Protection)",
                 _ => "Skipped",
             };
             EditorGUILayout.LabelField(reasonText, EditorStyles.miniLabel);
@@ -403,7 +405,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             string assetPath = AssetDatabase.GUIDToAssetPath(data.Guid);
             string textureName = data.Texture != null ? data.Texture.name : "";
 
-            return search.MatchesSearchAny(textureName, assetPath, data.TextureType);
+            return search.MatchesSearchAny(textureName, assetPath, data.TextureType.ToString());
         }
     }
 }

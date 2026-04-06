@@ -912,7 +912,7 @@ namespace dev.limitex.avatar.compressor.tests
             var newTexture = renderer.sharedMaterial.GetTexture("_MainTex") as Texture2D;
             Assert.IsNotNull(newTexture);
             Assert.IsTrue(
-                TextureFormatSelector.IsCompressedFormat(newTexture.format),
+                TextureFormatInfo.IsCompressed(newTexture.format),
                 $"Output should be a compressed format, got {newTexture.format}"
             );
 
@@ -940,7 +940,7 @@ namespace dev.limitex.avatar.compressor.tests
             var newTexture = renderer.sharedMaterial.GetTexture("_BumpMap") as Texture2D;
             Assert.IsNotNull(newTexture);
             Assert.IsTrue(
-                TextureFormatSelector.IsCompressedFormat(newTexture.format),
+                TextureFormatInfo.IsCompressed(newTexture.format),
                 $"Normal map should be compressed, got {newTexture.format}"
             );
             Assert.That(newTexture.name, Does.Contain("_compressed"));
@@ -975,11 +975,11 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.IsNotNull(newMainTex);
             Assert.IsNotNull(newNormalTex);
             Assert.IsTrue(
-                TextureFormatSelector.IsCompressedFormat(newMainTex.format),
+                TextureFormatInfo.IsCompressed(newMainTex.format),
                 $"Main texture should be compressed, got {newMainTex.format}"
             );
             Assert.IsTrue(
-                TextureFormatSelector.IsCompressedFormat(newNormalTex.format),
+                TextureFormatInfo.IsCompressed(newNormalTex.format),
                 $"Normal map should be compressed, got {newNormalTex.format}"
             );
 
@@ -1949,18 +1949,18 @@ namespace dev.limitex.avatar.compressor.tests
         #region Compressed Source Format Tests
 
         [Test]
-        public void IsCompressedFormat_IdentifiesAllCompressedFormats()
+        public void IsCompressed_IdentifiesAllCompressedFormats()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.BC5));
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.BC7));
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.DXT1));
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.DXT5));
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ASTC_4x4));
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ASTC_6x6));
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ASTC_8x8));
-            Assert.IsFalse(TextureFormatSelector.IsCompressedFormat(TextureFormat.RGBA32));
-            Assert.IsFalse(TextureFormatSelector.IsCompressedFormat(TextureFormat.RGB24));
-            Assert.IsFalse(TextureFormatSelector.IsCompressedFormat(TextureFormat.ARGB32));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.BC5));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.BC7));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.DXT1));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.DXT5));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_4x4));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_6x6));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_8x8));
+            Assert.IsFalse(TextureFormatInfo.IsCompressed(TextureFormat.RGBA32));
+            Assert.IsFalse(TextureFormatInfo.IsCompressed(TextureFormat.RGB24));
+            Assert.IsFalse(TextureFormatInfo.IsCompressed(TextureFormat.ARGB32));
         }
 
         [Test]
