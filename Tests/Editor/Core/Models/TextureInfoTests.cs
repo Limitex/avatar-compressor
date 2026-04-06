@@ -173,6 +173,7 @@ namespace dev.limitex.avatar.compressor.tests
                 SkipReason.RuntimeGenerated,
                 SkipReason.ExcludedPath,
                 SkipReason.ExcludedTexture,
+                SkipReason.UnknownUncompressedProperty,
             };
 
             var uniqueValues = new System.Collections.Generic.HashSet<SkipReason>(values);
