@@ -17,6 +17,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         // UI state
         private bool _showExcludedTexturesSection;
+        private bool _showTextureFiltersSection;
         private bool _showExcludedPathsSection;
         private bool _showFrozenSection = true;
         private Vector2 _frozenScrollPosition;
@@ -42,7 +43,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             EditorGUILayout.Space(10);
 
             // Texture filters
-            FilterSection.DrawTextureFilters(config);
+            FilterSection.DrawTextureFilters(config, ref _showTextureFiltersSection);
             EditorGUILayout.Space(10);
 
             // Excluded textures

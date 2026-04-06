@@ -335,96 +335,228 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region IsCompressedFormat Tests
+        #region IsCompressed Tests
 
         [Test]
-        public void IsCompressedFormat_DXT1_ReturnsTrue()
+        public void IsCompressed_DXT1_ReturnsTrue()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.DXT1));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.DXT1));
         }
 
         [Test]
-        public void IsCompressedFormat_DXT5_ReturnsTrue()
+        public void IsCompressed_DXT5_ReturnsTrue()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.DXT5));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.DXT5));
         }
 
         [Test]
-        public void IsCompressedFormat_DXT1Crunched_ReturnsTrue()
+        public void IsCompressed_DXT1Crunched_ReturnsTrue()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.DXT1Crunched));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.DXT1Crunched));
         }
 
         [Test]
-        public void IsCompressedFormat_DXT5Crunched_ReturnsTrue()
+        public void IsCompressed_DXT5Crunched_ReturnsTrue()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.DXT5Crunched));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.DXT5Crunched));
         }
 
         [Test]
-        public void IsCompressedFormat_BC4_ReturnsTrue()
+        public void IsCompressed_BC4_ReturnsTrue()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.BC4));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.BC4));
         }
 
         [Test]
-        public void IsCompressedFormat_BC5_ReturnsTrue()
+        public void IsCompressed_BC5_ReturnsTrue()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.BC5));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.BC5));
         }
 
         [Test]
-        public void IsCompressedFormat_BC6H_ReturnsTrue()
+        public void IsCompressed_BC6H_ReturnsTrue()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.BC6H));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.BC6H));
         }
 
         [Test]
-        public void IsCompressedFormat_BC7_ReturnsTrue()
+        public void IsCompressed_BC7_ReturnsTrue()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.BC7));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.BC7));
         }
 
         [Test]
-        public void IsCompressedFormat_ASTC4x4_ReturnsTrue()
+        public void IsCompressed_ASTC4x4_ReturnsTrue()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ASTC_4x4));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_4x4));
         }
 
         [Test]
-        public void IsCompressedFormat_ASTC6x6_ReturnsTrue()
+        public void IsCompressed_ASTC6x6_ReturnsTrue()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ASTC_6x6));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_6x6));
         }
 
         [Test]
-        public void IsCompressedFormat_ASTC8x8_ReturnsTrue()
+        public void IsCompressed_ASTC8x8_ReturnsTrue()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ASTC_8x8));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_8x8));
         }
 
         [Test]
-        public void IsCompressedFormat_ETC2_RGB_ReturnsTrue()
+        public void IsCompressed_ETC_RGB4_ReturnsTrue()
         {
-            Assert.IsTrue(TextureFormatSelector.IsCompressedFormat(TextureFormat.ETC2_RGB));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ETC_RGB4));
         }
 
         [Test]
-        public void IsCompressedFormat_RGBA32_ReturnsFalse()
+        public void IsCompressed_ETC_RGB4Crunched_ReturnsTrue()
         {
-            Assert.IsFalse(TextureFormatSelector.IsCompressedFormat(TextureFormat.RGBA32));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ETC_RGB4Crunched));
         }
 
         [Test]
-        public void IsCompressedFormat_RGB24_ReturnsFalse()
+        public void IsCompressed_ETC2_RGB_ReturnsTrue()
         {
-            Assert.IsFalse(TextureFormatSelector.IsCompressedFormat(TextureFormat.RGB24));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ETC2_RGB));
         }
 
         [Test]
-        public void IsCompressedFormat_ARGB32_ReturnsFalse()
+        public void IsCompressed_ETC2_RGBA1_ReturnsTrue()
         {
-            Assert.IsFalse(TextureFormatSelector.IsCompressedFormat(TextureFormat.ARGB32));
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ETC2_RGBA1));
+        }
+
+        [Test]
+        public void IsCompressed_ETC2_RGBA8_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ETC2_RGBA8));
+        }
+
+        [Test]
+        public void IsCompressed_EAC_R_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.EAC_R));
+        }
+
+        [Test]
+        public void IsCompressed_EAC_RG_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.EAC_RG));
+        }
+
+        [Test]
+        public void IsCompressed_EAC_R_SIGNED_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.EAC_R_SIGNED));
+        }
+
+        [Test]
+        public void IsCompressed_EAC_RG_SIGNED_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.EAC_RG_SIGNED));
+        }
+
+        [Test]
+        public void IsCompressed_ASTC5x5_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_5x5));
+        }
+
+        [Test]
+        public void IsCompressed_ASTC10x10_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_10x10));
+        }
+
+        [Test]
+        public void IsCompressed_ASTC12x12_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_12x12));
+        }
+
+        [Test]
+        public void IsCompressed_ASTC_HDR_4x4_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_HDR_4x4));
+        }
+
+        [Test]
+        public void IsCompressed_ASTC_HDR_5x5_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_HDR_5x5));
+        }
+
+        [Test]
+        public void IsCompressed_ASTC_HDR_6x6_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_HDR_6x6));
+        }
+
+        [Test]
+        public void IsCompressed_ASTC_HDR_8x8_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_HDR_8x8));
+        }
+
+        [Test]
+        public void IsCompressed_ASTC_HDR_10x10_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_HDR_10x10));
+        }
+
+        [Test]
+        public void IsCompressed_ASTC_HDR_12x12_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ASTC_HDR_12x12));
+        }
+
+        [Test]
+        public void IsCompressed_ETC2_RGBA8Crunched_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.ETC2_RGBA8Crunched));
+        }
+
+        [Test]
+        public void IsCompressed_PVRTC_RGB2_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.PVRTC_RGB2));
+        }
+
+        [Test]
+        public void IsCompressed_PVRTC_RGB4_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.PVRTC_RGB4));
+        }
+
+        [Test]
+        public void IsCompressed_PVRTC_RGBA2_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.PVRTC_RGBA2));
+        }
+
+        [Test]
+        public void IsCompressed_PVRTC_RGBA4_ReturnsTrue()
+        {
+            Assert.IsTrue(TextureFormatInfo.IsCompressed(TextureFormat.PVRTC_RGBA4));
+        }
+
+        [Test]
+        public void IsCompressed_RGBA32_ReturnsFalse()
+        {
+            Assert.IsFalse(TextureFormatInfo.IsCompressed(TextureFormat.RGBA32));
+        }
+
+        [Test]
+        public void IsCompressed_RGB24_ReturnsFalse()
+        {
+            Assert.IsFalse(TextureFormatInfo.IsCompressed(TextureFormat.RGB24));
+        }
+
+        [Test]
+        public void IsCompressed_ARGB32_ReturnsFalse()
+        {
+            Assert.IsFalse(TextureFormatInfo.IsCompressed(TextureFormat.ARGB32));
         }
 
         #endregion

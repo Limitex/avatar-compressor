@@ -12,15 +12,12 @@ namespace dev.limitex.avatar.compressor
 
         /// <summary>
         /// Gets the default excluded paths for new TextureCompressor components.
+        /// Returns an empty array — presets are available via the UI "Add Path" menu
+        /// but not applied by default.
         /// </summary>
         public static string[] GetDefaultPaths()
         {
-            var paths = new string[Presets.Length];
-            for (int i = 0; i < Presets.Length; i++)
-            {
-                paths[i] = Presets[i].Path;
-            }
-            return paths;
+            return System.Array.Empty<string>();
         }
     }
 

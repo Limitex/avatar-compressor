@@ -15,7 +15,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         public int RecommendedDivisor { get; set; }
         public Vector2Int OriginalSize { get; set; }
         public Vector2Int RecommendedSize { get; set; }
-        public string TextureType { get; set; }
+        public TexturePropertyCategory TextureType { get; set; }
         public bool IsProcessed { get; set; }
         public SkipReason SkipReason { get; set; }
         public long OriginalMemory { get; set; }

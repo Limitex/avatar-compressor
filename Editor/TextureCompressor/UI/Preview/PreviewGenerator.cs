@@ -61,6 +61,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.ProcessNormalMaps,
                 config.ProcessEmissionMaps,
                 config.ProcessOtherTextures,
+                config.SkipUnknownUncompressedTextures,
                 config.ExcludedPaths,
                 excludedTextureGuids,
                 frozenSkipGuids
@@ -232,7 +233,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         tex.format,
                         tex.mipmapCount
                     );
-                    bool isNormalMap = info.TextureType == "Normal";
+                    bool isNormalMap = info.IsNormalMap;
 
                     int divisor;
                     Vector2Int recommendedSize;
@@ -322,7 +323,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         IsNormalMap = isNormalMap,
                         PredictedFormat = targetFormat,
                         HasAlpha = hasAlpha,
-                        IsFrozen = isFrozen && !frozenSettings.Skip,
+                        IsFrozen = isFrozen,
                         FrozenSettings = frozenSettings,
                     };
 
@@ -358,10 +359,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                             SkipReason = info.SkipReason,
                             OriginalMemory = originalMemory,
                             EstimatedMemory = originalMemory,
-                            IsNormalMap = info.TextureType == "Normal",
+                            IsNormalMap = info.IsNormalMap,
                             PredictedFormat = null,
                             HasAlpha = false,
-                            IsFrozen = isFrozen && frozenSettings != null && frozenSettings.Skip,
+                            IsFrozen = isFrozen,
                             FrozenSettings = frozenSettings,
                         }
                     );
@@ -446,6 +447,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 hash = hash * 31 + config.ProcessNormalMaps.GetHashCode();
                 hash = hash * 31 + config.ProcessEmissionMaps.GetHashCode();
                 hash = hash * 31 + config.ProcessOtherTextures.GetHashCode();
+                hash = hash * 31 + config.SkipUnknownUncompressedTextures.GetHashCode();
                 hash = hash * 31 + config.MinSourceSize;
                 hash = hash * 31 + config.SkipIfSmallerThan;
                 hash = hash * 31 + config.ExcludedPaths.Count;

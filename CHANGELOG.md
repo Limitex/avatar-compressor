@@ -10,6 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Excluded Textures list** - Exclude specific textures from compression by adding them directly to the exclusion list in the inspector
+- **Skip uncompressed textures on unknown properties** - Option to exclude uncompressed textures on unrecognized shader properties from compression
+  - Prevents data corruption for non-visual textures (e.g., SPS bake data, masks, LUTs) that use pixel data for non-visual purposes
+  - Already-compressed textures (DXT, BC, ASTC, etc.) on unknown properties are not affected
+  - Configurable per avatar, enabled by default
+  - Known properties from Unity Standard / URP / HDRP, lilToon, Poiyomi, and UTS shaders are always allowed
+
+### Changed
+
+- **Default excluded paths are now empty** - Excluded path presets (e.g., VRCFury temp) are no longer applied by default; they remain available via the UI "Add Path" menu
+- **Texture filter flags no longer managed by presets** - `ProcessMainTextures`, `ProcessNormalMaps`, `ProcessEmissionMaps`, and `ProcessOtherTextures` are now per-component settings that persist across preset changes, consistent with other filter settings (Data Protection, Path Exclusions)
+
+### Fixed
+
+- Resolve original asset path via ObjectRegistry for textures replaced by other NDMF plugins
+- Collect all material references for shared textures regardless of per-property type filter
 
 ## [v0.7.0] - 2026-03-27
 

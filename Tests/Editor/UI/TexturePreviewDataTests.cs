@@ -145,9 +145,9 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void TexturePreviewData_SetTextureType_Works()
         {
-            var data = new TexturePreviewData { TextureType = "Main" };
+            var data = new TexturePreviewData { TextureType = TexturePropertyCategory.Main };
 
-            Assert.That(data.TextureType, Is.EqualTo("Main"));
+            Assert.That(data.TextureType, Is.EqualTo(TexturePropertyCategory.Main));
         }
 
         [Test]
@@ -241,7 +241,7 @@ namespace dev.limitex.avatar.compressor.tests
                 RecommendedDivisor = 2,
                 OriginalSize = new Vector2Int(1024, 1024),
                 RecommendedSize = new Vector2Int(512, 512),
-                TextureType = "Main",
+                TextureType = TexturePropertyCategory.Main,
                 IsProcessed = true,
                 SkipReason = SkipReason.None,
                 OriginalMemory = 1048576,
@@ -258,7 +258,7 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(data.RecommendedDivisor, Is.EqualTo(2));
             Assert.That(data.OriginalSize.x, Is.EqualTo(1024));
             Assert.That(data.RecommendedSize.x, Is.EqualTo(512));
-            Assert.That(data.TextureType, Is.EqualTo("Main"));
+            Assert.That(data.TextureType, Is.EqualTo(TexturePropertyCategory.Main));
             Assert.That(data.IsProcessed, Is.True);
             Assert.That(data.SkipReason, Is.EqualTo(SkipReason.None));
             Assert.That(data.OriginalMemory, Is.EqualTo(1048576));
