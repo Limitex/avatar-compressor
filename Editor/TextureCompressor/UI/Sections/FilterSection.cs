@@ -12,6 +12,20 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     public static class FilterSection
     {
         /// <summary>
+        /// Draws the unified exclusions section containing both texture and path exclusions.
+        /// </summary>
+        public static void DrawExclusions(TextureCompressor config, ref bool showSection)
+        {
+            showSection = EditorGUILayout.Foldout(showSection, "Exclusions", true);
+            if (!showSection)
+                return;
+
+            DrawExcludedTexturesContent(config);
+            EditorGUILayout.Space(5);
+            DrawExcludedPathsContent(config);
+        }
+
+        /// <summary>
         /// Draws texture type filters (Main, Normal, Emission, Other) with foldout
         /// and an inline sub-option for skipping uncompressed textures on unknown properties.
         /// </summary>
@@ -61,18 +75,21 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         }
 
         /// <summary>
-        /// Draws the excluded textures section with foldout.
+        /// Draws the excluded textures content (label + list, no foldout).
         /// </summary>
-        public static void DrawExcludedTextures(TextureCompressor config, ref bool showSection)
+        private static void DrawExcludedTexturesContent(TextureCompressor config)
         {
-            ExclusionListDrawer.Draw(
+            int count = config.ExcludedTextures.Count;
+            string label = count > 0 ? $"Textures ({count})" : "Textures";
+            EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
+
+            ExclusionListDrawer.DrawContent(
                 config,
                 config.ExcludedTextures,
-                ref showSection,
-                sectionLabel: "Excluded Textures",
-                emptyHelpText: "Textures added here will be excluded from compression.",
                 drawItemField: current =>
                     (Texture2D)EditorGUILayout.ObjectField(current, typeof(Texture2D), false),
+                sectionLabel: "Excluded Textures",
+                emptyHelpText: "Textures added here will be excluded from compression.",
                 addButtonLabel: "+ Add Texture",
                 validateChange: (newValue, index, list) =>
                 {
@@ -94,17 +111,20 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         }
 
         /// <summary>
-        /// Draws the excluded paths section with foldout.
+        /// Draws the excluded paths content (label + list, no foldout).
         /// </summary>
-        public static void DrawExcludedPaths(TextureCompressor config, ref bool showSection)
+        private static void DrawExcludedPathsContent(TextureCompressor config)
         {
-            ExclusionListDrawer.Draw(
+            int count = config.ExcludedPaths.Count;
+            string label = count > 0 ? $"Paths ({count})" : "Paths";
+            EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
+
+            ExclusionListDrawer.DrawContent(
                 config,
                 config.ExcludedPaths,
-                ref showSection,
+                drawItemField: current => EditorGUILayout.TextField(current),
                 sectionLabel: "Path Exclusions",
                 emptyHelpText: "Textures with paths starting with listed prefixes will be skipped.",
-                drawItemField: current => EditorGUILayout.TextField(current),
                 addButtonLabel: "+ Add Path...",
                 onAdd: ShowAddPathMenu,
                 drawItemExtra: (item, _) =>

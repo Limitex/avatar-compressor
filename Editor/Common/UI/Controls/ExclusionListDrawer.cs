@@ -44,9 +44,38 @@ namespace dev.limitex.avatar.compressor.editor.ui
             if (!showSection)
                 return;
 
+            DrawContent(
+                undoTarget,
+                list,
+                drawItemField,
+                sectionLabel,
+                emptyHelpText,
+                addButtonLabel,
+                onAdd,
+                validateChange,
+                drawItemExtra
+            );
+        }
+
+        /// <summary>
+        /// Draws the list content without a foldout wrapper.
+        /// Use this when the caller manages the foldout externally.
+        /// </summary>
+        public static void DrawContent<T>(
+            UnityEngine.Object undoTarget,
+            List<T> list,
+            Func<T, T> drawItemField,
+            string sectionLabel = "Item",
+            string emptyHelpText = "No items.",
+            string addButtonLabel = "+ Add",
+            Action<UnityEngine.Object, List<T>> onAdd = null,
+            Func<T, int, List<T>, bool> validateChange = null,
+            Action<T, int> drawItemExtra = null
+        )
+        {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-            for (int i = list.Count - 1; i >= 0; i--)
+            for (int i = 0; i < list.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
 
@@ -68,12 +97,13 @@ namespace dev.limitex.avatar.compressor.editor.ui
                     list.RemoveAt(i);
                     EditorUtility.SetDirty(undoTarget);
                     EditorGUILayout.EndHorizontal();
+                    i--;
                     continue;
                 }
 
                 EditorGUILayout.EndHorizontal();
 
-                if (drawItemExtra != null && i < list.Count)
+                if (drawItemExtra != null)
                 {
                     drawItemExtra(list[i], i);
                 }

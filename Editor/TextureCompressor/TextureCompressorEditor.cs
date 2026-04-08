@@ -16,9 +16,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private PreviewSection _previewSection;
 
         // UI state
-        private bool _showExcludedTexturesSection;
+        private bool _showExclusionsSection;
         private bool _showTextureFiltersSection;
-        private bool _showExcludedPathsSection;
         private bool _showFrozenSection = true;
         private Vector2 _frozenScrollPosition;
 
@@ -46,12 +45,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             FilterSection.DrawTextureFilters(config, ref _showTextureFiltersSection);
             EditorGUILayout.Space(10);
 
-            // Excluded textures
-            FilterSection.DrawExcludedTextures(config, ref _showExcludedTexturesSection);
-            EditorGUILayout.Space(10);
-
-            // Excluded paths
-            FilterSection.DrawExcludedPaths(config, ref _showExcludedPathsSection);
+            // Exclusions (textures + paths)
+            FilterSection.DrawExclusions(config, ref _showExclusionsSection);
             EditorGUILayout.Space(15);
 
             // Search box
