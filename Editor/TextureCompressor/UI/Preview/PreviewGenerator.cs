@@ -48,10 +48,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             var frozenLookup = FrozenTextureSettings.BuildLookup(config.FrozenTextures);
 
-            var frozenSkipGuids = config
-                .FrozenTextures.Where(f => f.Skip && !string.IsNullOrEmpty(f.TextureGuid))
-                .Select(f => f.TextureGuid);
-
             var collector = new TextureCollector(
                 config.MinSourceSize,
                 config.SkipIfSmallerThan,
@@ -62,7 +58,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.SkipUnknownUncompressedTextures,
                 config.ExcludedPaths,
                 config.ExcludedTextures,
-                frozenSkipGuids
+                config.FrozenTextures
             );
 
             var processor = new TextureProcessor(

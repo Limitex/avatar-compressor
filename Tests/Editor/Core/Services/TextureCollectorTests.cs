@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor.texture;
 using nadena.dev.ndmf;
 using NUnit.Framework;
@@ -1123,12 +1124,22 @@ namespace dev.limitex.avatar.compressor.tests
         #region FrozenSkip Tests
 
         [Test]
-        public void Constructor_WithFrozenSkipGuids_AcceptsParameter()
+        public void Constructor_WithFrozenTextures_AcceptsParameter()
         {
-            var frozenGuids = new[]
+            var frozenTextures = new[]
             {
-                "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
-                "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+                new FrozenTextureSettings(
+                    "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+                    1,
+                    FrozenTextureFormat.Auto,
+                    true
+                ),
+                new FrozenTextureSettings(
+                    "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+                    2,
+                    FrozenTextureFormat.DXT5,
+                    false
+                ),
             };
 
             var collector = new TextureCollector(
@@ -1141,14 +1152,14 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 excludedPathPrefixes: null,
                 excludedTextures: null,
-                frozenSkipGuids: frozenGuids
+                frozenTextures: frozenTextures
             );
 
             Assert.IsNotNull(collector);
         }
 
         [Test]
-        public void Constructor_WithNullFrozenSkipGuids_DoesNotThrow()
+        public void Constructor_WithNullFrozenTextures_DoesNotThrow()
         {
             Assert.DoesNotThrow(() =>
             {
@@ -1157,7 +1168,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void Constructor_WithEmptyFrozenSkipGuids_DoesNotThrow()
+        public void Constructor_WithEmptyFrozenTextures_DoesNotThrow()
         {
             Assert.DoesNotThrow(() =>
             {
@@ -1171,7 +1182,7 @@ namespace dev.limitex.avatar.compressor.tests
                     true,
                     excludedPathPrefixes: null,
                     excludedTextures: null,
-                    frozenSkipGuids: new string[0]
+                    frozenTextures: new FrozenTextureSettings[0]
                 );
             });
         }
@@ -1961,7 +1972,10 @@ namespace dev.limitex.avatar.compressor.tests
                     true,
                     true,
                     true,
-                    frozenSkipGuids: new[] { originalGuid }
+                    frozenTextures: new[]
+                    {
+                        new FrozenTextureSettings(originalGuid, 1, FrozenTextureFormat.Auto, true),
+                    }
                 );
 
                 var root = CreateGameObject("Root");

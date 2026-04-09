@@ -32,7 +32,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             bool skipUnknownUncompressedTextures,
             IEnumerable<string> excludedPathPrefixes = null,
             IEnumerable<Texture2D> excludedTextures = null,
-            IEnumerable<string> frozenSkipGuids = null
+            IEnumerable<FrozenTextureSettings> frozenTextures = null
         )
         {
             _minSourceSize = minSourceSize;
@@ -53,8 +53,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     ? new HashSet<string>(ToAssetGuids(excludedTextures))
                     : new HashSet<string>();
             _frozenSkipGuids =
-                frozenSkipGuids != null
-                    ? new HashSet<string>(frozenSkipGuids)
+                frozenTextures != null
+                    ? new HashSet<string>(
+                        frozenTextures
+                            .Where(f => f.Skip && !string.IsNullOrEmpty(f.TextureGuid))
+                            .Select(f => f.TextureGuid)
+                    )
                     : new HashSet<string>();
         }
 
