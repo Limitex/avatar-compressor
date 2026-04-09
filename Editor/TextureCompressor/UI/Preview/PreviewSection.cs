@@ -378,6 +378,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 SkipReason.FrozenSkip => "User frozen (skipped)",
                 SkipReason.RuntimeGenerated => "Runtime generated",
                 SkipReason.ExcludedPath => "Excluded by path",
+                SkipReason.ExcludedTexture => "Excluded texture",
                 SkipReason.UnknownUncompressedProperty =>
                     "Uncompressed on unknown property (see Data Protection)",
                 _ => "Skipped",

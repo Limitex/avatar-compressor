@@ -25,6 +25,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         FrozenSkip,
         RuntimeGenerated,
         ExcludedPath,
+        ExcludedTexture,
         UnknownUncompressedProperty,
     }
 

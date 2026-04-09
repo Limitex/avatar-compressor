@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Excluded Textures list** - Exclude specific textures from compression by adding them directly to the exclusion list in the inspector
 - **Skip uncompressed textures on unknown properties** - Option to exclude uncompressed textures on unrecognized shader properties from compression
   - Prevents data corruption for non-visual textures (e.g., SPS bake data, masks, LUTs) that use pixel data for non-visual purposes
   - Already-compressed textures (DXT, BC, ASTC, etc.) on unknown properties are not affected

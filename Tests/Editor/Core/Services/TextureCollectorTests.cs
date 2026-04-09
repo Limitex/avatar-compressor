@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor.texture;
 using nadena.dev.ndmf;
 using NUnit.Framework;
@@ -943,15 +944,202 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region ExcludedTexture Tests
+
+        [Test]
+        public void Constructor_WithExcludedTextures_AcceptsParameter()
+        {
+            var texture1 = CreateTexture(64, 64);
+            var texture2 = CreateTexture(128, 128);
+
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                false,
+                null,
+                new[] { texture1, texture2 }
+            );
+
+            Assert.IsNotNull(collector);
+        }
+
+        [Test]
+        public void Constructor_WithNullExcludedTextures_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                var collector = new TextureCollector(
+                    64,
+                    0,
+                    true,
+                    true,
+                    true,
+                    true,
+                    false,
+                    null,
+                    (IEnumerable<Texture2D>)null
+                );
+            });
+        }
+
+        [Test]
+        public void Constructor_WithEmptyExcludedTextures_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                var collector = new TextureCollector(
+                    64,
+                    0,
+                    true,
+                    true,
+                    true,
+                    true,
+                    false,
+                    null,
+                    new Texture2D[0]
+                );
+            });
+        }
+
+        [Test]
+        public void CollectFromMaterials_ExcludedTexture_IsSkippedWithCollectAllFalse()
+        {
+            var texture = CreateTexture(512, 512);
+
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                false,
+                null,
+                new[] { texture }
+            );
+
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new[] { material }, textures, collectAll: false);
+
+            Assert.AreEqual(0, textures.Count);
+        }
+
+        [Test]
+        public void CollectFromMaterials_ExcludedTexture_HasExcludedTextureReasonWithCollectAll()
+        {
+            var texture = CreateTexture(512, 512);
+
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                false,
+                null,
+                new[] { texture }
+            );
+
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new[] { material }, textures, collectAll: true);
+
+            Assert.AreEqual(1, textures.Count);
+            Assert.IsTrue(textures.ContainsKey(texture));
+            Assert.IsFalse(textures[texture].IsProcessed);
+            Assert.AreEqual(SkipReason.ExcludedTexture, textures[texture].SkipReason);
+        }
+
+        [Test]
+        public void CollectFromMaterials_NonExcludedTexture_IsProcessed()
+        {
+            var texture = CreateTexture(512, 512);
+            var unrelatedTexture = CreateTexture(64, 64);
+
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                false,
+                null,
+                new[] { unrelatedTexture }
+            );
+
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", texture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new[] { material }, textures, collectAll: false);
+
+            Assert.AreEqual(1, textures.Count);
+            Assert.IsTrue(textures[texture].IsProcessed);
+        }
+
+        [Test]
+        public void CollectFromMaterials_MixedExcludedAndNonExcluded_FiltersCorrectly()
+        {
+            var excludedTexture = CreateTexture(512, 512);
+            var normalTexture = CreateTexture(256, 256);
+
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                false,
+                null,
+                new[] { excludedTexture }
+            );
+
+            var material = CreateMaterial();
+            material.SetTexture("_MainTex", excludedTexture);
+            material.SetTexture("_BumpMap", normalTexture);
+
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            collector.CollectFromMaterials(new[] { material }, textures, collectAll: true);
+
+            Assert.AreEqual(2, textures.Count);
+            Assert.IsFalse(textures[excludedTexture].IsProcessed);
+            Assert.AreEqual(SkipReason.ExcludedTexture, textures[excludedTexture].SkipReason);
+            Assert.IsTrue(textures[normalTexture].IsProcessed);
+        }
+
+        #endregion
+
         #region FrozenSkip Tests
 
         [Test]
-        public void Constructor_WithFrozenSkipGuids_AcceptsParameter()
+        public void Constructor_WithFrozenTextures_AcceptsParameter()
         {
-            var frozenGuids = new[]
+            var frozenTextures = new[]
             {
-                "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
-                "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+                new FrozenTextureSettings(
+                    "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+                    1,
+                    FrozenTextureFormat.Auto,
+                    true
+                ),
+                new FrozenTextureSettings(
+                    "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+                    2,
+                    FrozenTextureFormat.DXT5,
+                    false
+                ),
             };
 
             var collector = new TextureCollector(
@@ -963,14 +1151,15 @@ namespace dev.limitex.avatar.compressor.tests
                 true,
                 true,
                 excludedPathPrefixes: null,
-                frozenSkipGuids: frozenGuids
+                excludedTextures: null,
+                frozenTextures: frozenTextures
             );
 
             Assert.IsNotNull(collector);
         }
 
         [Test]
-        public void Constructor_WithNullFrozenSkipGuids_DoesNotThrow()
+        public void Constructor_WithNullFrozenTextures_DoesNotThrow()
         {
             Assert.DoesNotThrow(() =>
             {
@@ -979,7 +1168,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void Constructor_WithEmptyFrozenSkipGuids_DoesNotThrow()
+        public void Constructor_WithEmptyFrozenTextures_DoesNotThrow()
         {
             Assert.DoesNotThrow(() =>
             {
@@ -992,7 +1181,8 @@ namespace dev.limitex.avatar.compressor.tests
                     true,
                     true,
                     excludedPathPrefixes: null,
-                    frozenSkipGuids: new string[0]
+                    excludedTextures: null,
+                    frozenTextures: new FrozenTextureSettings[0]
                 );
             });
         }
@@ -1027,6 +1217,7 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(values, Contains.Item(SkipReason.FrozenSkip));
             Assert.That(values, Contains.Item(SkipReason.RuntimeGenerated));
             Assert.That(values, Contains.Item(SkipReason.ExcludedPath));
+            Assert.That(values, Contains.Item(SkipReason.ExcludedTexture));
             Assert.That(values, Contains.Item(SkipReason.UnknownUncompressedProperty));
         }
 
@@ -1781,7 +1972,10 @@ namespace dev.limitex.avatar.compressor.tests
                     true,
                     true,
                     true,
-                    frozenSkipGuids: new[] { originalGuid }
+                    frozenTextures: new[]
+                    {
+                        new FrozenTextureSettings(originalGuid, 1, FrozenTextureFormat.Auto, true),
+                    }
                 );
 
                 var root = CreateGameObject("Root");

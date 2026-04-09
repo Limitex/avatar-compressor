@@ -19,6 +19,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly bool _processOtherTextures;
         private readonly bool _skipUnknownUncompressedTextures;
         private readonly List<string> _excludedPathPrefixes;
+        private readonly HashSet<string> _excludedTextureGuids;
         private readonly HashSet<string> _frozenSkipGuids;
 
         public TextureCollector(
@@ -30,7 +31,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             bool processOtherTextures,
             bool skipUnknownUncompressedTextures,
             IEnumerable<string> excludedPathPrefixes = null,
-            IEnumerable<string> frozenSkipGuids = null
+            IEnumerable<Texture2D> excludedTextures = null,
+            IEnumerable<FrozenTextureSettings> frozenTextures = null
         )
         {
             _minSourceSize = minSourceSize;
@@ -46,9 +48,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         excludedPathPrefixes.Where(p => !string.IsNullOrWhiteSpace(p))
                     )
                     : new List<string>();
+            _excludedTextureGuids =
+                excludedTextures != null
+                    ? new HashSet<string>(ToAssetGuids(excludedTextures))
+                    : new HashSet<string>();
             _frozenSkipGuids =
-                frozenSkipGuids != null
-                    ? new HashSet<string>(frozenSkipGuids)
+                frozenTextures != null
+                    ? new HashSet<string>(
+                        frozenTextures
+                            .Where(f => f.Skip && !string.IsNullOrEmpty(f.TextureGuid))
+                            .Select(f => f.TextureGuid)
+                    )
                     : new HashSet<string>();
         }
 
@@ -252,6 +262,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
             string guid = AssetDatabase.AssetPathToGUID(assetPath);
             info.AssetGuid = guid ?? string.Empty;
 
+            // Check excluded textures using GUID for reliable comparison
+            if (!string.IsNullOrEmpty(guid) && _excludedTextureGuids.Contains(guid))
+            {
+                info.IsProcessed = false;
+                info.SkipReason = SkipReason.ExcludedTexture;
+                return;
+            }
+
             if (!string.IsNullOrEmpty(guid) && _frozenSkipGuids.Contains(guid))
             {
                 info.IsProcessed = false;
@@ -277,6 +295,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             info.IsProcessed = true;
             info.SkipReason = SkipReason.None;
+        }
+
+        /// <summary>
+        /// Converts a list of Texture2D references to their asset GUIDs, filtering nulls and invalid entries.
+        /// </summary>
+        private static IEnumerable<string> ToAssetGuids(IEnumerable<Texture2D> textures)
+        {
+            if (textures == null)
+                return Enumerable.Empty<string>();
+
+            return textures
+                .Where(t => t != null)
+                .Select(t => AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(t)))
+                .Where(g => !string.IsNullOrEmpty(g));
         }
 
         /// <summary>

@@ -252,6 +252,33 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void ComputeSettingsHash_AddExcludedTexture_ReturnsDifferentHash()
+        {
+            int hash1 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            var texture = CreateImportedTexture(64, 64, false, true);
+            _config.ExcludedTextures.Add(texture);
+            int hash2 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            Assert.That(hash1, Is.Not.EqualTo(hash2));
+        }
+
+        [Test]
+        public void ComputeSettingsHash_DifferentExcludedTexture_ReturnsDifferentHash()
+        {
+            var textureA = CreateImportedTexture(64, 64, false, true);
+            _config.ExcludedTextures.Add(textureA);
+            int hash1 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            _config.ExcludedTextures.Clear();
+            var textureB = CreateImportedTexture(128, 128, false, true);
+            _config.ExcludedTextures.Add(textureB);
+            int hash2 = PreviewGenerator.ComputeSettingsHash(_config);
+
+            Assert.That(hash1, Is.Not.EqualTo(hash2));
+        }
+
+        [Test]
         public void ComputeSettingsHash_AddFrozenTexture_ReturnsDifferentHash()
         {
             int hash1 = PreviewGenerator.ComputeSettingsHash(_config);
