@@ -31,7 +31,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             bool processOtherTextures,
             bool skipUnknownUncompressedTextures,
             IEnumerable<string> excludedPathPrefixes = null,
-            IEnumerable<string> excludedTextureGuids = null,
+            IEnumerable<Texture2D> excludedTextures = null,
             IEnumerable<string> frozenSkipGuids = null
         )
         {
@@ -49,8 +49,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     )
                     : new List<string>();
             _excludedTextureGuids =
-                excludedTextureGuids != null
-                    ? new HashSet<string>(excludedTextureGuids)
+                excludedTextures != null
+                    ? new HashSet<string>(ToAssetGuids(excludedTextures))
                     : new HashSet<string>();
             _frozenSkipGuids =
                 frozenSkipGuids != null
@@ -296,7 +296,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <summary>
         /// Converts a list of Texture2D references to their asset GUIDs, filtering nulls and invalid entries.
         /// </summary>
-        public static IEnumerable<string> ToAssetGuids(IEnumerable<Texture2D> textures)
+        private static IEnumerable<string> ToAssetGuids(IEnumerable<Texture2D> textures)
         {
             if (textures == null)
                 return Enumerable.Empty<string>();
