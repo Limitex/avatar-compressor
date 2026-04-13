@@ -12,8 +12,6 @@ namespace dev.limitex.avatar.compressor.editor.ui
     {
         private static GUIStyle _centeredLabel;
         private static GUIStyle _linkStyle;
-        private static GUIStyle _placeholderStyle;
-        private static GUIStyle _hitCountStyle;
         private static GUIStyle _hiddenCountStyle;
         private static GUIStyle _modifiedStatusStyle;
         private static GUIStyle _syncedStatusStyle;
@@ -26,8 +24,6 @@ namespace dev.limitex.avatar.compressor.editor.ui
         {
             _centeredLabel = null;
             _linkStyle = null;
-            _placeholderStyle = null;
-            _hitCountStyle = null;
             _hiddenCountStyle = null;
             _modifiedStatusStyle = null;
             _syncedStatusStyle = null;
@@ -48,31 +44,12 @@ namespace dev.limitex.avatar.compressor.editor.ui
         public static GUIStyle LinkStyle => _linkStyle ??= new GUIStyle(EditorStyles.miniLabel);
 
         /// <summary>
-        /// Placeholder text style (italic, gray).
-        /// </summary>
-        public static GUIStyle PlaceholderStyle =>
-            _placeholderStyle ??= new GUIStyle(EditorStyles.label)
-            {
-                fontStyle = FontStyle.Italic,
-                normal = { textColor = new Color(0.5f, 0.5f, 0.5f) },
-            };
-
-        /// <summary>
-        /// Hit count style (right-aligned mini label).
-        /// </summary>
-        public static GUIStyle HitCountStyle =>
-            _hitCountStyle ??= new GUIStyle(EditorStyles.miniLabel)
-            {
-                alignment = TextAnchor.MiddleRight,
-            };
-
-        /// <summary>
-        /// Hidden count style (right-aligned, gray mini label).
+        /// Hidden count style (center-aligned, gray mini label).
         /// </summary>
         public static GUIStyle HiddenCountStyle =>
             _hiddenCountStyle ??= new GUIStyle(EditorStyles.miniLabel)
             {
-                alignment = TextAnchor.MiddleRight,
+                alignment = TextAnchor.MiddleCenter,
                 normal = { textColor = new Color(0.6f, 0.6f, 0.6f) },
             };
 

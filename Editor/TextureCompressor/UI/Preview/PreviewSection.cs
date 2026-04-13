@@ -8,10 +8,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
     /// <summary>
     /// Draws the preview section with texture analysis results.
+    /// Owns its own search box and GUID path cache.
     /// </summary>
     public class PreviewSection
     {
         private readonly PreviewGenerator _generator = new PreviewGenerator();
+        private readonly SearchBoxControl _searchBox = new();
+        private readonly GuidPathCache _guidPathCache = new();
         private TexturePreviewData[] _previewData;
         private int _previewSettingsHash;
         private bool _showPreview;
@@ -20,7 +23,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// <summary>
         /// Draws the preview section.
         /// </summary>
-        public void Draw(TextureCompressor config, SearchBoxControl search)
+        public void Draw(TextureCompressor config)
         {
             bool isOutdated = IsPreviewOutdated(config);
 
@@ -28,7 +31,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 GeneratePreview(config);
                 _showPreview = true;
-                search.InvalidateCache();
             }
 
             if (_showPreview && _previewData != null && _previewData.Length > 0)
@@ -40,7 +42,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         MessageType.Warning
                     );
                 }
-                DrawPreview(config, search);
+                DrawPreview(config);
             }
             else if (_showPreview && (_previewData == null || _previewData.Length == 0))
             {
@@ -63,6 +65,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             _previewData = null;
             _previewSettingsHash = 0;
+            _guidPathCache.Clear();
         }
 
         private void GeneratePreview(TextureCompressor config)
@@ -70,6 +73,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             var backend = AvatarCompressorPreferences.AnalysisBackend;
             _previewSettingsHash = PreviewGenerator.ComputeSettingsHash(config, backend);
             _previewData = _generator.Generate(config, backend);
+            _guidPathCache.Clear();
+            _searchBox.InvalidateCountCache();
         }
 
         private bool IsPreviewOutdated(TextureCompressor config)
@@ -83,13 +88,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 ) != _previewSettingsHash;
         }
 
-        private void DrawPreview(TextureCompressor config, SearchBoxControl search)
+        private void DrawPreview(TextureCompressor config)
         {
             EditorGUILayout.Space(10);
 
-            bool isSearching = search.IsSearching;
+            bool isSearching = _searchBox.IsSearching;
             int totalCount = _previewData.Length;
-            int filteredCount = isSearching ? CountPreviewMatches(search) : totalCount;
+            int filteredCount = _searchBox.CountMatches(_previewData, MatchesPreviewSearch);
 
             // Build header text
             string frozenInfo =
@@ -150,6 +155,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             EditorGUILayout.EndVertical();
 
+            // Search box for preview textures
+            _searchBox.Draw(filteredCount, totalCount);
+
             // Show "no results" message when searching with no matches
             if (isSearching && filteredCount == 0)
             {
@@ -174,7 +182,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     var data = _previewData[i];
 
                     // Skip items that don't match search
-                    if (isSearching && !MatchesPreviewSearch(data, search))
+                    if (isSearching && !MatchesPreviewSearch(data))
                         continue;
 
                     // Section headers
@@ -201,7 +209,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         hasDrawnSkippedHeader = true;
                     }
 
-                    DrawPreviewEntry(config, data, search);
+                    DrawPreviewEntry(config, data);
                 }
 
                 EditorGUILayout.EndScrollView();
@@ -209,7 +217,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 // Show hidden count when searching
                 if (isSearching && filteredCount < totalCount)
                 {
-                    SearchBoxControl.DrawHiddenCount(totalCount - filteredCount);
+                    EditorDrawUtils.DrawHiddenCount(totalCount - filteredCount);
                 }
             }
 
@@ -222,11 +230,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
-        private void DrawPreviewEntry(
-            TextureCompressor config,
-            TexturePreviewData data,
-            SearchBoxControl search
-        )
+        private void DrawPreviewEntry(TextureCompressor config, TexturePreviewData data)
         {
             bool isSkipped = !data.IsProcessed;
             bool isFrozenNow = !data.IsFrozen && config.IsFrozen(data.Guid);
@@ -259,7 +263,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         Undo.RecordObject(config, "Unfreeze Texture");
                         config.UnfreezeTexture(data.Guid);
                         EditorUtility.SetDirty(config);
-                        search.InvalidateCache();
                     }
                     GUI.backgroundColor = savedColor;
                 }
@@ -276,7 +279,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         );
                         config.SetFrozenSettings(data.Guid, frozenSettings);
                         EditorUtility.SetDirty(config);
-                        search.InvalidateCache();
                     }
                 }
             }
@@ -387,26 +389,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.EndHorizontal();
         }
 
-        private int CountPreviewMatches(SearchBoxControl search)
+        private bool MatchesPreviewSearch(TexturePreviewData data)
         {
-            if (_previewData == null)
-                return 0;
-
-            int count = 0;
-            foreach (var data in _previewData)
-            {
-                if (MatchesPreviewSearch(data, search))
-                    count++;
-            }
-            return count;
-        }
-
-        private bool MatchesPreviewSearch(TexturePreviewData data, SearchBoxControl search)
-        {
-            string assetPath = AssetDatabase.GUIDToAssetPath(data.Guid);
+            string assetPath = _guidPathCache.GetPath(data.Guid);
             string textureName = data.Texture != null ? data.Texture.name : "";
 
-            return search.MatchesSearchAny(textureName, assetPath, data.TextureType.ToString());
+            return _searchBox.MatchesSearchAny(textureName, assetPath, data.TextureType.ToString());
         }
     }
 }
