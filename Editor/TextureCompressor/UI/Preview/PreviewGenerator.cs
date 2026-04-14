@@ -122,7 +122,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.HighAccuracyWeight,
                 config.PerceptualWeight,
                 processor,
-                complexityCalc,
                 backendPreference
             );
 
@@ -165,26 +164,38 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
                 if (needsAnalysis.Count > 0)
                 {
-                    var newResults = analyzer.AnalyzeBatch(needsAnalysis);
-                    foreach (var kvp in newResults)
+                    var rawScores = analyzer.AnalyzeBatch(needsAnalysis);
+                    foreach (var kvp in rawScores)
                     {
-                        analysisResults[kvp.Key] = kvp.Value;
+                        var texture = kvp.Key;
+                        if (!needsAnalysis.TryGetValue(texture, out var texInfo))
+                            continue;
+
+                        var result = AnalysisResultHelper.BuildResult(
+                            kvp.Value,
+                            texture.width,
+                            texture.height,
+                            texInfo.IsEmission,
+                            texInfo.IsNormalMap,
+                            complexityCalc,
+                            processor
+                        );
+                        analysisResults[texture] = result;
 
                         if (
-                            assetInfoCache.TryGetValue(kvp.Key, out var info)
-                            && !string.IsNullOrEmpty(info.guid)
-                            && processedTextures.TryGetValue(kvp.Key, out var texInfo)
+                            assetInfoCache.TryGetValue(texture, out var assetInfo)
+                            && !string.IsNullOrEmpty(assetInfo.guid)
                         )
                         {
                             AnalysisCache.Set(
                                 (
-                                    info.guid,
-                                    info.contentHash,
+                                    assetInfo.guid,
+                                    assetInfo.contentHash,
                                     analysisHash,
                                     texInfo.IsNormalMap,
                                     texInfo.IsEmission
                                 ),
-                                kvp.Value
+                                result
                             );
                         }
                     }

@@ -14,8 +14,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Implementations are responsible for their own pixel access strategy
         /// (CPU readback or direct GPU texture sampling).
         /// </summary>
-        Dictionary<Texture2D, TextureAnalysisResult> AnalyzeBatch(
-            Dictionary<Texture2D, TextureInfo> textures
-        );
+        Dictionary<Texture2D, float> AnalyzeBatch(Dictionary<Texture2D, TextureInfo> textures);
     }
 }

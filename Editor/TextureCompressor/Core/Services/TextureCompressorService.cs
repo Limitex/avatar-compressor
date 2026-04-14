@@ -77,7 +77,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 config.HighAccuracyWeight,
                 config.PerceptualWeight,
                 _processor,
-                _complexityCalc,
                 backendPreference
             );
 
@@ -181,7 +180,26 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 Debug.Log($"[{Name}] Processing {textures.Count} textures...");
             }
 
-            var analysisResults = _analyzer.AnalyzeBatch(textures);
+            var rawScores = _analyzer.AnalyzeBatch(textures);
+
+            // Build analysis results (score → divisor → resolution) in the service layer
+            var analysisResults = new Dictionary<Texture2D, TextureAnalysisResult>();
+            foreach (var kvp in rawScores)
+            {
+                var texture = kvp.Key;
+                if (!textures.TryGetValue(texture, out var info))
+                    continue;
+
+                analysisResults[texture] = AnalysisResultHelper.BuildResult(
+                    kvp.Value,
+                    texture.width,
+                    texture.height,
+                    info.IsEmission,
+                    info.IsNormalMap,
+                    _complexityCalc,
+                    _processor
+                );
+            }
 
             // Process each texture through the full pipeline (resize → preprocess → compress → register)
             // one at a time to keep peak memory at O(1) intermediate textures.

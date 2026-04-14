@@ -10,13 +10,11 @@ namespace dev.limitex.avatar.compressor.tests
     public class AnalysisBackendFactoryTests
     {
         private TextureProcessor _processor;
-        private ComplexityCalculator _complexityCalc;
 
         [SetUp]
         public void SetUp()
         {
             _processor = new TextureProcessor(32, 2048, true);
-            _complexityCalc = new ComplexityCalculator(0.7f, 0.3f, 1, 8);
         }
 
         #region Factory Creation
@@ -90,7 +88,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(texture));
-            Assert.That(result[texture].NormalizedComplexity, Is.InRange(0f, 1f));
+            Assert.That(result[texture], Is.InRange(0f, 1f));
 
             Object.DestroyImmediate(texture);
         }
@@ -101,7 +99,7 @@ namespace dev.limitex.avatar.compressor.tests
 
         private ITextureAnalysisBackend CreateBackend(AnalysisStrategyType strategy)
         {
-            return AnalysisBackendFactory.Create(strategy, 1f, 0f, 0f, _processor, _complexityCalc);
+            return AnalysisBackendFactory.Create(strategy, 1f, 0f, 0f, _processor);
         }
 
         private static Texture2D CreateUniformTexture(int width, int height, Color color)
