@@ -242,14 +242,20 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
-            // Thumbnail
+            // Thumbnail + texture type
+            EditorGUILayout.BeginVertical(GUILayout.Width(44));
             ThumbnailControl.DrawClickable(data.Texture);
+            EditorGUILayout.LabelField(
+                data.TextureType.ToString(),
+                EditorStylesCache.CenteredBoldLabel,
+                GUILayout.Width(44)
+            );
+            EditorGUILayout.EndVertical();
 
             EditorGUILayout.BeginVertical();
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(data.Texture.name, EditorStyles.boldLabel);
-            EditorGUILayout.LabelField($"[{data.TextureType.ToString()}]", GUILayout.Width(60));
 
             // Freeze/Unfreeze button
             if (data.IsProcessed)

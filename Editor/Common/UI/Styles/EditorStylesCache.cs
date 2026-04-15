@@ -11,6 +11,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
     public static class EditorStylesCache
     {
         private static GUIStyle _centeredLabel;
+        private static GUIStyle _centeredBoldLabel;
         private static GUIStyle _linkStyle;
         private static GUIStyle _hiddenCountStyle;
         private static GUIStyle _modifiedStatusStyle;
@@ -23,6 +24,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
         private static void ClearCacheOnDomainReload()
         {
             _centeredLabel = null;
+            _centeredBoldLabel = null;
             _linkStyle = null;
             _hiddenCountStyle = null;
             _modifiedStatusStyle = null;
@@ -34,6 +36,15 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// </summary>
         public static GUIStyle CenteredLabel =>
             _centeredLabel ??= new GUIStyle(EditorStyles.miniLabel)
+            {
+                alignment = TextAnchor.MiddleCenter,
+            };
+
+        /// <summary>
+        /// Centered bold mini label style.
+        /// </summary>
+        public static GUIStyle CenteredBoldLabel =>
+            _centeredBoldLabel ??= new GUIStyle(EditorStyles.miniBoldLabel)
             {
                 alignment = TextAnchor.MiddleCenter,
             };
