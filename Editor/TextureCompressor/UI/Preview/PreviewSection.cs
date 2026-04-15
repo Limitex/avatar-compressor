@@ -233,9 +233,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         private void DrawPreviewEntry(TextureCompressor config, TexturePreviewData data)
         {
             bool isSkipped = !data.IsProcessed;
-            bool isFrozenNow = !data.IsFrozen && config.IsFrozen(data.Guid);
+            bool frozenStateChanged = data.IsFrozen != config.IsFrozen(data.Guid);
 
-            if (isSkipped || isFrozenNow)
+            if (isSkipped || frozenStateChanged)
             {
                 EditorGUI.BeginDisabledGroup(true);
             }
@@ -297,7 +297,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
 
-            if (isSkipped || isFrozenNow)
+            if (isSkipped || frozenStateChanged)
             {
                 EditorGUI.EndDisabledGroup();
             }
