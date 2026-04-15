@@ -266,7 +266,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             string assetPath = _guidPathCache.GetPath(frozen.TextureGuid);
             string textureName = !string.IsNullOrEmpty(assetPath)
                 ? Path.GetFileName(assetPath)
-                : "";
+                : frozen.TextureGuid;
 
             return _searchBox.MatchesSearchAny(textureName, assetPath);
         }
