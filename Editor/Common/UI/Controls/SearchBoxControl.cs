@@ -36,6 +36,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
         private bool _cachedCountUseFuzzy;
         private object _cachedSourceRef;
         private int _cachedSourceCount;
+        private object _cachedPredicate;
 
         /// <summary>
         /// Creates a new SearchBoxControl with optional initial state.
@@ -100,7 +101,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <summary>
         /// Returns the number of items matching the current search, with caching.
         /// When not searching, returns <c>items.Count</c> without invoking the predicate.
-        /// The cache is keyed on (SearchText, UseFuzzySearch, collection reference, items.Count)
+        /// The cache is keyed on (SearchText, UseFuzzySearch, collection reference, items.Count, predicate)
         /// and is automatically invalidated when any of these change.
         /// </summary>
         /// <param name="items">Source collection.</param>
@@ -115,6 +116,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
                 && UseFuzzySearch == _cachedCountUseFuzzy
                 && ReferenceEquals(items, _cachedSourceRef)
                 && items.Count == _cachedSourceCount
+                && Equals(predicate, _cachedPredicate)
             )
             {
                 return _cachedCount;
@@ -132,6 +134,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
             _cachedCountUseFuzzy = UseFuzzySearch;
             _cachedSourceRef = items;
             _cachedSourceCount = items.Count;
+            _cachedPredicate = predicate;
             return count;
         }
 
@@ -144,6 +147,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
         {
             _cachedCountSearchText = null;
             _cachedSourceRef = null;
+            _cachedPredicate = null;
         }
 
         /// <summary>
