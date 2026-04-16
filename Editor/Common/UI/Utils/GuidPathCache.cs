@@ -5,11 +5,20 @@ namespace dev.limitex.avatar.compressor.editor.ui
 {
     /// <summary>
     /// Caches GUID-to-asset-path lookups to avoid repeated <see cref="AssetDatabase.GUIDToAssetPath"/> calls.
-    /// Call <see cref="Clear"/> when the backing data is replaced or assets may have been renamed/moved.
+    /// Automatically clears on Unity project changes and can also be cleared manually when backing data is replaced.
     /// </summary>
+    [InitializeOnLoad]
     public class GuidPathCache
     {
+        private static int s_projectVersion;
+
         private readonly Dictionary<string, string> _cache = new();
+        private int _cacheVersion = s_projectVersion;
+
+        static GuidPathCache()
+        {
+            EditorApplication.projectChanged += OnProjectChanged;
+        }
 
         /// <summary>
         /// Returns the asset path for the given GUID, using the cache to avoid repeated lookups.
@@ -18,6 +27,8 @@ namespace dev.limitex.avatar.compressor.editor.ui
         {
             if (string.IsNullOrEmpty(guid))
                 return "";
+
+            SyncWithProjectState();
 
             if (!_cache.TryGetValue(guid, out var path))
             {
@@ -33,6 +44,21 @@ namespace dev.limitex.avatar.compressor.editor.ui
         public void Clear()
         {
             _cache.Clear();
+            _cacheVersion = s_projectVersion;
+        }
+
+        private void SyncWithProjectState()
+        {
+            if (_cacheVersion == s_projectVersion)
+                return;
+
+            _cache.Clear();
+            _cacheVersion = s_projectVersion;
+        }
+
+        private static void OnProjectChanged()
+        {
+            s_projectVersion++;
         }
     }
 }

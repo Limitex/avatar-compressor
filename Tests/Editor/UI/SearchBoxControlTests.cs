@@ -266,26 +266,17 @@ namespace dev.limitex.avatar.compressor.tests
             var search = new SearchBoxControl("test");
             var items = new List<string> { "test1", "other" };
             int callCount = 0;
+            System.Func<string, bool> predicate = s =>
+            {
+                callCount++;
+                return s.Contains("test");
+            };
 
-            search.CountMatches(
-                items,
-                s =>
-                {
-                    callCount++;
-                    return s.Contains("test");
-                }
-            );
+            search.CountMatches(items, predicate);
             int firstCallCount = callCount;
 
             search.InvalidateCountCache();
-            search.CountMatches(
-                items,
-                s =>
-                {
-                    callCount++;
-                    return s.Contains("test");
-                }
-            );
+            search.CountMatches(items, predicate);
 
             Assert.That(callCount, Is.GreaterThan(firstCallCount));
         }
@@ -296,26 +287,17 @@ namespace dev.limitex.avatar.compressor.tests
             var search = new SearchBoxControl("test");
             var items = new List<string> { "test1", "other" };
             int callCount = 0;
+            System.Func<string, bool> predicate = s =>
+            {
+                callCount++;
+                return s.Contains("test");
+            };
 
-            search.CountMatches(
-                items,
-                s =>
-                {
-                    callCount++;
-                    return s.Contains("test");
-                }
-            );
+            search.CountMatches(items, predicate);
             int firstCallCount = callCount;
 
             items.Add("test2");
-            search.CountMatches(
-                items,
-                s =>
-                {
-                    callCount++;
-                    return s.Contains("test");
-                }
-            );
+            search.CountMatches(items, predicate);
 
             Assert.That(callCount, Is.GreaterThan(firstCallCount));
         }
