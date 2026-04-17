@@ -59,7 +59,10 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.That(cache.GetPath(guid), Is.EqualTo(originalPath));
 
-            string renameError = AssetDatabase.RenameAsset(originalPath, "GuidPathCacheTextureRenamed");
+            string renameError = AssetDatabase.RenameAsset(
+                originalPath,
+                "GuidPathCacheTextureRenamed"
+            );
             Assert.That(renameError, Is.Empty);
 
             string renamedPath = $"{TestAssetFolder}/GuidPathCacheTextureRenamed.png";
