@@ -165,14 +165,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 if (needsAnalysis.Count > 0)
                 {
                     var rawScores = analyzer.AnalyzeBatch(needsAnalysis);
-                    foreach (var kvp in rawScores)
+                    // Iterate inputs, not backend output — see ITextureAnalysisBackend contract.
+                    foreach (var kvp in needsAnalysis)
                     {
                         var texture = kvp.Key;
-                        if (!needsAnalysis.TryGetValue(texture, out var texInfo))
+                        var texInfo = kvp.Value;
+                        if (!rawScores.TryGetValue(texture, out var score))
                             continue;
 
                         var result = AnalysisResultHelper.BuildResult(
-                            kvp.Value,
+                            score,
                             texture.width,
                             texture.height,
                             texInfo.IsEmission,

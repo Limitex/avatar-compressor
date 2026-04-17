@@ -182,16 +182,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             var rawScores = _analyzer.AnalyzeBatch(textures);
 
-            // Build analysis results (score → divisor → resolution) in the service layer
+            // Iterate inputs, not backend output — see ITextureAnalysisBackend contract.
             var analysisResults = new Dictionary<Texture2D, TextureAnalysisResult>();
-            foreach (var kvp in rawScores)
+            foreach (var kvp in textures)
             {
                 var texture = kvp.Key;
-                if (!textures.TryGetValue(texture, out var info))
+                var info = kvp.Value;
+                if (!rawScores.TryGetValue(texture, out var score))
                     continue;
 
                 analysisResults[texture] = AnalysisResultHelper.BuildResult(
-                    kvp.Value,
+                    score,
                     texture.width,
                     texture.height,
                     info.IsEmission,
