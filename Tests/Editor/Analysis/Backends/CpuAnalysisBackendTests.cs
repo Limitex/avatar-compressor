@@ -10,7 +10,6 @@ namespace dev.limitex.avatar.compressor.tests
     public class CpuAnalysisBackendTests
     {
         private TextureProcessor _processor;
-        private ComplexityCalculator _complexityCalc;
         private CpuAnalysisBackend _backend;
         private List<Object> _createdObjects;
 
@@ -18,15 +17,9 @@ namespace dev.limitex.avatar.compressor.tests
         public void SetUp()
         {
             _processor = new TextureProcessor(32, 2048, true);
-            _complexityCalc = new ComplexityCalculator(0.7f, 0.3f, 1, 8);
             var standardAnalyzer = AnalyzerFactory.Create(AnalysisStrategyType.Fast);
             var normalMapAnalyzer = AnalyzerFactory.CreateNormalMapAnalyzer();
-            _backend = new CpuAnalysisBackend(
-                standardAnalyzer,
-                normalMapAnalyzer,
-                _processor,
-                _complexityCalc
-            );
+            _backend = new CpuAnalysisBackend(standardAnalyzer, normalMapAnalyzer, _processor);
             _createdObjects = new List<Object>();
         }
 
@@ -147,7 +140,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var result = _backend.AnalyzeBatch(textures);
 
-            Assert.That(result[texture].NormalizedComplexity, Is.LessThan(0.3f));
+            Assert.That(result[texture], Is.LessThan(0.3f));
         }
 
         [Test]
@@ -174,8 +167,8 @@ namespace dev.limitex.avatar.compressor.tests
             var noiseResult = _backend.AnalyzeBatch(noiseBatch);
 
             Assert.That(
-                noiseResult[noiseTex].NormalizedComplexity,
-                Is.GreaterThan(uniformResult[uniformTex].NormalizedComplexity),
+                noiseResult[noiseTex],
+                Is.GreaterThan(uniformResult[uniformTex]),
                 "Noise texture should have higher complexity than uniform texture"
             );
         }
@@ -194,11 +187,11 @@ namespace dev.limitex.avatar.compressor.tests
 
             var result = _backend.AnalyzeBatch(textures);
 
-            Assert.That(result[texture].NormalizedComplexity, Is.LessThan(0.5f));
+            Assert.That(result[texture], Is.LessThan(0.5f));
         }
 
         [Test]
-        public void AnalyzeBatch_EmissionTexture_HigherOrEqualComplexity()
+        public void AnalyzeBatch_EmissionTexture_SameRawScoreAsNonEmission()
         {
             var texNormal = TrackTexture(CreateNoiseTexture(64, 64, 99));
             var texEmission = TrackTexture(CreateNoiseTexture(64, 64, 99));
@@ -220,10 +213,10 @@ namespace dev.limitex.avatar.compressor.tests
             var resultNormal = _backend.AnalyzeBatch(normalBatch);
             var resultEmission = _backend.AnalyzeBatch(emissionBatch);
 
-            // Emission boost (/ 0.9) raises complexity score, but both are clamped to [0,1]
+            // Backend returns raw scores; emission boost is applied in the service layer
             Assert.That(
-                resultEmission[texEmission].NormalizedComplexity,
-                Is.GreaterThanOrEqualTo(resultNormal[texNormal].NormalizedComplexity)
+                resultEmission[texEmission],
+                Is.EqualTo(resultNormal[texNormal]).Within(0.001f)
             );
         }
 
@@ -245,45 +238,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var result = _backend.AnalyzeBatch(textures);
 
-            Assert.That(result[texture].NormalizedComplexity, Is.InRange(0f, 1f));
-        }
-
-        [Test]
-        public void AnalyzeBatch_Result_HasValidDivisor()
-        {
-            var texture = TrackTexture(CreateNoiseTexture(64, 64, 42));
-            var textures = new Dictionary<Texture2D, TextureInfo>
-            {
-                {
-                    texture,
-                    new TextureInfo { IsNormalMap = false, IsEmission = false }
-                },
-            };
-
-            var result = _backend.AnalyzeBatch(textures);
-
-            Assert.That(result[texture].RecommendedDivisor, Is.GreaterThanOrEqualTo(1));
-            Assert.That(result[texture].RecommendedDivisor, Is.LessThanOrEqualTo(8));
-        }
-
-        [Test]
-        public void AnalyzeBatch_Result_HasValidResolution()
-        {
-            var texture = TrackTexture(CreateNoiseTexture(128, 128, 42));
-            var textures = new Dictionary<Texture2D, TextureInfo>
-            {
-                {
-                    texture,
-                    new TextureInfo { IsNormalMap = false, IsEmission = false }
-                },
-            };
-
-            var result = _backend.AnalyzeBatch(textures);
-
-            Assert.That(result[texture].RecommendedResolution.x, Is.GreaterThanOrEqualTo(32));
-            Assert.That(result[texture].RecommendedResolution.y, Is.GreaterThanOrEqualTo(32));
-            Assert.That(result[texture].RecommendedResolution.x, Is.LessThanOrEqualTo(2048));
-            Assert.That(result[texture].RecommendedResolution.y, Is.LessThanOrEqualTo(2048));
+            Assert.That(result[texture], Is.InRange(0f, 1f));
         }
 
         #endregion
@@ -293,6 +248,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void AnalyzeBatch_FullyOpaqueTexture_NoSignificantAlphaAfterResize()
         {
+            var complexityCalc = new ComplexityCalculator(0.7f, 0.3f, 1, 8);
             var texture = TrackTexture(
                 CreateUniformTexture(64, 64, new Color(0.5f, 0.5f, 0.5f, 1f))
             );
@@ -308,11 +264,20 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(texture));
-            Assert.That(result[texture].NormalizedComplexity, Is.InRange(0f, 1f));
+            Assert.That(result[texture], Is.InRange(0f, 1f));
 
             // Alpha detection must run on the resized texture to match the build pipeline
             // (TextureCompressorService detects alpha post-resize).
-            var resized = _processor.ResizeSingle(texture, result[texture], false);
+            var analysisResult = AnalysisResultHelper.BuildResult(
+                result[texture],
+                texture.width,
+                texture.height,
+                false,
+                false,
+                complexityCalc,
+                _processor
+            );
+            var resized = _processor.ResizeSingle(texture, analysisResult, false);
             Assert.IsNotNull(resized);
             _createdObjects.Add(resized);
             Assert.IsFalse(
@@ -324,6 +289,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void AnalyzeBatch_TransparentTexture_HasSignificantAlphaAfterResize()
         {
+            var complexityCalc = new ComplexityCalculator(0.7f, 0.3f, 1, 8);
             var texture = TrackTexture(CreateTransparentTexture(64, 64));
             var textures = new Dictionary<Texture2D, TextureInfo>
             {
@@ -337,7 +303,16 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(1, result.Count);
 
-            var resized = _processor.ResizeSingle(texture, result[texture], false);
+            var analysisResult = AnalysisResultHelper.BuildResult(
+                result[texture],
+                texture.width,
+                texture.height,
+                false,
+                false,
+                complexityCalc,
+                _processor
+            );
+            var resized = _processor.ResizeSingle(texture, analysisResult, false);
             Assert.IsNotNull(resized);
             _createdObjects.Add(resized);
             Assert.IsTrue(
@@ -349,6 +324,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void AnalyzeBatch_PartiallyTransparentTexture_HasSignificantAlphaAfterResize()
         {
+            var complexityCalc = new ComplexityCalculator(0.7f, 0.3f, 1, 8);
             var texture = TrackTexture(CreatePartiallyTransparentTexture(64, 64));
             var textures = new Dictionary<Texture2D, TextureInfo>
             {
@@ -362,7 +338,16 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(1, result.Count);
 
-            var resized = _processor.ResizeSingle(texture, result[texture], false);
+            var analysisResult = AnalysisResultHelper.BuildResult(
+                result[texture],
+                texture.width,
+                texture.height,
+                false,
+                false,
+                complexityCalc,
+                _processor
+            );
+            var resized = _processor.ResizeSingle(texture, analysisResult, false);
             Assert.IsNotNull(resized);
             _createdObjects.Add(resized);
             Assert.IsTrue(
@@ -392,12 +377,7 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 var analyzer = AnalyzerFactory.Create(strategy);
                 var normalMapAnalyzer = AnalyzerFactory.CreateNormalMapAnalyzer();
-                var backend = new CpuAnalysisBackend(
-                    analyzer,
-                    normalMapAnalyzer,
-                    _processor,
-                    _complexityCalc
-                );
+                var backend = new CpuAnalysisBackend(analyzer, normalMapAnalyzer, _processor);
                 var textures = new Dictionary<Texture2D, TextureInfo>
                 {
                     {
@@ -409,7 +389,7 @@ namespace dev.limitex.avatar.compressor.tests
                 var result = backend.AnalyzeBatch(textures);
 
                 Assert.That(
-                    result[texture].NormalizedComplexity,
+                    result[texture],
                     Is.InRange(0f, 1f),
                     $"Strategy {strategy} produced invalid complexity"
                 );
@@ -437,10 +417,7 @@ namespace dev.limitex.avatar.compressor.tests
             // Expected: DefaultComplexityScore * SparseTexturePenalty = 0.5 * 0.2 = 0.1
             float expectedScore =
                 AnalysisConstants.DefaultComplexityScore * AnalysisConstants.SparseTexturePenalty;
-            Assert.That(
-                result[texture].NormalizedComplexity,
-                Is.EqualTo(expectedScore).Within(0.05f)
-            );
+            Assert.That(result[texture], Is.EqualTo(expectedScore).Within(0.05f));
         }
 
         #endregion
@@ -452,12 +429,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var throwingAnalyzer = new ThrowingAnalyzer();
             var normalMapAnalyzer = AnalyzerFactory.CreateNormalMapAnalyzer();
-            var backend = new CpuAnalysisBackend(
-                throwingAnalyzer,
-                normalMapAnalyzer,
-                _processor,
-                _complexityCalc
-            );
+            var backend = new CpuAnalysisBackend(throwingAnalyzer, normalMapAnalyzer, _processor);
 
             var texture = TrackTexture(CreateNoiseTexture(64, 64, 42));
             var textures = new Dictionary<Texture2D, TextureInfo>
@@ -472,7 +444,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(texture));
-            Assert.That(result[texture].NormalizedComplexity, Is.InRange(0f, 1f));
+            Assert.That(result[texture], Is.InRange(0f, 1f));
         }
 
         [Test]
@@ -480,12 +452,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var throwingAnalyzer = new ThrowingAnalyzer();
             var normalMapAnalyzer = AnalyzerFactory.CreateNormalMapAnalyzer();
-            var backend = new CpuAnalysisBackend(
-                throwingAnalyzer,
-                normalMapAnalyzer,
-                _processor,
-                _complexityCalc
-            );
+            var backend = new CpuAnalysisBackend(throwingAnalyzer, normalMapAnalyzer, _processor);
 
             var tex1 = TrackTexture(CreateNoiseTexture(64, 64, 1));
             var tex2 = TrackTexture(CreateNoiseTexture(64, 64, 2));
@@ -515,12 +482,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var standardAnalyzer = AnalyzerFactory.Create(AnalysisStrategyType.Fast);
             var throwingAnalyzer = new ThrowingAnalyzer();
-            var backend = new CpuAnalysisBackend(
-                standardAnalyzer,
-                throwingAnalyzer,
-                _processor,
-                _complexityCalc
-            );
+            var backend = new CpuAnalysisBackend(standardAnalyzer, throwingAnalyzer, _processor);
 
             var texture = TrackTexture(CreateFlatNormalMapTexture(64, 64));
             var textures = new Dictionary<Texture2D, TextureInfo>
@@ -535,7 +497,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.AreEqual(1, result.Count);
             Assert.IsTrue(result.ContainsKey(texture));
-            Assert.That(result[texture].NormalizedComplexity, Is.InRange(0f, 1f));
+            Assert.That(result[texture], Is.InRange(0f, 1f));
         }
 
         private class ThrowingAnalyzer : ITextureComplexityAnalyzer

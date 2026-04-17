@@ -26,7 +26,6 @@ namespace dev.limitex.avatar.compressor.tests
             + "Editor/TextureCompressor/Analysis/Shaders/TextureAnalysis.compute";
 
         private TextureProcessor _processor;
-        private ComplexityCalculator _complexityCalc;
         private ComputeShader _shader;
         private List<Object> _createdObjects;
 
@@ -35,7 +34,6 @@ namespace dev.limitex.avatar.compressor.tests
         {
             _createdObjects = new List<Object>();
             _processor = new TextureProcessor(32, 2048, true);
-            _complexityCalc = new ComplexityCalculator(0.7f, 0.3f, 1, 8);
 
             if (!SystemInfo.supportsComputeShaders)
             {
@@ -97,8 +95,8 @@ namespace dev.limitex.avatar.compressor.tests
             var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
 
             Assert.That(
-                gpuResult[texture].NormalizedComplexity,
-                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(ScoreTolerance),
+                gpuResult[texture],
+                Is.EqualTo(cpuResult[texture]).Within(ScoreTolerance),
                 "Uniform texture complexity scores diverged between GPU and CPU"
             );
         }
@@ -112,8 +110,8 @@ namespace dev.limitex.avatar.compressor.tests
             var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
 
             Assert.That(
-                gpuResult[texture].NormalizedComplexity,
-                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(ScoreTolerance),
+                gpuResult[texture],
+                Is.EqualTo(cpuResult[texture]).Within(ScoreTolerance),
                 "Noise texture complexity scores diverged between GPU and CPU"
             );
         }
@@ -127,8 +125,8 @@ namespace dev.limitex.avatar.compressor.tests
             var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
 
             Assert.That(
-                gpuResult[texture].NormalizedComplexity,
-                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(ScoreTolerance),
+                gpuResult[texture],
+                Is.EqualTo(cpuResult[texture]).Within(ScoreTolerance),
                 "Normal map complexity scores diverged between GPU and CPU"
             );
         }
@@ -142,8 +140,8 @@ namespace dev.limitex.avatar.compressor.tests
             var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
 
             Assert.That(
-                gpuResult[texture].NormalizedComplexity,
-                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(ScoreTolerance),
+                gpuResult[texture],
+                Is.EqualTo(cpuResult[texture]).Within(ScoreTolerance),
                 "Emission texture complexity scores diverged between GPU and CPU"
             );
         }
@@ -157,8 +155,8 @@ namespace dev.limitex.avatar.compressor.tests
             var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
 
             Assert.That(
-                gpuResult[texture].NormalizedComplexity,
-                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(ScoreTolerance),
+                gpuResult[texture],
+                Is.EqualTo(cpuResult[texture]).Within(ScoreTolerance),
                 "Gradient texture complexity scores diverged between GPU and CPU"
             );
         }
@@ -172,8 +170,8 @@ namespace dev.limitex.avatar.compressor.tests
             var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
 
             Assert.That(
-                gpuResult[texture].NormalizedComplexity,
-                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(ScoreTolerance),
+                gpuResult[texture],
+                Is.EqualTo(cpuResult[texture]).Within(ScoreTolerance),
                 "Small texture complexity scores diverged between GPU and CPU"
             );
         }
@@ -187,8 +185,8 @@ namespace dev.limitex.avatar.compressor.tests
             var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
 
             Assert.That(
-                gpuResult[texture].NormalizedComplexity,
-                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(ScoreTolerance),
+                gpuResult[texture],
+                Is.EqualTo(cpuResult[texture]).Within(ScoreTolerance),
                 "Partially transparent texture complexity scores diverged between GPU and CPU"
             );
         }
@@ -202,8 +200,8 @@ namespace dev.limitex.avatar.compressor.tests
             var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
 
             Assert.That(
-                gpuResult[texture].NormalizedComplexity,
-                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(ScoreTolerance),
+                gpuResult[texture],
+                Is.EqualTo(cpuResult[texture]).Within(ScoreTolerance),
                 "Varied normal map complexity scores diverged between GPU and CPU"
             );
         }
@@ -243,8 +241,8 @@ namespace dev.limitex.avatar.compressor.tests
             foreach (var tex in new[] { uniform, noise, gradient })
             {
                 Assert.That(
-                    gpuResult[tex].NormalizedComplexity,
-                    Is.EqualTo(cpuResult[tex].NormalizedComplexity).Within(ScoreTolerance),
+                    gpuResult[tex],
+                    Is.EqualTo(cpuResult[tex]).Within(ScoreTolerance),
                     $"Multi-texture batch: '{tex.name}' scores diverged between GPU and CPU"
                 );
             }
@@ -273,8 +271,8 @@ namespace dev.limitex.avatar.compressor.tests
                 var (cpuResult, gpuResult) = AnalyzeBoth(strategy, textures);
 
                 Assert.That(
-                    gpuResult[texture].NormalizedComplexity,
-                    Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(ScoreTolerance),
+                    gpuResult[texture],
+                    Is.EqualTo(cpuResult[texture]).Within(ScoreTolerance),
                     $"Strategy {strategy}: scores diverged between GPU and CPU"
                 );
             }
@@ -293,8 +291,8 @@ namespace dev.limitex.avatar.compressor.tests
             var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
 
             Assert.That(
-                gpuResult[texture].NormalizedComplexity,
-                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(SRGBScoreTolerance),
+                gpuResult[texture],
+                Is.EqualTo(cpuResult[texture]).Within(SRGBScoreTolerance),
                 "sRGB noise texture: scores diverged between GPU and CPU"
             );
         }
@@ -308,8 +306,8 @@ namespace dev.limitex.avatar.compressor.tests
             var (cpuResult, gpuResult) = AnalyzeBoth(AnalysisStrategyType.Fast, textures);
 
             Assert.That(
-                gpuResult[texture].NormalizedComplexity,
-                Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(SRGBScoreTolerance),
+                gpuResult[texture],
+                Is.EqualTo(cpuResult[texture]).Within(SRGBScoreTolerance),
                 "sRGB gradient texture: scores diverged between GPU and CPU"
             );
         }
@@ -333,8 +331,8 @@ namespace dev.limitex.avatar.compressor.tests
                 var (cpuResult, gpuResult) = AnalyzeBoth(strategy, textures);
 
                 Assert.That(
-                    gpuResult[texture].NormalizedComplexity,
-                    Is.EqualTo(cpuResult[texture].NormalizedComplexity).Within(SRGBScoreTolerance),
+                    gpuResult[texture],
+                    Is.EqualTo(cpuResult[texture]).Within(SRGBScoreTolerance),
                     $"sRGB strategy {strategy}: scores diverged between GPU and CPU"
                 );
             }
@@ -344,10 +342,10 @@ namespace dev.limitex.avatar.compressor.tests
 
         #region Helpers
 
-        private (
-            Dictionary<Texture2D, TextureAnalysisResult> Cpu,
-            Dictionary<Texture2D, TextureAnalysisResult> Gpu
-        ) AnalyzeBoth(AnalysisStrategyType strategy, Dictionary<Texture2D, TextureInfo> textures)
+        private (Dictionary<Texture2D, float> Cpu, Dictionary<Texture2D, float> Gpu) AnalyzeBoth(
+            AnalysisStrategyType strategy,
+            Dictionary<Texture2D, TextureInfo> textures
+        )
         {
             var cpuBackend = CreateCpuBackend(strategy);
             var gpuBackend = CreateGpuBackend(strategy);
@@ -362,12 +360,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var standardAnalyzer = AnalyzerFactory.Create(strategy);
             var normalMapAnalyzer = AnalyzerFactory.CreateNormalMapAnalyzer();
-            return new CpuAnalysisBackend(
-                standardAnalyzer,
-                normalMapAnalyzer,
-                _processor,
-                _complexityCalc
-            );
+            return new CpuAnalysisBackend(standardAnalyzer, normalMapAnalyzer, _processor);
         }
 
         private GpuAnalysisBackend CreateGpuBackend(AnalysisStrategyType strategy)
@@ -377,9 +370,7 @@ namespace dev.limitex.avatar.compressor.tests
                 strategy,
                 AnalysisConstants.CombinedDefaultFastWeight,
                 AnalysisConstants.CombinedDefaultHighAccuracyWeight,
-                AnalysisConstants.CombinedDefaultPerceptualWeight,
-                _processor,
-                _complexityCalc
+                AnalysisConstants.CombinedDefaultPerceptualWeight
             );
         }
 

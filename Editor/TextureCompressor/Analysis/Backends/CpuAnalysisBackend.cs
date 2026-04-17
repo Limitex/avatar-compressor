@@ -15,19 +15,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly ITextureComplexityAnalyzer _standardAnalyzer;
         private readonly ITextureComplexityAnalyzer _normalMapAnalyzer;
         private readonly TextureProcessor _processor;
-        private readonly ComplexityCalculator _complexityCalc;
 
         public CpuAnalysisBackend(
             ITextureComplexityAnalyzer standardAnalyzer,
             ITextureComplexityAnalyzer normalMapAnalyzer,
-            TextureProcessor processor,
-            ComplexityCalculator complexityCalc
+            TextureProcessor processor
         )
         {
             _standardAnalyzer = standardAnalyzer;
             _normalMapAnalyzer = normalMapAnalyzer;
             _processor = processor;
-            _complexityCalc = complexityCalc;
         }
 
         /// <summary>
@@ -40,7 +37,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// keep peak memory proportional to the degree of parallelism, not to the
         /// total number of textures.
         /// </summary>
-        public Dictionary<Texture2D, TextureAnalysisResult> AnalyzeBatch(
+        public Dictionary<Texture2D, float> AnalyzeBatch(
             Dictionary<Texture2D, TextureInfo> textures
         )
         {
@@ -51,7 +48,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // be called from background threads used by Parallel.ForEach.
             var workItems = new List<AnalysisWorkItem>();
 
-            var results = new ConcurrentDictionary<Texture2D, TextureAnalysisResult>();
+            var results = new ConcurrentDictionary<Texture2D, float>();
 
             foreach (var kvp in textures)
             {
@@ -68,15 +65,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     Debug.LogWarning(
                         $"[TextureCompressor] No pixel data for '{texture.name}', using default analysis"
                     );
-                    results[texture] = AnalysisResultHelper.BuildResult(
-                        AnalysisConstants.DefaultComplexityScore,
-                        texture.width,
-                        texture.height,
-                        info.IsEmission,
-                        info.IsNormalMap,
-                        _complexityCalc,
-                        _processor
-                    );
+                    results[texture] = AnalysisConstants.DefaultComplexityScore;
                     continue;
                 }
 
@@ -95,9 +84,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         Texture = texture,
                         TextureName = texture.name,
                         Data = processed,
-                        OriginalWidth = texture.width,
-                        OriginalHeight = texture.height,
-                        IsEmission = info.IsEmission,
                         IsNormalMap = info.IsNormalMap,
                         Analyzer = analyzer,
                     }
@@ -137,30 +123,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             score = item.Analyzer.Analyze(item.Data).Score;
                         }
 
-                        results[item.Texture] = AnalysisResultHelper.BuildResult(
-                            score,
-                            item.OriginalWidth,
-                            item.OriginalHeight,
-                            item.IsEmission,
-                            item.IsNormalMap,
-                            _complexityCalc,
-                            _processor
-                        );
+                        results[item.Texture] = score;
                     }
                     catch (System.Exception e)
                     {
                         Debug.LogWarning(
                             $"[TextureCompressor] CPU analysis failed for '{item.TextureName}': {e.Message}"
                         );
-                        results[item.Texture] = AnalysisResultHelper.BuildResult(
-                            AnalysisConstants.DefaultComplexityScore,
-                            item.OriginalWidth,
-                            item.OriginalHeight,
-                            item.IsEmission,
-                            item.IsNormalMap,
-                            _complexityCalc,
-                            _processor
-                        );
+                        results[item.Texture] = AnalysisConstants.DefaultComplexityScore;
                     }
                     finally
                     {
@@ -172,7 +142,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
             );
 
-            return new Dictionary<Texture2D, TextureAnalysisResult>(results);
+            return new Dictionary<Texture2D, float>(results);
         }
 
         /// <summary>
@@ -186,9 +156,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             public Texture2D Texture;
             public string TextureName;
             public ProcessedPixelData Data;
-            public int OriginalWidth;
-            public int OriginalHeight;
-            public bool IsEmission;
             public bool IsNormalMap;
             public ITextureComplexityAnalyzer Analyzer;
         }

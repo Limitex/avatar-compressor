@@ -27,8 +27,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly float _fastWeight;
         private readonly float _highAccuracyWeight;
         private readonly float _perceptualWeight;
-        private readonly ComplexityCalculator _complexityCalc;
-        private readonly TextureProcessor _processor;
 
         // Kernel indices
         private readonly int _kernelPreprocess;
@@ -52,9 +50,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             AnalysisStrategyType strategyType,
             float fastWeight,
             float highAccuracyWeight,
-            float perceptualWeight,
-            TextureProcessor processor,
-            ComplexityCalculator complexityCalc
+            float perceptualWeight
         )
         {
             _shader = shader;
@@ -62,8 +58,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             _fastWeight = fastWeight;
             _highAccuracyWeight = highAccuracyWeight;
             _perceptualWeight = perceptualWeight;
-            _complexityCalc = complexityCalc;
-            _processor = processor;
 
             _kernelPreprocess = FindRequiredKernel(shader, "Preprocess");
             _kernelSobelGradient = FindRequiredKernel(shader, "SobelGradient");
@@ -97,11 +91,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
         }
 
-        public Dictionary<Texture2D, TextureAnalysisResult> AnalyzeBatch(
+        public Dictionary<Texture2D, float> AnalyzeBatch(
             Dictionary<Texture2D, TextureInfo> textures
         )
         {
-            var results = new Dictionary<Texture2D, TextureAnalysisResult>();
+            var results = new Dictionary<Texture2D, float>();
             var pendingReadbacks =
                 new List<(
                     Texture2D Tex,
@@ -200,15 +194,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         Debug.LogWarning(
                             $"[TextureCompressor] GPU analysis failed for '{texture.name}': {e.Message}"
                         );
-                        results[texture] = AnalysisResultHelper.BuildResult(
-                            AnalysisConstants.DefaultComplexityScore,
-                            texture.width,
-                            texture.height,
-                            info.IsEmission,
-                            info.IsNormalMap,
-                            _complexityCalc,
-                            _processor
-                        );
+                        results[texture] = AnalysisConstants.DefaultComplexityScore;
                     }
                 }
 
@@ -220,32 +206,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     if (!pending.Request.hasError)
                     {
                         var data = pending.Request.GetData<float>();
-                        float score = Mathf.Clamp01(data[GpuBufferLayout.ResultIdxScore]);
-
-                        results[pending.Tex] = AnalysisResultHelper.BuildResult(
-                            score,
-                            pending.Tex.width,
-                            pending.Tex.height,
-                            pending.Info.IsEmission,
-                            pending.Info.IsNormalMap,
-                            _complexityCalc,
-                            _processor
-                        );
+                        results[pending.Tex] = Mathf.Clamp01(data[GpuBufferLayout.ResultIdxScore]);
                     }
                     else
                     {
                         Debug.LogWarning(
                             $"[TextureCompressor] GPU readback failed for '{pending.Tex.name}', using default score"
                         );
-                        results[pending.Tex] = AnalysisResultHelper.BuildResult(
-                            AnalysisConstants.DefaultComplexityScore,
-                            pending.Tex.width,
-                            pending.Tex.height,
-                            pending.Info.IsEmission,
-                            pending.Info.IsNormalMap,
-                            _complexityCalc,
-                            _processor
-                        );
+                        results[pending.Tex] = AnalysisConstants.DefaultComplexityScore;
                     }
                 }
             }
