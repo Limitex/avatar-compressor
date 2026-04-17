@@ -20,11 +20,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Default excluded paths are now empty** - Excluded path presets (e.g., VRCFury temp) are no longer applied by default; they remain available via the UI "Add Path" menu
 - **Texture filter flags no longer managed by presets** - `ProcessMainTextures`, `ProcessNormalMaps`, `ProcessEmissionMaps`, and `ProcessOtherTextures` are now per-component settings that persist across preset changes, consistent with other filter settings (Data Protection, Path Exclusions)
+- **Separate search boxes for Frozen Textures and Preview sections** - Each section now owns its own search state, allowing independent filtering; search boxes use Unity's standard `SearchField` control
+- **Texture type label relocated in preview entries** - Moved below the thumbnail for better visual grouping
 
 ### Fixed
 
 - Resolve original asset path via ObjectRegistry for textures replaced by other NDMF plugins
 - Collect all material references for shared textures regardless of per-property type filter
+- Disable preview entry when frozen state changes in either direction (freeze or unfreeze) since the previous scan
+- Frozen texture search matches the GUID fallback when the asset path cannot be resolved, consistent with the displayed text
+- Invalidate the GUID-to-path cache on Unity project changes so renamed/moved assets resolve correctly
 
 ## [v0.7.0] - 2026-03-27
 
