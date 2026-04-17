@@ -24,7 +24,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float highAccuracyWeight,
             float perceptualWeight,
             TextureProcessor processor,
-            ComplexityCalculator complexityCalc,
             AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
         )
         {
@@ -42,9 +41,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         strategy,
                         fastWeight,
                         highAccuracyWeight,
-                        perceptualWeight,
-                        processor,
-                        complexityCalc
+                        perceptualWeight
                     );
                 }
                 catch (System.Exception e)
@@ -61,8 +58,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 fastWeight,
                 highAccuracyWeight,
                 perceptualWeight,
-                processor,
-                complexityCalc
+                processor
             );
         }
 
@@ -71,8 +67,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float fastWeight,
             float highAccuracyWeight,
             float perceptualWeight,
-            TextureProcessor processor,
-            ComplexityCalculator complexityCalc
+            TextureProcessor processor
         )
         {
             var standardAnalyzer = AnalyzerFactory.Create(
@@ -83,12 +78,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             );
             var normalMapAnalyzer = AnalyzerFactory.CreateNormalMapAnalyzer();
 
-            return new CpuAnalysisBackend(
-                standardAnalyzer,
-                normalMapAnalyzer,
-                processor,
-                complexityCalc
-            );
+            return new CpuAnalysisBackend(standardAnalyzer, normalMapAnalyzer, processor);
         }
 
         /// <summary>

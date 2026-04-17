@@ -17,7 +17,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float highAccuracyWeight,
             float perceptualWeight,
             TextureProcessor processor,
-            ComplexityCalculator complexityCalc,
             AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
         )
         {
@@ -27,15 +26,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 highAccuracyWeight,
                 perceptualWeight,
                 processor,
-                complexityCalc,
                 backendPreference
             );
         }
 
         /// <summary>
-        /// Analyzes a batch of textures in parallel.
+        /// Analyzes a batch of textures and returns raw complexity scores (0-1).
         /// </summary>
-        public Dictionary<Texture2D, TextureAnalysisResult> AnalyzeBatch(
+        public Dictionary<Texture2D, float> AnalyzeBatch(
             Dictionary<Texture2D, TextureInfo> textures
         )
         {

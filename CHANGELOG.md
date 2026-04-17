@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Texture filter flags no longer managed by presets** - `ProcessMainTextures`, `ProcessNormalMaps`, `ProcessEmissionMaps`, and `ProcessOtherTextures` are now per-component settings that persist across preset changes, consistent with other filter settings (Data Protection, Path Exclusions)
 - **Separate search boxes for Frozen Textures and Preview sections** - Each section now owns its own search state, allowing independent filtering; search boxes use Unity's standard `SearchField` control
 - **Texture type label relocated in preview entries** - Moved below the thumbnail for better visual grouping
+- **Analysis backends return raw complexity scores** - `ITextureAnalysisBackend.AnalyzeBatch` now returns `Dictionary<Texture2D, float>` (0–1 scores) instead of fully built `TextureAnalysisResult`; score→divisor→resolution conversion moved to the service layer via `AnalysisResultHelper`
+  - `CpuAnalysisBackend`, `GpuAnalysisBackend`, `AnalysisBackendFactory`, and `TextureAnalyzer` no longer depend on `ComplexityCalculator`
+  - Backend contract documented: returned keys must be a subset of input keys; analysis failures on valid textures return a default score rather than dropping the entry
+  - Behavior-preserving: final `TextureAnalysisResult` values are unchanged
 
 ### Fixed
 
