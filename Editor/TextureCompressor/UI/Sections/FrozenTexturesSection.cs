@@ -13,7 +13,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     public class FrozenTexturesSection
     {
         private readonly SearchBoxControl _searchBox = new();
-        private readonly GuidPathCache _guidPathCache = new();
         private bool _showSection = true;
         private Vector2 _scrollPosition;
 
@@ -104,7 +103,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
             // Resolve path from GUID for display and loading (cached)
-            string assetPath = _guidPathCache.GetPath(frozen.TextureGuid);
+            string assetPath = GuidPathCache.GetPath(frozen.TextureGuid);
             var texture = !string.IsNullOrEmpty(assetPath)
                 ? AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath)
                 : null;
@@ -269,7 +268,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private bool MatchesFrozenSearch(FrozenTextureSettings frozen)
         {
-            string assetPath = _guidPathCache.GetPath(frozen.TextureGuid);
+            string assetPath = GuidPathCache.GetPath(frozen.TextureGuid);
             string textureName = !string.IsNullOrEmpty(assetPath)
                 ? Path.GetFileName(assetPath)
                 : frozen.TextureGuid;

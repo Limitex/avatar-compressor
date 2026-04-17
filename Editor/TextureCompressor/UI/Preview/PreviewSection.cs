@@ -8,13 +8,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
     /// <summary>
     /// Draws the preview section with texture analysis results.
-    /// Owns its own search box and GUID path cache.
+    /// Owns its own search box.
     /// </summary>
     public class PreviewSection
     {
         private readonly PreviewGenerator _generator = new PreviewGenerator();
         private readonly SearchBoxControl _searchBox = new();
-        private readonly GuidPathCache _guidPathCache = new();
         private TexturePreviewData[] _previewData;
         private int _previewSettingsHash;
         private bool _showPreview;
@@ -58,22 +57,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
-        /// <summary>
-        /// Invalidates the preview cache.
-        /// </summary>
-        public void InvalidateCache()
-        {
-            _previewData = null;
-            _previewSettingsHash = 0;
-            _guidPathCache.Clear();
-        }
-
         private void GeneratePreview(TextureCompressor config)
         {
             var backend = AvatarCompressorPreferences.AnalysisBackend;
             _previewSettingsHash = PreviewGenerator.ComputeSettingsHash(config, backend);
             _previewData = _generator.Generate(config, backend);
-            _guidPathCache.Clear();
             _searchBox.InvalidateCountCache();
         }
 
@@ -401,7 +389,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private bool MatchesPreviewSearch(TexturePreviewData data)
         {
-            string assetPath = _guidPathCache.GetPath(data.Guid);
+            string assetPath = GuidPathCache.GetPath(data.Guid);
             string textureName = data.Texture != null ? data.Texture.name : "";
 
             return _searchBox.MatchesSearchAny(textureName, assetPath, data.TextureType.ToString());

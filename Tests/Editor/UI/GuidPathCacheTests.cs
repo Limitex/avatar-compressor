@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using dev.limitex.avatar.compressor.editor.ui;
 using NUnit.Framework;
 using UnityEditor;
@@ -18,6 +17,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void SetUp()
         {
             _createdAssetPaths = new List<string>();
+            GuidPathCache.Clear();
 
             if (!AssetDatabase.IsValidFolder(TestAssetFolder))
             {
@@ -51,13 +51,12 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void GetPath_ProjectChange_RefreshesCachedPath()
+        public void GetPath_AfterClear_RefreshesCachedPath()
         {
-            var cache = new GuidPathCache();
             string originalPath = CreateImportedTextureAsset("GuidPathCacheTexture");
             string guid = AssetDatabase.AssetPathToGUID(originalPath);
 
-            Assert.That(cache.GetPath(guid), Is.EqualTo(originalPath));
+            Assert.That(GuidPathCache.GetPath(guid), Is.EqualTo(originalPath));
 
             string renameError = AssetDatabase.RenameAsset(
                 originalPath,
@@ -68,14 +67,9 @@ namespace dev.limitex.avatar.compressor.tests
             string renamedPath = $"{TestAssetFolder}/GuidPathCacheTextureRenamed.png";
             ReplaceTrackedPath(originalPath, renamedPath);
 
-            var onProjectChanged = typeof(GuidPathCache).GetMethod(
-                "OnProjectChanged",
-                BindingFlags.NonPublic | BindingFlags.Static
-            );
-            Assert.That(onProjectChanged, Is.Not.Null);
-            onProjectChanged.Invoke(null, null);
+            GuidPathCache.Clear();
 
-            Assert.That(cache.GetPath(guid), Is.EqualTo(renamedPath));
+            Assert.That(GuidPathCache.GetPath(guid), Is.EqualTo(renamedPath));
         }
 
         private string CreateImportedTextureAsset(string name)
