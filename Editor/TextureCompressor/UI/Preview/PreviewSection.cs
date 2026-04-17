@@ -242,13 +242,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
-            // Thumbnail + texture type
-            EditorGUILayout.BeginVertical(GUILayout.Width(44));
+            EditorGUILayout.BeginVertical(GUILayout.Width(45));
+            EditorGUILayout.Space(2);
+            EditorGUILayout.BeginHorizontal(GUILayout.Width(45));
+            GUILayout.FlexibleSpace();
             ThumbnailControl.DrawClickable(data.Texture);
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
             EditorGUILayout.LabelField(
                 data.TextureType.ToString(),
                 EditorStylesCache.CenteredBoldLabel,
-                GUILayout.Width(44)
+                GUILayout.Width(45)
             );
             EditorGUILayout.EndVertical();
 

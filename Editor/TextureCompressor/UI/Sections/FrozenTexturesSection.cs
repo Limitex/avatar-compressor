@@ -109,8 +109,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 ? AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath)
                 : null;
 
-            // Thumbnail
+            EditorGUILayout.BeginVertical(GUILayout.Width(45));
+            EditorGUILayout.Space(2);
+            EditorGUILayout.BeginHorizontal(GUILayout.Width(45));
+            GUILayout.FlexibleSpace();
             ThumbnailControl.DrawClickable(texture);
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
 
             EditorGUILayout.BeginVertical();
 
