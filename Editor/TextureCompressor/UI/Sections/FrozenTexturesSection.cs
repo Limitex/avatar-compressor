@@ -1,3 +1,4 @@
+using System.IO;
 using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor.ui;
 using UnityEditor;
@@ -7,51 +8,22 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 {
     /// <summary>
     /// Draws the frozen textures section for manual texture overrides.
+    /// Owns its own search box and all UI state.
     /// </summary>
-    public static class FrozenTexturesSection
+    public class FrozenTexturesSection
     {
-        private static readonly System.Collections.Generic.Dictionary<
-            string,
-            string
-        > _guidPathCache = new();
-
-        /// <summary>
-        /// Gets the asset path for a GUID, using cache to avoid repeated lookups.
-        /// </summary>
-        private static string GetAssetPathCached(string guid)
-        {
-            if (string.IsNullOrEmpty(guid))
-                return "";
-
-            if (!_guidPathCache.TryGetValue(guid, out var path))
-            {
-                path = AssetDatabase.GUIDToAssetPath(guid);
-                _guidPathCache[guid] = path;
-            }
-            return path;
-        }
-
-        /// <summary>
-        /// Clears the GUID-to-path cache. Call when assets may have changed.
-        /// </summary>
-        public static void InvalidateCache()
-        {
-            _guidPathCache.Clear();
-        }
+        private readonly SearchBoxControl _searchBox = new();
+        private bool _showSection = true;
+        private Vector2 _scrollPosition;
 
         /// <summary>
         /// Draws the frozen textures section with search filtering.
         /// </summary>
-        public static void Draw(
-            TextureCompressor config,
-            SearchBoxControl search,
-            ref bool showSection,
-            ref Vector2 scrollPos
-        )
+        public void Draw(TextureCompressor config)
         {
             int frozenCount = config.FrozenTextures.Count;
-            bool isSearching = search.IsSearching;
-            int filteredCount = isSearching ? CountMatches(config, search) : frozenCount;
+            bool isSearching = _searchBox.IsSearching;
+            int filteredCount = _searchBox.CountMatches(config.FrozenTextures, MatchesFrozenSearch);
 
             // Show filtered count in header when searching
             string headerText =
@@ -59,9 +31,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     ? $"Frozen Textures ({filteredCount}/{frozenCount})"
                     : $"Frozen Textures ({frozenCount})";
 
-            showSection = EditorGUILayout.Foldout(showSection, headerText, true);
+            _showSection = EditorGUILayout.Foldout(_showSection, headerText, true);
 
-            if (!showSection)
+            if (!_showSection)
                 return;
 
             if (frozenCount == 0)
@@ -72,6 +44,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 );
                 return;
             }
+
+            // Search box for frozen textures
+            _searchBox.Draw(filteredCount, frozenCount);
 
             // Show "no results" message when searching with no matches
             if (isSearching && filteredCount == 0)
@@ -88,7 +63,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             if (useScrollView)
             {
-                scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.MaxHeight(250));
+                _scrollPosition = EditorGUILayout.BeginScrollView(
+                    _scrollPosition,
+                    GUILayout.MaxHeight(250)
+                );
             }
 
             for (int i = config.FrozenTextures.Count - 1; i >= 0; i--)
@@ -96,7 +74,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 var frozen = config.FrozenTextures[i];
 
                 // Skip items that don't match search
-                if (isSearching && !MatchesFrozenSearch(frozen, search))
+                if (isSearching && !MatchesFrozenSearch(frozen))
                     continue;
 
                 DrawFrozenTextureEntry(config, frozen, i);
@@ -110,11 +88,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             // Show hidden count when searching
             if (isSearching && filteredCount < frozenCount)
             {
-                SearchBoxControl.DrawHiddenCount(frozenCount - filteredCount);
+                EditorDrawUtils.DrawHiddenCount(frozenCount - filteredCount);
             }
         }
 
-        private static void DrawFrozenTextureEntry(
+        private void DrawFrozenTextureEntry(
             TextureCompressor config,
             FrozenTextureSettings frozen,
             int index
@@ -125,13 +103,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
             // Resolve path from GUID for display and loading (cached)
-            string assetPath = GetAssetPathCached(frozen.TextureGuid);
+            string assetPath = GuidPathCache.GetPath(frozen.TextureGuid);
             var texture = !string.IsNullOrEmpty(assetPath)
                 ? AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath)
                 : null;
 
-            // Thumbnail
+            EditorGUILayout.BeginVertical(GUILayout.Width(45));
+            EditorGUILayout.Space(2);
+            EditorGUILayout.BeginHorizontal(GUILayout.Width(45));
+            GUILayout.FlexibleSpace();
             ThumbnailControl.DrawClickable(texture);
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
 
             EditorGUILayout.BeginVertical();
 
@@ -139,9 +123,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.BeginHorizontal();
 
             string textureName = !string.IsNullOrEmpty(assetPath)
-                ? System.IO.Path.GetFileName(assetPath)
+                ? Path.GetFileName(assetPath)
                 : frozen.TextureGuid;
-            EditorGUILayout.LabelField(textureName, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(
+                textureName,
+                EditorStylesCache.ClippedBoldLabel,
+                GUILayout.MinWidth(0)
+            );
 
             if (GUILayout.Button("Unfreeze", GUILayout.Width(70)))
             {
@@ -282,28 +270,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.EndHorizontal();
         }
 
-        private static int CountMatches(TextureCompressor config, SearchBoxControl search)
+        private bool MatchesFrozenSearch(FrozenTextureSettings frozen)
         {
-            int count = 0;
-            foreach (var frozen in config.FrozenTextures)
-            {
-                if (MatchesFrozenSearch(frozen, search))
-                    count++;
-            }
-            return count;
-        }
-
-        private static bool MatchesFrozenSearch(
-            FrozenTextureSettings frozen,
-            SearchBoxControl search
-        )
-        {
-            string assetPath = GetAssetPathCached(frozen.TextureGuid);
+            string assetPath = GuidPathCache.GetPath(frozen.TextureGuid);
             string textureName = !string.IsNullOrEmpty(assetPath)
-                ? assetPath.Substring(assetPath.LastIndexOf('/') + 1)
-                : "";
+                ? Path.GetFileName(assetPath)
+                : frozen.TextureGuid;
 
-            return search.MatchesSearchAny(textureName, assetPath);
+            return _searchBox.MatchesSearchAny(textureName, assetPath);
         }
     }
 }

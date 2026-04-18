@@ -1,5 +1,4 @@
 using dev.limitex.avatar.compressor.editor.texture.ui;
-using dev.limitex.avatar.compressor.editor.ui;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,19 +10,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
     [CustomEditor(typeof(TextureCompressor))]
     public class TextureCompressorEditor : CompressorEditorBase
     {
-        // State-holding components
-        private SearchBoxControl _searchBox;
+        // Section components (each owns its own search and UI state)
+        private FrozenTexturesSection _frozenSection;
         private PreviewSection _previewSection;
 
-        // UI state
+        // UI state for sections that don't own their own
         private bool _showExclusionsSection;
         private bool _showTextureFiltersSection;
-        private bool _showFrozenSection = true;
-        private Vector2 _frozenScrollPosition;
 
         private void OnEnable()
         {
-            _searchBox = new SearchBoxControl();
+            _frozenSection = new FrozenTexturesSection();
             _previewSection = new PreviewSection();
         }
 
@@ -49,21 +46,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
             FilterSection.DrawExclusions(config, ref _showExclusionsSection);
             EditorGUILayout.Space(15);
 
-            // Search box
-            _searchBox.Draw();
-            EditorGUILayout.Space(10);
-
             // Frozen textures
-            FrozenTexturesSection.Draw(
-                config,
-                _searchBox,
-                ref _showFrozenSection,
-                ref _frozenScrollPosition
-            );
+            _frozenSection.Draw(config);
             EditorGUILayout.Space(15);
 
             // Preview section
-            _previewSection.Draw(config, _searchBox);
+            _previewSection.Draw(config);
         }
     }
 }

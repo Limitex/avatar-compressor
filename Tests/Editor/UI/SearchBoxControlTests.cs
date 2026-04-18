@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor.ui;
 using NUnit.Framework;
 
@@ -14,52 +15,112 @@ namespace dev.limitex.avatar.compressor.tests
             _searchBox = new SearchBoxControl();
         }
 
-        #region Initial State Tests
+        #region Constructor Tests
 
         [Test]
-        public void NewInstance_SearchTextIsEmpty()
+        public void Constructor_Default_IsEmptyAndNotSearching()
         {
             Assert.That(_searchBox.SearchText, Is.Empty);
-        }
-
-        [Test]
-        public void NewInstance_IsSearchingIsFalse()
-        {
             Assert.That(_searchBox.IsSearching, Is.False);
+            Assert.That(_searchBox.UseFuzzySearch, Is.False);
         }
 
         [Test]
-        public void NewInstance_UseFuzzySearchIsFalse()
+        public void Constructor_WithSearchText_SetsState()
         {
-            Assert.That(_searchBox.UseFuzzySearch, Is.False);
+            var search = new SearchBoxControl("test");
+
+            Assert.That(search.SearchText, Is.EqualTo("test"));
+            Assert.That(search.IsSearching, Is.True);
+            Assert.That(search.UseFuzzySearch, Is.False);
+        }
+
+        [Test]
+        public void Constructor_WithFuzzySearch_SetsState()
+        {
+            var search = new SearchBoxControl("test", useFuzzySearch: true);
+
+            Assert.That(search.SearchText, Is.EqualTo("test"));
+            Assert.That(search.UseFuzzySearch, Is.True);
         }
 
         #endregion
 
-        #region MatchesSearch Tests
+        #region MatchesSearch Tests (Not Searching)
 
         [Test]
-        public void MatchesSearch_EmptySearchText_ReturnsTrue()
+        public void MatchesSearch_NotSearching_ReturnsTrue()
         {
-            // When not searching, everything matches
             Assert.That(_searchBox.MatchesSearch("any text"), Is.True);
         }
 
         [Test]
-        public void MatchesSearch_NullText_ReturnsFalse()
+        public void MatchesSearch_NullText_NotSearching_ReturnsTrue()
         {
-            Assert.That(_searchBox.MatchesSearch(null), Is.False);
+            Assert.That(_searchBox.MatchesSearch(null), Is.True);
         }
 
         [Test]
-        public void MatchesSearch_EmptyText_ReturnsFalse()
+        public void MatchesSearch_EmptyText_NotSearching_ReturnsTrue()
         {
-            Assert.That(_searchBox.MatchesSearch(""), Is.False);
+            Assert.That(_searchBox.MatchesSearch(""), Is.True);
         }
 
         #endregion
 
-        #region MatchesSearchAny Tests
+        #region MatchesSearch Tests (Active Search)
+
+        [Test]
+        public void MatchesSearch_SubstringMatch_ReturnsTrue()
+        {
+            var search = new SearchBoxControl("avatar");
+
+            Assert.That(search.MatchesSearch("my_avatar_texture"), Is.True);
+        }
+
+        [Test]
+        public void MatchesSearch_CaseInsensitive_ReturnsTrue()
+        {
+            var search = new SearchBoxControl("AVATAR");
+
+            Assert.That(search.MatchesSearch("my_avatar_texture"), Is.True);
+        }
+
+        [Test]
+        public void MatchesSearch_NoMatch_ReturnsFalse()
+        {
+            var search = new SearchBoxControl("xyz");
+
+            Assert.That(search.MatchesSearch("avatar_texture"), Is.False);
+        }
+
+        [Test]
+        public void MatchesSearch_ExactMatch_ReturnsTrue()
+        {
+            var search = new SearchBoxControl("texture");
+
+            Assert.That(search.MatchesSearch("texture"), Is.True);
+        }
+
+        [Test]
+        public void MatchesSearch_NullText_WhileSearching_ReturnsFalse()
+        {
+            var search = new SearchBoxControl("test");
+
+            Assert.That(search.MatchesSearch(null), Is.False);
+        }
+
+        [Test]
+        public void MatchesSearch_EmptyText_WhileSearching_ReturnsFalse()
+        {
+            var search = new SearchBoxControl("test");
+
+            Assert.That(search.MatchesSearch(""), Is.False);
+        }
+
+        #endregion
+
+        #region MatchesSearchAny Tests (Not Searching)
 
         [Test]
         public void MatchesSearchAny_NotSearching_ReturnsTrue()
@@ -67,71 +128,80 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.That(_searchBox.MatchesSearchAny("text1", "text2"), Is.True);
         }
 
+        #endregion
+
+        #region MatchesSearchAny Tests (Two Args)
+
         [Test]
-        public void MatchesSearchAny_EmptyArray_ReturnsTrue_WhenNotSearching()
+        public void MatchesSearchAny_TwoArgs_FirstMatches_ReturnsTrue()
         {
-            Assert.That(_searchBox.MatchesSearchAny(), Is.True);
+            var search = new SearchBoxControl("avatar");
+
+            Assert.That(search.MatchesSearchAny("my_avatar", "no_match"), Is.True);
+        }
+
+        [Test]
+        public void MatchesSearchAny_TwoArgs_SecondMatches_ReturnsTrue()
+        {
+            var search = new SearchBoxControl("avatar");
+
+            Assert.That(search.MatchesSearchAny("no_match", "my_avatar"), Is.True);
+        }
+
+        [Test]
+        public void MatchesSearchAny_TwoArgs_NoneMatch_ReturnsFalse()
+        {
+            var search = new SearchBoxControl("xyz");
+
+            Assert.That(search.MatchesSearchAny("avatar", "texture"), Is.False);
         }
 
         #endregion
 
-        #region Clear Tests
+        #region MatchesSearchAny Tests (Three Args)
 
         [Test]
-        public void Clear_ResetsSearchText()
+        public void MatchesSearchAny_ThreeArgs_LastMatches_ReturnsTrue()
         {
-            _searchBox.Clear();
+            var search = new SearchBoxControl("normal");
 
-            Assert.That(_searchBox.SearchText, Is.Empty);
+            Assert.That(search.MatchesSearchAny("diffuse", "specular", "normal_map"), Is.True);
         }
 
         [Test]
-        public void Clear_ResetsFuzzySearch()
+        public void MatchesSearchAny_ThreeArgs_NoneMatch_ReturnsFalse()
         {
-            _searchBox.Clear();
+            var search = new SearchBoxControl("xyz");
 
-            Assert.That(_searchBox.UseFuzzySearch, Is.False);
-        }
-
-        [Test]
-        public void Clear_IsSearchingBecomesFalse()
-        {
-            _searchBox.Clear();
-
-            Assert.That(_searchBox.IsSearching, Is.False);
+            Assert.That(search.MatchesSearchAny("avatar", "texture", "normal"), Is.False);
         }
 
         #endregion
 
-        #region InvalidateCache Tests
+        #region Fuzzy Search Tests
 
         [Test]
-        public void InvalidateCache_DoesNotThrow()
+        public void MatchesSearch_FuzzyEnabled_MatchesNonContiguous()
         {
-            Assert.DoesNotThrow(() => _searchBox.InvalidateCache());
+            var search = new SearchBoxControl("avt", useFuzzySearch: true);
+
+            Assert.That(search.MatchesSearch("avatar_texture"), Is.True);
         }
 
         [Test]
-        public void InvalidateCache_CanBeCalledMultipleTimes()
+        public void MatchesSearch_FuzzyDisabled_DoesNotMatchNonContiguous()
         {
-            Assert.DoesNotThrow(() =>
-            {
-                _searchBox.InvalidateCache();
-                _searchBox.InvalidateCache();
-                _searchBox.InvalidateCache();
-            });
+            var search = new SearchBoxControl("avt");
+
+            Assert.That(search.MatchesSearch("avatar_texture"), Is.False);
         }
 
-        #endregion
-
-        #region IsMatch Tests
-
         [Test]
-        public void IsMatch_NotSearching_ReturnsTrue()
+        public void MatchesSearchAny_FuzzyEnabled_MatchesAny()
         {
-            bool result = _searchBox.IsMatch(0, 10, i => false);
+            var search = new SearchBoxControl("avt", useFuzzySearch: true);
 
-            Assert.That(result, Is.True);
+            Assert.That(search.MatchesSearchAny("no_match", "avatar_texture"), Is.True);
         }
 
         #endregion
@@ -141,23 +211,140 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void CountMatches_NotSearching_ReturnsItemCount()
         {
-            int result = _searchBox.CountMatches(10, i => false);
+            var items = new List<string> { "a", "b", "c" };
 
-            Assert.That(result, Is.EqualTo(10));
+            int result = _searchBox.CountMatches(items, _ => false);
+
+            Assert.That(result, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void CountMatches_Searching_CountsMatchingItems()
+        {
+            var search = new SearchBoxControl("test");
+            var items = new List<string> { "test1", "test2", "other" };
+
+            int result = search.CountMatches(items, s => search.MatchesSearch(s));
+
+            Assert.That(result, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void CountMatches_Searching_NoMatches_ReturnsZero()
+        {
+            var search = new SearchBoxControl("xyz");
+            var items = new List<string> { "alpha", "beta", "gamma" };
+
+            int result = search.CountMatches(items, s => search.MatchesSearch(s));
+
+            Assert.That(result, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void CountMatches_CachesResult_SkipsPredicateOnSecondCall()
+        {
+            var search = new SearchBoxControl("test");
+            var items = new List<string> { "test1", "other" };
+            int callCount = 0;
+            System.Func<string, bool> predicate = s =>
+            {
+                callCount++;
+                return s.Contains("test");
+            };
+
+            search.CountMatches(items, predicate);
+            int firstCallCount = callCount;
+
+            search.CountMatches(items, predicate);
+
+            Assert.That(callCount, Is.EqualTo(firstCallCount));
+        }
+
+        [Test]
+        public void CountMatches_InvalidateCountCache_ForcesRecount()
+        {
+            var search = new SearchBoxControl("test");
+            var items = new List<string> { "test1", "other" };
+            int callCount = 0;
+            System.Func<string, bool> predicate = s =>
+            {
+                callCount++;
+                return s.Contains("test");
+            };
+
+            search.CountMatches(items, predicate);
+            int firstCallCount = callCount;
+
+            search.InvalidateCountCache();
+            search.CountMatches(items, predicate);
+
+            Assert.That(callCount, Is.GreaterThan(firstCallCount));
+        }
+
+        [Test]
+        public void CountMatches_CacheInvalidatedByCountChange()
+        {
+            var search = new SearchBoxControl("test");
+            var items = new List<string> { "test1", "other" };
+            int callCount = 0;
+            System.Func<string, bool> predicate = s =>
+            {
+                callCount++;
+                return s.Contains("test");
+            };
+
+            search.CountMatches(items, predicate);
+            int firstCallCount = callCount;
+
+            items.Add("test2");
+            search.CountMatches(items, predicate);
+
+            Assert.That(callCount, Is.GreaterThan(firstCallCount));
+        }
+
+        [Test]
+        public void CountMatches_WorksWithArray()
+        {
+            var search = new SearchBoxControl("test");
+            var items = new[] { "test1", "test2", "other" };
+
+            int result = search.CountMatches(items, s => search.MatchesSearch(s));
+
+            Assert.That(result, Is.EqualTo(2));
         }
 
         #endregion
 
-        #region OnSearchChanged Event Tests
+        #region Clear Tests
 
         [Test]
-        public void OnSearchChanged_CanSubscribe()
+        public void Clear_ResetsSearchText()
         {
-            bool eventFired = false;
-            _searchBox.OnSearchChanged += () => eventFired = true;
+            var search = new SearchBoxControl("test", useFuzzySearch: true);
 
-            // Event should be subscribed without throwing
-            Assert.That(eventFired, Is.False);
+            search.Clear();
+
+            Assert.That(search.SearchText, Is.Empty);
+        }
+
+        [Test]
+        public void Clear_ResetsFuzzySearch()
+        {
+            var search = new SearchBoxControl("test", useFuzzySearch: true);
+
+            search.Clear();
+
+            Assert.That(search.UseFuzzySearch, Is.False);
+        }
+
+        [Test]
+        public void Clear_IsSearchingBecomesFalse()
+        {
+            var search = new SearchBoxControl("test");
+
+            search.Clear();
+
+            Assert.That(search.IsSearching, Is.False);
         }
 
         #endregion

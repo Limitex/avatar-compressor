@@ -47,6 +47,16 @@ namespace dev.limitex.avatar.compressor.editor.ui
         }
 
         /// <summary>
+        /// Draws a hidden count indicator for filtered lists.
+        /// </summary>
+        /// <param name="hiddenCount">Number of hidden items.</param>
+        public static void DrawHiddenCount(int hiddenCount)
+        {
+            string hiddenText = $"{hiddenCount} hidden";
+            EditorGUILayout.LabelField(hiddenText, EditorStylesCache.HiddenCountStyle);
+        }
+
+        /// <summary>
         /// Draws a colored button with selection highlight.
         /// </summary>
         /// <param name="label">Button label text.</param>
