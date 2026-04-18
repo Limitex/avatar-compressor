@@ -12,6 +12,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
     {
         private static GUIStyle _centeredLabel;
         private static GUIStyle _centeredBoldLabel;
+        private static GUIStyle _clippedBoldLabel;
         private static GUIStyle _linkStyle;
         private static GUIStyle _hiddenCountStyle;
         private static GUIStyle _modifiedStatusStyle;
@@ -25,6 +26,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
         {
             _centeredLabel = null;
             _centeredBoldLabel = null;
+            _clippedBoldLabel = null;
             _linkStyle = null;
             _hiddenCountStyle = null;
             _modifiedStatusStyle = null;
@@ -47,6 +49,15 @@ namespace dev.limitex.avatar.compressor.editor.ui
             _centeredBoldLabel ??= new GUIStyle(EditorStyles.miniBoldLabel)
             {
                 alignment = TextAnchor.MiddleCenter,
+            };
+
+        /// <summary>
+        /// Bold label style that clips overflow.
+        /// </summary>
+        public static GUIStyle ClippedBoldLabel =>
+            _clippedBoldLabel ??= new GUIStyle(EditorStyles.boldLabel)
+            {
+                clipping = TextClipping.Clip,
             };
 
         /// <summary>

@@ -247,7 +247,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.BeginVertical();
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(data.Texture.name, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(
+                data.Texture.name,
+                EditorStylesCache.ClippedBoldLabel,
+                GUILayout.MinWidth(0)
+            );
 
             // Freeze/Unfreeze button
             if (data.IsProcessed)
@@ -329,7 +333,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 sizeText =
                     $"{data.OriginalSize.x}x{data.OriginalSize.y} (unchanged){manualIndicator}";
             }
-            EditorGUILayout.LabelField(sizeText);
+            EditorGUILayout.LabelField(sizeText, GUILayout.MinWidth(0));
             EditorGUILayout.EndHorizontal();
 
             // Format
@@ -353,7 +357,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 GUI.color = formatColor;
                 EditorGUILayout.LabelField(formatName, EditorStyles.boldLabel, GUILayout.Width(70));
                 GUI.color = savedGuiColor;
-                EditorGUILayout.LabelField(formatInfo, EditorStyles.miniLabel);
+                EditorGUILayout.LabelField(
+                    formatInfo,
+                    EditorStyles.miniLabel,
+                    GUILayout.MinWidth(0)
+                );
             }
             else
             {

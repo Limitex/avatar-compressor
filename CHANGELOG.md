@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Disable preview entry when frozen state changes in either direction (freeze or unfreeze) since the previous scan
 - Frozen texture search matches the GUID fallback when the asset path cannot be resolved, consistent with the displayed text
 - Invalidate the GUID-to-path cache on Unity project changes so renamed/moved assets resolve correctly
+- Freeze/Unfreeze button in Preview and Frozen entries is no longer pushed off-screen by long texture names; entries are capped to the inspector view width and the texture name label clips when it would overlap the button
 
 ## [v0.7.0] - 2026-03-27
 

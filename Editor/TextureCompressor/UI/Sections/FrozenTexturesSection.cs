@@ -125,7 +125,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             string textureName = !string.IsNullOrEmpty(assetPath)
                 ? Path.GetFileName(assetPath)
                 : frozen.TextureGuid;
-            EditorGUILayout.LabelField(textureName, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(
+                textureName,
+                EditorStylesCache.ClippedBoldLabel,
+                GUILayout.MinWidth(0)
+            );
 
             if (GUILayout.Button("Unfreeze", GUILayout.Width(70)))
             {
