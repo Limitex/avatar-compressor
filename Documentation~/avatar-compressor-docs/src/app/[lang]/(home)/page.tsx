@@ -49,7 +49,7 @@ const translations: Record<Locale, Translations> = {
     vramReduction: 'VRAM Reduction',
     originalFiles: 'Original Files Modified',
     setup: 'Setup',
-    whyTitle: 'Why Avatar Compressor?',
+    whyTitle: 'Why LAC: Avatar Compressor?',
     whyDescription: 'Compression that respects your workflow',
     features: [
       {
@@ -86,7 +86,7 @@ const translations: Record<Locale, Translations> = {
     ctaTitle: 'Ready to Compress?',
     ctaDescription: 'Get started in minutes. Add the repository to your package manager and start optimizing.',
     installationGuide: 'Installation Guide',
-    footerBy: 'Avatar Compressor by',
+    footerBy: 'LAC: Avatar Compressor by',
     documentation: 'Documentation',
   },
   ja: {
@@ -136,7 +136,7 @@ const translations: Record<Locale, Translations> = {
     ctaTitle: '今すぐ試す',
     ctaDescription: '数分で始められます。パッケージマネージャーにリポジトリを追加して、最適化を開始しましょう。',
     installationGuide: 'インストールガイド',
-    footerBy: 'Avatar Compressor by',
+    footerBy: 'LAC: Avatar Compressor by',
     documentation: 'ドキュメント',
   },
 };
@@ -188,8 +188,7 @@ function HeroSection({ lang, t }: { lang: Locale; t: Translations }) {
         </div>
 
         <h1 className="font-extrabold tracking-tight leading-none text-5xl sm:text-6xl md:text-7xl lg:text-8xl mb-6 animate-fade-in-up [animation-delay:0.1s]">
-          <span className="text-slate-900 dark:text-white">Avatar</span>
-          <br />
+          <span className="text-slate-900 dark:text-white">LAC: Avatar </span>
           <span className="glow-text text-[var(--accent-cyan)]">Compressor</span>
         </h1>
 

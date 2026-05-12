@@ -11,7 +11,7 @@ export function baseOptions(lang: Locale): BaseLayoutProps {
 
   return {
     nav: {
-      title: "Avatar Compressor",
+      title: "LAC: Avatar Compressor",
       url: `/${lang}`,
     },
     links: [
