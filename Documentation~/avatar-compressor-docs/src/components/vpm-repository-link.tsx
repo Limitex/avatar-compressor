@@ -10,6 +10,7 @@ interface VPMRepositoryLinkProps {
   label?: string;
   method?: "alcom" | "vcc";
   eventName?: string;
+  className?: string;
 }
 
 const VPMRepositoryLink: React.FC<VPMRepositoryLinkProps> = ({
@@ -17,6 +18,7 @@ const VPMRepositoryLink: React.FC<VPMRepositoryLinkProps> = ({
   label = "Add Repository",
   method = "vcc",
   eventName = "add_repository",
+  className,
 }) => {
   const vccUrl = `vcc://vpm/addRepo?url=${repoUrl}`;
 
@@ -26,6 +28,15 @@ const VPMRepositoryLink: React.FC<VPMRepositoryLinkProps> = ({
       repo_url: repoUrl,
     });
   };
+
+  if (className) {
+    return (
+      <a href={vccUrl} className={className} onClick={handleClick}>
+        <PackagePlus size={16} />
+        <span>{label}</span>
+      </a>
+    );
+  }
 
   return (
     <a href={vccUrl} className="no-underline block" onClick={handleClick}>
