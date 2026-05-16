@@ -1,11 +1,24 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ExternalLink, Github } from 'lucide-react';
 import { BoothIcon } from '@/components/booth-icon';
 import VPMRepositoryLink from '@/components/vpm-repository-link';
+import { ComponentShowcase, type ShowcaseItem } from '@/components/component-showcase';
 import { getLocale, i18n, type Locale } from '@/lib/i18n';
 
 const VPM_REPO_URL = 'https://vpm.limitex.dev/index.json';
+
+// Replace `PLACEHOLDER` slots with real entries as new components ship.
+// The carousel hides side previews automatically when only one item is configured.
+const PLACEHOLDER: ShowcaseItem = { placeholder: true };
+const SHOWCASE_ITEMS: ShowcaseItem[] = [
+  {
+    src: '/img/components/texture-compressor.webp',
+    alt: 'LAC Texture Compressor — Unity Inspector',
+    width: 664,
+    height: 1607,
+  },
+  PLACEHOLDER,
+];
 
 export function generateStaticParams() {
   return i18n.languages.map((lang) => ({ lang }));
@@ -124,25 +137,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             </div>
           </div>
 
-          <div
-            className="relative h-[400px] overflow-hidden sm:h-[500px] lg:h-[560px]"
-            style={{
-              maskImage:
-                'linear-gradient(to bottom, black 60%, transparent 100%)',
-              WebkitMaskImage:
-                'linear-gradient(to bottom, black 60%, transparent 100%)',
-            }}
-          >
-            <Image
-              src="/img/components/texture-compressor.webp"
-              alt="LAC Texture Compressor — Unity Inspector"
-              width={664}
-              height={1607}
-              priority
-              sizes="(min-width: 1024px) 28rem, 100vw"
-              className="absolute inset-x-0 top-0 mx-auto aspect-[664/1607] w-full max-w-md rounded-lg border border-fd-border shadow-2xl"
-            />
-          </div>
+          <ComponentShowcase items={SHOWCASE_ITEMS} />
         </div>
       </section>
 
