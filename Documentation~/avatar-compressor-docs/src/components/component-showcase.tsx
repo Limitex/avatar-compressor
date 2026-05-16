@@ -23,15 +23,12 @@ const ROLE_STYLE: Record<Role, { transform: string; opacity: number; blur: strin
 };
 
 const CONTAINER_CLASS =
-  'relative h-[400px] overflow-hidden sm:h-[500px] lg:h-[560px]';
-const CONTAINER_MASK = {
-  maskImage:
-    'linear-gradient(to bottom, black 60%, transparent 100%), linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
-  WebkitMaskImage:
-    'linear-gradient(to bottom, black 60%, transparent 100%), linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
-  maskComposite: 'intersect',
-  WebkitMaskComposite: 'source-in',
-} as const;
+  'relative h-[400px] overflow-hidden sm:h-[500px] lg:h-[560px] ' +
+  '[mask-image:linear-gradient(to_bottom,black_60%,transparent_100%)] ' +
+  '[-webkit-mask-image:linear-gradient(to_bottom,black_60%,transparent_100%)] ' +
+  'sm:[mask-image:linear-gradient(to_bottom,black_60%,transparent_100%),linear-gradient(to_right,transparent_0%,black_6%,black_94%,transparent_100%)] ' +
+  'sm:[-webkit-mask-image:linear-gradient(to_bottom,black_60%,transparent_100%),linear-gradient(to_right,transparent_0%,black_6%,black_94%,transparent_100%)] ' +
+  'sm:[mask-composite:intersect] sm:[-webkit-mask-composite:source-in]';
 const LAYER_CLASS =
   'absolute inset-x-0 top-0 mx-auto w-full max-w-md transform-gpu transition-[transform,opacity,filter] duration-500 ease-out motion-reduce:transition-none';
 const IMG_CLASS =
@@ -83,7 +80,7 @@ export function ComponentShowcase({ items }: { items: ShowcaseItem[] }) {
   }
 
   return (
-    <div className={CONTAINER_CLASS} style={CONTAINER_MASK}>
+    <div className={CONTAINER_CLASS}>
       {items.map((item, i) => {
         const role = roleOf(i);
         const style = ROLE_STYLE[role];
