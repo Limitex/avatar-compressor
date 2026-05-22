@@ -2,41 +2,18 @@ import Link from 'next/link';
 import { Github } from 'lucide-react';
 import { BoothIcon } from '@/components/booth-icon';
 import type { Locale } from '@/lib/i18n';
-import { GITHUB_URL } from '@/lib/github';
-
-const BOOTH_URL = 'https://ltx.booth.pm/items/7856254';
+import { BOOTH_URL, GITHUB_URL } from '@/lib/github';
 
 type Translations = {
   tagline: string;
-  documentation: string;
-  installation: string;
-  changelog: string;
-  resources: string;
-  github: string;
-  booth: string;
-  copyright: string;
 };
 
 const translations: Record<Locale, Translations> = {
   en: {
     tagline: 'Non-destructive VRChat avatar compression powered by NDMF.',
-    documentation: 'Documentation',
-    installation: 'Installation',
-    changelog: 'Changelog',
-    resources: 'Resources',
-    github: 'GitHub',
-    booth: 'Booth',
-    copyright: '© {year} Limitex',
   },
   ja: {
     tagline: 'NDMF ベースの非破壊 VRChat アバター圧縮。',
-    documentation: 'Documentation',
-    installation: 'Installation',
-    changelog: 'Changelog',
-    resources: 'Resources',
-    github: 'GitHub',
-    booth: 'Booth',
-    copyright: '© {year} Limitex',
   },
 };
 
@@ -65,22 +42,22 @@ export function Footer({ lang }: { lang: Locale }) {
 
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-fd-foreground">
-              {t.documentation}
+              Documentation
             </h3>
             <ul className="mt-4 space-y-2 text-sm">
               <li>
                 <Link href={`/${lang}/docs`} className={linkClass}>
-                  {t.documentation}
+                  Documentation
                 </Link>
               </li>
               <li>
                 <Link href={`/${lang}/docs/installation`} className={linkClass}>
-                  {t.installation}
+                  Installation
                 </Link>
               </li>
               <li>
                 <Link href={`/${lang}/docs/changelog`} className={linkClass}>
-                  {t.changelog}
+                  Changelog
                 </Link>
               </li>
             </ul>
@@ -88,7 +65,7 @@ export function Footer({ lang }: { lang: Locale }) {
 
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-fd-foreground">
-              {t.resources}
+              Resources
             </h3>
             <ul className="mt-4 space-y-2 text-sm">
               <li>
@@ -98,7 +75,7 @@ export function Footer({ lang }: { lang: Locale }) {
                   rel="noopener noreferrer"
                   className={linkClass}
                 >
-                  {t.github}
+                  GitHub
                 </a>
               </li>
               <li>
@@ -108,7 +85,7 @@ export function Footer({ lang }: { lang: Locale }) {
                   rel="noopener noreferrer"
                   className={linkClass}
                 >
-                  {t.booth}
+                  Booth
                 </a>
               </li>
             </ul>
@@ -117,7 +94,7 @@ export function Footer({ lang }: { lang: Locale }) {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-fd-border pt-8 sm:flex-row">
           <p className="text-xs text-fd-muted-foreground">
-            {t.copyright.replace('{year}', String(year))}
+            © {year} Limitex
           </p>
           <div className="flex items-center gap-3">
             <a

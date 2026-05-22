@@ -4,6 +4,7 @@ import { BoothIcon } from '@/components/booth-icon';
 import VPMRepositoryLink from '@/components/vpm-repository-link';
 import { ComponentShowcase, type ShowcaseItem } from '@/components/component-showcase';
 import { getLocale, i18n, type Locale } from '@/lib/i18n';
+import { BOOTH_URL, GITHUB_URL } from '@/lib/github';
 
 const VPM_REPO_URL = 'https://vpm.limitex.dev/index.json';
 
@@ -117,7 +118,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
                 <ArrowRight size={16} />
               </Link>
               <a
-                href="https://github.com/limitex/avatar-compressor"
+                href={GITHUB_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={secondaryButton}
@@ -126,7 +127,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
                 {t.viewOnGitHub}
               </a>
               <a
-                href="https://ltx.booth.pm/items/7856254"
+                href={BOOTH_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={secondaryButton}
