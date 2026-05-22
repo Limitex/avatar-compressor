@@ -50,14 +50,6 @@ export function ComponentShowcase({ items }: { items: ShowcaseItem[] }) {
     [count],
   );
 
-  const navigate = useCallback(
-    (target: number) => {
-      if (target === activeIdx || count <= 1) return;
-      setActiveIdx(target);
-    },
-    [activeIdx, count],
-  );
-
   useEffect(() => {
     if (!hasMultiple) return;
     function onKey(e: KeyboardEvent) {
@@ -127,7 +119,7 @@ export function ComponentShowcase({ items }: { items: ShowcaseItem[] }) {
             {isClickable ? (
               <button
                 type="button"
-                onClick={() => navigate(i)}
+                onClick={() => setActiveIdx(i)}
                 aria-label={label}
                 className={BUTTON_CLASS}
               >
