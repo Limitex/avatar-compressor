@@ -61,6 +61,9 @@ export function ComponentShowcase({ items }: { items: ShowcaseItem[] }) {
   useEffect(() => {
     if (!hasMultiple) return;
     function onKey(e: KeyboardEvent) {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable))
+        return;
       if (e.key === 'ArrowLeft') cycle(-1);
       else if (e.key === 'ArrowRight') cycle(1);
     }
