@@ -82,7 +82,7 @@ const translations: Record<Locale, Translations> = {
     recommendedLabel: '推奨',
     aaoDescription:
       'anatawa12 氏による非破壊なアバター最適化ユーティリティ群。AAO は構造最適化を、LAC は圧縮を担当します。',
-    compatibleLabel: '互換',
+    compatibleLabel: '併用',
     maDescription:
       'bd_ 氏によるドラッグ&ドロップ式のアバター組み立て。LAC とそのまま併用できます。',
     ctaTitle: '今すぐ試す',
