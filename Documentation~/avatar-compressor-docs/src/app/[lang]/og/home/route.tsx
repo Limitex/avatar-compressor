@@ -17,9 +17,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ lang: s
   return new ImageResponse(
     (
       <DefaultImage
-        title="Avatar Compressor"
+        title="LAC: Avatar Compressor"
         description={description}
-        site="Avatar Compressor"
+        site="LAC: Avatar Compressor"
       />
     ),
     {

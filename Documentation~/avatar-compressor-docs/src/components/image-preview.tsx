@@ -165,6 +165,7 @@ const ModalContent: FC<PreviewModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAnimState("entering");
       const raf = requestAnimationFrame(() => {
         requestAnimationFrame(() => setAnimState("open"));

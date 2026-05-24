@@ -84,6 +84,12 @@ Consider freezing these textures:
 - Emission maps with gradient effects
 
 </Callout>
+
+If you have textures that should never be compressed at all (e.g., shader data textures or assets from a specific package), you can also use the **Exclusions** section instead of freezing them individually:
+
+- **Excluded Textures** — drop a `Texture2D` asset directly into the list
+- **Path Exclusions** — exclude every texture under a path prefix (e.g., a tool's temp folder)
+
 </Step>
 
 <Step>
@@ -108,16 +114,18 @@ Consider freezing these textures:
 
 <Accordion title="Not enough compression">
 - Try a more aggressive preset
-- Disable **Process Normal Maps** if normals don't need compression
+- Disable **Normal Maps** under **Texture Filters** if normals don't need compression
 - Lower the **High Complexity Threshold** in Custom preset
 
 </Accordion>
 
 <Accordion title="Some textures aren't being processed">
-Check if they're being skipped due to:
-- Size filters (texture is too small)
-- Type filters (texture type is disabled)
-- Path exclusions (asset path matches exclusion pattern)
+The Preview's **Skipped Textures** group shows the reason for each. Common causes:
+
+- **Too small** — the texture is smaller than `Min Source Size` or `Skip If Smaller Than`
+- **Filtered by type** — the texture's category (Main / Normal / Emission / Other) is disabled
+- **Excluded texture** / **Excluded by path** — the texture or its asset path is in the **Exclusions** section
+- **Uncompressed on unknown property** — the texture is uncompressed and assigned to a property the safety filter doesn't recognize. Disable **Skip uncompressed textures on unknown properties** under **Other Textures** to compress these too, but verify the shader doesn't use the texture for non-visual data first.
 
 </Accordion>
 </Accordions>

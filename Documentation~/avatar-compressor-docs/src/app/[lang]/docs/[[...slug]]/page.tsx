@@ -79,7 +79,7 @@ export async function generateMetadata(props: {
         },
     openGraph: {
       type: 'article',
-      siteName: 'Avatar Compressor',
+      siteName: 'LAC: Avatar Compressor',
       title: page.data.title,
       description: page.data.description,
       images: ogImage,

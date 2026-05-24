@@ -19,8 +19,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 const titles: Record<Locale, string> = {
-  en: 'Avatar Compressor - Non-Destructive VRChat Avatar Compression Utilities',
-  ja: 'Avatar Compressor - VRChat 非破壊アバター圧縮ユーティリティ',
+  en: 'LAC: Avatar Compressor - Non-Destructive VRChat Avatar Compression Utilities',
+  ja: 'LAC: Avatar Compressor - VRChat 非破壊アバター圧縮ユーティリティ',
 };
 
 const descriptions: Record<Locale, string> = {
@@ -44,7 +44,7 @@ export async function generateMetadata({
     metadataBase: new URL(siteUrl),
     title: {
       default: title,
-      template: '%s | Avatar Compressor',
+      template: '%s | LAC: Avatar Compressor',
     },
     description,
     alternates: {
@@ -57,7 +57,7 @@ export async function generateMetadata({
     },
     openGraph: {
       type: 'website',
-      siteName: 'Avatar Compressor',
+      siteName: 'LAC: Avatar Compressor',
       title,
       description,
       url: `${siteUrl}/${lang}/`,
@@ -104,7 +104,8 @@ export default async function LangLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
-              name: 'Avatar Compressor',
+              name: 'LAC: Avatar Compressor',
+              alternateName: ['LAC', 'Avatar Compressor'],
               url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
               inLanguage: lang === 'ja' ? 'ja' : 'en',
             }).replace(/</g, '\\u003c'),

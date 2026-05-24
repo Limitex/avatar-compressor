@@ -3,6 +3,7 @@ import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { baseOptions } from '@/lib/layout.shared';
 import { BoothIcon } from '@/components/booth-icon';
 import { getLocale } from '@/lib/i18n';
+import { BOOTH_URL } from '@/lib/github';
 
 export default async function Layout({
   children,
@@ -24,7 +25,7 @@ export default async function Layout({
           type: 'icon',
           text: 'Booth',
           icon: <BoothIcon />,
-          url: 'https://ltx.booth.pm/items/7856254',
+          url: BOOTH_URL,
         },
       ]}
     >
