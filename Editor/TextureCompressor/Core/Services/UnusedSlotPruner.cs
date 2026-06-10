@@ -1,17 +1,20 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
-    /// Drives an <see cref="IUnusedSlotOptimizer"/> over the avatar's cloned materials, then drops
-    /// any collected texture that is left unreferenced so it is excluded from the build.
+    /// Drives an <see cref="IUnusedSlotOptimizer"/> over the avatar's cloned materials, restoring
+    /// slots whose texture must survive the build (frozen by the user, or referenced by an
+    /// animation object curve).
     /// </summary>
     /// <remarks>
-    /// The optimizer owns the "which slots are unused" decision (e.g. lilToon's own logic). This
-    /// class owns only the build-pipeline side: applying it once per material and reconciling the
-    /// texture → slot references afterward. That split keeps the orchestration testable with a fake
-    /// optimizer, independent of any external shader package.
+    /// The optimizer owns the "which slots are unused" decision (e.g. lilToon's own logic); this
+    /// class owns only the build-pipeline side. It must run <em>before</em> texture collection so
+    /// that <see cref="TextureCollector"/> sees the final slot state — classification (normal map /
+    /// emission upgrades) and filter rules then apply to surviving bindings only, with no
+    /// after-the-fact reconciliation that could drift from the collector's semantics.
     /// </remarks>
     public static class UnusedSlotPruner
     {
@@ -24,70 +27,95 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             /// <summary>
-            /// Number of slot references the optimizer cleared among collected textures. Stale
-            /// references (destroyed material) and slots cleared on textures that were filtered
-            /// out of collection are not counted here.
+            /// Number of texture slots left cleared by the optimizer (protected slots that were
+            /// restored are not counted).
             /// </summary>
             public int ClearedSlots { get; }
 
-            /// <summary>Number of textures dropped because no slot references them anymore.</summary>
+            /// <summary>
+            /// Number of distinct textures no longer bound to any slot of the given materials,
+            /// i.e. excluded from the upload (unless an animation curve still references them).
+            /// </summary>
             public int DroppedTextures { get; }
         }
 
         /// <summary>
-        /// Clears unused slots on <paramref name="materials"/> and removes now-unreferenced textures
-        /// from <paramref name="textures"/> (mutated in place). No-op when the optimizer is
-        /// unavailable.
+        /// Clears unused slots on every distinct material in <paramref name="materials"/>. A slot
+        /// is restored after the optimizer ran when its texture is referenced by an animation
+        /// object curve (per <paramref name="usageMap"/>) or <paramref name="isProtectedTexture"/>
+        /// returns true (e.g. frozen by the user): such a texture stays in the build anyway, so
+        /// keeping the slot keeps it collectable and compressible instead of shipping it untouched
+        /// (animation case) or silently overriding an explicit user pin (frozen case).
         /// </summary>
-        /// <param name="materials">
-        /// All cloned materials to optimize. The full list is used (rather than only materials
-        /// reachable from <paramref name="textures"/>) so that a material whose textures were all
-        /// filtered out of collection still has its unused slots cleared.
-        /// </param>
         public static PruneResult Prune(
-            Dictionary<Texture2D, TextureInfo> textures,
             IUnusedSlotOptimizer optimizer,
-            IReadOnlyCollection<string> animatedProperties,
-            IEnumerable<Material> materials
+            AnimationUsageMap usageMap,
+            IEnumerable<Material> materials,
+            Func<Texture2D, bool> isProtectedTexture = null
         )
         {
-            if (textures == null || optimizer == null || !optimizer.IsAvailable)
+            if (
+                optimizer == null
+                || !optimizer.IsAvailable
+                || usageMap == null
+                || materials == null
+            )
                 return default;
 
-            // 1. Let the optimizer clear unused slots on each distinct cloned material exactly once.
-            if (materials != null)
+            int clearedSlots = 0;
+            var clearedTextures = new HashSet<Texture2D>();
+            var survivingTextures = new HashSet<Texture2D>();
+            var processed = new HashSet<Material>();
+            var slotSnapshot = new List<(string Property, Texture2D Texture)>();
+
+            foreach (var material in materials)
             {
-                var processed = new HashSet<Material>();
-                foreach (var material in materials)
+                if (material == null || material.shader == null || !processed.Add(material))
+                    continue;
+
+                slotSnapshot.Clear();
+                foreach (var property in material.GetTexturePropertyNames())
                 {
-                    if (material != null && processed.Add(material))
-                        optimizer.ClearUnusedSlots(material, animatedProperties);
+                    if (material.GetTexture(property) is Texture2D texture)
+                        slotSnapshot.Add((property, texture));
+                }
+
+                optimizer.ClearUnusedSlots(material, usageMap.AnimatedProperties);
+
+                foreach (var (property, texture) in slotSnapshot)
+                {
+                    if (material.GetTexture(property) == texture)
+                    {
+                        survivingTextures.Add(texture);
+                        continue;
+                    }
+
+                    if (
+                        material.GetTexture(property) == null
+                        && (
+                            usageMap.IsTextureAnimated(texture)
+                            || (isProtectedTexture?.Invoke(texture) ?? false)
+                        )
+                    )
+                    {
+                        material.SetTexture(property, texture);
+                        survivingTextures.Add(texture);
+                        continue;
+                    }
+
+                    clearedSlots++;
+                    clearedTextures.Add(texture);
                 }
             }
 
-            // 2. Drop references the optimizer cleared, then textures with no remaining reference.
-            int clearedSlots = 0;
-            var droppedTextures = new List<Texture2D>();
-            foreach (var kvp in textures)
+            int droppedTextures = 0;
+            foreach (var texture in clearedTextures)
             {
-                var texture = kvp.Key;
-                var info = kvp.Value;
-
-                // Stale references (destroyed material) are dropped but not counted as cleared,
-                // so the logged count reflects only what the optimizer actually did.
-                info.References.RemoveAll(reference => reference?.Material == null);
-                clearedSlots += info.References.RemoveAll(reference =>
-                    reference.Material.GetTexture(reference.PropertyName) != texture
-                );
-
-                if (info.References.Count == 0)
-                    droppedTextures.Add(texture);
+                if (!survivingTextures.Contains(texture))
+                    droppedTextures++;
             }
 
-            foreach (var texture in droppedTextures)
-                textures.Remove(texture);
-
-            return new PruneResult(clearedSlots, droppedTextures.Count);
+            return new PruneResult(clearedSlots, droppedTextures);
         }
     }
 }

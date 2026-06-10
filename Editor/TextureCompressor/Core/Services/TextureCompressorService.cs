@@ -182,18 +182,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // Clone all materials and update Renderer references
             var clonedMaterials = MaterialCloner.CloneAndReplace(referenceList);
 
-            // Collect textures from cloned materials
             var clonedMaterialList = clonedMaterials.Values.ToList();
-            var textures = new Dictionary<Texture2D, TextureInfo>();
-            _collector.CollectFromMaterials(clonedMaterialList, textures);
 
-            // Clear texture slots that are provably unused (feature toggle off and not animated),
-            // dropping textures that become unreferenced as a result. Runs on the cloned materials
-            // so the original assets are untouched.
+            // Clear texture slots that are provably unused (feature toggle off and not animated)
+            // on the cloned materials, so the original assets are untouched. Runs before texture
+            // collection so the collector only sees surviving bindings — classification and filter
+            // rules stay accurate and unreferenced textures are simply never collected.
             if (_unusedDetectionEnabled)
             {
-                PruneUnusedSlots(textures, clonedMaterialList, enableLogging);
+                PruneUnusedSlots(clonedMaterialList, enableLogging);
             }
+
+            // Collect textures from cloned materials
+            var textures = new Dictionary<Texture2D, TextureInfo>();
+            _collector.CollectFromMaterials(clonedMaterialList, textures);
 
             if (textures.Count == 0)
             {
@@ -387,22 +389,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Clears texture slots that the shader optimizer proves unused on their (cloned) material
-        /// and removes any texture left unreferenced, so it is excluded from the build entirely.
-        /// The decision logic lives in the optimizer (see <see cref="IUnusedSlotOptimizer"/>); this
-        /// only wires it to the build via <see cref="UnusedSlotPruner"/>.
+        /// Clears texture slots that the shader optimizer proves unused on their (cloned) material,
+        /// so textures left unreferenced are never collected and are excluded from the build. The
+        /// decision logic lives in the optimizer (see <see cref="IUnusedSlotOptimizer"/>); this
+        /// only wires it to the build via <see cref="UnusedSlotPruner"/>, protecting frozen
+        /// textures (an explicit user pin) from removal.
         /// </summary>
-        private void PruneUnusedSlots(
-            Dictionary<Texture2D, TextureInfo> textures,
-            List<Material> clonedMaterials,
-            bool enableLogging
-        )
+        private void PruneUnusedSlots(List<Material> clonedMaterials, bool enableLogging)
         {
             var result = UnusedSlotPruner.Prune(
-                textures,
                 _unusedSlotOptimizer,
-                _animationUsageMap.AnimatedProperties,
-                clonedMaterials
+                _animationUsageMap,
+                clonedMaterials,
+                IsFrozenTexture
             );
 
             if (enableLogging && (result.ClearedSlots > 0 || result.DroppedTextures > 0))
@@ -413,6 +412,25 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         + "from the build."
                 );
             }
+        }
+
+        /// <summary>
+        /// Frozen settings are an explicit user pin ("ship this texture exactly as configured"),
+        /// so unused-slot detection must never remove a frozen texture from the avatar.
+        /// </summary>
+        private bool IsFrozenTexture(Texture2D texture)
+        {
+            if (_frozenLookup.Count == 0 || texture == null)
+                return false;
+
+            string assetPath = AssetDatabase.GetAssetPath(
+                TextureCollector.ResolveOriginalObject(texture)
+            );
+            if (string.IsNullOrEmpty(assetPath))
+                return false;
+
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            return !string.IsNullOrEmpty(guid) && _frozenLookup.ContainsKey(guid);
         }
 
         /// <summary>

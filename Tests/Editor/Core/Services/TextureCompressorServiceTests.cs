@@ -2719,13 +2719,71 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(0, optimizer.CallCount);
         }
 
+        [Test]
+        public void CompressWithMappings_DoesNotProcessTexture_WhoseOnlySlotWasCleared()
+        {
+            // End-to-end guard for the prune-before-collect ordering: a texture whose only slot
+            // the optimizer clears must never be collected, analyzed, or compressed — it is
+            // excluded from the build entirely.
+            var config = CreateConfig();
+            config.MinSourceSize = 64;
+            config.SkipIfSmallerThan = 0;
+            config.DetectUnusedTextures = true;
+            var optimizer = new FakeUnusedSlotOptimizer(available: true, "_EmissionMap");
+            var service = new TextureCompressorService(
+                config,
+                animationUsageMap: AnimationUsageMap.Empty,
+                unusedSlotOptimizer: optimizer
+            );
+
+            var material = CreateMaterial();
+            var keptTexture = CreateTexture(256, 256);
+            var unusedTexture = CreateTexture(256, 256);
+            material.SetTexture("_MainTex", keptTexture);
+            material.SetTexture("_EmissionMap", unusedTexture);
+
+            var references = new List<MaterialReference>
+            {
+                MaterialReference.FromAnimation(material, null),
+            };
+
+            var (processedTextures, clonedMaterials) = service.CompressWithMappings(
+                references,
+                false
+            );
+
+            Assert.IsFalse(
+                processedTextures.ContainsKey(unusedTexture),
+                "A texture whose only slot was cleared must not be processed"
+            );
+            Assert.IsTrue(
+                processedTextures.ContainsKey(keptTexture),
+                "A texture in a surviving slot must still be processed"
+            );
+
+            var clonedMaterial = clonedMaterials[material];
+            Assert.That(clonedMaterial.GetTexture("_EmissionMap"), Is.Null);
+            Assert.That(clonedMaterial.GetTexture("_MainTex"), Is.Not.Null);
+
+            foreach (var kvp in processedTextures)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+            foreach (var kvp in clonedMaterials)
+            {
+                _createdObjects.Add(kvp.Value);
+            }
+        }
+
         private sealed class FakeUnusedSlotOptimizer : IUnusedSlotOptimizer
         {
             private readonly bool _available;
+            private readonly string[] _clearProps;
 
-            public FakeUnusedSlotOptimizer(bool available)
+            public FakeUnusedSlotOptimizer(bool available, params string[] clearProps)
             {
                 _available = available;
+                _clearProps = clearProps;
             }
 
             public int CallCount { get; private set; }
@@ -2741,6 +2799,14 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 CallCount++;
                 LastAnimatedProperties = animatedProperties;
+                if (material == null)
+                    return;
+
+                foreach (var prop in _clearProps)
+                {
+                    if (material.HasProperty(prop))
+                        material.SetTexture(prop, null);
+                }
             }
         }
 

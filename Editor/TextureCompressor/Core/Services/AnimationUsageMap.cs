@@ -9,9 +9,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
     /// Records which material properties are touched by <em>any</em> animation in the avatar's
-    /// merged animator hierarchy. The resulting <see cref="AnimatedProperties"/> list is handed to
-    /// an <see cref="IUnusedSlotOptimizer"/> so a slot whose feature toggle (or the texture binding
-    /// itself) is driven by animation is never cleared.
+    /// merged animator hierarchy, plus every texture referenced by an animation object (PPtr)
+    /// curve. The <see cref="AnimatedProperties"/> list is handed to an
+    /// <see cref="IUnusedSlotOptimizer"/> so a slot whose feature toggle is driven by animation is
+    /// never cleared; the animated-texture set protects textures that ship with the avatar through
+    /// an animation curve regardless of slot state.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -34,12 +36,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private const string MaterialBindingPrefix = "material.";
 
         private readonly HashSet<string> _animatedMaterialProperties;
+        private readonly HashSet<Texture2D> _animatedTextures;
 
         /// <summary>
         /// Constructs a map from an explicit set of animated material property names
-        /// (already stripped of the <c>material.</c> prefix). Primarily intended for tests.
+        /// (already stripped of the <c>material.</c> prefix) and optionally the textures
+        /// referenced by animation object curves. Primarily intended for tests.
         /// </summary>
-        public AnimationUsageMap(IEnumerable<string> animatedMaterialProperties)
+        public AnimationUsageMap(
+            IEnumerable<string> animatedMaterialProperties,
+            IEnumerable<Texture2D> animatedTextures = null
+        )
         {
             _animatedMaterialProperties = new HashSet<string>();
             if (animatedMaterialProperties != null)
@@ -48,6 +55,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     if (!string.IsNullOrEmpty(prop))
                         _animatedMaterialProperties.Add(prop);
+                }
+            }
+
+            _animatedTextures = new HashSet<Texture2D>();
+            if (animatedTextures != null)
+            {
+                foreach (var texture in animatedTextures)
+                {
+                    if (texture != null)
+                        _animatedTextures.Add(texture);
                 }
             }
         }
@@ -79,6 +96,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
+        /// Returns true if the given texture is referenced by an animation object (PPtr) curve
+        /// anywhere in the avatar. Such a texture ships with the upload regardless of material
+        /// slot state, so clearing its slots would not remove it — it would only stop it from
+        /// being collected and compressed.
+        /// </summary>
+        public bool IsTextureAnimated(Texture2D texture)
+        {
+            return texture != null && _animatedTextures.Contains(texture);
+        }
+
+        /// <summary>
         /// Builds the map from the avatar's merged animator hierarchy.
         /// Returns <c>null</c> if the animator services are unavailable or scanning fails — callers
         /// should treat a <c>null</c> map as "cannot prove anything unused" and skip detection.
@@ -89,6 +117,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 return null;
 
             var properties = new HashSet<string>();
+            var textures = new HashSet<Texture2D>();
 
             try
             {
@@ -108,7 +137,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         if (node is VirtualClip clip)
                         {
                             CollectMaterialProperties(clip.GetFloatCurveBindings(), properties);
-                            CollectMaterialProperties(clip.GetObjectCurveBindings(), properties);
+                            CollectFromObjectCurves(clip, properties, textures);
                         }
                     }
                 }
@@ -122,7 +151,31 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 return null;
             }
 
-            return new AnimationUsageMap(properties);
+            return new AnimationUsageMap(properties, textures);
+        }
+
+        private static void CollectFromObjectCurves(
+            VirtualClip clip,
+            HashSet<string> properties,
+            HashSet<Texture2D> textures
+        )
+        {
+            foreach (var binding in clip.GetObjectCurveBindings())
+            {
+                CollectMaterialProperty(binding, properties);
+
+                // A texture referenced by a PPtr curve is included in the upload no matter what
+                // happens to material slots; record it so its slots are never treated as unused.
+                var keyframes = clip.GetObjectCurve(binding);
+                if (keyframes == null)
+                    continue;
+
+                foreach (var keyframe in keyframes)
+                {
+                    if (keyframe.value is Texture2D texture)
+                        textures.Add(texture);
+                }
+            }
         }
 
         private static void CollectMaterialProperties(
@@ -131,22 +184,28 @@ namespace dev.limitex.avatar.compressor.editor.texture
         )
         {
             foreach (var binding in bindings)
-            {
-                string name = binding.propertyName;
-                if (string.IsNullOrEmpty(name) || !name.StartsWith(MaterialBindingPrefix))
-                    continue;
+                CollectMaterialProperty(binding, properties);
+        }
 
-                string prop = name.Substring(MaterialBindingPrefix.Length);
+        private static void CollectMaterialProperty(
+            EditorCurveBinding binding,
+            HashSet<string> properties
+        )
+        {
+            string name = binding.propertyName;
+            if (string.IsNullOrEmpty(name) || !name.StartsWith(MaterialBindingPrefix))
+                return;
 
-                // Strip vector/color component suffixes (e.g. "_Color.r" -> "_Color") so that
-                // a single animated channel marks the whole property as animated.
-                int dot = prop.IndexOf('.');
-                if (dot > 0)
-                    prop = prop.Substring(0, dot);
+            string prop = name.Substring(MaterialBindingPrefix.Length);
 
-                if (prop.Length > 0)
-                    properties.Add(prop);
-            }
+            // Strip vector/color component suffixes (e.g. "_Color.r" -> "_Color") so that
+            // a single animated channel marks the whole property as animated.
+            int dot = prop.IndexOf('.');
+            if (dot > 0)
+                prop = prop.Substring(0, dot);
+
+            if (prop.Length > 0)
+                properties.Add(prop);
         }
     }
 }

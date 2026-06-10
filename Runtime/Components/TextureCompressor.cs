@@ -81,9 +81,11 @@ namespace dev.limitex.avatar.compressor
             "Clear texture slots whose lilToon feature toggle (e.g. _UseEmission) is off and "
                 + "not animated, dropping any texture that becomes unreferenced from the upload. "
                 + "Feature toggles driven by animation are always treated as used, so "
-                + "menu-toggled features are never broken. Acts per material: exclusion filters "
-                + "control compression only and do not keep an unused slot's texture in the "
-                + "upload. Only runs during the NDMF build."
+                + "menu-toggled features are never broken. Frozen textures and textures "
+                + "referenced by animation curves are never removed. Acts per material: "
+                + "exclusion filters control compression only and do not keep an unused slot's "
+                + "texture in the upload. Only runs during the NDMF build and is not reflected "
+                + "in the inspector preview."
         )]
         public bool DetectUnusedTextures = true;
 

@@ -30,15 +30,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // Collect all material references using MaterialCollector
             var materialReferences = MaterialCollector.CollectAll(ctx);
 
-            // Build the animation usage map and shader optimizer for unused-slot detection (both
-            // null when disabled; the optimizer is also inert when lilToon is not installed, in
-            // which case the service treats every slot as used).
-            var animationUsageMap = config.DetectUnusedTextures
-                ? AnimationUsageMap.Build(ctx)
-                : null;
-            var unusedSlotOptimizer = config.DetectUnusedTextures
-                ? new LilToonUnusedSlotOptimizer()
-                : null;
+            // Unused-slot detection: probe the shader integration first (a cheap reflection
+            // lookup) and only scan the merged animators when the optimizer can actually be used,
+            // so builds without lilToon never pay for a usage map they would discard. The service
+            // re-validates the full gate (config + map + optimizer availability).
+            LilToonUnusedSlotOptimizer unusedSlotOptimizer = null;
+            AnimationUsageMap animationUsageMap = null;
+            if (config.DetectUnusedTextures)
+            {
+                unusedSlotOptimizer = new LilToonUnusedSlotOptimizer();
+                if (unusedSlotOptimizer.IsAvailable)
+                {
+                    animationUsageMap = AnimationUsageMap.Build(ctx);
+                }
+            }
 
             // Create service and compress textures
             var service = new TextureCompressorService(

@@ -36,33 +36,26 @@ namespace dev.limitex.avatar.compressor.tests
             _createdObjects.Clear();
         }
 
-        #region Drop / keep behavior
+        #region Clear / drop behavior
 
         [Test]
-        public void Prune_DropsTexture_WhenItsOnlySlotIsCleared()
+        public void Prune_ClearsSlot_AndCountsDroppedTexture()
         {
             var material = CreateMaterial();
             var texture = CreateTexture();
             material.SetTexture("_EmissionMap", texture);
 
-            var textures = BuildTextures((texture, material, "_EmissionMap"));
             var optimizer = new FakeOptimizer(available: true, "_EmissionMap");
 
-            var result = UnusedSlotPruner.Prune(
-                textures,
-                optimizer,
-                NoAnimation,
-                new[] { material }
-            );
+            var result = UnusedSlotPruner.Prune(optimizer, NoAnimation, new[] { material });
 
-            Assert.IsFalse(textures.ContainsKey(texture));
-            Assert.That(result.DroppedTextures, Is.EqualTo(1));
-            Assert.That(result.ClearedSlots, Is.EqualTo(1));
             Assert.That(material.GetTexture("_EmissionMap"), Is.Null);
+            Assert.That(result.ClearedSlots, Is.EqualTo(1));
+            Assert.That(result.DroppedTextures, Is.EqualTo(1));
         }
 
         [Test]
-        public void Prune_KeepsTexture_WhenAnotherSlotStillReferencesIt()
+        public void Prune_DoesNotCountDropped_WhenAnotherSlotStillBindsTexture()
         {
             // Same texture bound to both _MainTex (kept) and _EmissionMap (cleared).
             var material = CreateMaterial();
@@ -70,98 +63,131 @@ namespace dev.limitex.avatar.compressor.tests
             material.SetTexture("_MainTex", texture);
             material.SetTexture("_EmissionMap", texture);
 
-            var textures = BuildTextures(
-                (texture, material, "_MainTex"),
-                (texture, material, "_EmissionMap")
-            );
             var optimizer = new FakeOptimizer(available: true, "_EmissionMap");
 
-            var result = UnusedSlotPruner.Prune(
-                textures,
-                optimizer,
-                NoAnimation,
-                new[] { material }
-            );
+            var result = UnusedSlotPruner.Prune(optimizer, NoAnimation, new[] { material });
 
-            Assert.IsTrue(textures.ContainsKey(texture));
-            Assert.That(textures[texture].References, Has.Count.EqualTo(1));
-            Assert.That(textures[texture].References[0].PropertyName, Is.EqualTo("_MainTex"));
-            Assert.That(result.DroppedTextures, Is.EqualTo(0));
-            Assert.That(result.ClearedSlots, Is.EqualTo(1));
             Assert.That(material.GetTexture("_MainTex"), Is.EqualTo(texture));
+            Assert.That(material.GetTexture("_EmissionMap"), Is.Null);
+            Assert.That(result.ClearedSlots, Is.EqualTo(1));
+            Assert.That(result.DroppedTextures, Is.EqualTo(0));
         }
 
         [Test]
-        public void Prune_KeepsEverything_WhenOptimizerClearsNothing()
+        public void Prune_DoesNotCountDropped_WhenAnotherMaterialStillBindsTexture()
+        {
+            var materialA = CreateMaterial();
+            var materialB = CreateMaterial();
+            var texture = CreateTexture();
+            materialA.SetTexture("_EmissionMap", texture);
+            materialB.SetTexture("_MainTex", texture);
+
+            var optimizer = new FakeOptimizer(available: true, "_EmissionMap");
+
+            var result = UnusedSlotPruner.Prune(
+                optimizer,
+                NoAnimation,
+                new[] { materialA, materialB }
+            );
+
+            Assert.That(materialA.GetTexture("_EmissionMap"), Is.Null);
+            Assert.That(materialB.GetTexture("_MainTex"), Is.EqualTo(texture));
+            Assert.That(result.ClearedSlots, Is.EqualTo(1));
+            Assert.That(
+                result.DroppedTextures,
+                Is.EqualTo(0),
+                "Texture still bound on material B must not count as dropped"
+            );
+        }
+
+        [Test]
+        public void Prune_CountsNothing_WhenOptimizerClearsNothing()
         {
             var material = CreateMaterial();
             var texture = CreateTexture();
             material.SetTexture("_EmissionMap", texture);
 
-            var textures = BuildTextures((texture, material, "_EmissionMap"));
             var optimizer = new FakeOptimizer(available: true); // clears nothing
 
-            var result = UnusedSlotPruner.Prune(
-                textures,
-                optimizer,
-                NoAnimation,
-                new[] { material }
-            );
+            var result = UnusedSlotPruner.Prune(optimizer, NoAnimation, new[] { material });
 
-            Assert.IsTrue(textures.ContainsKey(texture));
+            Assert.That(material.GetTexture("_EmissionMap"), Is.EqualTo(texture));
             Assert.That(result.ClearedSlots, Is.EqualTo(0));
-            Assert.That(result.DroppedTextures, Is.EqualTo(0));
-        }
-
-        [Test]
-        public void Prune_DoesNotCountStaleNullMaterialReference_AsCleared()
-        {
-            var material = CreateMaterial();
-            var texture = CreateTexture();
-            material.SetTexture("_MainTex", texture);
-
-            var textures = BuildTextures((texture, material, "_MainTex"));
-            // Stale reference whose material was destroyed: dropped silently, never counted as a
-            // slot the optimizer cleared.
-            textures[texture]
-                .References.Add(
-                    new MaterialTextureReference { Material = null, PropertyName = "_EmissionMap" }
-                );
-            var optimizer = new FakeOptimizer(available: true); // clears nothing
-
-            var result = UnusedSlotPruner.Prune(
-                textures,
-                optimizer,
-                NoAnimation,
-                new[] { material }
-            );
-
-            Assert.That(result.ClearedSlots, Is.EqualTo(0));
-            Assert.That(textures[texture].References, Has.Count.EqualTo(1));
             Assert.That(result.DroppedTextures, Is.EqualTo(0));
         }
 
         #endregion
 
-        #region Coverage
+        #region Protected slot restoration
 
         [Test]
-        public void Prune_OptimizesMaterial_EvenWhenNoneOfItsTexturesAreTracked()
+        public void Prune_RestoresSlot_WhenTextureIsProtected()
         {
-            // Regression guard: step 1 must visit every cloned material, not only those reachable
-            // from the collected textures. Here the material's texture was filtered out, so the
-            // textures dict is empty, yet the slot must still be cleared.
+            // A frozen texture is an explicit user pin: the optimizer may clear its slot, but the
+            // pruner must put it back so the texture survives collection and the upload.
             var material = CreateMaterial();
             var texture = CreateTexture();
             material.SetTexture("_EmissionMap", texture);
 
-            var textures = new Dictionary<Texture2D, TextureInfo>();
             var optimizer = new FakeOptimizer(available: true, "_EmissionMap");
 
-            UnusedSlotPruner.Prune(textures, optimizer, NoAnimation, new[] { material });
+            var result = UnusedSlotPruner.Prune(
+                optimizer,
+                NoAnimation,
+                new[] { material },
+                isProtectedTexture: t => t == texture
+            );
 
-            Assert.That(optimizer.CallCount, Is.EqualTo(1));
-            Assert.That(material.GetTexture("_EmissionMap"), Is.Null);
+            Assert.That(material.GetTexture("_EmissionMap"), Is.EqualTo(texture));
+            Assert.That(result.ClearedSlots, Is.EqualTo(0));
+            Assert.That(result.DroppedTextures, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Prune_RestoresSlot_WhenTextureIsAnimationReferenced()
+        {
+            // A texture referenced by an animation PPtr curve ships with the avatar regardless of
+            // slot state; restoring the slot keeps it collectable so it is compressed and the
+            // curve gets rewritten, instead of shipping the original untouched.
+            var material = CreateMaterial();
+            var texture = CreateTexture();
+            material.SetTexture("_EmissionMap", texture);
+
+            var usageMap = new AnimationUsageMap(
+                new[] { "_SomeProp" },
+                animatedTextures: new[] { texture }
+            );
+            var optimizer = new FakeOptimizer(available: true, "_EmissionMap");
+
+            var result = UnusedSlotPruner.Prune(optimizer, usageMap, new[] { material });
+
+            Assert.That(material.GetTexture("_EmissionMap"), Is.EqualTo(texture));
+            Assert.That(result.ClearedSlots, Is.EqualTo(0));
+            Assert.That(result.DroppedTextures, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Prune_RestoresOnlyProtectedSlots_NotOthers()
+        {
+            var material = CreateMaterial();
+            var protectedTexture = CreateTexture();
+            var unprotectedTexture = CreateTexture();
+            material.SetTexture("_EmissionMap", protectedTexture);
+            material.SetTexture("_BumpMap", unprotectedTexture);
+
+            var optimizer = new FakeOptimizer(available: true, "_EmissionMap", "_BumpMap");
+
+            var result = UnusedSlotPruner.Prune(
+                optimizer,
+                NoAnimation,
+                new[] { material },
+                isProtectedTexture: t => t == protectedTexture
+            );
+
+            Assert.That(material.GetTexture("_EmissionMap"), Is.EqualTo(protectedTexture));
+            Assert.That(material.GetTexture("_BumpMap"), Is.Null);
+            Assert.That(result.ClearedSlots, Is.EqualTo(1));
+            Assert.That(result.DroppedTextures, Is.EqualTo(1));
         }
 
         #endregion
@@ -175,56 +201,29 @@ namespace dev.limitex.avatar.compressor.tests
             var texture = CreateTexture();
             material.SetTexture("_EmissionMap", texture);
 
-            var textures = BuildTextures((texture, material, "_EmissionMap"));
             var optimizer = new FakeOptimizer(available: false, "_EmissionMap");
 
-            var result = UnusedSlotPruner.Prune(
-                textures,
-                optimizer,
-                NoAnimation,
-                new[] { material }
-            );
+            var result = UnusedSlotPruner.Prune(optimizer, NoAnimation, new[] { material });
 
-            Assert.IsTrue(textures.ContainsKey(texture));
             Assert.That(optimizer.CallCount, Is.EqualTo(0));
             Assert.That(material.GetTexture("_EmissionMap"), Is.EqualTo(texture));
             Assert.That(result.ClearedSlots, Is.EqualTo(0));
         }
 
         [Test]
-        public void Prune_DoesNotThrow_WhenTexturesOrOptimizerNull()
-        {
-            Assert.DoesNotThrow(() =>
-                UnusedSlotPruner.Prune(null, new FakeOptimizer(true), NoAnimation, NoMaterials)
-            );
-            Assert.DoesNotThrow(() =>
-                UnusedSlotPruner.Prune(
-                    new Dictionary<Texture2D, TextureInfo>(),
-                    null,
-                    NoAnimation,
-                    NoMaterials
-                )
-            );
-        }
-
-        [Test]
-        public void Prune_DoesNotThrow_WhenMaterialsNull()
+        public void Prune_DoesNotThrow_OnNullArguments()
         {
             var material = CreateMaterial();
-            var texture = CreateTexture();
-            material.SetTexture("_EmissionMap", texture);
-            var textures = BuildTextures((texture, material, "_EmissionMap"));
 
-            // Nothing to clear without a material list, so the texture survives untouched.
-            var result = UnusedSlotPruner.Prune(
-                textures,
-                new FakeOptimizer(true, "_EmissionMap"),
-                NoAnimation,
-                null
+            Assert.DoesNotThrow(() =>
+                UnusedSlotPruner.Prune(null, NoAnimation, new[] { material })
             );
-
-            Assert.IsTrue(textures.ContainsKey(texture));
-            Assert.That(result.ClearedSlots, Is.EqualTo(0));
+            Assert.DoesNotThrow(() =>
+                UnusedSlotPruner.Prune(new FakeOptimizer(true), null, new[] { material })
+            );
+            Assert.DoesNotThrow(() =>
+                UnusedSlotPruner.Prune(new FakeOptimizer(true), NoAnimation, null)
+            );
         }
 
         [Test]
@@ -233,36 +232,25 @@ namespace dev.limitex.avatar.compressor.tests
             // The optimizer owns the animation veto, so the pruner must hand it the animated
             // property set untouched — losing it here would silently break animated toggles.
             var material = CreateMaterial();
-            var animated = new[] { "_UseEmission", "_MainTex" };
+            var usageMap = new AnimationUsageMap(new[] { "_UseEmission", "_MainTex" });
             var optimizer = new FakeOptimizer(available: true);
 
-            UnusedSlotPruner.Prune(
-                new Dictionary<Texture2D, TextureInfo>(),
-                optimizer,
-                animated,
-                new[] { material }
-            );
+            UnusedSlotPruner.Prune(optimizer, usageMap, new[] { material });
 
-            Assert.That(optimizer.LastAnimatedProperties, Is.SameAs(animated));
+            Assert.That(
+                optimizer.LastAnimatedProperties,
+                Is.EquivalentTo(new[] { "_UseEmission", "_MainTex" })
+            );
         }
 
         [Test]
         public void Prune_CallsOptimizerOncePerDistinctMaterial()
         {
             var material = CreateMaterial();
-            var texA = CreateTexture();
-            var texB = CreateTexture();
-            material.SetTexture("_MainTex", texA);
-            material.SetTexture("_EmissionMap", texB);
-
-            var textures = BuildTextures(
-                (texA, material, "_MainTex"),
-                (texB, material, "_EmissionMap")
-            );
             var optimizer = new FakeOptimizer(available: true);
 
             // Same material passed twice => still optimized exactly once.
-            UnusedSlotPruner.Prune(textures, optimizer, NoAnimation, new[] { material, material });
+            UnusedSlotPruner.Prune(optimizer, NoAnimation, new[] { material, material, null });
 
             Assert.That(optimizer.CallCount, Is.EqualTo(1));
         }
@@ -271,8 +259,7 @@ namespace dev.limitex.avatar.compressor.tests
 
         #region Helpers
 
-        private static readonly IReadOnlyCollection<string> NoAnimation = new string[0];
-        private static readonly Material[] NoMaterials = new Material[0];
+        private static AnimationUsageMap NoAnimation => new AnimationUsageMap(new string[0]);
 
         private Material CreateMaterial()
         {
@@ -286,26 +273,6 @@ namespace dev.limitex.avatar.compressor.tests
             var texture = new Texture2D(4, 4);
             _createdObjects.Add(texture);
             return texture;
-        }
-
-        private static Dictionary<Texture2D, TextureInfo> BuildTextures(
-            params (Texture2D Texture, Material Material, string Property)[] references
-        )
-        {
-            var textures = new Dictionary<Texture2D, TextureInfo>();
-            foreach (var (texture, material, property) in references)
-            {
-                if (!textures.TryGetValue(texture, out var info))
-                {
-                    info = new TextureInfo();
-                    textures[texture] = info;
-                }
-
-                info.References.Add(
-                    new MaterialTextureReference { Material = material, PropertyName = property }
-                );
-            }
-            return textures;
         }
 
         // Optimizer test double: nulls the configured properties on any material it is given.

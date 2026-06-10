@@ -47,7 +47,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUI.indentLevel++;
             EditorGUILayout.LabelField(
                 "Clears lilToon slots whose feature toggle is off and not animated, dropping "
-                    + "textures that become unreferenced. Exclusion filters do not apply here.",
+                    + "textures that become unreferenced. Frozen textures and textures referenced "
+                    + "by animations are never removed. Exclusion filters do not apply here.",
                 EditorStyles.miniLabel
             );
             EditorGUI.indentLevel--;

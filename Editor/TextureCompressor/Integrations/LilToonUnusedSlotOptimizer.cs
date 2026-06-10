@@ -24,12 +24,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
     /// lilToon ones.
     /// </para>
     /// <para>
-    /// Two behavioral details of the lilToon API to be aware of: it also strips all serialized
+    /// Behavioral details of the lilToon API to be aware of: it also strips all serialized
     /// properties not declared by the material's current shader (a bigger mutation than just
     /// clearing texture slots — safe here because it only ever runs on build-time clones), and it
-    /// consults <c>animatedProperties</c> only for feature <em>toggles</em>. A texture slot whose
-    /// binding is animated but whose toggle is statically off is still cleared; that is harmless
-    /// because the feature can never become visible.
+    /// consults <c>animatedProperties</c> only for feature <em>toggles</em>. A slot whose texture
+    /// binding is animated but whose toggle is statically off is still cleared here; the texture
+    /// itself is kept in the build by <see cref="UnusedSlotPruner"/>, which restores slots holding
+    /// animation-referenced textures. The one inverted case (<c>_AudioLinkMask</c>) is guarded by
+    /// <see cref="ShouldPreserveAudioLinkMask"/>.
     /// </para>
     /// </remarks>
     public sealed class LilToonUnusedSlotOptimizer : IUnusedSlotOptimizer
@@ -37,13 +39,31 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         private const string TypeName = "lilToon.lilMaterialUtils";
         private const string MethodName = "RemoveUnusedTexture";
 
+        private const string AudioLinkMaskProperty = "_AudioLinkMask";
+        private const string AudioLinkToggleProperty = "_UseAudioLink";
+        private const string AudioLinkUvModeProperty = "_AudioLinkUVMode";
+
         // Cleared on the first invocation failure so a broken lilToon API disables the feature
         // for the rest of the build instead of throwing or spamming warnings.
         private MethodInfo _removeUnusedTexture;
 
         public LilToonUnusedSlotOptimizer()
         {
-            _removeUnusedTexture = ResolveMethod();
+            Type type = FindType(TypeName);
+            if (type == null)
+                return; // lilToon not installed: documented silent pass-through
+
+            _removeUnusedTexture = ResolveMethod(type);
+            if (_removeUnusedTexture == null)
+            {
+                // Distinguish "installed but incompatible" from "not installed": the user has the
+                // feature toggle on and lilToon present, so a silent no-op would look like success.
+                Debug.LogWarning(
+                    $"[LAC Texture Compressor] lilToon is installed, but {TypeName}.{MethodName}"
+                        + "(Material, params string[]) was not found (requires lilToon 1.8.0 or "
+                        + "newer). Unused texture slot removal is skipped."
+                );
+            }
         }
 
         public bool IsAvailable => _removeUnusedTexture != null;
@@ -59,6 +79,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             string[] animated =
                 animatedProperties != null ? animatedProperties.ToArray() : Array.Empty<string>();
 
+            Texture audioLinkMask = ShouldPreserveAudioLinkMask(material, animated)
+                ? material.GetTexture(AudioLinkMaskProperty)
+                : null;
+
             try
             {
                 // RemoveUnusedTexture(Material material, params string[] animatedProps)
@@ -73,12 +97,54 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                         + "for the rest of this build."
                 );
             }
+
+            if (audioLinkMask != null && material.GetTexture(AudioLinkMaskProperty) == null)
+                material.SetTexture(AudioLinkMaskProperty, audioLinkMask);
         }
 
-        private static MethodInfo ResolveMethod()
+        /// <summary>
+        /// lilToon's <c>RemoveUnusedTexture</c> keeps <c>_AudioLinkMask</c> only when
+        /// <c>_AudioLinkUVMode</c> is statically 3 (Mask), but the shader samples the mask in
+        /// modes 3 <em>and</em> 4 (Spectrum Mask), and it also treats an <em>animated</em> UV mode
+        /// as a reason to clear the mask — the inverse of every other slot, where presence in
+        /// <c>animatedProps</c> protects the texture. So the mask must be preserved whenever the
+        /// AudioLink feature can be active (toggle statically on, or animated) and the mask can be
+        /// sampled at runtime (mode statically 4, or the mode is animated and can land on 3/4).
+        /// Static mode 3 needs no preservation: lilToon keeps it itself.
+        /// </summary>
+        public static bool ShouldPreserveAudioLinkMask(
+            Material material,
+            string[] animatedProperties
+        )
         {
-            Type type = FindType(TypeName);
-            return type?.GetMethod(
+            if (material == null)
+                return false;
+
+            if (
+                !material.HasProperty(AudioLinkMaskProperty)
+                || !material.HasProperty(AudioLinkToggleProperty)
+                || !material.HasProperty(AudioLinkUvModeProperty)
+            )
+                return false;
+
+            bool featureCanBeActive =
+                material.GetFloat(AudioLinkToggleProperty) != 0f
+                || IsAnimated(animatedProperties, AudioLinkToggleProperty);
+            if (!featureCanBeActive)
+                return false;
+
+            return material.GetFloat(AudioLinkUvModeProperty) == 4f
+                || IsAnimated(animatedProperties, AudioLinkUvModeProperty);
+        }
+
+        private static bool IsAnimated(string[] animatedProperties, string property)
+        {
+            return animatedProperties != null && Array.IndexOf(animatedProperties, property) >= 0;
+        }
+
+        private static MethodInfo ResolveMethod(Type type)
+        {
+            return type.GetMethod(
                 MethodName,
                 BindingFlags.Public | BindingFlags.Static,
                 binder: null,
