@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture.integrations
@@ -13,9 +12,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
     /// <remarks>
     /// <para>
     /// lilToon is an optional, external package and is not a declared dependency of this project,
-    /// so it cannot be referenced at compile time. Reflection keeps the build green whether or not
-    /// lilToon is installed: when its types are absent, <see cref="IsAvailable"/> is false and every
-    /// call is a no-op (the unused-slot feature simply passes through).
+    /// so it cannot be referenced at compile time. The API is resolved through
+    /// <see cref="OptionalStaticMethod"/>, which keeps the build green whether or not lilToon is
+    /// installed: when its types are absent, <see cref="IsAvailable"/> is false and every call is
+    /// a no-op (the unused-slot feature simply passes through).
     /// </para>
     /// <para>
     /// Delegating to lilToon's own API means the toggle → texture map is always lilToon's
@@ -43,21 +43,23 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         private const string AudioLinkToggleProperty = "_UseAudioLink";
         private const string AudioLinkUvModeProperty = "_AudioLinkUVMode";
 
-        // Cleared on the first invocation failure so a broken lilToon API disables the feature
-        // for the rest of the build instead of throwing or spamming warnings.
-        private MethodInfo _removeUnusedTexture;
+        private readonly OptionalStaticMethod _removeUnusedTexture;
 
         public LilToonUnusedSlotOptimizer()
         {
-            Type type = FindType(TypeName);
-            if (type == null)
-                return; // lilToon not installed: documented silent pass-through
+            // RemoveUnusedTexture(Material material, params string[] animatedProps)
+            _removeUnusedTexture = new OptionalStaticMethod(
+                TypeName,
+                MethodName,
+                typeof(Material),
+                typeof(string[])
+            );
 
-            _removeUnusedTexture = ResolveMethod(type);
-            if (_removeUnusedTexture == null)
+            // TypeNotFound means lilToon is not installed: documented silent pass-through.
+            // MethodNotFound must be distinguished from it: the user has the feature toggle on and
+            // lilToon present, so a silent no-op would look like success.
+            if (_removeUnusedTexture.Status == OptionalStaticMethod.ResolutionStatus.MethodNotFound)
             {
-                // Distinguish "installed but incompatible" from "not installed": the user has the
-                // feature toggle on and lilToon present, so a silent no-op would look like success.
                 Debug.LogWarning(
                     $"[LAC Texture Compressor] lilToon is installed, but {TypeName}.{MethodName}"
                         + "(Material, params string[]) was not found (requires lilToon 1.8.0 or "
@@ -66,14 +68,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             }
         }
 
-        public bool IsAvailable => _removeUnusedTexture != null;
+        public bool IsAvailable => _removeUnusedTexture.IsAvailable;
 
         public void ClearUnusedSlots(
             Material material,
             IReadOnlyCollection<string> animatedProperties
         )
         {
-            if (_removeUnusedTexture == null || material == null || material.shader == null)
+            if (!IsAvailable || material == null || material.shader == null)
                 return;
 
             string[] animated =
@@ -83,17 +85,20 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 ? material.GetTexture(AudioLinkMaskProperty)
                 : null;
 
-            try
+            // A failed invocation self-disables (IsAvailable turns false), so a broken lilToon API
+            // degrades to this one warning instead of throwing or spamming for the rest of the
+            // build. The guard above guarantees error is non-null here.
+            if (
+                !_removeUnusedTexture.TryInvoke(
+                    new object[] { material, animated },
+                    out _,
+                    out Exception error
+                )
+            )
             {
-                // RemoveUnusedTexture(Material material, params string[] animatedProps)
-                _removeUnusedTexture.Invoke(null, new object[] { material, animated });
-            }
-            catch (Exception ex)
-            {
-                _removeUnusedTexture = null; // disable for the rest of this build
                 Debug.LogWarning(
                     "[LAC Texture Compressor] lilToon unused-texture removal failed: "
-                        + $"{(ex.InnerException ?? ex).Message}. Unused-slot detection is disabled "
+                        + $"{error.Message}. Unused-slot detection is disabled "
                         + "for the rest of this build."
                 );
             }
@@ -140,28 +145,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         private static bool IsAnimated(string[] animatedProperties, string property)
         {
             return animatedProperties != null && Array.IndexOf(animatedProperties, property) >= 0;
-        }
-
-        private static MethodInfo ResolveMethod(Type type)
-        {
-            return type.GetMethod(
-                MethodName,
-                BindingFlags.Public | BindingFlags.Static,
-                binder: null,
-                types: new[] { typeof(Material), typeof(string[]) },
-                modifiers: null
-            );
-        }
-
-        private static Type FindType(string fullName)
-        {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                Type type = assembly.GetType(fullName, throwOnError: false);
-                if (type != null)
-                    return type;
-            }
-            return null;
         }
     }
 }
