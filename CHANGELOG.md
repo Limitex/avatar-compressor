@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Unused texture slot detection** - During the NDMF build, clears texture slots whose lilToon feature toggle (e.g. `_UseEmission`, `_UseBumpMap`) is off on the cloned material, then drops any texture left unreferenced so it is excluded from the upload entirely — cutting download size and VRAM for hidden slots
+  - Delegates the unused-slot decision to lilToon's own `lilMaterialUtils.RemoveUnusedTexture` via reflection, so the logic always matches lilToon's maintained behavior (covering every gated slot it knows) rather than a copy that can drift; the lilToon API also strips serialized properties not declared by the shader, on the build-time clone only
+  - lilToon is treated as an optional external dependency: when it is not installed the feature passes through silently, and the project compiles either way (no hard reference)
+  - Animation-aware: any feature toggle driven by animation (e.g. a menu that turns emission on) is always treated as used, so toggled features are never broken
+  - Operates on the final post-build material state, so MA Material Setter swaps and merged animators are accounted for
+  - Conservative by design: non-lilToon materials are left untouched; a texture is only dropped once every slot referencing it has been cleared
+  - Acts at the material level: exclusion filters control compression only and do not keep an unused slot's texture in the upload
+  - Enabled by default, toggleable per avatar in the inspector
+
 ## [v0.8.0] - 2026-05-01
 
 ### Added

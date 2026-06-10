@@ -76,6 +76,17 @@ namespace dev.limitex.avatar.compressor
         )]
         public bool SkipUnknownUncompressedTextures = true;
 
+        [Header("Unused Texture Detection")]
+        [Tooltip(
+            "Clear texture slots whose lilToon feature toggle (e.g. _UseEmission) is off and "
+                + "not animated, dropping any texture that becomes unreferenced from the upload. "
+                + "Feature toggles driven by animation are always treated as used, so "
+                + "menu-toggled features are never broken. Acts per material: exclusion filters "
+                + "control compression only and do not keep an unused slot's texture in the "
+                + "upload. Only runs during the NDMF build."
+        )]
+        public bool DetectUnusedTextures = true;
+
         [Header("Size Filters")]
         [Tooltip("Only process textures larger than this size")]
         public int MinSourceSize = 256;

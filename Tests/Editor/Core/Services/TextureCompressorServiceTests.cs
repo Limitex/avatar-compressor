@@ -2625,6 +2625,127 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Unused Slot Detection Gate Tests
+
+        [Test]
+        public void Compress_CallsUnusedSlotOptimizer_AndForwardsAnimatedProperties()
+        {
+            var config = CreateConfig();
+            config.DetectUnusedTextures = true;
+            var map = new AnimationUsageMap(new[] { "_UseEmission" });
+            var optimizer = new FakeUnusedSlotOptimizer(available: true);
+            var service = new TextureCompressorService(
+                config,
+                animationUsageMap: map,
+                unusedSlotOptimizer: optimizer
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = CreateMaterial();
+
+            service.Compress(root, false);
+
+            Assert.AreEqual(1, optimizer.CallCount);
+            Assert.That(
+                optimizer.LastAnimatedProperties,
+                Is.EquivalentTo(new[] { "_UseEmission" }),
+                "The animation usage map must reach the optimizer unchanged"
+            );
+        }
+
+        [Test]
+        public void Compress_SkipsUnusedSlotDetection_WhenDisabledInConfig()
+        {
+            var config = CreateConfig();
+            config.DetectUnusedTextures = false;
+            var optimizer = new FakeUnusedSlotOptimizer(available: true);
+            var service = new TextureCompressorService(
+                config,
+                animationUsageMap: AnimationUsageMap.Empty,
+                unusedSlotOptimizer: optimizer
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = CreateMaterial();
+
+            service.Compress(root, false);
+
+            Assert.AreEqual(0, optimizer.CallCount);
+        }
+
+        [Test]
+        public void Compress_SkipsUnusedSlotDetection_WhenAnimationMapMissing()
+        {
+            // No usage map means animated toggles cannot be proven safe, so detection must stay off
+            // even though an optimizer is available.
+            var config = CreateConfig();
+            config.DetectUnusedTextures = true;
+            var optimizer = new FakeUnusedSlotOptimizer(available: true);
+            var service = new TextureCompressorService(
+                config,
+                animationUsageMap: null,
+                unusedSlotOptimizer: optimizer
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = CreateMaterial();
+
+            service.Compress(root, false);
+
+            Assert.AreEqual(0, optimizer.CallCount);
+        }
+
+        [Test]
+        public void Compress_SkipsUnusedSlotDetection_WhenOptimizerUnavailable()
+        {
+            var config = CreateConfig();
+            config.DetectUnusedTextures = true;
+            var optimizer = new FakeUnusedSlotOptimizer(available: false);
+            var service = new TextureCompressorService(
+                config,
+                animationUsageMap: AnimationUsageMap.Empty,
+                unusedSlotOptimizer: optimizer
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = CreateMaterial();
+
+            service.Compress(root, false);
+
+            Assert.AreEqual(0, optimizer.CallCount);
+        }
+
+        private sealed class FakeUnusedSlotOptimizer : IUnusedSlotOptimizer
+        {
+            private readonly bool _available;
+
+            public FakeUnusedSlotOptimizer(bool available)
+            {
+                _available = available;
+            }
+
+            public int CallCount { get; private set; }
+
+            public IReadOnlyCollection<string> LastAnimatedProperties { get; private set; }
+
+            public bool IsAvailable => _available;
+
+            public void ClearUnusedSlots(
+                Material material,
+                IReadOnlyCollection<string> animatedProperties
+            )
+            {
+                CallCount++;
+                LastAnimatedProperties = animatedProperties;
+            }
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private TextureCompressor CreateConfig()

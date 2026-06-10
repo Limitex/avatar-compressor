@@ -26,6 +26,34 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         }
 
         /// <summary>
+        /// Draws the unused-texture detection toggle. When enabled, texture slots whose lilToon
+        /// feature toggle is off (and not animated) are cleared during the build, and textures left
+        /// unreferenced are dropped from the upload entirely.
+        /// </summary>
+        public static void DrawUnusedDetection(TextureCompressor config)
+        {
+            EditorGUI.BeginChangeCheck();
+            bool detect = EditorGUILayout.ToggleLeft(
+                "Remove unused texture slots (recommended)",
+                config.DetectUnusedTextures
+            );
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(config, "Change Unused Texture Detection");
+                config.DetectUnusedTextures = detect;
+                EditorUtility.SetDirty(config);
+            }
+
+            EditorGUI.indentLevel++;
+            EditorGUILayout.LabelField(
+                "Clears lilToon slots whose feature toggle is off and not animated, dropping "
+                    + "textures that become unreferenced. Exclusion filters do not apply here.",
+                EditorStyles.miniLabel
+            );
+            EditorGUI.indentLevel--;
+        }
+
+        /// <summary>
         /// Draws texture type filters (Main, Normal, Emission, Other) with foldout
         /// and an inline sub-option for skipping uncompressed textures on unknown properties.
         /// </summary>

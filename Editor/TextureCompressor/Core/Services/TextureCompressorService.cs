@@ -24,6 +24,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly NormalMapPreprocessor _normalMapPreprocessor;
         private readonly Dictionary<string, FrozenTextureSettings> _frozenLookup;
 
+        // Animation-aware unused-slot detection. Only active when enabled on the component, a usage
+        // map could be built (NDMF build context), and a shader optimizer is available (e.g. lilToon
+        // is installed). Any missing piece => detection disabled (safe pass-through).
+        private readonly AnimationUsageMap _animationUsageMap;
+        private readonly IUnusedSlotOptimizer _unusedSlotOptimizer;
+        private readonly bool _unusedDetectionEnabled;
+
         // Flag to avoid repeating the same warning for every texture (per-build instance)
         private bool _streamingMipmapsWarningShown;
 
@@ -32,12 +39,26 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         public TextureCompressorService(
             TextureCompressor config,
-            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
+            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto,
+            AnimationUsageMap animationUsageMap = null,
+            IUnusedSlotOptimizer unusedSlotOptimizer = null
         )
         {
             _config = config;
 
             _frozenLookup = FrozenTextureSettings.BuildLookup(config.FrozenTextures);
+
+            // Unused-slot detection requires a reliable animation usage map (built from the merged
+            // animator hierarchy during the NDMF build) and an available shader optimizer that owns
+            // the toggle logic. Without either we cannot safely prove slots unused, so detection
+            // stays off and every slot is treated as used.
+            _animationUsageMap = animationUsageMap;
+            _unusedSlotOptimizer = unusedSlotOptimizer;
+            _unusedDetectionEnabled =
+                config.DetectUnusedTextures
+                && animationUsageMap != null
+                && unusedSlotOptimizer != null
+                && unusedSlotOptimizer.IsAvailable;
 
             _collector = new TextureCollector(
                 config.MinSourceSize,
@@ -165,6 +186,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var clonedMaterialList = clonedMaterials.Values.ToList();
             var textures = new Dictionary<Texture2D, TextureInfo>();
             _collector.CollectFromMaterials(clonedMaterialList, textures);
+
+            // Clear texture slots that are provably unused (feature toggle off and not animated),
+            // dropping textures that become unreferenced as a result. Runs on the cloned materials
+            // so the original assets are untouched.
+            if (_unusedDetectionEnabled)
+            {
+                PruneUnusedSlots(textures, clonedMaterialList, enableLogging);
+            }
 
             if (textures.Count == 0)
             {
@@ -355,6 +384,35 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             return (processedTextures, clonedMaterials);
+        }
+
+        /// <summary>
+        /// Clears texture slots that the shader optimizer proves unused on their (cloned) material
+        /// and removes any texture left unreferenced, so it is excluded from the build entirely.
+        /// The decision logic lives in the optimizer (see <see cref="IUnusedSlotOptimizer"/>); this
+        /// only wires it to the build via <see cref="UnusedSlotPruner"/>.
+        /// </summary>
+        private void PruneUnusedSlots(
+            Dictionary<Texture2D, TextureInfo> textures,
+            List<Material> clonedMaterials,
+            bool enableLogging
+        )
+        {
+            var result = UnusedSlotPruner.Prune(
+                textures,
+                _unusedSlotOptimizer,
+                _animationUsageMap.AnimatedProperties,
+                clonedMaterials
+            );
+
+            if (enableLogging && (result.ClearedSlots > 0 || result.DroppedTextures > 0))
+            {
+                Debug.Log(
+                    $"[{Name}] Unused-slot detection: cleared {result.ClearedSlots} unused texture "
+                        + $"slot(s), dropped {result.DroppedTextures} now-unreferenced texture(s) "
+                        + "from the build."
+                );
+            }
         }
 
         /// <summary>
