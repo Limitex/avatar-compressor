@@ -48,10 +48,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             _frozenLookup = FrozenTextureSettings.BuildLookup(config.FrozenTextures);
 
-            // Unused-slot detection requires a reliable animation usage map (built from the merged
-            // animator hierarchy during the NDMF build) and an available shader optimizer that owns
-            // the toggle logic. Without either we cannot safely prove slots unused, so detection
-            // stays off and every slot is treated as used.
             _animationUsageMap = animationUsageMap;
             _unusedSlotOptimizer = unusedSlotOptimizer;
             _unusedDetectionEnabled =
@@ -184,10 +180,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             var clonedMaterialList = clonedMaterials.Values.ToList();
 
-            // Clear texture slots that are provably unused (feature toggle off and not animated)
-            // on the cloned materials, so the original assets are untouched. Runs before texture
-            // collection so the collector only sees surviving bindings — classification and filter
-            // rules stay accurate and unreferenced textures are simply never collected.
+            // Must run before texture collection so the collector only sees surviving bindings
+            // (see UnusedSlotPruner remarks).
             if (_unusedDetectionEnabled)
             {
                 PruneUnusedSlots(clonedMaterialList, enableLogging);
@@ -389,11 +383,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Clears texture slots that the shader optimizer proves unused on their (cloned) material,
-        /// so textures left unreferenced are never collected and are excluded from the build. The
-        /// decision logic lives in the optimizer (see <see cref="IUnusedSlotOptimizer"/>); this
-        /// only wires it to the build via <see cref="UnusedSlotPruner"/>, protecting frozen
-        /// textures (an explicit user pin) from removal.
+        /// Runs <see cref="UnusedSlotPruner"/> over the cloned materials with frozen textures
+        /// protected, and logs what was removed.
         /// </summary>
         private void PruneUnusedSlots(List<Material> clonedMaterials, bool enableLogging)
         {

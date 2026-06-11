@@ -144,7 +144,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.EndVertical();
 
             // Unused-slot detection needs the NDMF build context (merged animators), so the
-            // preview cannot reflect it — warn that the build may remove some listed textures.
+            // preview cannot reflect it.
             if (config.DetectUnusedTextures)
             {
                 EditorGUILayout.HelpBox(

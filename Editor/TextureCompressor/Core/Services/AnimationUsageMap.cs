@@ -164,8 +164,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 CollectMaterialProperty(binding, properties);
 
-                // A texture referenced by a PPtr curve is included in the upload no matter what
-                // happens to material slots; record it so its slots are never treated as unused.
                 var keyframes = clip.GetObjectCurve(binding);
                 if (keyframes == null)
                     continue;
