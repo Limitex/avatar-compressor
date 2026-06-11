@@ -33,6 +33,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
     /// animation-referenced textures. The one inverted case (<c>_AudioLinkMask</c>) is guarded by
     /// <see cref="ShouldPreserveAudioLinkMask"/>.
     /// </para>
+    /// <para>
+    /// Verified against lilToon source 1.8.0 through 2.3.2 (<c>lilMaterialUtils.cs</c>): the
+    /// <c>(Material, params string[])</c> overload first appears in 1.8.0, the AudioLink handling
+    /// is unchanged across that range, and <c>_AudioLinkMask</c> is the only slot where
+    /// <c>animatedProps</c> membership <em>clears</em> instead of protects. Other slots that
+    /// deviate from the plain toggle pattern (outline/fur slots cleared by shader name, the
+    /// two-toggle <c>_AudioLinkLocalMap</c>, the strength-gated <c>_MainGradationTex</c>, the
+    /// Cubemap <c>_ReflectionCubeTex</c>) all consult <c>animatedProps</c> the protective way or
+    /// not at all, so they need no compensation here.
+    /// </para>
     /// </remarks>
     public sealed class LilToonUnusedSlotOptimizer : IUnusedSlotOptimizer
     {

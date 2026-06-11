@@ -49,6 +49,207 @@ namespace dev.limitex.avatar.compressor.tests
             Object.DestroyImmediate(texture);
         }
 
+        // These tests exercise the real lilToon API through the reflection bridge, so they only run
+        // when lilToon is installed (the CI test project pins it via vpm-manifest.json). They pin
+        // the external behavior the integration depends on: toggle-gated clearing, the protective
+        // animatedProps handling, the shader-name self-guard, and the _AudioLinkMask quirk the
+        // wrapper compensates for.
+        #region Real lilToon behavior (requires lilToon installed)
+
+        [Test]
+        public void ClearUnusedSlots_OnLilToonMaterial_ClearsSlot_WhenToggleOff()
+        {
+            var optimizer = CreateInstalledOptimizer();
+            WithLilToonMaterial(
+                (material, texture) =>
+                {
+                    material.SetFloat("_UseEmission", 0f);
+                    material.SetTexture("_EmissionMap", texture);
+
+                    optimizer.ClearUnusedSlots(material, new string[0]);
+
+                    Assert.That(material.GetTexture("_EmissionMap"), Is.Null);
+                }
+            );
+        }
+
+        [Test]
+        public void ClearUnusedSlots_OnLilToonMaterial_KeepsSlot_WhenToggleOn()
+        {
+            var optimizer = CreateInstalledOptimizer();
+            WithLilToonMaterial(
+                (material, texture) =>
+                {
+                    material.SetFloat("_UseEmission", 1f);
+                    material.SetTexture("_EmissionMap", texture);
+
+                    optimizer.ClearUnusedSlots(material, new string[0]);
+
+                    Assert.That(material.GetTexture("_EmissionMap"), Is.EqualTo(texture));
+                }
+            );
+        }
+
+        [Test]
+        public void ClearUnusedSlots_OnLilToonMaterial_KeepsSlot_WhenToggleAnimated()
+        {
+            // A feature toggled on by a menu animation must survive even though it is
+            // statically off — this is the protective animatedProps path in lilToon itself.
+            var optimizer = CreateInstalledOptimizer();
+            WithLilToonMaterial(
+                (material, texture) =>
+                {
+                    material.SetFloat("_UseEmission", 0f);
+                    material.SetTexture("_EmissionMap", texture);
+
+                    optimizer.ClearUnusedSlots(material, new[] { "_UseEmission" });
+
+                    Assert.That(material.GetTexture("_EmissionMap"), Is.EqualTo(texture));
+                }
+            );
+        }
+
+        [Test]
+        public void ClearUnusedSlots_OnLilToonMaterial_PreservesAudioLinkMask_InSpectrumMaskMode()
+        {
+            // lilToon clears the mask for static UV mode 4 even though the shader samples it
+            // there; the wrapper's preservation guard must win over the real API.
+            var optimizer = CreateInstalledOptimizer();
+            WithLilToonMaterial(
+                (material, texture) =>
+                {
+                    material.SetFloat("_UseAudioLink", 1f);
+                    material.SetFloat("_AudioLinkUVMode", 4f);
+                    material.SetTexture("_AudioLinkMask", texture);
+
+                    optimizer.ClearUnusedSlots(material, new string[0]);
+
+                    Assert.That(material.GetTexture("_AudioLinkMask"), Is.EqualTo(texture));
+                }
+            );
+        }
+
+        [Test]
+        public void ClearUnusedSlots_OnLilToonMaterial_PreservesAudioLinkMask_WhenUvModeAnimated()
+        {
+            // lilToon treats an animated _AudioLinkUVMode as a reason to clear (its one inverted
+            // animatedProps case); the wrapper must restore the mask afterwards.
+            var optimizer = CreateInstalledOptimizer();
+            WithLilToonMaterial(
+                (material, texture) =>
+                {
+                    material.SetFloat("_UseAudioLink", 1f);
+                    material.SetFloat("_AudioLinkUVMode", 3f);
+                    material.SetTexture("_AudioLinkMask", texture);
+
+                    optimizer.ClearUnusedSlots(material, new[] { "_AudioLinkUVMode" });
+
+                    Assert.That(material.GetTexture("_AudioLinkMask"), Is.EqualTo(texture));
+                }
+            );
+        }
+
+        [Test]
+        public void ClearUnusedSlots_OnLilToonMaterial_KeepsAudioLinkMask_InMaskMode()
+        {
+            // Static mode 3 is the case lilToon itself keeps; the wrapper must not interfere.
+            var optimizer = CreateInstalledOptimizer();
+            WithLilToonMaterial(
+                (material, texture) =>
+                {
+                    material.SetFloat("_UseAudioLink", 1f);
+                    material.SetFloat("_AudioLinkUVMode", 3f);
+                    material.SetTexture("_AudioLinkMask", texture);
+
+                    optimizer.ClearUnusedSlots(material, new string[0]);
+
+                    Assert.That(material.GetTexture("_AudioLinkMask"), Is.EqualTo(texture));
+                }
+            );
+        }
+
+        [Test]
+        public void ClearUnusedSlots_OnLilToonMaterial_ClearsAudioLinkMask_WhenFeatureOff()
+        {
+            // AudioLink statically off and not animated: the mask is genuinely unused and the
+            // wrapper's preservation guard must not keep it alive.
+            var optimizer = CreateInstalledOptimizer();
+            WithLilToonMaterial(
+                (material, texture) =>
+                {
+                    material.SetFloat("_UseAudioLink", 0f);
+                    material.SetFloat("_AudioLinkUVMode", 4f);
+                    material.SetTexture("_AudioLinkMask", texture);
+
+                    optimizer.ClearUnusedSlots(material, new string[0]);
+
+                    Assert.That(material.GetTexture("_AudioLinkMask"), Is.Null);
+                }
+            );
+        }
+
+        [Test]
+        public void ClearUnusedSlots_LeavesNonLilToonMaterial_Untouched()
+        {
+            // RemoveUnusedTexture self-guards on the shader name, which is what makes it safe
+            // for the pruner to call the optimizer on every material of the avatar.
+            var optimizer = CreateInstalledOptimizer();
+
+            var shader = Shader.Find("Hidden/LAC/Tests/UnusedSlot");
+            Assert.That(shader, Is.Not.Null);
+
+            var material = new Material(shader);
+            var texture = new Texture2D(4, 4);
+            try
+            {
+                material.SetTexture("_EmissionMap", texture);
+
+                optimizer.ClearUnusedSlots(material, new string[0]);
+
+                Assert.That(material.GetTexture("_EmissionMap"), Is.EqualTo(texture));
+            }
+            finally
+            {
+                Object.DestroyImmediate(material);
+                Object.DestroyImmediate(texture);
+            }
+        }
+
+        private static LilToonUnusedSlotOptimizer CreateInstalledOptimizer()
+        {
+            var optimizer = new LilToonUnusedSlotOptimizer();
+            Assume.That(
+                optimizer.IsAvailable,
+                Is.True,
+                "lilToon is not installed in this project; skipping the real-API integration check."
+            );
+            return optimizer;
+        }
+
+        private static void WithLilToonMaterial(System.Action<Material, Texture2D> test)
+        {
+            var shader = Shader.Find("lilToon");
+            Assert.That(
+                shader,
+                Is.Not.Null,
+                "The lilToon API resolved but the 'lilToon' shader was not found."
+            );
+
+            var material = new Material(shader);
+            var texture = new Texture2D(4, 4);
+            try
+            {
+                test(material, texture);
+            }
+            finally
+            {
+                Object.DestroyImmediate(material);
+                Object.DestroyImmediate(texture);
+            }
+        }
+
+        #endregion
+
         // lilToon keeps _AudioLinkMask only for static UV mode 3, but the shader samples it in
         // modes 3 AND 4 (Spectrum Mask), and an animated _AudioLinkUVMode is treated as a reason
         // to CLEAR the mask — the inverse of its protective animatedProps handling everywhere
