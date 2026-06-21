@@ -1,5 +1,6 @@
 using dev.limitex.avatar.compressor.editor.texture.integrations;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.tests
@@ -190,6 +191,44 @@ namespace dev.limitex.avatar.compressor.tests
             }
         }
 
+        [Test]
+        public void ClearUnusedSlots_DoesNotTouchOriginalTextureAsset_WhenSlotCleared()
+        {
+            var optimizer = CreateInstalledOptimizer();
+            WithLilToonMaterialAndAssetTexture(
+                (material, texture, assetPath, guid) =>
+                {
+                    material.SetFloat("_UseEmission", 0f);
+                    material.SetTexture("_EmissionMap", texture);
+
+                    optimizer.ClearUnusedSlots(material, new string[0]);
+
+                    // Precondition: prove lilToon actually ran, else the asset checks are vacuous.
+                    Assert.That(
+                        material.GetTexture("_EmissionMap"),
+                        Is.Null,
+                        "lilToon should clear an off, non-animated slot — otherwise this test proves nothing."
+                    );
+
+                    Assert.That(
+                        texture == null,
+                        Is.False,
+                        "Original texture asset must not be destroyed by slot clearing."
+                    );
+                    Assert.That(
+                        AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath),
+                        Is.SameAs(texture),
+                        "Original texture asset file must still exist and resolve to the same instance."
+                    );
+                    Assert.That(
+                        AssetDatabase.AssetPathToGUID(assetPath),
+                        Is.EqualTo(guid),
+                        "Original texture asset GUID must be unchanged."
+                    );
+                }
+            );
+        }
+
         private static LilToonUnusedSlotOptimizer CreateInstalledOptimizer()
         {
             var optimizer = new LilToonUnusedSlotOptimizer();
@@ -222,6 +261,43 @@ namespace dev.limitex.avatar.compressor.tests
                 Object.DestroyImmediate(texture);
             }
         }
+
+        // Like WithLilToonMaterial, but backs the texture with a real on-disk asset (path + GUID)
+        // so a test can assert the original asset survives the lilToon call.
+        private static void WithLilToonMaterialAndAssetTexture(
+            System.Action<Material, Texture2D, string, string> test
+        )
+        {
+            var shader = Shader.Find("lilToon");
+            Assert.That(
+                shader,
+                Is.Not.Null,
+                "The lilToon API resolved but the 'lilToon' shader was not found."
+            );
+
+            if (!AssetDatabase.IsValidFolder(TestAssetFolder))
+                AssetDatabase.CreateFolder("Assets", TestAssetFolderName);
+
+            string assetPath =
+                $"{TestAssetFolder}/UnusedSlotAssetGuard_{System.Guid.NewGuid():N}.asset";
+            AssetDatabase.CreateAsset(new Texture2D(4, 4), assetPath);
+            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+
+            var material = new Material(shader);
+            try
+            {
+                test(material, texture, assetPath, guid);
+            }
+            finally
+            {
+                Object.DestroyImmediate(material);
+                AssetDatabase.DeleteAsset(assetPath);
+            }
+        }
+
+        private const string TestAssetFolderName = "_LAC_TMP";
+        private const string TestAssetFolder = "Assets/" + TestAssetFolderName;
 
         #endregion
 
