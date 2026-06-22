@@ -76,24 +76,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             new AnimationUsageMap(Array.Empty<string>());
 
         /// <summary>
-        /// Number of distinct animated material properties recorded.
-        /// </summary>
-        public int Count => _animatedMaterialProperties.Count;
-
-        /// <summary>
         /// The distinct animated material property names (without the <c>material.</c> prefix).
         /// Passed to external optimizers (e.g. lilToon) that take an animated-property list.
         /// </summary>
         public IReadOnlyCollection<string> AnimatedProperties => _animatedMaterialProperties;
-
-        /// <summary>
-        /// Returns true if the given material property is animated anywhere in the avatar.
-        /// </summary>
-        public bool IsMaterialPropertyAnimated(string propertyName)
-        {
-            return !string.IsNullOrEmpty(propertyName)
-                && _animatedMaterialProperties.Contains(propertyName);
-        }
 
         /// <summary>
         /// Returns true if the given texture is referenced by an animation object (PPtr) curve

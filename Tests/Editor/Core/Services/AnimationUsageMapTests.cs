@@ -8,38 +8,11 @@ namespace dev.limitex.avatar.compressor.tests
     public class AnimationUsageMapTests
     {
         [Test]
-        public void IsMaterialPropertyAnimated_ReturnsTrue_ForRecordedProperty()
-        {
-            var map = new AnimationUsageMap(new[] { "_UseEmission", "_MainTex" });
-
-            Assert.That(map.IsMaterialPropertyAnimated("_UseEmission"), Is.True);
-            Assert.That(map.IsMaterialPropertyAnimated("_MainTex"), Is.True);
-        }
-
-        [Test]
-        public void IsMaterialPropertyAnimated_ReturnsFalse_ForUnrecordedProperty()
-        {
-            var map = new AnimationUsageMap(new[] { "_UseEmission" });
-
-            Assert.That(map.IsMaterialPropertyAnimated("_UseBumpMap"), Is.False);
-        }
-
-        [Test]
-        public void IsMaterialPropertyAnimated_ReturnsFalse_ForNullOrEmpty()
-        {
-            var map = new AnimationUsageMap(new[] { "_UseEmission" });
-
-            Assert.That(map.IsMaterialPropertyAnimated(null), Is.False);
-            Assert.That(map.IsMaterialPropertyAnimated(string.Empty), Is.False);
-        }
-
-        [Test]
         public void Constructor_FiltersNullAndEmptyEntries()
         {
             var map = new AnimationUsageMap(new[] { "_UseEmission", null, string.Empty });
 
-            Assert.That(map.Count, Is.EqualTo(1));
-            Assert.That(map.IsMaterialPropertyAnimated("_UseEmission"), Is.True);
+            Assert.That(map.AnimatedProperties, Is.EquivalentTo(new[] { "_UseEmission" }));
         }
 
         [Test]
@@ -47,8 +20,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var map = new AnimationUsageMap(null);
 
-            Assert.That(map.Count, Is.EqualTo(0));
-            Assert.That(map.IsMaterialPropertyAnimated("_UseEmission"), Is.False);
+            Assert.That(map.AnimatedProperties, Is.Empty);
         }
 
         [Test]
@@ -56,17 +28,13 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var map = new AnimationUsageMap(new[] { "_UseEmission", "_UseEmission" });
 
-            Assert.That(map.Count, Is.EqualTo(1));
+            Assert.That(map.AnimatedProperties, Is.EquivalentTo(new[] { "_UseEmission" }));
         }
 
         [Test]
         public void Empty_HasNoAnimatedProperties()
         {
-            Assert.That(AnimationUsageMap.Empty.Count, Is.EqualTo(0));
-            Assert.That(
-                AnimationUsageMap.Empty.IsMaterialPropertyAnimated("_UseEmission"),
-                Is.False
-            );
+            Assert.That(AnimationUsageMap.Empty.AnimatedProperties, Is.Empty);
         }
 
         [Test]
