@@ -40,6 +40,7 @@ jobs:
           repos: |
             https://vpm.limitex.dev/
             https://vpm.nadena.dev/vpm.json
+            https://lilxyzw.github.io/vpm-repos/vpm.json
       
       - name: Cache Library
         uses: actions/cache@v4
