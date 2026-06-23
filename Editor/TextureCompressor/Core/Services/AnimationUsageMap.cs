@@ -32,7 +32,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// </remarks>
     public sealed class AnimationUsageMap
     {
-        // Animation curves expose material property bindings as "material.<PropertyName>".
         private const string MaterialBindingPrefix = "material.";
 
         private readonly HashSet<string> _animatedMaterialProperties;

@@ -24,9 +24,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly NormalMapPreprocessor _normalMapPreprocessor;
         private readonly Dictionary<string, FrozenTextureSettings> _frozenLookup;
 
-        // Animation-aware unused-slot detection. Only active when enabled on the component, a usage
-        // map could be built (NDMF build context), and a shader optimizer is available (e.g. lilToon
-        // is installed). Any missing piece => detection disabled (safe pass-through).
         private readonly AnimationUsageMap _animationUsageMap;
         private readonly IUnusedSlotOptimizer _unusedSlotOptimizer;
         private readonly bool _unusedDetectionEnabled;

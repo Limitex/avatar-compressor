@@ -43,7 +43,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             FilterSection.DrawTextureFilters(config, ref _showTextureFiltersSection);
             EditorGUILayout.Space(10);
 
-            // Unused texture detection
             FilterSection.DrawUnusedDetection(config, ref _showUnusedDetectionSection);
             EditorGUILayout.Space(10);
 

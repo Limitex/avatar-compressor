@@ -57,7 +57,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
         public LilToonUnusedSlotOptimizer()
         {
-            // RemoveUnusedTexture(Material material, params string[] animatedProps)
             _removeUnusedTexture = new OptionalStaticMethod(
                 TypeName,
                 MethodName,

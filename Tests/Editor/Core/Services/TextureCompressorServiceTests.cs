@@ -2678,8 +2678,6 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Compress_SkipsUnusedSlotDetection_WhenAnimationMapMissing()
         {
-            // No usage map means animated toggles cannot be proven safe, so detection must stay off
-            // even though an optimizer is available.
             var config = CreateConfig();
             config.DetectUnusedTextures = true;
             var optimizer = new FakeUnusedSlotOptimizer(available: true);

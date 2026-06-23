@@ -57,7 +57,6 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Prune_DoesNotCountDropped_WhenAnotherSlotStillBindsTexture()
         {
-            // Same texture bound to both _MainTex (kept) and _EmissionMap (cleared).
             var material = CreateMaterial();
             var texture = CreateTexture();
             material.SetTexture("_MainTex", texture);
@@ -107,7 +106,7 @@ namespace dev.limitex.avatar.compressor.tests
             var texture = CreateTexture();
             material.SetTexture("_EmissionMap", texture);
 
-            var optimizer = new FakeOptimizer(available: true); // clears nothing
+            var optimizer = new FakeOptimizer(available: true);
 
             var result = UnusedSlotPruner.Prune(optimizer, NoAnimation, new[] { material });
 
@@ -249,7 +248,6 @@ namespace dev.limitex.avatar.compressor.tests
             var material = CreateMaterial();
             var optimizer = new FakeOptimizer(available: true);
 
-            // Same material passed twice => still optimized exactly once.
             UnusedSlotPruner.Prune(optimizer, NoAnimation, new[] { material, material, null });
 
             Assert.That(optimizer.CallCount, Is.EqualTo(1));
