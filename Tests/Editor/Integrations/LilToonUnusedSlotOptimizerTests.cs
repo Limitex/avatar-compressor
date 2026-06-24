@@ -8,9 +8,10 @@ namespace dev.limitex.avatar.compressor.tests
     [TestFixture]
     public class LilToonUnusedSlotOptimizerTests
     {
-        // These tests must hold whether or not lilToon is installed in the project, since lilToon is
-        // an optional external dependency. Tests that exercise the real lilToon API are guarded with
-        // Assume so the suite stays green (inconclusive) where it is absent; the rest are lilToon-agnostic.
+        // lilToon is optional; both presence states are exercised across two CI runs (gameci.yml pins
+        // it, gameci-minimal.yml installs required deps only). Real-API tests are Assume-guarded, so
+        // each state also gets a shader-gated Assert sentinel — a broken bridge fails loudly instead
+        // of silently skipping.
 
         [Test]
         public void Constructor_DoesNotThrow_RegardlessOfLilToonPresence()
@@ -24,6 +25,72 @@ namespace dev.limitex.avatar.compressor.tests
             var optimizer = new LilToonUnusedSlotOptimizer();
             Assert.DoesNotThrow(() => optimizer.ClearUnusedSlots(null, null));
         }
+
+        // Without this, a broken bridge would make every Assume-gated test below skip and leave CI
+        // green. Shader presence is bridge-independent, so an installed-but-unresolved bridge fails here.
+        [Test]
+        public void IsAvailable_True_WhenLilToonIsInstalled()
+        {
+            if (Shader.Find("lilToon") == null)
+                Assert.Ignore("lilToon not installed; present-path sentinel skipped.");
+
+            Assert.That(
+                new LilToonUnusedSlotOptimizer().IsAvailable,
+                Is.True,
+                "lilToon is installed (its shader resolved) but the reflection bridge to "
+                    + "lilMaterialUtils.RemoveUnusedTexture did not — likely TypeName/MethodName "
+                    + "drift, a lilToon API change, or a failed VPM resolve. Every Assume-gated "
+                    + "real-API test below would otherwise skip silently."
+            );
+        }
+
+        // The absent path can't run in the lilToon-pinned project, so these run in the minimal CI
+        // variant. Shader-gated + Assert (not Assume) so a wrongly-available bridge fails, not skips.
+        #region lilToon absent (runs in the minimal CI variant)
+
+        [Test]
+        public void IsAvailable_False_WhenLilToonIsAbsent()
+        {
+            if (Shader.Find("lilToon") != null)
+                Assert.Ignore("lilToon installed; absent-path sentinel skipped.");
+
+            Assert.That(
+                new LilToonUnusedSlotOptimizer().IsAvailable,
+                Is.False,
+                "lilToon is not installed (its shader did not resolve), yet the reflection bridge "
+                    + "reported the API available. The optional-dependency guard is broken: the "
+                    + "feature would invoke a type that should be absent instead of passing through."
+            );
+        }
+
+        [Test]
+        public void ClearUnusedSlots_IsNoOp_WhenLilToonIsAbsent()
+        {
+            if (Shader.Find("lilToon") != null)
+                Assert.Ignore("lilToon installed; absent-path no-op check skipped.");
+
+            var shader = Shader.Find("Hidden/LAC/Tests/UnusedSlot");
+            Assert.That(shader, Is.Not.Null);
+
+            var optimizer = new LilToonUnusedSlotOptimizer();
+            var material = new Material(shader);
+            var texture = new Texture2D(4, 4);
+            try
+            {
+                material.SetTexture("_EmissionMap", texture);
+
+                optimizer.ClearUnusedSlots(material, new[] { "_SomeAnimatedProp" });
+
+                Assert.That(material.GetTexture("_EmissionMap"), Is.EqualTo(texture));
+            }
+            finally
+            {
+                Object.DestroyImmediate(material);
+                Object.DestroyImmediate(texture);
+            }
+        }
+
+        #endregion
 
         // These tests exercise the real lilToon API through the reflection bridge, so they only run
         // when lilToon is installed (the CI test project pins it via vpm-manifest.json). They pin
