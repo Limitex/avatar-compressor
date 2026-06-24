@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - main
+      - feat/unused-slot-detection # TEMP: validate on branch, remove before merge
   pull_request_target:
   workflow_dispatch:
 
