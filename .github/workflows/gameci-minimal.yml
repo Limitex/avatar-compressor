@@ -15,7 +15,7 @@ on:
 
 jobs:
   test:
-    name: Test (minimal deps)
+    name: Test and Coverage (minimal)
     runs-on: ubuntu-latest
     environment: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork && 'external' || '' }}
     permissions:
