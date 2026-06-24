@@ -3,7 +3,6 @@ name: GameCI (minimal)
 # Runs the EditMode suite with required deps only, covering the dependency-absent path gameci.yml
 # can't (it pins the optional integrations). Optional integrations aren't package dependencies, so
 # clearing the manifest drops them while the SDK and NDMF still resolve from package.json.
-# Personal Unity license: if this collides with gameci.yml on activation, fold both into one matrix.
 
 on:
   push:
