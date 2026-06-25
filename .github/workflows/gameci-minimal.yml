@@ -1,0 +1,81 @@
+name: GameCI (minimal)
+
+# Runs the EditMode suite with required deps only, covering the dependency-absent path gameci.yml
+# can't (it pins the optional integrations). Optional integrations aren't package dependencies, so
+# clearing the manifest drops them while the SDK and NDMF still resolve from package.json.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request_target:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test and Coverage (minimal)
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork && 'external' || '' }}
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: ci_checkout
+          lfs: true
+
+      - name: Prepare project
+        run: |
+          mv ci_checkout/.github/unity/unity-2022.3.22f1/* . && \
+          mkdir -p Packages/dev.limitex.avatar-compressor && \
+          mv ci_checkout/* Packages/dev.limitex.avatar-compressor/ && \
+          rm -rf ci_checkout
+
+      - name: Exclude optional integration packages
+        run: |
+          cat > Packages/vpm-manifest.json <<'EOF'
+          {
+            "dependencies": {},
+            "locked": {}
+          }
+          EOF
+
+      - name: Setup vrc-get
+        uses: anatawa12/sh-actions/setup-vrc-get@master
+
+      - name: Resolve VPM packages
+        uses: anatawa12/sh-actions/resolve-vpm-packages@master
+        with:
+          repos: |
+            https://vpm.limitex.dev/
+            https://vpm.nadena.dev/vpm.json
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-minimal-${{ hashFiles('Packages/**') }}
+          restore-keys: Library-minimal-
+
+      - name: Run tests
+        uses: game-ci/unity-test-runner@v4
+        id: gameci
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          testMode: editmode
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          customParameters: -assemblyNames dev.limitex.avatar-compressor.editor.tests
+          checkName: Test Results (minimal)
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Test results (minimal)
+          path: ${{ steps.gameci.outputs.artifactsPath }}

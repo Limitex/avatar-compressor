@@ -17,6 +17,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         // UI state for sections that don't own their own
         private bool _showExclusionsSection;
         private bool _showTextureFiltersSection;
+        private bool _showUnusedDetectionSection = true;
 
         private void OnEnable()
         {
@@ -40,6 +41,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             // Texture filters
             FilterSection.DrawTextureFilters(config, ref _showTextureFiltersSection);
+            EditorGUILayout.Space(10);
+
+            FilterSection.DrawUnusedDetection(config, ref _showUnusedDetectionSection);
             EditorGUILayout.Space(10);
 
             // Exclusions (textures + paths)

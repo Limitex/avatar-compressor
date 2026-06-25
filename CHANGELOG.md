@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Unused texture slot detection** - During the NDMF build, clears texture slots whose lilToon feature toggle (e.g. `_UseEmission`, `_UseBumpMap`) is off on the cloned material, then drops any texture left unreferenced so it is excluded from the upload entirely — cutting download size and VRAM for hidden slots
+  - Delegates the unused-slot decision to lilToon's own `lilMaterialUtils.RemoveUnusedTexture` via reflection, so the logic always matches lilToon's maintained behavior (covering every gated slot it knows) rather than a copy that can drift; the lilToon API also strips serialized properties not declared by the shader, on the build-time clone only
+  - lilToon is treated as an optional external dependency: when it is not installed the feature passes through silently, and the project compiles either way (no hard reference); when lilToon is installed but older than 1.8.0 (no `RemoveUnusedTexture(Material, params string[])` overload), a warning explains that slot removal is skipped instead of failing silently. Behavior verified against lilToon source 1.8.0 through 2.3.2, and CI runs the integration tests against the real lilToon API
+  - Animation-aware: any feature toggle driven by animation (e.g. a menu that turns emission on) is always treated as used, and a texture referenced by an animation curve keeps its slot so it is still compressed and the curve rewritten (it would ship with the avatar either way)
+  - Guards against lilToon's `_AudioLinkMask` handling quirks: the mask is preserved while the AudioLink feature can be active and the UV mode can sample it — covering both an animated `_AudioLinkUVMode` (which lilToon treats as a reason to clear, inverted from its other slots) and static Spectrum Mask mode (4), which lilToon clears even though the shader samples the mask there
+  - Frozen textures are an explicit user pin and are never removed by slot detection
+  - Operates on the final post-build material state, so MA Material Setter swaps and merged animators are accounted for
+  - Conservative by design: non-lilToon materials are left untouched; a texture is only dropped once every slot referencing it has been cleared
+  - Acts at the material level: exclusion filters control compression only and do not keep an unused slot's texture in the upload
+  - Not reflected in the inspector preview (it requires the NDMF build context); the preview shows a notice while the feature is enabled
+  - Enabled by default, toggleable per avatar in the inspector
+
 ## [v0.8.0] - 2026-05-01
 
 ### Added

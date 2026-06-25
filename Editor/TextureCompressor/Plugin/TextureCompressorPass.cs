@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor;
+using dev.limitex.avatar.compressor.editor.texture.integrations;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.animator;
 using nadena.dev.ndmf.runtime;
@@ -29,10 +30,27 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // Collect all material references using MaterialCollector
             var materialReferences = MaterialCollector.CollectAll(ctx);
 
+            // Unused-slot detection: probe the shader integration first (a cheap reflection
+            // lookup) and only scan the merged animators when the optimizer can actually be used,
+            // so builds without lilToon never pay for a usage map they would discard. The service
+            // re-validates the full gate (config + map + optimizer availability).
+            LilToonUnusedSlotOptimizer unusedSlotOptimizer = null;
+            AnimationUsageMap animationUsageMap = null;
+            if (config.DetectUnusedTextures)
+            {
+                unusedSlotOptimizer = new LilToonUnusedSlotOptimizer();
+                if (unusedSlotOptimizer.IsAvailable)
+                {
+                    animationUsageMap = AnimationUsageMap.Build(ctx);
+                }
+            }
+
             // Create service and compress textures
             var service = new TextureCompressorService(
                 config,
-                AvatarCompressorPreferences.AnalysisBackend
+                AvatarCompressorPreferences.AnalysisBackend,
+                animationUsageMap,
+                unusedSlotOptimizer
             );
             var (processedTextures, clonedMaterials) = service.CompressWithMappings(
                 materialReferences,

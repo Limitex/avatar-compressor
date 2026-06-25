@@ -66,7 +66,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Resolves the original asset for an object via ObjectRegistry replacement chain.
         /// If another NDMF plugin replaced the object, the registry maps it back to the original.
         /// </summary>
-        private static Object ResolveOriginalObject(Object obj)
+        internal static Object ResolveOriginalObject(Object obj)
         {
             var registry = ObjectRegistry.ActiveRegistry;
             if (registry != null)

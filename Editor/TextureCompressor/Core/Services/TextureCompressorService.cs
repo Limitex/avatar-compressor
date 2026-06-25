@@ -24,6 +24,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly NormalMapPreprocessor _normalMapPreprocessor;
         private readonly Dictionary<string, FrozenTextureSettings> _frozenLookup;
 
+        private readonly AnimationUsageMap _animationUsageMap;
+        private readonly IUnusedSlotOptimizer _unusedSlotOptimizer;
+        private readonly bool _unusedDetectionEnabled;
+
         // Flag to avoid repeating the same warning for every texture (per-build instance)
         private bool _streamingMipmapsWarningShown;
 
@@ -32,12 +36,22 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         public TextureCompressorService(
             TextureCompressor config,
-            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
+            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto,
+            AnimationUsageMap animationUsageMap = null,
+            IUnusedSlotOptimizer unusedSlotOptimizer = null
         )
         {
             _config = config;
 
             _frozenLookup = FrozenTextureSettings.BuildLookup(config.FrozenTextures);
+
+            _animationUsageMap = animationUsageMap;
+            _unusedSlotOptimizer = unusedSlotOptimizer;
+            _unusedDetectionEnabled =
+                config.DetectUnusedTextures
+                && animationUsageMap != null
+                && unusedSlotOptimizer != null
+                && unusedSlotOptimizer.IsAvailable;
 
             _collector = new TextureCollector(
                 config.MinSourceSize,
@@ -161,8 +175,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // Clone all materials and update Renderer references
             var clonedMaterials = MaterialCloner.CloneAndReplace(referenceList);
 
-            // Collect textures from cloned materials
             var clonedMaterialList = clonedMaterials.Values.ToList();
+
+            // Must run before texture collection so the collector only sees surviving bindings
+            // (see UnusedSlotPruner remarks).
+            if (_unusedDetectionEnabled)
+            {
+                PruneUnusedSlots(clonedMaterialList, enableLogging);
+            }
+
+            // Collect textures from cloned materials
             var textures = new Dictionary<Texture2D, TextureInfo>();
             _collector.CollectFromMaterials(clonedMaterialList, textures);
 
@@ -355,6 +377,48 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             return (processedTextures, clonedMaterials);
+        }
+
+        /// <summary>
+        /// Runs <see cref="UnusedSlotPruner"/> over the cloned materials with frozen textures
+        /// protected, and logs what was removed.
+        /// </summary>
+        private void PruneUnusedSlots(List<Material> clonedMaterials, bool enableLogging)
+        {
+            var result = UnusedSlotPruner.Prune(
+                _unusedSlotOptimizer,
+                _animationUsageMap,
+                clonedMaterials,
+                IsFrozenTexture
+            );
+
+            if (enableLogging && (result.ClearedSlots > 0 || result.DroppedTextures > 0))
+            {
+                Debug.Log(
+                    $"[{Name}] Unused-slot detection: cleared {result.ClearedSlots} unused texture "
+                        + $"slot(s), dropped {result.DroppedTextures} now-unreferenced texture(s) "
+                        + "from the build."
+                );
+            }
+        }
+
+        /// <summary>
+        /// Frozen settings are an explicit user pin ("ship this texture exactly as configured"),
+        /// so unused-slot detection must never remove a frozen texture from the avatar.
+        /// </summary>
+        private bool IsFrozenTexture(Texture2D texture)
+        {
+            if (_frozenLookup.Count == 0 || texture == null)
+                return false;
+
+            string assetPath = AssetDatabase.GetAssetPath(
+                TextureCollector.ResolveOriginalObject(texture)
+            );
+            if (string.IsNullOrEmpty(assetPath))
+                return false;
+
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            return !string.IsNullOrEmpty(guid) && _frozenLookup.ContainsKey(guid);
         }
 
         /// <summary>
