@@ -42,62 +42,38 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (!showSection)
                 return;
 
-            DrawLilToonBaking(config);
-            EditorGUILayout.Space(5);
-            DrawUnusedDetection(config);
-        }
-
-        /// <summary>
-        /// Draws the lilToon texture baking toggle.
-        /// </summary>
-        private static void DrawLilToonBaking(TextureCompressor config)
-        {
             EditorGUI.BeginChangeCheck();
+
             bool bake = EditorGUILayout.ToggleLeft(
-                "Bake lilToon color adjustments (recommended)",
+                new GUIContent(
+                    "Bake color adjustments into textures",
+                    "Bakes hue/saturation/gradation, active 2nd/3rd layers and the alpha mask "
+                        + "into the main texture, and tone correction into the outline texture, "
+                        + "at build time. Bakes with animated inputs are skipped; colors (_Color, "
+                        + "_OutlineColor) stay runtime tints. Requires lilToon; does nothing when "
+                        + "it is not installed."
+                ),
                 config.BakeLilToonTextures
             );
-            if (EditorGUI.EndChangeCheck())
-            {
-                Undo.RecordObject(config, "Change lilToon Texture Baking");
-                config.BakeLilToonTextures = bake;
-                EditorUtility.SetDirty(config);
-            }
 
-            EditorGUI.indentLevel++;
-            EditorGUILayout.LabelField(
-                "Bakes hue/saturation/gradation, active 2nd/3rd layers and the alpha mask into "
-                    + "the main texture, and tone correction into the outline texture, at build "
-                    + "time. Bakes with animated inputs are skipped; colors stay runtime tints.",
-                EditorStyles.miniLabel
-            );
-            EditorGUI.indentLevel--;
-        }
-
-        /// <summary>
-        /// Draws the unused-texture detection toggle.
-        /// </summary>
-        private static void DrawUnusedDetection(TextureCompressor config)
-        {
-            EditorGUI.BeginChangeCheck();
             bool detect = EditorGUILayout.ToggleLeft(
-                "Remove unused texture slots (recommended)",
+                new GUIContent(
+                    "Remove unused texture slots",
+                    "Clears lilToon slots whose feature toggle is off and not animated, dropping "
+                        + "textures that become unreferenced from the upload. Frozen textures and "
+                        + "textures referenced by animation curves are never removed. Exclusion "
+                        + "filters do not apply here."
+                ),
                 config.DetectUnusedTextures
             );
+
             if (EditorGUI.EndChangeCheck())
             {
-                Undo.RecordObject(config, "Change Unused Texture Detection");
+                Undo.RecordObject(config, "Change lilToon Optimizations");
+                config.BakeLilToonTextures = bake;
                 config.DetectUnusedTextures = detect;
                 EditorUtility.SetDirty(config);
             }
-
-            EditorGUI.indentLevel++;
-            EditorGUILayout.LabelField(
-                "Clears lilToon slots whose feature toggle is off and not animated, dropping "
-                    + "textures that become unreferenced. Exclusion filters do not apply here.",
-                EditorStyles.miniLabel
-            );
-            EditorGUI.indentLevel--;
         }
 
         /// <summary>
