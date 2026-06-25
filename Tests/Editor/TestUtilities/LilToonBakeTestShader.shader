@@ -1,7 +1,5 @@
-// Test-only shader declaring the lilToon main-color-adjustment properties consumed by
-// LilToonTextureBaker, so its static bake decisions (no-op detection, animation veto) can be
-// exercised on real materials without lilToon installed. The actual bake execution path needs
-// lilToon and is not covered by this shader.
+// Test-only shader declaring the lilToon properties consumed by LilToonTextureBaker's static
+// bake decisions, so no-op detection and animation veto can be tested without lilToon installed.
 Shader "Hidden/LAC/Tests/LilToonBake"
 {
     Properties

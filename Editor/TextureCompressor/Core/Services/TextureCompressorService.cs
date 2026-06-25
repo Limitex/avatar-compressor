@@ -401,31 +401,25 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <summary>
         /// Bakes lilToon color adjustments into the main textures of the cloned materials. The
         /// per-material decisions (lilToon check, no-op detection, animation veto) live in the
-        /// baker (see <see cref="ILilToonBaker"/>); this only drives it across the build and
-        /// hands it the collector's filter so excluded/frozen-skipped textures are never baked.
+        /// baker (see <see cref="ILilToonBaker"/>); this only drives it across the build.
         /// </summary>
         private void BakeLilToonAdjustments(List<Material> clonedMaterials, bool enableLogging)
         {
             int bakedSlots = 0;
-            int skippedByAnimation = 0;
 
             foreach (var material in clonedMaterials)
             {
-                var result = _lilToonBaker.Bake(
+                var bakedTextures = _lilToonBaker.Bake(
                     material,
-                    _animationUsageMap,
-                    _collector.WouldProcess
+                    _animationUsageMap.AnimatedProperties
                 );
-                bakedSlots += result.BakedSlots;
-                skippedByAnimation += result.SkippedByAnimation;
+                bakedSlots += bakedTextures.Length;
             }
 
-            if (enableLogging && (bakedSlots > 0 || skippedByAnimation > 0))
+            if (enableLogging && bakedSlots > 0)
             {
                 Debug.Log(
-                    $"[{Name}] lilToon texture baking: baked {bakedSlots} texture slot(s), "
-                        + $"skipped {skippedByAnimation} bake(s) whose inputs are driven by "
-                        + "animation."
+                    $"[{Name}] lilToon texture baking: baked {bakedSlots} texture slot(s)."
                 );
             }
         }

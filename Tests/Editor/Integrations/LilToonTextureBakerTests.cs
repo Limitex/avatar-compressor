@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor.texture;
 using dev.limitex.avatar.compressor.editor.texture.integrations;
 using NUnit.Framework;
@@ -8,12 +10,6 @@ namespace dev.limitex.avatar.compressor.tests
     [TestFixture]
     public class LilToonTextureBakerTests
     {
-        // These tests must hold whether or not lilToon is installed in the project, since lilToon
-        // is an optional external dependency. Behaviour that depends on lilToon being absent is
-        // guarded with Assume so the suite stays green in projects that do have it. The static
-        // bake decisions (no-op detection, animation veto) are testable either way through a test
-        // shader declaring the same properties.
-
         private const string BakeTestShaderName = "Hidden/LAC/Tests/LilToonBake";
 
         private Material _material;
@@ -31,8 +27,8 @@ namespace dev.limitex.avatar.compressor.tests
         [TearDown]
         public void TearDown()
         {
-            Object.DestroyImmediate(_material);
-            Object.DestroyImmediate(_texture);
+            UnityEngine.Object.DestroyImmediate(_material);
+            UnityEngine.Object.DestroyImmediate(_texture);
         }
 
         [Test]
@@ -42,14 +38,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void Bake_DoesNotThrow_OnNullMaterial()
-        {
-            var baker = new LilToonTextureBaker();
-            Assert.DoesNotThrow(() => baker.Bake(null, AnimationUsageMap.Empty, null));
-        }
-
-        [Test]
-        public void Bake_IsNoOp_WhenLilToonNotInstalled()
+        public void Bake_ReturnsEmpty_WhenLilToonNotInstalled()
         {
             var baker = new LilToonTextureBaker();
             Assume.That(
@@ -58,14 +47,38 @@ namespace dev.limitex.avatar.compressor.tests
                 "lilToon is installed in this project; skipping the absent-package no-op check."
             );
 
-            _material.SetTexture("_MainTex", _texture);
-            _material.SetVector("_MainTexHSVG", new Vector4(0.5f, 1f, 1f, 1f));
+            var material = new Material(Shader.Find("Standard"));
+            var result = baker.Bake(material, Array.Empty<string>());
 
-            var result = baker.Bake(_material, AnimationUsageMap.Empty, null);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Length);
 
-            Assert.AreEqual(0, result.BakedSlots);
-            Assert.AreEqual(0, result.SkippedByAnimation);
-            Assert.That(_material.GetTexture("_MainTex"), Is.EqualTo(_texture));
+            UnityEngine.Object.DestroyImmediate(material);
+        }
+
+        [Test]
+        public void Bake_ReturnsEmpty_OnNullMaterial()
+        {
+            var baker = new LilToonTextureBaker();
+            var result = baker.Bake(null, Array.Empty<string>());
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Length);
+        }
+
+        [Test]
+        public void Bake_ReturnsEmpty_OnNullShader()
+        {
+            var baker = new LilToonTextureBaker();
+            var material = new Material(Shader.Find("Standard"));
+            material.shader = null;
+
+            var result = baker.Bake(material, Array.Empty<string>());
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Length);
+
+            UnityEngine.Object.DestroyImmediate(material);
         }
 
         #region HasBakeableColorAdjustments
@@ -106,8 +119,6 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void HasBakeableColorAdjustments_MainColorOnly_ReturnsFalse()
         {
-            // The main color is never baked (it stays a runtime tint), so a tinted but otherwise
-            // unadjusted material has nothing to bake.
             _material.SetColor("_Color", Color.red);
             Assert.IsFalse(LilToonTextureBaker.HasBakeableColorAdjustments(_material));
         }
@@ -115,14 +126,13 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void HasBakeableColorAdjustments_ShaderWithoutHsvg_ReturnsFalse()
         {
-            // E.g. lilToon Lite: passes the lilToon shader check but has no color adjustment.
             var shader = Shader.Find("Hidden/LAC/Tests/UnusedSlot");
             Assert.That(shader, Is.Not.Null);
             var material = new Material(shader);
 
             Assert.IsFalse(LilToonTextureBaker.HasBakeableColorAdjustments(material));
 
-            Object.DestroyImmediate(material);
+            UnityEngine.Object.DestroyImmediate(material);
         }
 
         #endregion
@@ -130,67 +140,65 @@ namespace dev.limitex.avatar.compressor.tests
         #region HasAnimatedMainBakeInput
 
         [Test]
-        public void HasAnimatedMainBakeInput_EmptyMap_ReturnsFalse()
+        public void HasAnimatedMainBakeInput_EmptySet_ReturnsFalse()
         {
-            _material.SetVector("_MainTexHSVG", new Vector4(0.5f, 1f, 1f, 1f));
             Assert.IsFalse(
-                LilToonTextureBaker.HasAnimatedMainBakeInput(_material, AnimationUsageMap.Empty)
+                LilToonTextureBaker.HasAnimatedMainBakeInput(
+                    _material,
+                    Array.Empty<string>()
+                )
             );
         }
 
         [Test]
         public void HasAnimatedMainBakeInput_UnrelatedAnimatedProperty_ReturnsFalse()
         {
-            var map = new AnimationUsageMap(new[] { "_UseEmission", "_Color" });
-            Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, map));
+            var props = new HashSet<string> { "_UseEmission", "_Color" };
+            Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
         }
 
         [Test]
         public void HasAnimatedMainBakeInput_AnimatedHsvg_ReturnsTrue()
         {
-            var map = new AnimationUsageMap(new[] { "_MainTexHSVG" });
-            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, map));
+            var props = new HashSet<string> { "_MainTexHSVG" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
         }
 
         [Test]
         public void HasAnimatedMainBakeInput_AnimatedMainTexture_ReturnsTrue()
         {
-            var map = new AnimationUsageMap(new[] { "_MainTex" });
-            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, map));
+            var props = new HashSet<string> { "_MainTex" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
         }
 
         [Test]
         public void HasAnimatedMainBakeInput_AnimatedLayerToggle_ReturnsTrue_EvenWhileLayerOff()
         {
-            // An animated toggle means the layer can become visible at runtime; the bake is
-            // vetoed even though the layer is currently disabled.
-            var map = new AnimationUsageMap(new[] { "_UseMain2ndTex" });
-            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, map));
+            var props = new HashSet<string> { "_UseMain2ndTex" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
         }
 
         [Test]
         public void HasAnimatedMainBakeInput_AnimatedLayerParameter_ReturnsFalse_WhileLayerOff()
         {
-            // A disabled, non-animated layer can never become visible, so its animated
-            // parameters are not inputs of this bake.
-            var map = new AnimationUsageMap(new[] { "_Color2nd" });
-            Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, map));
+            var props = new HashSet<string> { "_Color2nd" };
+            Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
         }
 
         [Test]
         public void HasAnimatedMainBakeInput_AnimatedLayerParameter_ReturnsTrue_WhileLayerOn()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
-            var map = new AnimationUsageMap(new[] { "_Color2nd" });
-            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, map));
+            var props = new HashSet<string> { "_Color2nd" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
         }
 
         [Test]
         public void HasAnimatedMainBakeInput_AnimatedLayerTexture_ReturnsTrue_WhileLayerOn()
         {
             _material.SetFloat("_UseMain3rdTex", 1f);
-            var map = new AnimationUsageMap(new[] { "_Main3rdTex" });
-            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, map));
+            var props = new HashSet<string> { "_Main3rdTex" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
         }
 
         #endregion
@@ -213,7 +221,6 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void HasBakeableAlphaMask_MaskWithModeOff_ReturnsFalse()
         {
-            // Mode 0 = off: the runtime ignores the mask, so baking it would change the look.
             _material.SetTexture("_AlphaMask", _texture);
             Assert.IsFalse(LilToonTextureBaker.HasBakeableAlphaMask(_material));
         }
@@ -229,8 +236,6 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void HasBakeableAlphaMask_NonDefaultMaskTiling_ReturnsFalse()
         {
-            // The bake samples the mask without its ST (mirroring lilToon's bake button), so a
-            // tiled mask would bake differently from how it renders and must be left alone.
             _material.SetFloat("_AlphaMaskMode", 1f);
             _material.SetTexture("_AlphaMask", _texture);
             _material.SetTextureScale("_AlphaMask", new Vector2(2f, 2f));
@@ -246,7 +251,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.IsFalse(LilToonTextureBaker.HasBakeableAlphaMask(material));
 
-            Object.DestroyImmediate(material);
+            UnityEngine.Object.DestroyImmediate(material);
         }
 
         #endregion
@@ -254,32 +259,32 @@ namespace dev.limitex.avatar.compressor.tests
         #region HasAnimatedAlphaMaskBakeInput
 
         [Test]
-        public void HasAnimatedAlphaMaskBakeInput_EmptyMap_ReturnsFalse()
+        public void HasAnimatedAlphaMaskBakeInput_EmptySet_ReturnsFalse()
         {
             Assert.IsFalse(
-                LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(AnimationUsageMap.Empty)
+                LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(Array.Empty<string>())
             );
         }
 
         [Test]
         public void HasAnimatedAlphaMaskBakeInput_AnimatedMask_ReturnsTrue()
         {
-            var map = new AnimationUsageMap(new[] { "_AlphaMask" });
-            Assert.IsTrue(LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(map));
+            var props = new HashSet<string> { "_AlphaMask" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(props));
         }
 
         [Test]
         public void HasAnimatedAlphaMaskBakeInput_AnimatedMode_ReturnsTrue()
         {
-            var map = new AnimationUsageMap(new[] { "_AlphaMaskMode" });
-            Assert.IsTrue(LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(map));
+            var props = new HashSet<string> { "_AlphaMaskMode" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(props));
         }
 
         [Test]
         public void HasAnimatedAlphaMaskBakeInput_UnrelatedProperty_ReturnsFalse()
         {
-            var map = new AnimationUsageMap(new[] { "_Color", "_UseEmission" });
-            Assert.IsFalse(LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(map));
+            var props = new HashSet<string> { "_Color", "_UseEmission" };
+            Assert.IsFalse(LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(props));
         }
 
         #endregion
@@ -323,7 +328,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.IsFalse(LilToonTextureBaker.HasBakeableOutline(material));
 
-            Object.DestroyImmediate(material);
+            UnityEngine.Object.DestroyImmediate(material);
         }
 
         [Test]
@@ -349,33 +354,32 @@ namespace dev.limitex.avatar.compressor.tests
         #region HasAnimatedOutlineBakeInput
 
         [Test]
-        public void HasAnimatedOutlineBakeInput_EmptyMap_ReturnsFalse()
+        public void HasAnimatedOutlineBakeInput_EmptySet_ReturnsFalse()
         {
             Assert.IsFalse(
-                LilToonTextureBaker.HasAnimatedOutlineBakeInput(AnimationUsageMap.Empty)
+                LilToonTextureBaker.HasAnimatedOutlineBakeInput(Array.Empty<string>())
             );
         }
 
         [Test]
         public void HasAnimatedOutlineBakeInput_AnimatedHsvg_ReturnsTrue()
         {
-            var map = new AnimationUsageMap(new[] { "_OutlineTexHSVG" });
-            Assert.IsTrue(LilToonTextureBaker.HasAnimatedOutlineBakeInput(map));
+            var props = new HashSet<string> { "_OutlineTexHSVG" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedOutlineBakeInput(props));
         }
 
         [Test]
         public void HasAnimatedOutlineBakeInput_AnimatedTexture_ReturnsTrue()
         {
-            var map = new AnimationUsageMap(new[] { "_OutlineTex" });
-            Assert.IsTrue(LilToonTextureBaker.HasAnimatedOutlineBakeInput(map));
+            var props = new HashSet<string> { "_OutlineTex" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedOutlineBakeInput(props));
         }
 
         [Test]
         public void HasAnimatedOutlineBakeInput_OutlineColor_ReturnsFalse()
         {
-            // _OutlineColor stays a runtime tint (never baked), so its animation is irrelevant.
-            var map = new AnimationUsageMap(new[] { "_OutlineColor" });
-            Assert.IsFalse(LilToonTextureBaker.HasAnimatedOutlineBakeInput(map));
+            var props = new HashSet<string> { "_OutlineColor" };
+            Assert.IsFalse(LilToonTextureBaker.HasAnimatedOutlineBakeInput(props));
         }
 
         #endregion

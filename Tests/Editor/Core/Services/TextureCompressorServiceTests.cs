@@ -2813,7 +2813,7 @@ namespace dev.limitex.avatar.compressor.tests
         #region LilToon Bake Gate Tests
 
         [Test]
-        public void Compress_CallsLilToonBaker_AndForwardsAnimationMapAndFilter()
+        public void Compress_CallsLilToonBaker_AndForwardsAnimatedProperties()
         {
             var config = CreateConfig();
             config.BakeLilToonTextures = true;
@@ -2832,15 +2832,10 @@ namespace dev.limitex.avatar.compressor.tests
             service.Compress(root, false);
 
             Assert.AreEqual(1, baker.CallCount);
-            Assert.AreSame(
-                map,
-                baker.LastAnimationUsageMap,
-                "The animation usage map must reach the baker unchanged"
-            );
-            Assert.IsNotNull(
-                baker.LastCanReplaceTexture,
-                "The baker must receive the collector's filter so excluded/frozen textures "
-                    + "are never baked"
+            Assert.IsNotNull(baker.LastAnimatedProperties);
+            Assert.IsTrue(
+                baker.LastAnimatedProperties.Contains("_MainTexHSVG"),
+                "The animated properties must reach the baker"
             );
         }
 
@@ -2918,22 +2913,21 @@ namespace dev.limitex.avatar.compressor.tests
 
             public int CallCount { get; private set; }
 
-            public AnimationUsageMap LastAnimationUsageMap { get; private set; }
-
-            public System.Func<Texture2D, string, bool> LastCanReplaceTexture { get; private set; }
+            public System.Collections.Generic.IReadOnlyCollection<string> LastAnimatedProperties {
+                get;
+                private set;
+            }
 
             public bool IsAvailable => _available;
 
-            public LilToonBakeResult Bake(
+            public Texture2D[] Bake(
                 Material material,
-                AnimationUsageMap animationUsageMap,
-                System.Func<Texture2D, string, bool> canReplaceTexture
+                System.Collections.Generic.IReadOnlyCollection<string> animatedProperties
             )
             {
                 CallCount++;
-                LastAnimationUsageMap = animationUsageMap;
-                LastCanReplaceTexture = canReplaceTexture;
-                return default;
+                LastAnimatedProperties = animatedProperties;
+                return System.Array.Empty<Texture2D>();
             }
         }
 
