@@ -76,8 +76,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             MainGradationStrengthProperty,
             MainGradationTexProperty,
             MainColorAdjustMaskProperty,
-            "_UseMain2ndTex",
-            "_UseMain3rdTex",
         };
 
         private static readonly string[] LayerFloatPropertyFormats =
@@ -212,11 +210,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (!IsDefaultTilingOffset(material, MainTexProperty))
                 return;
 
-            if (HasAnimatedMainBakeInput(material, animatedProperties))
+            if (AnyAnimated(animatedProperties, MainBakeInputProperties))
                 return;
 
-            bool bake2nd = IsOverlayLayerEnabled(material, Layer2nd);
-            bool bake3rd = IsOverlayLayerEnabled(material, Layer3rd);
+            bool bake2nd = CanBakeOverlayLayer(material, animatedProperties, Layer2nd);
+            bool bake3rd = CanBakeOverlayLayer(material, animatedProperties, Layer3rd);
+
+            if (!HasNonLayerAdjustments(material) && !bake2nd && !bake3rd)
+                return;
 
             var baked = BakeTexture(
                 mainTexture,
@@ -257,9 +258,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         }
 
         /// <summary>
-        /// True if any input property of the main-texture bake is driven by animation, in which
-        /// case the bake must be skipped entirely. Layer toggles always count (an animated toggle
-        /// means the layer can become visible at runtime even while currently off).
+        /// True if any core input property of the main-texture bake (HSVG, gradation, main tex)
+        /// is driven by animation, in which case the bake must be skipped entirely. Layer toggles
+        /// and layer-specific properties are checked separately per layer — an animated layer is
+        /// excluded from the bake rather than vetoing the whole operation.
         /// </summary>
         public static bool HasAnimatedMainBakeInput(
             Material material,
@@ -269,9 +271,24 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (material == null || animatedProperties == null)
                 return false;
 
-            return AnyAnimated(animatedProperties, MainBakeInputProperties)
-                || HasAnimatedOverlayLayerInput(material, animatedProperties, Layer2nd)
-                || HasAnimatedOverlayLayerInput(material, animatedProperties, Layer3rd);
+            return AnyAnimated(animatedProperties, MainBakeInputProperties);
+        }
+
+        private static bool HasNonLayerAdjustments(Material material)
+        {
+            return material.GetVector(MainTexHsvgProperty) != DefaultHsvg
+                || GetFloat(material, MainGradationStrengthProperty, 0f) != 0f;
+        }
+
+        private static bool CanBakeOverlayLayer(
+            Material material,
+            IReadOnlyCollection<string> animatedProperties,
+            string layer
+        )
+        {
+            return IsOverlayLayerEnabled(material, layer)
+                && !animatedProperties.Contains(UseLayerProperty(layer))
+                && !HasAnimatedOverlayLayerInput(material, animatedProperties, layer);
         }
 
         private static bool HasAnimatedOverlayLayerInput(

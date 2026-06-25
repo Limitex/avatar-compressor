@@ -172,33 +172,18 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void HasAnimatedMainBakeInput_AnimatedLayerToggle_ReturnsTrue_EvenWhileLayerOff()
+        public void HasAnimatedMainBakeInput_AnimatedLayerToggle_ReturnsFalse()
         {
             var props = new HashSet<string> { "_UseMain2ndTex" };
-            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
-        }
-
-        [Test]
-        public void HasAnimatedMainBakeInput_AnimatedLayerParameter_ReturnsFalse_WhileLayerOff()
-        {
-            var props = new HashSet<string> { "_Color2nd" };
             Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
         }
 
         [Test]
-        public void HasAnimatedMainBakeInput_AnimatedLayerParameter_ReturnsTrue_WhileLayerOn()
+        public void HasAnimatedMainBakeInput_AnimatedLayerParameter_ReturnsFalse()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             var props = new HashSet<string> { "_Color2nd" };
-            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
-        }
-
-        [Test]
-        public void HasAnimatedMainBakeInput_AnimatedLayerTexture_ReturnsTrue_WhileLayerOn()
-        {
-            _material.SetFloat("_UseMain3rdTex", 1f);
-            var props = new HashSet<string> { "_Main3rdTex" };
-            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
+            Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
         }
 
         #endregion
