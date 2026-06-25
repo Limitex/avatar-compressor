@@ -27,6 +27,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly AnimationUsageMap _animationUsageMap;
         private readonly IUnusedSlotOptimizer _unusedSlotOptimizer;
         private readonly bool _unusedDetectionEnabled;
+        private readonly ILilToonBaker _lilToonBaker;
+        private readonly bool _lilToonBakeEnabled;
 
         // Flag to avoid repeating the same warning for every texture (per-build instance)
         private bool _streamingMipmapsWarningShown;
@@ -38,7 +40,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             TextureCompressor config,
             AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto,
             AnimationUsageMap animationUsageMap = null,
-            IUnusedSlotOptimizer unusedSlotOptimizer = null
+            IUnusedSlotOptimizer unusedSlotOptimizer = null,
+            ILilToonBaker lilToonBaker = null
         )
         {
             _config = config;
@@ -52,6 +55,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 && animationUsageMap != null
                 && unusedSlotOptimizer != null
                 && unusedSlotOptimizer.IsAvailable;
+
+            _lilToonBaker = lilToonBaker;
+            _lilToonBakeEnabled =
+                config.BakeLilToonTextures
+                && animationUsageMap != null
+                && lilToonBaker != null
+                && lilToonBaker.IsAvailable;
 
             _collector = new TextureCollector(
                 config.MinSourceSize,
@@ -176,6 +186,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var clonedMaterials = MaterialCloner.CloneAndReplace(referenceList);
 
             var clonedMaterialList = clonedMaterials.Values.ToList();
+
+            // Bake lilToon color adjustments into main textures before slot pruning and
+            // collection so the baked texture (not its source) is what gets analyzed and
+            // compressed, and so input textures consumed by the bake (gradation maps, 2nd/3rd
+            // layers, alpha masks) drop out of the build via the slot pruning below.
+            if (_lilToonBakeEnabled)
+            {
+                BakeLilToonAdjustments(clonedMaterialList, enableLogging);
+            }
 
             // Must run before texture collection so the collector only sees surviving bindings
             // (see UnusedSlotPruner remarks).
@@ -377,6 +396,38 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             return (processedTextures, clonedMaterials);
+        }
+
+        /// <summary>
+        /// Bakes lilToon color adjustments into the main textures of the cloned materials. The
+        /// per-material decisions (lilToon check, no-op detection, animation veto) live in the
+        /// baker (see <see cref="ILilToonBaker"/>); this only drives it across the build and
+        /// hands it the collector's filter so excluded/frozen-skipped textures are never baked.
+        /// </summary>
+        private void BakeLilToonAdjustments(List<Material> clonedMaterials, bool enableLogging)
+        {
+            int bakedSlots = 0;
+            int skippedByAnimation = 0;
+
+            foreach (var material in clonedMaterials)
+            {
+                var result = _lilToonBaker.Bake(
+                    material,
+                    _animationUsageMap,
+                    _collector.WouldProcess
+                );
+                bakedSlots += result.BakedSlots;
+                skippedByAnimation += result.SkippedByAnimation;
+            }
+
+            if (enableLogging && (bakedSlots > 0 || skippedByAnimation > 0))
+            {
+                Debug.Log(
+                    $"[{Name}] lilToon texture baking: baked {bakedSlots} texture slot(s), "
+                        + $"skipped {skippedByAnimation} bake(s) whose inputs are driven by "
+                        + "animation."
+                );
+            }
         }
 
         /// <summary>

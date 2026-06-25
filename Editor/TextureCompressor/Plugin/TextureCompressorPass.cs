@@ -30,27 +30,29 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // Collect all material references using MaterialCollector
             var materialReferences = MaterialCollector.CollectAll(ctx);
 
-            // Unused-slot detection: probe the shader integration first (a cheap reflection
-            // lookup) and only scan the merged animators when the optimizer can actually be used,
-            // so builds without lilToon never pay for a usage map they would discard. The service
-            // re-validates the full gate (config + map + optimizer availability).
+            // Probe the lilToon integrations first (cheap reflection lookups) and only scan the
+            // merged animators when at least one integration can actually be used, so builds
+            // without lilToon never pay for a usage map they would discard. Each service
+            // re-validates the full gate (config + map + integration availability).
             LilToonUnusedSlotOptimizer unusedSlotOptimizer = null;
+            LilToonTextureBaker lilToonBaker = null;
             AnimationUsageMap animationUsageMap = null;
+
             if (config.DetectUnusedTextures)
-            {
                 unusedSlotOptimizer = new LilToonUnusedSlotOptimizer();
-                if (unusedSlotOptimizer.IsAvailable)
-                {
-                    animationUsageMap = AnimationUsageMap.Build(ctx);
-                }
-            }
+            if (config.BakeLilToonTextures)
+                lilToonBaker = new LilToonTextureBaker();
+
+            if (unusedSlotOptimizer?.IsAvailable == true || lilToonBaker?.IsAvailable == true)
+                animationUsageMap = AnimationUsageMap.Build(ctx);
 
             // Create service and compress textures
             var service = new TextureCompressorService(
                 config,
                 AvatarCompressorPreferences.AnalysisBackend,
                 animationUsageMap,
-                unusedSlotOptimizer
+                unusedSlotOptimizer,
+                lilToonBaker
             );
             var (processedTextures, clonedMaterials) = service.CompressWithMappings(
                 materialReferences,

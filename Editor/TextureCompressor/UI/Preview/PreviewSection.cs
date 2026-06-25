@@ -143,15 +143,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             EditorGUILayout.EndVertical();
 
-            // Unused-slot detection needs the NDMF build context (merged animators), so the
-            // preview cannot reflect it.
-            if (config.DetectUnusedTextures)
+            // Some optimizations need the NDMF build context (merged animators) and cannot
+            // run during preview.
+            if (config.DetectUnusedTextures || config.BakeLilToonTextures)
             {
                 EditorGUILayout.HelpBox(
-                    "Unused texture slot removal is not reflected in this preview: it runs only "
-                        + "during the NDMF build. Textures in lilToon slots whose feature toggle "
-                        + "is off may be removed from the upload entirely, so actual results can "
-                        + "be smaller than shown.",
+                    "Some optimizations run only during the NDMF build and are not reflected "
+                        + "here (unused texture slot removal, lilToon texture baking). "
+                        + "Actual results can be smaller than shown.",
                     MessageType.Info
                 );
             }

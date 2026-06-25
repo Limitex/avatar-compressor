@@ -2810,6 +2810,135 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region LilToon Bake Gate Tests
+
+        [Test]
+        public void Compress_CallsLilToonBaker_AndForwardsAnimationMapAndFilter()
+        {
+            var config = CreateConfig();
+            config.BakeLilToonTextures = true;
+            var map = new AnimationUsageMap(new[] { "_MainTexHSVG" });
+            var baker = new FakeLilToonBaker(available: true);
+            var service = new TextureCompressorService(
+                config,
+                animationUsageMap: map,
+                lilToonBaker: baker
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = CreateMaterial();
+
+            service.Compress(root, false);
+
+            Assert.AreEqual(1, baker.CallCount);
+            Assert.AreSame(
+                map,
+                baker.LastAnimationUsageMap,
+                "The animation usage map must reach the baker unchanged"
+            );
+            Assert.IsNotNull(
+                baker.LastCanReplaceTexture,
+                "The baker must receive the collector's filter so excluded/frozen textures "
+                    + "are never baked"
+            );
+        }
+
+        [Test]
+        public void Compress_SkipsLilToonBaking_WhenDisabledInConfig()
+        {
+            var config = CreateConfig();
+            config.BakeLilToonTextures = false;
+            var baker = new FakeLilToonBaker(available: true);
+            var service = new TextureCompressorService(
+                config,
+                animationUsageMap: AnimationUsageMap.Empty,
+                lilToonBaker: baker
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = CreateMaterial();
+
+            service.Compress(root, false);
+
+            Assert.AreEqual(0, baker.CallCount);
+        }
+
+        [Test]
+        public void Compress_SkipsLilToonBaking_WhenAnimationMapMissing()
+        {
+            var config = CreateConfig();
+            config.BakeLilToonTextures = true;
+            var baker = new FakeLilToonBaker(available: true);
+            var service = new TextureCompressorService(
+                config,
+                animationUsageMap: null,
+                lilToonBaker: baker
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = CreateMaterial();
+
+            service.Compress(root, false);
+
+            Assert.AreEqual(0, baker.CallCount);
+        }
+
+        [Test]
+        public void Compress_SkipsLilToonBaking_WhenBakerUnavailable()
+        {
+            var config = CreateConfig();
+            config.BakeLilToonTextures = true;
+            var baker = new FakeLilToonBaker(available: false);
+            var service = new TextureCompressorService(
+                config,
+                animationUsageMap: AnimationUsageMap.Empty,
+                lilToonBaker: baker
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = CreateMaterial();
+
+            service.Compress(root, false);
+
+            Assert.AreEqual(0, baker.CallCount);
+        }
+
+        private sealed class FakeLilToonBaker : ILilToonBaker
+        {
+            private readonly bool _available;
+
+            public FakeLilToonBaker(bool available)
+            {
+                _available = available;
+            }
+
+            public int CallCount { get; private set; }
+
+            public AnimationUsageMap LastAnimationUsageMap { get; private set; }
+
+            public System.Func<Texture2D, string, bool> LastCanReplaceTexture { get; private set; }
+
+            public bool IsAvailable => _available;
+
+            public LilToonBakeResult Bake(
+                Material material,
+                AnimationUsageMap animationUsageMap,
+                System.Func<Texture2D, string, bool> canReplaceTexture
+            )
+            {
+                CallCount++;
+                LastAnimationUsageMap = animationUsageMap;
+                LastCanReplaceTexture = canReplaceTexture;
+                return default;
+            }
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private TextureCompressor CreateConfig()

@@ -2228,5 +2228,71 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         #endregion
+
+        #region WouldProcess Tests
+
+        [Test]
+        public void WouldProcess_NullTexture_ReturnsFalse()
+        {
+            Assert.IsFalse(_collector.WouldProcess(null, "_MainTex"));
+        }
+
+        [Test]
+        public void WouldProcess_AssetTexture_ReturnsTrue()
+        {
+            var texture = CreateTexture(512, 512);
+            Assert.IsTrue(_collector.WouldProcess(texture, "_MainTex"));
+        }
+
+        [Test]
+        public void WouldProcess_RuntimeGeneratedTexture_ReturnsFalse()
+        {
+            var runtimeTexture = CreateRuntimeTexture(512, 512);
+            Assert.IsFalse(_collector.WouldProcess(runtimeTexture, "_MainTex"));
+        }
+
+        [Test]
+        public void WouldProcess_TextureBelowMinSize_ReturnsFalse()
+        {
+            var texture = CreateTexture(32, 32);
+            Assert.IsFalse(_collector.WouldProcess(texture, "_MainTex"));
+        }
+
+        [Test]
+        public void WouldProcess_ExcludedTexture_ReturnsFalse()
+        {
+            var texture = CreateTexture(512, 512);
+            var collector = new TextureCollector(
+                64,
+                0,
+                true,
+                true,
+                true,
+                true,
+                true,
+                excludedTextures: new[] { texture }
+            );
+
+            Assert.IsFalse(collector.WouldProcess(texture, "_MainTex"));
+        }
+
+        [Test]
+        public void WouldProcess_FilteredType_ReturnsFalse()
+        {
+            var texture = CreateTexture(512, 512);
+            var collector = new TextureCollector(
+                64,
+                0,
+                processMainTextures: false,
+                processNormalMaps: true,
+                processEmissionMaps: true,
+                processOtherTextures: true,
+                skipUnknownUncompressedTextures: true
+            );
+
+            Assert.IsFalse(collector.WouldProcess(texture, "_MainTex"));
+        }
+
+        #endregion
     }
 }

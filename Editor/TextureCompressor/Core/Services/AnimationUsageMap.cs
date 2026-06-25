@@ -92,6 +92,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
+        /// Returns true if the given material property is animated anywhere in the avatar.
+        /// </summary>
+        public bool IsMaterialPropertyAnimated(string propertyName)
+        {
+            return !string.IsNullOrEmpty(propertyName)
+                && _animatedMaterialProperties.Contains(propertyName);
+        }
+
+        /// <summary>
         /// Builds the map from the avatar's merged animator hierarchy.
         /// Returns <c>null</c> if the animator services are unavailable or scanning fails — callers
         /// should treat a <c>null</c> map as "cannot prove anything unused" and skip detection.

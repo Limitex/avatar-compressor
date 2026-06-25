@@ -89,6 +89,19 @@ namespace dev.limitex.avatar.compressor
         )]
         public bool DetectUnusedTextures = true;
 
+        [Header("lilToon Texture Baking")]
+        [Tooltip(
+            "Bake lilToon texture adjustments during the NDMF build: main-color adjustments "
+                + "(hue/saturation/gradation and active 2nd/3rd layers) and the alpha mask into "
+                + "the main texture, and outline tone correction into the outline texture — so "
+                + "the adjusted textures ship instead of the adjustment textures and per-pixel "
+                + "shader work. Any bake whose input property is driven by animation is skipped "
+                + "entirely, and colors (_Color, _OutlineColor) are never baked, so color-change "
+                + "animations keep working. Requires lilToon; does nothing when it is not "
+                + "installed."
+        )]
+        public bool BakeLilToonTextures = true;
+
         [Header("Size Filters")]
         [Tooltip("Only process textures larger than this size")]
         public int MinSourceSize = 256;
