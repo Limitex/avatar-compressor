@@ -326,6 +326,24 @@ namespace dev.limitex.avatar.compressor.tests
             Object.DestroyImmediate(material);
         }
 
+        [Test]
+        public void HasBakeableOutline_NonDefaultOutlineTiling_ReturnsFalse()
+        {
+            _material.SetTexture("_OutlineTex", _texture);
+            _material.SetVector("_OutlineTexHSVG", new Vector4(0.5f, 1f, 1f, 1f));
+            _material.SetTextureScale("_OutlineTex", new Vector2(2f, 2f));
+            Assert.IsFalse(LilToonTextureBaker.HasBakeableOutline(_material));
+        }
+
+        [Test]
+        public void HasBakeableOutline_NonDefaultOutlineOffset_ReturnsFalse()
+        {
+            _material.SetTexture("_OutlineTex", _texture);
+            _material.SetVector("_OutlineTexHSVG", new Vector4(0.5f, 1f, 1f, 1f));
+            _material.SetTextureOffset("_OutlineTex", new Vector2(0.5f, 0f));
+            Assert.IsFalse(LilToonTextureBaker.HasBakeableOutline(_material));
+        }
+
         #endregion
 
         #region HasAnimatedOutlineBakeInput

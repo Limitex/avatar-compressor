@@ -160,6 +160,15 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             _runBake = ResolveRunBake();
             _checkShaderIsLilToon = ResolveCheckShaderIsLilToon();
             _bakerShader = _runBake != null ? ResolveBakerShader() : null;
+
+            if (_runBake != null && !IsAvailable)
+            {
+                Debug.LogWarning(
+                    "[LAC Texture Compressor] lilToon is installed, but the baker shader "
+                        + $"'{BakerShaderName}' was not found or is not supported. "
+                        + "Texture baking is disabled for this build."
+                );
+            }
         }
 
         public bool IsAvailable =>
@@ -242,6 +251,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             // into, and generating one from scratch would only inflate the avatar.
             var mainTexture = GetTexture(material, MainTexProperty) as Texture2D;
             if (mainTexture == null)
+                return;
+
+            // The baker samples _MainTex at default ST; a non-default tiling/offset would
+            // produce a misaligned bake. Skip rather than bake incorrectly.
+            if (
+                material.GetTextureScale(MainTexProperty) != Vector2.one
+                || material.GetTextureOffset(MainTexProperty) != Vector2.zero
+            )
                 return;
 
             if (HasAnimatedMainBakeInput(material, animationUsageMap))
@@ -515,6 +532,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (mainTexture == null)
                 return;
 
+            if (
+                material.GetTextureScale(MainTexProperty) != Vector2.one
+                || material.GetTextureOffset(MainTexProperty) != Vector2.zero
+            )
+                return;
+
             if (HasAnimatedAlphaMaskBakeInput(animationUsageMap))
             {
                 skippedByAnimation++;
@@ -664,7 +687,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 && material.HasProperty(OutlineTexProperty)
                 && material.HasProperty(OutlineTexHsvgProperty)
                 && material.GetTexture(OutlineTexProperty) != null
-                && material.GetVector(OutlineTexHsvgProperty) != DefaultHsvg;
+                && material.GetVector(OutlineTexHsvgProperty) != DefaultHsvg
+                && material.GetTextureScale(OutlineTexProperty) == Vector2.one
+                && material.GetTextureOffset(OutlineTexProperty) == Vector2.zero;
         }
 
         /// <summary>
@@ -823,10 +848,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 BakerShaderFieldName,
                 BindingFlags.Public | BindingFlags.Static
             );
-            if (field?.GetValue(null) is Shader shader && shader != null)
+            if (field?.GetValue(null) is Shader shader && shader != null && shader.isSupported)
                 return shader;
 
-            return Shader.Find(BakerShaderName);
+            var found = Shader.Find(BakerShaderName);
+            return found != null && found.isSupported ? found : null;
         }
 
         private static Type FindType(string fullName)
