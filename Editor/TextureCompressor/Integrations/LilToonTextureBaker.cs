@@ -11,23 +11,20 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
     /// <summary>
     /// Bakes lilToon's texture adjustments — main-color adjustments (HSVG, gradation map, active
     /// 2nd/3rd layers), the alpha mask, and outline tone correction — into their textures,
-    /// through lilToon's public <c>lilToonInspector.RunBake</c> and its baker shader
-    /// (<c>Hidden/ltsother_baker</c>) accessed via reflection.
+    /// using lilToon's baker shader (<c>Hidden/ltsother_baker</c>) via standard Unity
+    /// <see cref="Graphics.Blit"/>.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// lilToon is an optional, external package and is not a declared dependency of this project,
-    /// so it cannot be referenced at compile time. The API is resolved through
-    /// <see cref="OptionalStaticMethod"/> and raw reflection, which keeps the build green whether
-    /// or not lilToon is installed: when its types are absent, <see cref="IsAvailable"/> is false
-    /// and every call is a no-op (the bake feature simply passes through).
+    /// This class does not call any lilToon C# API at runtime. It depends only on lilToon's
+    /// baker shader being present (resolved via <see cref="Shader.Find"/>) and on the property
+    /// names declared by lilToon's shaders. When lilToon is not installed the baker shader is
+    /// absent, <see cref="IsAvailable"/> is false, and every call is a no-op.
     /// </para>
     /// <para>
-    /// lilToon exposes no non-interactive entry point for baking (its <c>AutoBake*</c> methods
-    /// are private and show modal dialogs), so the property mapping below is a port of
-    /// <c>lilEditorTextureBaker</c> — the pixel math itself still runs through lilToon's own
-    /// shader and <c>RunBake</c>, but the mapping is ours and must be re-checked against lilToon
-    /// when it updates.
+    /// The property mapping is a port of <c>lilEditorTextureBaker</c> and must be re-checked
+    /// against lilToon when it updates. A version guard based on
+    /// <c>lilConstants.currentVersionValue</c> disables baking for untested versions.
     /// </para>
     /// <para>
     /// Two deliberate deviations from lilToon's inspector bakes. First, the main color
@@ -40,13 +37,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
     /// </remarks>
     public sealed class LilToonTextureBaker : ILilToonBaker
     {
-        private const string InspectorTypeName = "lilToon.lilToonInspector";
-        private const string RunBakeMethodName = "RunBake";
-        private const string MaterialUtilsTypeName = "lilToon.lilMaterialUtils";
-        private const string CheckShaderMethodName = "CheckShaderIslilToon";
-        private const string ShaderManagerTypeName = "lilToon.lilShaderManager";
-        private const string BakerShaderFieldName = "ltsbaker";
         private const string BakerShaderName = "Hidden/ltsother_baker";
+        private const string LilConstantsTypeName = "lilToon.lilConstants";
+        private const string VersionFieldName = "currentVersionValue";
+        private const int SupportedVersionMax = 45;
 
         private const string MainTexProperty = "_MainTex";
         private const string MainColorProperty = "_Color";
@@ -113,8 +107,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             OutlineTexHsvgProperty,
         };
 
-        private readonly OptionalStaticMethod _runBake;
-        private readonly OptionalStaticMethod _checkShaderIsLilToon;
         private readonly Shader _bakerShader;
 
         private readonly Dictionary<(Texture2D Source, string Key), Texture2D> _bakeCache =
@@ -122,39 +114,22 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
         public LilToonTextureBaker()
         {
-            _runBake = new OptionalStaticMethod(
-                InspectorTypeName,
-                RunBakeMethodName,
-                typeof(Texture2D).MakeByRefType(),
-                typeof(Texture2D),
-                typeof(Material),
-                typeof(Texture2D)
-            );
+            var version = GetLilToonVersion();
 
-            _checkShaderIsLilToon = new OptionalStaticMethod(
-                MaterialUtilsTypeName,
-                CheckShaderMethodName,
-                typeof(Material)
-            );
-
-            _bakerShader = _runBake.IsAvailable ? ResolveBakerShader() : null;
-
-            if (
-                _runBake.Status == OptionalStaticMethod.ResolutionStatus.MethodNotFound
-                || _checkShaderIsLilToon.Status
-                    == OptionalStaticMethod.ResolutionStatus.MethodNotFound
-            )
+            if (version.HasValue && version.Value > SupportedVersionMax)
             {
                 Debug.LogWarning(
-                    "[LAC Texture Compressor] lilToon is installed, but a required bake method "
-                        + "was not found. Texture baking is disabled for this build."
+                    "[LAC Texture Compressor] lilToon version "
+                        + $"{version.Value} is newer than the tested version "
+                        + $"({SupportedVersionMax}). Texture baking is disabled for this build."
                 );
+                return;
             }
-            else if (
-                _runBake.IsAvailable
-                && _checkShaderIsLilToon.IsAvailable
-                && _bakerShader == null
-            )
+
+            var shader = Shader.Find(BakerShaderName);
+            _bakerShader = shader != null && shader.isSupported ? shader : null;
+
+            if (version.HasValue && _bakerShader == null)
             {
                 Debug.LogWarning(
                     "[LAC Texture Compressor] lilToon is installed, but the baker shader "
@@ -164,8 +139,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             }
         }
 
-        public bool IsAvailable =>
-            _runBake.IsAvailable && _checkShaderIsLilToon.IsAvailable && _bakerShader != null;
+        public bool IsAvailable => _bakerShader != null;
 
         public Texture2D[] Bake(Material material, IReadOnlyCollection<string> animatedProperties)
         {
@@ -177,7 +151,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             )
                 return Array.Empty<Texture2D>();
 
-            if (!IsLilToonMaterial(material))
+            if (!IsLilToonShader(material.shader))
                 return Array.Empty<Texture2D>();
 
             var bakedTextures = new List<Texture2D>();
@@ -588,7 +562,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             try
             {
                 configure(baker);
-                baked = InvokeRunBake(source, baker);
+                baked = BlitBake(source, baker);
             }
             finally
             {
@@ -604,21 +578,20 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             return baked;
         }
 
-        private Texture2D InvokeRunBake(Texture2D source, Material baker)
+        private static Texture2D BlitBake(Texture2D source, Material baker)
         {
-            var args = new object[] { null, source, baker, null };
-            if (!_runBake.TryInvoke(args, out _, out var error))
-            {
-                if (error != null)
-                {
-                    Debug.LogWarning(
-                        "[LAC Texture Compressor] lilToon texture baking failed: "
-                            + $"{error.Message}. Baking is disabled for the rest of this build."
-                    );
-                }
-                return null;
-            }
-            return args[0] as Texture2D;
+            int width = source.width;
+            int height = source.height;
+            var output = new Texture2D(width, height);
+            var prev = RenderTexture.active;
+            var rt = RenderTexture.GetTemporary(width, height);
+            Graphics.Blit(source, rt, baker);
+            RenderTexture.active = rt;
+            output.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+            output.Apply();
+            RenderTexture.active = prev;
+            RenderTexture.ReleaseTemporary(rt);
+            return output;
         }
 
         private static bool AnyAnimated(
@@ -684,50 +657,29 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             return material.HasProperty(name) ? material.GetTexture(name) : null;
         }
 
-        private bool IsLilToonMaterial(Material material)
+        private static bool IsLilToonShader(Shader shader)
         {
-            if (
-                !_checkShaderIsLilToon.TryInvoke(
-                    new object[] { material },
-                    out var result,
-                    out var error
-                )
-            )
-            {
-                if (error != null)
-                {
-                    Debug.LogWarning(
-                        "[LAC Texture Compressor] lilToon shader check failed: "
-                            + $"{error.Message}. Baking is disabled for the rest of this build."
-                    );
-                }
+            if (shader == null)
                 return false;
-            }
-            return result is bool b && b;
+            var name = shader.name;
+            return name.Contains("lilToon") || name.Contains("lts_pass");
         }
 
-        private static Shader ResolveBakerShader()
+        private static int? GetLilToonVersion()
         {
-            Type shaderManagerType = null;
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                shaderManagerType = assembly.GetType(ShaderManagerTypeName, throwOnError: false);
-                if (shaderManagerType != null)
-                    break;
-            }
-
-            if (shaderManagerType != null)
-            {
-                var field = shaderManagerType.GetField(
-                    BakerShaderFieldName,
+                var type = assembly.GetType(LilConstantsTypeName, throwOnError: false);
+                if (type == null)
+                    continue;
+                var field = type.GetField(
+                    VersionFieldName,
                     BindingFlags.Public | BindingFlags.Static
                 );
-                if (field?.GetValue(null) is Shader shader && shader != null && shader.isSupported)
-                    return shader;
+                if (field?.GetValue(null) is int v)
+                    return v;
             }
-
-            var found = Shader.Find(BakerShaderName);
-            return found != null && found.isSupported ? found : null;
+            return null;
         }
     }
 }
