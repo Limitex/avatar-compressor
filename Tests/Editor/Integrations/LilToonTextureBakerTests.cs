@@ -117,6 +117,13 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void HasBakeableColorAdjustments_ThirdLayerEnabled_ReturnsTrue()
+        {
+            _material.SetFloat("_UseMain3rdTex", 1f);
+            Assert.IsTrue(LilToonTextureBaker.HasBakeableColorAdjustments(_material));
+        }
+
+        [Test]
         public void HasBakeableColorAdjustments_MainColorOnly_ReturnsFalse()
         {
             _material.SetColor("_Color", Color.red);
@@ -186,9 +193,56 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
         }
 
+        [Test]
+        public void HasAnimatedMainBakeInput_AnimatedThirdLayerToggle_ReturnsFalse()
+        {
+            var props = new HashSet<string> { "_UseMain3rdTex" };
+            Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
+        }
+
+        [Test]
+        public void HasAnimatedMainBakeInput_AnimatedGradationStrength_ReturnsTrue()
+        {
+            var props = new HashSet<string> { "_MainGradationStrength" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
+        }
+
+        [Test]
+        public void HasAnimatedMainBakeInput_AnimatedGradationTex_ReturnsTrue()
+        {
+            var props = new HashSet<string> { "_MainGradationTex" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
+        }
+
+        [Test]
+        public void HasAnimatedMainBakeInput_AnimatedColorAdjustMask_ReturnsTrue()
+        {
+            var props = new HashSet<string> { "_MainColorAdjustMask" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, props));
+        }
+
+        [Test]
+        public void HasAnimatedMainBakeInput_NullMaterial_ReturnsFalse()
+        {
+            var props = new HashSet<string> { "_MainTexHSVG" };
+            Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(null, props));
+        }
+
+        [Test]
+        public void HasAnimatedMainBakeInput_NullProperties_ReturnsFalse()
+        {
+            Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(_material, null));
+        }
+
         #endregion
 
         #region HasBakeableAlphaMask
+
+        [Test]
+        public void HasBakeableAlphaMask_NullMaterial_ReturnsFalse()
+        {
+            Assert.IsFalse(LilToonTextureBaker.HasBakeableAlphaMask(null));
+        }
 
         [Test]
         public void HasBakeableAlphaMask_DefaultMaterial_ReturnsFalse()
@@ -272,9 +326,36 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.IsFalse(LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(props));
         }
 
+        [Test]
+        public void HasAnimatedAlphaMaskBakeInput_AnimatedScale_ReturnsTrue()
+        {
+            var props = new HashSet<string> { "_AlphaMaskScale" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(props));
+        }
+
+        [Test]
+        public void HasAnimatedAlphaMaskBakeInput_AnimatedValue_ReturnsTrue()
+        {
+            var props = new HashSet<string> { "_AlphaMaskValue" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(props));
+        }
+
+        [Test]
+        public void HasAnimatedAlphaMaskBakeInput_AnimatedMainTex_ReturnsTrue()
+        {
+            var props = new HashSet<string> { "_MainTex" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(props));
+        }
+
         #endregion
 
         #region HasBakeableOutline
+
+        [Test]
+        public void HasBakeableOutline_NullMaterial_ReturnsFalse()
+        {
+            Assert.IsFalse(LilToonTextureBaker.HasBakeableOutline(null));
+        }
 
         [Test]
         public void HasBakeableOutline_DefaultMaterial_ReturnsFalse()
