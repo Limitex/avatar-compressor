@@ -29,16 +29,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// Draws the lilToon optimization section containing texture baking and unused-slot
         /// detection toggles under a shared foldout.
         /// </summary>
-        public static void DrawLilToonOptimizations(
-            TextureCompressor config,
-            ref bool showSection
-        )
+        public static void DrawLilToonOptimizations(TextureCompressor config, ref bool showSection)
         {
-            showSection = EditorGUILayout.Foldout(
-                showSection,
-                "lilToon Optimizations",
-                true
-            );
+            showSection = EditorGUILayout.Foldout(showSection, "lilToon Optimizations", true);
             if (!showSection)
                 return;
 

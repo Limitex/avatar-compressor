@@ -150,10 +150,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void HasAnimatedMainBakeInput_EmptySet_ReturnsFalse()
         {
             Assert.IsFalse(
-                LilToonTextureBaker.HasAnimatedMainBakeInput(
-                    _material,
-                    Array.Empty<string>()
-                )
+                LilToonTextureBaker.HasAnimatedMainBakeInput(_material, Array.Empty<string>())
             );
         }
 
@@ -422,9 +419,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void HasAnimatedOutlineBakeInput_EmptySet_ReturnsFalse()
         {
-            Assert.IsFalse(
-                LilToonTextureBaker.HasAnimatedOutlineBakeInput(Array.Empty<string>())
-            );
+            Assert.IsFalse(LilToonTextureBaker.HasAnimatedOutlineBakeInput(Array.Empty<string>()));
         }
 
         [Test]

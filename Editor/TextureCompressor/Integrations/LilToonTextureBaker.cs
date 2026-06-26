@@ -167,10 +167,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         public bool IsAvailable =>
             _runBake.IsAvailable && _checkShaderIsLilToon.IsAvailable && _bakerShader != null;
 
-        public Texture2D[] Bake(
-            Material material,
-            IReadOnlyCollection<string> animatedProperties
-        )
+        public Texture2D[] Bake(Material material, IReadOnlyCollection<string> animatedProperties)
         {
             if (
                 !IsAvailable
@@ -191,8 +188,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
             return bakedTextures.ToArray();
         }
-
-        // Main texture bake
 
         private void BakeMainTexture(
             Material material,
@@ -242,9 +237,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         }
 
         /// <summary>
-        /// True if the material carries main-color adjustments the bake would consume: a
-        /// non-default HSVG, an active gradation, or an enabled 2nd/3rd layer. False when the
-        /// shader does not declare the adjustment properties at all (e.g. lilToon Lite).
+        /// False when the shader does not declare the adjustment properties at all (e.g. lilToon
+        /// Lite).
         /// </summary>
         public static bool HasBakeableColorAdjustments(Material material)
         {
@@ -258,10 +252,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         }
 
         /// <summary>
-        /// True if any core input property of the main-texture bake (HSVG, gradation, main tex)
-        /// is driven by animation, in which case the bake must be skipped entirely. Layer toggles
-        /// and layer-specific properties are checked separately per layer — an animated layer is
-        /// excluded from the bake rather than vetoing the whole operation.
+        /// Layer toggles and layer-specific properties are checked separately per layer — an
+        /// animated layer is excluded from the bake rather than vetoing the whole operation.
         /// </summary>
         public static bool HasAnimatedMainBakeInput(
             Material material,
@@ -446,8 +438,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             AppendTextureKey(key, material, LayerBlendMaskProperty(layer));
         }
 
-        // Alpha mask bake
-
         private void BakeAlphaMask(
             Material material,
             IReadOnlyCollection<string> animatedProperties,
@@ -501,10 +491,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             bakedTextures.Add(baked);
         }
 
-        /// <summary>
-        /// True if the material has an active alpha mask the bake would consume: mask mode on,
-        /// a mask texture assigned, and default tiling/offset on both mask and main texture.
-        /// </summary>
         public static bool HasBakeableAlphaMask(Material material)
         {
             if (
@@ -523,9 +509,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             return IsDefaultTilingOffset(material, AlphaMaskProperty);
         }
 
-        /// <summary>
-        /// True if any input property of the alpha-mask bake is driven by animation.
-        /// </summary>
         public static bool HasAnimatedAlphaMaskBakeInput(
             IReadOnlyCollection<string> animatedProperties
         )
@@ -542,8 +525,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             AppendTextureKey(key, material, AlphaMaskProperty);
             return key.ToString();
         }
-
-        // Outline texture bake
 
         private void BakeOutlineTexture(
             Material material,
@@ -580,10 +561,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             bakedTextures.Add(baked);
         }
 
-        /// <summary>
-        /// True if the material has outline tone correction the bake would consume: an outline
-        /// texture with a non-default HSVG and default tiling/offset.
-        /// </summary>
         public static bool HasBakeableOutline(Material material)
         {
             return material != null
@@ -594,17 +571,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 && IsDefaultTilingOffset(material, OutlineTexProperty);
         }
 
-        /// <summary>
-        /// True if any input property of the outline bake is driven by animation.
-        /// </summary>
         public static bool HasAnimatedOutlineBakeInput(
             IReadOnlyCollection<string> animatedProperties
         )
         {
             return AnyAnimated(animatedProperties, OutlineBakeInputProperties);
         }
-
-        // Shared bake plumbing
 
         private Texture2D BakeTexture(Texture2D source, string key, Action<Material> configure)
         {
@@ -690,8 +662,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
         private static string LayerTexProperty(string layer) => "_Main" + layer + "Tex";
 
-        private static string LayerBlendMaskProperty(string layer) =>
-            "_Main" + layer + "BlendMask";
+        private static string LayerBlendMaskProperty(string layer) => "_Main" + layer + "BlendMask";
 
         private static float GetFloat(Material material, string name, float fallback)
         {

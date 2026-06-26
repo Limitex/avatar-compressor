@@ -2913,7 +2913,8 @@ namespace dev.limitex.avatar.compressor.tests
 
             public int CallCount { get; private set; }
 
-            public System.Collections.Generic.IReadOnlyCollection<string> LastAnimatedProperties {
+            public System.Collections.Generic.IReadOnlyCollection<string> LastAnimatedProperties
+            {
                 get;
                 private set;
             }

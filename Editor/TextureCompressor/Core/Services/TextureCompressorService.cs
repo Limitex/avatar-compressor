@@ -399,8 +399,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Bakes lilToon color adjustments into the main textures of the cloned materials. The
-        /// per-material decisions (lilToon check, no-op detection, animation veto) live in the
+        /// Per-material decisions (lilToon check, no-op detection, animation veto) live in the
         /// baker (see <see cref="ILilToonBaker"/>); this only drives it across the build.
         /// </summary>
         private void BakeLilToonAdjustments(List<Material> clonedMaterials, bool enableLogging)
@@ -418,9 +417,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             if (enableLogging && bakedSlots > 0)
             {
-                Debug.Log(
-                    $"[{Name}] lilToon texture baking: baked {bakedSlots} texture slot(s)."
-                );
+                Debug.Log($"[{Name}] lilToon texture baking: baked {bakedSlots} texture slot(s).");
             }
         }
 
