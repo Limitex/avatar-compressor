@@ -582,16 +582,31 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         {
             int width = source.width;
             int height = source.height;
-            var output = new Texture2D(width, height);
-            var prev = RenderTexture.active;
-            var rt = RenderTexture.GetTemporary(width, height);
-            Graphics.Blit(source, rt, baker);
-            RenderTexture.active = rt;
-            output.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-            output.Apply();
-            RenderTexture.active = prev;
-            RenderTexture.ReleaseTemporary(rt);
-            return output;
+            var rt = new RenderTexture(width, height, 0);
+            RenderTexture previous = RenderTexture.active;
+            Texture2D output = null;
+            try
+            {
+                rt.Create();
+                RenderTexture.active = rt;
+                Graphics.Blit(source, rt, baker);
+
+                output = new Texture2D(width, height);
+                output.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+                output.Apply();
+
+                var result = output;
+                output = null;
+                return result;
+            }
+            finally
+            {
+                RenderTexture.active = previous;
+                rt.Release();
+                UnityEngine.Object.DestroyImmediate(rt);
+                if (output != null)
+                    UnityEngine.Object.DestroyImmediate(output);
+            }
         }
 
         private static bool AnyAnimated(
@@ -662,7 +677,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (shader == null)
                 return false;
             var name = shader.name;
-            return name.Contains("lilToon") || name.Contains("lts_pass");
+            return name.Contains("lilToon");
         }
 
         private static int? GetLilToonVersion()
