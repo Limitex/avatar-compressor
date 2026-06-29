@@ -49,6 +49,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var service = new TextureCompressorService(
                 config,
                 AvatarCompressorPreferences.AnalysisBackend,
+                AvatarCompressorPreferences.ResizeBackend,
                 animationUsageMap,
                 unusedSlotOptimizer
             );

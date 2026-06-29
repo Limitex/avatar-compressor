@@ -37,6 +37,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public TextureCompressorService(
             TextureCompressor config,
             AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto,
+            ResizeBackendPreference resizeBackendPreference = ResizeBackendPreference.Auto,
             AnimationUsageMap animationUsageMap = null,
             IUnusedSlotOptimizer unusedSlotOptimizer = null
         )
@@ -69,7 +70,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             _processor = new TextureProcessor(
                 config.MinResolution,
                 config.MaxResolution,
-                config.ForcePowerOfTwo
+                config.ForcePowerOfTwo,
+                resizeBackendPreference
             );
 
             _formatSelector = new TextureFormatSelector(

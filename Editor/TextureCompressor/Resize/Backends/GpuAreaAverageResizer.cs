@@ -1,0 +1,180 @@
+using UnityEditor;
+using UnityEngine;
+
+namespace dev.limitex.avatar.compressor.editor.texture
+{
+    public class GpuAreaAverageResizer : ITextureResizer
+    {
+        private const string ShaderPath =
+            "Packages/dev.limitex.avatar-compressor/"
+            + "Editor/TextureCompressor/Resize/Shaders/AreaAverageResize.compute";
+
+        private const int ThreadGroupSize = 16;
+
+        private readonly ComputeShader _shader;
+        private readonly int _kernelHorizontal;
+        private readonly int _kernelVertical;
+
+        public GpuAreaAverageResizer(ComputeShader shader)
+        {
+            _shader = shader;
+            _kernelHorizontal = shader.FindKernel("AreaAverageHorizontal");
+            _kernelVertical = shader.FindKernel("AreaAverageVertical");
+        }
+
+        public static bool TryCreate(out GpuAreaAverageResizer resizer)
+        {
+            resizer = null;
+
+            if (!SystemInfo.supportsComputeShaders)
+                return false;
+
+            var shader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderPath);
+            if (shader == null)
+                return false;
+
+            try
+            {
+                resizer = new GpuAreaAverageResizer(shader);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning(
+                    $"[TextureCompressor] GPU area average resizer initialization failed: {e.Message}"
+                );
+                return false;
+            }
+        }
+
+        public Texture2D Resize(
+            Texture2D source,
+            int targetWidth,
+            int targetHeight,
+            bool isNormalMap
+        )
+        {
+            if (source == null)
+                return null;
+
+            int srcW = source.width;
+            int srcH = source.height;
+
+            float scaleX = (float)srcW / targetWidth;
+            float scaleY = (float)srcH / targetHeight;
+
+            RenderTexture sourceRT = null;
+            RenderTexture intermediateRT = null;
+            RenderTexture outputRT = null;
+            Texture2D result = null;
+            var previous = RenderTexture.active;
+
+            try
+            {
+                // Blit source to a Linear RenderTexture to decompress.
+                // sRGB sources undergo hardware sRGB→Linear decode during blit;
+                // the shader re-encodes Linear→sRGB before averaging to match
+                // the CPU path's sRGB-space averaging.
+                bool isSRGB = source.isDataSRGB && !isNormalMap;
+                sourceRT = new RenderTexture(
+                    srcW,
+                    srcH,
+                    0,
+                    RenderTextureFormat.ARGBFloat,
+                    RenderTextureReadWrite.Linear
+                );
+                sourceRT.Create();
+                Graphics.Blit(source, sourceRT);
+
+                intermediateRT = CreateUAVRenderTexture(targetWidth, srcH);
+                outputRT = CreateUAVRenderTexture(targetWidth, targetHeight);
+
+                _shader.SetInt("_SrcWidth", srcW);
+                _shader.SetInt("_SrcHeight", srcH);
+                _shader.SetInt("_DstWidth", targetWidth);
+                _shader.SetInt("_DstHeight", targetHeight);
+                _shader.SetFloat("_ScaleX", scaleX);
+                _shader.SetFloat("_ScaleY", scaleY);
+                _shader.SetInt("_ReencodeSRGB", isSRGB ? 1 : 0);
+
+                _shader.SetTexture(_kernelHorizontal, "_SourceTexture", sourceRT);
+                _shader.SetTexture(_kernelHorizontal, "_IntermediateTexture", intermediateRT);
+                _shader.Dispatch(
+                    _kernelHorizontal,
+                    CeilDiv(targetWidth, ThreadGroupSize),
+                    CeilDiv(srcH, ThreadGroupSize),
+                    1
+                );
+
+                _shader.SetTexture(_kernelVertical, "_IntermediateTexture", intermediateRT);
+                _shader.SetTexture(_kernelVertical, "_OutputTexture", outputRT);
+                _shader.Dispatch(
+                    _kernelVertical,
+                    CeilDiv(targetWidth, ThreadGroupSize),
+                    CeilDiv(targetHeight, ThreadGroupSize),
+                    1
+                );
+
+                RenderTexture.active = outputRT;
+                result = new Texture2D(
+                    targetWidth,
+                    targetHeight,
+                    TextureFormat.RGBA32,
+                    source.mipmapCount > 1,
+                    isNormalMap
+                );
+                result.ReadPixels(new Rect(0, 0, targetWidth, targetHeight), 0, 0);
+                result.Apply(source.mipmapCount > 1);
+
+                TextureProcessor.CopyTextureSettings(source, result);
+
+                var output = result;
+                result = null;
+                return output;
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning(
+                    $"[TextureCompressor] GPU area average resize failed for '{source.name}': {e.Message}"
+                );
+                return null;
+            }
+            finally
+            {
+                RenderTexture.active = previous;
+                if (result != null)
+                    Object.DestroyImmediate(result);
+                DestroyRT(sourceRT);
+                DestroyRT(intermediateRT);
+                DestroyRT(outputRT);
+            }
+        }
+
+        private static RenderTexture CreateUAVRenderTexture(int width, int height)
+        {
+            var rt = new RenderTexture(
+                width,
+                height,
+                0,
+                RenderTextureFormat.ARGBFloat,
+                RenderTextureReadWrite.Linear
+            );
+            rt.enableRandomWrite = true;
+            rt.Create();
+            return rt;
+        }
+
+        private static int CeilDiv(int a, int b)
+        {
+            return (a + b - 1) / b;
+        }
+
+        private static void DestroyRT(RenderTexture rt)
+        {
+            if (rt == null)
+                return;
+            rt.Release();
+            Object.DestroyImmediate(rt);
+        }
+    }
+}

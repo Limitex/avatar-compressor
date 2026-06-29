@@ -1,0 +1,94 @@
+#pragma kernel AreaAverageHorizontal
+#pragma kernel AreaAverageVertical
+
+Texture2D<float4> _SourceTexture;
+RWTexture2D<float4> _IntermediateTexture;
+RWTexture2D<float4> _OutputTexture;
+
+uint _SrcWidth;
+uint _SrcHeight;
+uint _DstWidth;
+uint _DstHeight;
+
+float _ScaleX;
+float _ScaleY;
+
+// When set, the horizontal kernel re-encodes linear values to sRGB before
+// averaging so that the result matches CPU-side sRGB-space averaging.
+// The GPU auto-decodes sRGB textures to linear on load; this reverses that.
+uint _ReencodeSRGB;
+
+float3 LinearToSRGB(float3 c)
+{
+    c = max(c, 0);
+    return float3(
+        c.r <= 0.0031308 ? c.r * 12.92 : 1.055 * pow(c.r, 1.0 / 2.4) - 0.055,
+        c.g <= 0.0031308 ? c.g * 12.92 : 1.055 * pow(c.g, 1.0 / 2.4) - 0.055,
+        c.b <= 0.0031308 ? c.b * 12.92 : 1.055 * pow(c.b, 1.0 / 2.4) - 0.055
+    );
+}
+
+[numthreads(16, 16, 1)]
+void AreaAverageHorizontal(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _DstWidth || id.y >= _SrcHeight)
+        return;
+
+    float a = id.x * _ScaleX;
+    float b = (id.x + 1) * _ScaleX;
+
+    int s = (int)a;
+    int e = min((int)ceil(b), (int)_SrcWidth);
+    if (e <= s)
+        e = min(s + 1, (int)_SrcWidth);
+
+    float4 sum = float4(0, 0, 0, 0);
+    float totalWeight = 0;
+
+    for (int sx = s; sx < e; sx++)
+    {
+        float w = min((float)(sx + 1), b) - max((float)sx, a);
+        w = max(w, 0);
+        float4 texel = _SourceTexture[int2(sx, id.y)];
+        if (_ReencodeSRGB)
+            texel.rgb = LinearToSRGB(texel.rgb);
+        sum += texel * w;
+        totalWeight += w;
+    }
+
+    if (totalWeight > 1e-12)
+        sum /= totalWeight;
+
+    _IntermediateTexture[int2(id.x, id.y)] = sum;
+}
+
+[numthreads(16, 16, 1)]
+void AreaAverageVertical(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _DstWidth || id.y >= _DstHeight)
+        return;
+
+    float a = id.y * _ScaleY;
+    float b = (id.y + 1) * _ScaleY;
+
+    int s = (int)a;
+    int e = min((int)ceil(b), (int)_SrcHeight);
+    if (e <= s)
+        e = min(s + 1, (int)_SrcHeight);
+
+    float4 sum = float4(0, 0, 0, 0);
+    float totalWeight = 0;
+
+    for (int sy = s; sy < e; sy++)
+    {
+        float w = min((float)(sy + 1), b) - max((float)sy, a);
+        w = max(w, 0);
+        sum += _IntermediateTexture[int2(id.x, sy)] * w;
+        totalWeight += w;
+    }
+
+    if (totalWeight > 1e-12)
+        sum /= totalWeight;
+
+    _OutputTexture[int2(id.x, id.y)] = saturate(sum);
+}

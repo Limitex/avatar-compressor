@@ -15,12 +15,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly int _minResolution;
         private readonly int _maxResolution;
         private readonly bool _forcePowerOfTwo;
+        private readonly ITextureResizer _resizer;
 
-        public TextureProcessor(int minResolution, int maxResolution, bool forcePowerOfTwo)
+        public TextureProcessor(
+            int minResolution,
+            int maxResolution,
+            bool forcePowerOfTwo,
+            ResizeBackendPreference resizeBackendPreference = ResizeBackendPreference.Auto
+        )
         {
             _minResolution = minResolution;
             _maxResolution = maxResolution;
             _forcePowerOfTwo = forcePowerOfTwo;
+            _resizer = AreaAverageResizerFactory.Create(resizeBackendPreference);
         }
 
         /// <summary>
@@ -154,16 +161,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Core blit logic: creates a resized Texture2D from source using RenderTexture.
-        /// Caller must hold RenderTextureLock. This method manages RenderTexture.active save/restore internally.
+        /// Core resize logic: delegates to ITextureResizer if available,
+        /// otherwise falls back to GPU blit.
+        /// Caller must hold RenderTextureLock when using the blit fallback path.
         /// </summary>
-        private static Texture2D BlitResize(
+        private Texture2D BlitResize(
             Texture2D source,
             int newWidth,
             int newHeight,
             bool isNormalMap
         )
         {
+            if (_resizer != null)
+                return _resizer.Resize(source, newWidth, newHeight, isNormalMap);
+
             // Normal maps store vector data, not color, so they must be processed in linear space
             // to avoid sRGB gamma correction that would corrupt the normal vectors.
             var colorSpace = isNormalMap
@@ -221,7 +232,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             return RenderTextureFormat.ARGB32;
         }
 
-        private static void CopyTextureSettings(Texture2D source, Texture2D dest)
+        internal static void CopyTextureSettings(Texture2D source, Texture2D dest)
         {
             dest.wrapModeU = source.wrapModeU;
             dest.wrapModeV = source.wrapModeV;
