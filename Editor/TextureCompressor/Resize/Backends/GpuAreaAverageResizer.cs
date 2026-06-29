@@ -63,7 +63,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             float scaleX = (float)srcW / targetWidth;
             float scaleY = (float)srcH / targetHeight;
 
-            RenderTexture sourceRT = null;
             RenderTexture intermediateRT = null;
             RenderTexture outputRT = null;
             Texture2D result = null;
@@ -71,23 +70,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             try
             {
-                // Blit source to a Linear RenderTexture to decompress.
-                // sRGB sources undergo hardware sRGB→Linear decode during blit;
-                // the shader re-encodes Linear→sRGB before averaging to match
-                // the CPU path's sRGB-space averaging.
+                // sRGB textures undergo hardware sRGB→Linear decode when read
+                // through the SRV; the shader re-encodes Linear→sRGB before
+                // averaging to match the CPU path's sRGB-space averaging.
                 bool isSRGB = source.isDataSRGB && !isNormalMap;
-                sourceRT = new RenderTexture(
-                    srcW,
-                    srcH,
-                    0,
-                    RenderTextureFormat.ARGBFloat,
-                    RenderTextureReadWrite.Linear
-                );
-                sourceRT.Create();
-                Graphics.Blit(source, sourceRT);
 
                 intermediateRT = CreateUAVRenderTexture(targetWidth, srcH);
+                if (intermediateRT == null)
+                    return null;
                 outputRT = CreateUAVRenderTexture(targetWidth, targetHeight);
+                if (outputRT == null)
+                    return null;
 
                 _shader.SetInt("_SrcWidth", srcW);
                 _shader.SetInt("_SrcHeight", srcH);
@@ -97,7 +90,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 _shader.SetFloat("_ScaleY", scaleY);
                 _shader.SetInt("_ReencodeSRGB", isSRGB ? 1 : 0);
 
-                _shader.SetTexture(_kernelHorizontal, "_SourceTexture", sourceRT);
+                _shader.SetTexture(_kernelHorizontal, "_SourceTexture", source);
                 _shader.SetTexture(_kernelHorizontal, "_IntermediateTexture", intermediateRT);
                 _shader.Dispatch(
                     _kernelHorizontal,
@@ -144,7 +137,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 RenderTexture.active = previous;
                 if (result != null)
                     Object.DestroyImmediate(result);
-                DestroyRT(sourceRT);
                 DestroyRT(intermediateRT);
                 DestroyRT(outputRT);
             }
@@ -160,7 +152,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 RenderTextureReadWrite.Linear
             );
             rt.enableRandomWrite = true;
-            rt.Create();
+            if (!rt.Create())
+            {
+                Debug.LogWarning(
+                    $"[TextureCompressor] Failed to allocate {width}x{height} UAV RenderTexture"
+                );
+                Object.DestroyImmediate(rt);
+                return null;
+            }
             return rt;
         }
 
