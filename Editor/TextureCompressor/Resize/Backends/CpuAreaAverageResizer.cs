@@ -29,6 +29,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 return null;
 
             SplitChannels(pixels, srcW * srcH, out var r, out var g, out var b, out var a);
+            pixels = null;
 
             var planX = BuildPlan(srcW, targetWidth);
             var planY = BuildPlan(srcH, targetHeight);

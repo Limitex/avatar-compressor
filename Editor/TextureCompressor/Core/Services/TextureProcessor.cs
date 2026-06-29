@@ -173,7 +173,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
         )
         {
             if (_resizer != null)
-                return _resizer.Resize(source, newWidth, newHeight, isNormalMap);
+            {
+                var resizerResult = _resizer.Resize(source, newWidth, newHeight, isNormalMap);
+                if (resizerResult != null)
+                    return resizerResult;
+            }
 
             // Normal maps store vector data, not color, so they must be processed in linear space
             // to avoid sRGB gamma correction that would corrupt the normal vectors.

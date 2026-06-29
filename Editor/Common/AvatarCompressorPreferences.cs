@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using dev.limitex.avatar.compressor.editor.texture;
 using UnityEditor;
 using UnityEngine;
 
@@ -109,10 +110,13 @@ namespace dev.limitex.avatar.compressor.editor
                     AnalysisBackend = (AnalysisBackendPreference)
                         EditorGUILayout.EnumPopup(AnalysisBackendContent, AnalysisBackend);
 
+                    var analysisBackendName = AnalysisBackendFactory.ResolveBackendName(
+                        AnalysisBackend
+                    );
                     var analysisHelp = AnalysisBackend switch
                     {
                         AnalysisBackendPreference.Auto =>
-                            "Uses GPU compute shaders when available, otherwise falls back to CPU.",
+                            $"Currently using {analysisBackendName}. Uses GPU compute shaders when available, otherwise falls back to CPU.",
                         AnalysisBackendPreference.CPU =>
                             "Always uses CPU for texture analysis. Useful when GPU results are unstable or for debugging.",
                         _ => null,
@@ -127,10 +131,13 @@ namespace dev.limitex.avatar.compressor.editor
                     ResizeBackend = (ResizeBackendPreference)
                         EditorGUILayout.EnumPopup(ResizeBackendContent, ResizeBackend);
 
+                    var resizeBackendName = AreaAverageResizerFactory.ResolveBackendName(
+                        ResizeBackend
+                    );
                     var resizeHelp = ResizeBackend switch
                     {
                         ResizeBackendPreference.Auto =>
-                            "Uses GPU compute shaders for Area Averaging resize when available, otherwise falls back to CPU.",
+                            $"Currently using {resizeBackendName}. Uses GPU compute shaders for Area Averaging resize when available, otherwise falls back to CPU.",
                         ResizeBackendPreference.CPU =>
                             "Always uses CPU for texture resize. Useful when GPU results are unstable or for debugging.",
                         _ => null,
