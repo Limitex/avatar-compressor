@@ -24,7 +24,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 return CopyTexture(source, isNormalMap);
             }
 
-            var pixels = GetRawPixels(source);
+            var pixels = GetRawPixels(source, isNormalMap);
             if (pixels == null || pixels.Length == 0)
                 return null;
 
@@ -206,7 +206,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
         }
 
-        private static Color[] GetRawPixels(Texture2D texture)
+        private static Color[] GetRawPixels(Texture2D texture, bool isNormalMap = false)
         {
             if (texture.isReadable)
             {
@@ -223,6 +223,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
             }
 
+            var colorSpace = isNormalMap
+                ? RenderTextureReadWrite.Linear
+                : RenderTextureReadWrite.sRGB;
+
             RenderTexture rt = null;
             Texture2D readable = null;
             var previous = RenderTexture.active;
@@ -233,7 +237,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     texture.height,
                     0,
                     RenderTextureFormat.ARGB32,
-                    RenderTextureReadWrite.sRGB
+                    colorSpace
                 );
                 rt.Create();
                 Graphics.Blit(texture, rt);
@@ -244,7 +248,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     texture.height,
                     TextureFormat.RGBA32,
                     false,
-                    false
+                    isNormalMap
                 );
                 readable.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
                 readable.Apply(false);
@@ -311,7 +315,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         private static Texture2D CopyTexture(Texture2D source, bool isNormalMap)
         {
-            var pixels = GetRawPixels(source);
+            var pixels = GetRawPixels(source, isNormalMap);
             if (pixels == null)
                 return null;
 
