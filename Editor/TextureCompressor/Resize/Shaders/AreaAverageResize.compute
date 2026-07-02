@@ -47,6 +47,9 @@ float4 ResampleAxis(
 {
     float4 result = float4(0, 0, 0, 0);
 
+    // Each tap is clamped to [0,1] BEFORE weighting so HDR sources average the
+    // same as the CPU backend's 8-bit-clamped input (clamp-then-average, not
+    // average-then-clamp).
     if (scale < 1.0)
     {
         float c = (dstIndex + 0.5) * scale - 0.5;
@@ -54,8 +57,8 @@ float4 ResampleAxis(
         float f = c - i0;
         int s0 = clamp(i0, 0, (int)srcN - 1);
         int s1 = clamp(i0 + 1, 0, (int)srcN - 1);
-        float4 t0 = horizontal ? tex[int2(s0, fixedCoord)] : tex[int2(fixedCoord, s0)];
-        float4 t1 = horizontal ? tex[int2(s1, fixedCoord)] : tex[int2(fixedCoord, s1)];
+        float4 t0 = saturate(horizontal ? tex[int2(s0, fixedCoord)] : tex[int2(fixedCoord, s0)]);
+        float4 t1 = saturate(horizontal ? tex[int2(s1, fixedCoord)] : tex[int2(fixedCoord, s1)]);
         result = lerp(t0, t1, f);
     }
     else
@@ -75,7 +78,7 @@ float4 ResampleAxis(
         {
             float w = min((float)(sx + 1), b) - max((float)sx, a);
             w = max(w, 0);
-            sum += (horizontal ? tex[int2(sx, fixedCoord)] : tex[int2(fixedCoord, sx)]) * w;
+            sum += saturate(horizontal ? tex[int2(sx, fixedCoord)] : tex[int2(fixedCoord, sx)]) * w;
             totalWeight += w;
         }
 
