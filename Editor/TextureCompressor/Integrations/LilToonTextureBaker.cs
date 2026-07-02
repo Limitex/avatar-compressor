@@ -100,13 +100,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         };
 
         // Vetoed when animated but never copied to the baker: the layer ST is copied separately
-        // via SetTextureScale/Offset, and the baker shader cannot reproduce scroll/rotate or
-        // non-uv0 UV modes at all.
+        // via SetTextureScale/Offset, and the baker shader cannot reproduce the rest at all
+        // (scroll/rotate, non-uv0 UV modes, or the runtime layer features listed in
+        // HasUnbakeableLayerFeature).
         private static readonly string[] LayerAnimationVetoPropertyFormats =
         {
             "_Main{0}Tex_ST",
             "_Main{0}Tex_ScrollRotate",
             "_Main{0}Tex_UVMode",
+            "_Main{0}DissolveParams",
+            "_Main{0}EnableLighting",
+            "_Main{0}DistanceFade",
+            "_Main{0}Tex_Cull",
+            "_AudioLink2Main{0}",
         };
 
         private static readonly string[] AlphaMaskBakeInputProperties =
@@ -429,7 +435,24 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             return IsOverlayLayerEnabled(material, layer)
                 && GetFloat(material, LayerUVModeProperty(layer), 0f) == 0f
                 && !HasProtectedOverlayLayerInput(material, isProtectedTexture, layer)
-                && !HasTimeAnimatedLayer(material, layer);
+                && !HasTimeAnimatedLayer(material, layer)
+                && !HasUnbakeableLayerFeature(material, layer);
+        }
+
+        /// <summary>
+        /// True when the layer uses a runtime feature lilToon's baker shader does not reproduce
+        /// — dissolve, reduced lighting, distance fade, per-layer culling, AudioLink alpha
+        /// modulation, or a non-default alpha mode. Baking such a layer would composite it
+        /// without the feature and then clear the slot, silently dropping the effect.
+        /// </summary>
+        public static bool HasUnbakeableLayerFeature(Material material, string layer)
+        {
+            return GetVector(material, LayerDissolveParamsProperty(layer), Vector4.zero).x != 0f
+                || GetFloat(material, LayerEnableLightingProperty(layer), 1f) != 1f
+                || GetVector(material, LayerDistanceFadeProperty(layer), Vector4.zero).z != 0f
+                || GetFloat(material, LayerCullProperty(layer), 0f) != 0f
+                || GetFloat(material, LayerAudioLinkProperty(layer), 0f) != 0f
+                || GetFloat(material, LayerAlphaModeProperty(layer), 0f) != 0f;
         }
 
         /// <summary>
@@ -967,6 +990,22 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             "_Main" + layer + "Tex_ScrollRotate";
 
         private static string LayerUVModeProperty(string layer) => "_Main" + layer + "Tex_UVMode";
+
+        private static string LayerDissolveParamsProperty(string layer) =>
+            "_Main" + layer + "DissolveParams";
+
+        private static string LayerEnableLightingProperty(string layer) =>
+            "_Main" + layer + "EnableLighting";
+
+        private static string LayerDistanceFadeProperty(string layer) =>
+            "_Main" + layer + "DistanceFade";
+
+        private static string LayerCullProperty(string layer) => "_Main" + layer + "Tex_Cull";
+
+        private static string LayerAudioLinkProperty(string layer) => "_AudioLink2Main" + layer;
+
+        private static string LayerAlphaModeProperty(string layer) =>
+            "_Main" + layer + "TexAlphaMode";
 
         private static float GetFloat(Material material, string name, float fallback)
         {

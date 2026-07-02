@@ -469,6 +469,101 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region HasUnbakeableLayerFeature
+
+        [Test]
+        public void HasUnbakeableLayerFeature_DefaultValues_ReturnsFalse()
+        {
+            Assert.IsFalse(LilToonTextureBaker.HasUnbakeableLayerFeature(_material, "2nd"));
+        }
+
+        [Test]
+        public void HasUnbakeableLayerFeature_DissolveEnabled_ReturnsTrue()
+        {
+            _material.SetVector("_Main2ndDissolveParams", new Vector4(1f, 0f, 0.5f, 0.1f));
+            Assert.IsTrue(LilToonTextureBaker.HasUnbakeableLayerFeature(_material, "2nd"));
+        }
+
+        [Test]
+        public void HasUnbakeableLayerFeature_ReducedLighting_ReturnsTrue()
+        {
+            _material.SetFloat("_Main2ndEnableLighting", 0.5f);
+            Assert.IsTrue(LilToonTextureBaker.HasUnbakeableLayerFeature(_material, "2nd"));
+        }
+
+        [Test]
+        public void HasUnbakeableLayerFeature_DistanceFadeActive_ReturnsTrue()
+        {
+            _material.SetVector("_Main2ndDistanceFade", new Vector4(0.1f, 0.01f, 0.8f, 0f));
+            Assert.IsTrue(LilToonTextureBaker.HasUnbakeableLayerFeature(_material, "2nd"));
+        }
+
+        [Test]
+        public void HasUnbakeableLayerFeature_CullSet_ReturnsTrue()
+        {
+            _material.SetFloat("_Main3rdTex_Cull", 1f);
+            Assert.IsTrue(LilToonTextureBaker.HasUnbakeableLayerFeature(_material, "3rd"));
+        }
+
+        [Test]
+        public void HasUnbakeableLayerFeature_AudioLinkToLayer_ReturnsTrue()
+        {
+            _material.SetFloat("_AudioLink2Main2nd", 1f);
+            Assert.IsTrue(LilToonTextureBaker.HasUnbakeableLayerFeature(_material, "2nd"));
+        }
+
+        [Test]
+        public void HasUnbakeableLayerFeature_NonDefaultAlphaMode_ReturnsTrue()
+        {
+            _material.SetFloat("_Main2ndTexAlphaMode", 1f);
+            Assert.IsTrue(LilToonTextureBaker.HasUnbakeableLayerFeature(_material, "2nd"));
+        }
+
+        [Test]
+        public void HasUnbakeableLayerFeature_ShaderWithoutProperties_ReturnsFalse()
+        {
+            var shader = Shader.Find(SlotTestShaderName);
+            Assert.That(shader, Is.Not.Null);
+            var material = new Material(shader);
+
+            Assert.IsFalse(LilToonTextureBaker.HasUnbakeableLayerFeature(material, "2nd"));
+
+            UnityEngine.Object.DestroyImmediate(material);
+        }
+
+        [Test]
+        public void CanBakeOverlayLayer_DissolveLayer_ReturnsFalse()
+        {
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            _material.SetVector("_Main2ndDissolveParams", new Vector4(1f, 0f, 0.5f, 0.1f));
+            Assert.IsFalse(
+                LilToonTextureBaker.CanBakeOverlayLayer(
+                    _material,
+                    Array.Empty<string>(),
+                    null,
+                    "2nd"
+                )
+            );
+        }
+
+        [Test]
+        public void CanBakeOverlayLayer_AnimatedEnableLighting_ReturnsFalse()
+        {
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            var props = new HashSet<string> { "_Main2ndEnableLighting" };
+            Assert.IsFalse(LilToonTextureBaker.CanBakeOverlayLayer(_material, props, null, "2nd"));
+        }
+
+        [Test]
+        public void CanBakeOverlayLayer_AnimatedAudioLinkToggle_ReturnsFalse()
+        {
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            var props = new HashSet<string> { "_AudioLink2Main2nd" };
+            Assert.IsFalse(LilToonTextureBaker.CanBakeOverlayLayer(_material, props, null, "2nd"));
+        }
+
+        #endregion
+
         #region SelectOverlayLayersToBake
 
         [Test]
