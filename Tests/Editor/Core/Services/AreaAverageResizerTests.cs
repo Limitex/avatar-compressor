@@ -205,8 +205,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Resize_Checkerboard_AveragesInLinearSpace()
         {
-            // avg(decode(0), decode(1)) = 0.5 linear -> 0.735 sRGB, matching
-            // the hardware linear-space filtering of the pre-branch blit path.
+            // avg(decode(0), decode(1)) = 0.5 linear -> 0.735 sRGB
             int size = 64;
             var pixels = new Color[size * size];
             for (int y = 0; y < size; y++)

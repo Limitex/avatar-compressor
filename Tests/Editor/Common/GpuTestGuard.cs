@@ -12,9 +12,8 @@ namespace dev.limitex.avatar.compressor.tests
     {
         /// <summary>
         /// Skips the running test unless real GPU hardware with compute
-        /// shader support is available. Unlike the production capability
-        /// check this also matches bare "Mesa": over-skipping is safe for
-        /// parity tests.
+        /// shader support is available. Matching bare "Mesa" can skip real
+        /// GPUs too; over-skipping is safe for parity tests.
         /// </summary>
         public static void RequireRealGpu()
         {

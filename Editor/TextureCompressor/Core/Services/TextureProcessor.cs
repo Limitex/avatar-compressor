@@ -94,7 +94,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         /// <summary>
         /// Resizes a single texture, acquiring and releasing the RenderTexture lock per call.
-        /// Textures are processed one at a time to reduce peak memory.
         /// </summary>
         /// <returns>A new readable RGBA32 Texture2D, or null if resize failed.</returns>
         public Texture2D ResizeSingle(Texture2D source, TextureAnalysisResult analysis)
