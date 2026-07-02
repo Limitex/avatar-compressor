@@ -52,22 +52,16 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         // The two sentinels below run only when lilToon is installed, so a broken bridge fails
-        // loudly there instead of every bake test silently Assume-skipping (the absent-path
-        // counterpart is Bake_ReturnsZeroResult_WhenLilToonNotInstalled).
+        // loudly there instead of skipping silently (the absent-path counterpart is
+        // Bake_ReturnsZeroResult_WhenLilToonNotInstalled).
 
         [Test]
         public void IsAvailable_True_WhenLilToonInstalledWithGraphicsDevice()
         {
-            Assume.That(
-                Shader.Find("lilToon"),
-                Is.Not.Null,
-                "lilToon is not installed in this project; skipping the installed-path check."
-            );
-            Assume.That(
-                SystemInfo.graphicsDeviceType,
-                Is.Not.EqualTo(UnityEngine.Rendering.GraphicsDeviceType.Null),
-                "No graphics device; the baker deliberately disables itself."
-            );
+            if (Shader.Find("lilToon") == null)
+                Assert.Ignore("lilToon is not installed; installed-path sentinel skipped.");
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+                Assert.Ignore("No graphics device; the baker deliberately disables itself.");
 
             Assert.IsTrue(
                 new LilToonTextureBaker().IsAvailable,
@@ -81,11 +75,8 @@ namespace dev.limitex.avatar.compressor.tests
         public void BakerShader_DeclaresAllConfiguredProperties_WhenLilToonInstalled()
         {
             var shader = Shader.Find("Hidden/ltsother_baker");
-            Assume.That(
-                shader,
-                Is.Not.Null,
-                "lilToon is not installed in this project; skipping the shader tripwire."
-            );
+            if (shader == null)
+                Assert.Ignore("lilToon is not installed; shader tripwire skipped.");
 
             // Keep in sync with the properties LilToonTextureBaker configures on the baker
             // material (ConfigureMainBaker/ConfigureOverlayLayer/BakeAlphaMask), minus the
@@ -150,11 +141,17 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Bake_ReturnsZeroResult_WhenLilToonNotInstalled()
         {
+            // Shader-gated + Assert (not Assume) so a wrongly-available baker fails, not skips
+            // — same rationale as the optimizer's absent-path sentinels.
+            if (Shader.Find("lilToon") != null)
+                Assert.Ignore("lilToon installed; absent-package no-op check skipped.");
+
             var baker = new LilToonTextureBaker();
-            Assume.That(
+            Assert.That(
                 baker.IsAvailable,
                 Is.False,
-                "lilToon is installed in this project; skipping the absent-package no-op check."
+                "lilToon is not installed (its shader did not resolve), yet the baker reported "
+                    + "itself available. The optional-dependency guard is broken."
             );
 
             var material = new Material(Shader.Find("Standard"));
