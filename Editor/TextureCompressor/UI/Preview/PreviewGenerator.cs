@@ -41,10 +41,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// <summary>
         /// Generates preview data for the given configuration.
         /// </summary>
+        // No defaults for the backend preferences: they feed ComputeSettingsHash's
+        // staleness pair, and a defaulted call site would silently desync the two.
         public TexturePreviewData[] Generate(
             TextureCompressor config,
-            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto,
-            ResizeBackendPreference resizeBackendPreference = ResizeBackendPreference.Auto
+            AnalysisBackendPreference backendPreference,
+            ResizeBackendPreference resizeBackendPreference
         )
         {
             var frozenLookup = FrozenTextureSettings.BuildLookup(config.FrozenTextures);
@@ -444,8 +446,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// </summary>
         public static int ComputeSettingsHash(
             TextureCompressor config,
-            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto,
-            ResizeBackendPreference resizeBackendPreference = ResizeBackendPreference.Auto
+            AnalysisBackendPreference backendPreference,
+            ResizeBackendPreference resizeBackendPreference
         )
         {
             unchecked

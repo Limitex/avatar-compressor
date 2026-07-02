@@ -34,10 +34,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
         // Flag to avoid repeating build context warning (per-build instance)
         private bool _buildContextWarningShown;
 
+        // No defaults for the backend preferences: production call sites resolve
+        // them from TextureCompressorPreferences, and tests must pick deterministically.
         public TextureCompressorService(
             TextureCompressor config,
-            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto,
-            ResizeBackendPreference resizeBackendPreference = ResizeBackendPreference.Auto,
+            AnalysisBackendPreference backendPreference,
+            ResizeBackendPreference resizeBackendPreference,
             AnimationUsageMap animationUsageMap = null,
             IUnusedSlotOptimizer unusedSlotOptimizer = null
         )

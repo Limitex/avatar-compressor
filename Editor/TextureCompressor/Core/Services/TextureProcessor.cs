@@ -16,11 +16,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly bool _forcePowerOfTwo;
         private readonly ITextureResizer _resizer;
 
+        // No default for the backend preference: production call sites resolve it
+        // from TextureCompressorPreferences, and tests must pick deterministically.
         public TextureProcessor(
             int minResolution,
             int maxResolution,
             bool forcePowerOfTwo,
-            ResizeBackendPreference resizeBackendPreference = ResizeBackendPreference.Auto
+            ResizeBackendPreference resizeBackendPreference
         )
         {
             _minResolution = minResolution;

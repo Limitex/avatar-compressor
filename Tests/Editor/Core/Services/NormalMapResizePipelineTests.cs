@@ -23,7 +23,7 @@ namespace dev.limitex.avatar.compressor.tests
         [SetUp]
         public void SetUp()
         {
-            _processor = new TextureProcessor(32, 2048, false);
+            _processor = new TextureProcessor(32, 2048, false, ResizeBackendPreference.CPU);
             _createdObjects = new List<Object>();
         }
 

@@ -649,9 +649,11 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void TextureProcessor_WithoutResizer_StillWorks()
+        public void TextureProcessor_AutoBackendPreference_ReturnsCorrectDimensions()
         {
-            var processor = new TextureProcessor(32, 2048, false);
+            // Auto is exercised deliberately; assertions are dimension-only, so
+            // the test stays safe on machines whose GPU results are untrusted.
+            var processor = new TextureProcessor(32, 2048, false, ResizeBackendPreference.Auto);
             var source = CreateSolidTexture(256, 256, Color.white);
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(128, 128));
 

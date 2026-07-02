@@ -34,7 +34,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void SetUp()
         {
             _createdObjects = new List<Object>();
-            _processor = new TextureProcessor(32, 2048, true);
+            _processor = new TextureProcessor(32, 2048, true, ResizeBackendPreference.CPU);
 
             GpuTestGuard.RequireRealGpu();
 

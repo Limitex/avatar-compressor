@@ -12,7 +12,7 @@ namespace dev.limitex.avatar.compressor.tests
         [SetUp]
         public void SetUp()
         {
-            _processor = new TextureProcessor(32, 2048, true);
+            _processor = new TextureProcessor(32, 2048, true, ResizeBackendPreference.CPU);
             _complexityCalc = new ComplexityCalculator(0.7f, 0.3f, 1, 8);
         }
 
