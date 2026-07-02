@@ -62,6 +62,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // Update animation curves with replaced materials and textures
             UpdateAnimationReferences(ctx, processedTextures, clonedMaterials);
 
+            // Must run after the remapping above: baked textures can be processedTextures keys.
+            lilToonBaker?.DestroyOrphanedBakes(clonedMaterials.Values);
+
             CleanupComponents(components);
         }
 

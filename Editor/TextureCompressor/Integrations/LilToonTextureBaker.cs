@@ -719,6 +719,71 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             return AnyAnimated(animatedProperties, OutlineBakeInputProperties);
         }
 
+        /// <summary>
+        /// Destroys baked textures that no material references anymore — intermediates
+        /// superseded by a chained bake (the alpha-mask bake replaces a just-baked main) or by
+        /// the compressed copy the pipeline swapped in. Full-resolution RGBA32 textures would
+        /// otherwise stay alive until domain reload. Call only after the build has finished
+        /// using the bake outputs, including animation-reference remapping.
+        /// </summary>
+        public void DestroyOrphanedBakes(IEnumerable<Material> materials)
+        {
+            if (_bakeCache.Count == 0)
+                return;
+
+            var orphaned = new HashSet<Texture2D>(
+                FindOrphanedTextures(_bakeCache.Values, materials)
+            );
+            if (orphaned.Count == 0)
+                return;
+
+            var orphanedKeys = new List<(Texture2D, string)>();
+            foreach (var kvp in _bakeCache)
+            {
+                if (orphaned.Contains(kvp.Value))
+                    orphanedKeys.Add(kvp.Key);
+            }
+            foreach (var key in orphanedKeys)
+            {
+                _bakeCache.Remove(key);
+            }
+            foreach (var texture in orphaned)
+            {
+                UnityEngine.Object.DestroyImmediate(texture);
+            }
+        }
+
+        /// <summary>
+        /// Returns the candidates that are not assigned to any texture slot of the given
+        /// materials.
+        /// </summary>
+        public static List<Texture2D> FindOrphanedTextures(
+            IReadOnlyCollection<Texture2D> candidates,
+            IEnumerable<Material> materials
+        )
+        {
+            var live = new HashSet<Texture2D>();
+            foreach (var material in materials)
+            {
+                if (material == null || material.shader == null)
+                    continue;
+
+                foreach (var name in material.GetTexturePropertyNames())
+                {
+                    if (material.GetTexture(name) is Texture2D texture)
+                        live.Add(texture);
+                }
+            }
+
+            var orphaned = new List<Texture2D>();
+            foreach (var candidate in candidates)
+            {
+                if (candidate != null && !live.Contains(candidate))
+                    orphaned.Add(candidate);
+            }
+            return orphaned;
+        }
+
         private Texture2D BakeTexture(Texture2D source, string key, Action<Material> configure)
         {
             if (_bakeCache.TryGetValue((source, key), out var cached) && cached != null)

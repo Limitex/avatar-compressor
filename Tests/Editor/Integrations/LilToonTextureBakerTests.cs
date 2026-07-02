@@ -724,5 +724,52 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         #endregion
+
+        #region Orphaned Bake Cleanup
+
+        [Test]
+        public void FindOrphanedTextures_UnreferencedTexture_IsOrphaned()
+        {
+            var orphaned = LilToonTextureBaker.FindOrphanedTextures(
+                new[] { _texture },
+                new[] { _material }
+            );
+
+            Assert.AreEqual(1, orphaned.Count);
+            Assert.AreSame(_texture, orphaned[0]);
+        }
+
+        [Test]
+        public void FindOrphanedTextures_ReferencedTexture_IsNotOrphaned()
+        {
+            _material.SetTexture("_MainTex", _texture);
+
+            var orphaned = LilToonTextureBaker.FindOrphanedTextures(
+                new[] { _texture },
+                new[] { _material }
+            );
+
+            Assert.AreEqual(0, orphaned.Count);
+        }
+
+        [Test]
+        public void FindOrphanedTextures_NullMaterial_IsIgnored()
+        {
+            var orphaned = LilToonTextureBaker.FindOrphanedTextures(
+                new[] { _texture },
+                new Material[] { null }
+            );
+
+            Assert.AreEqual(1, orphaned.Count);
+        }
+
+        [Test]
+        public void DestroyOrphanedBakes_EmptyCache_DoesNotThrow()
+        {
+            var baker = new LilToonTextureBaker();
+            Assert.DoesNotThrow(() => baker.DestroyOrphanedBakes(new[] { _material }));
+        }
+
+        #endregion
     }
 }
