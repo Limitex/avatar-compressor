@@ -263,7 +263,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                             divisor,
                             recommendedSize
                         );
-                        var resizedTex = processor.ResizeSingle(tex, frozenAnalysis, isNormalMap);
+                        var resizedTex = processor.ResizeSingle(tex, frozenAnalysis);
                         if (resizedTex != null)
                         {
                             hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTex);
@@ -288,7 +288,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         // Match the build pipeline: detect alpha on the resized texture
                         // so that alpha regions lost during downscaling don't cause an
                         // unnecessary alpha-capable format (e.g. BC7 instead of DXT1).
-                        var resizedTex = processor.ResizeSingle(tex, analysis, isNormalMap);
+                        var resizedTex = processor.ResizeSingle(tex, analysis);
                         if (resizedTex != null)
                         {
                             hasAlpha = TextureFormatSelector.HasSignificantAlpha(resizedTex);

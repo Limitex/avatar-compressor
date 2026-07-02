@@ -511,7 +511,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateSolidTexture(512, 512, Color.white);
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(256, 256));
 
-            var result = processor.ResizeSingle(source, analysis, false);
+            var result = processor.ResizeSingle(source, analysis);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(256, result.width);
@@ -528,7 +528,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateSolidTexture(256, 256, Color.white);
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(128, 128));
 
-            var result = processor.ResizeSingle(source, analysis, false);
+            var result = processor.ResizeSingle(source, analysis);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(128, result.width);

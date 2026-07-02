@@ -46,7 +46,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateFlat(64);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 64, 64, isNormalMap: true);
+            var result = ResizeToSize(source, 64, 64);
             _createdObjects.Add(result);
 
             var sourcePixels = source.GetPixels32();
@@ -64,7 +64,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateFlat(64);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 32, 32, isNormalMap: true);
+            var result = ResizeToSize(source, 32, 32);
             _createdObjects.Add(result);
 
             var resultPixels = result.GetPixels32();
@@ -81,7 +81,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(64);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 32, 32, isNormalMap: true);
+            var result = ResizeToSize(source, 32, 32);
             _createdObjects.Add(result);
 
             var pixels = result.GetPixels32();
@@ -119,7 +119,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(32, 32));
 
-            var result = ResizeSingle(source, analysis, isNormalMap: true);
+            var result = ResizeSingle(source, analysis);
             _createdObjects.Add(result);
 
             Assert.AreEqual(32, result.width);
@@ -138,7 +138,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var analysis = new TextureAnalysisResult(0.8f, 1, new Vector2Int(64, 64));
 
-            var result = ResizeSingle(source, analysis, isNormalMap: true);
+            var result = ResizeSingle(source, analysis);
             _createdObjects.Add(result);
 
             Assert.AreEqual(64, result.width);
@@ -168,7 +168,7 @@ namespace dev.limitex.avatar.compressor.tests
             source.SetPixels32(pixels);
             source.Apply();
 
-            var result = ResizeToSize(source, 32, 32, isNormalMap: false);
+            var result = ResizeToSize(source, 32, 32);
             _createdObjects.Add(result);
 
             Assert.AreEqual(32, result.width);
@@ -188,7 +188,6 @@ namespace dev.limitex.avatar.compressor.tests
             source.SetPixels32(pixels);
             source.Apply();
 
-            // No isNormalMap parameter -> defaults to false
             var result = ResizeToSize(source, 32, 32);
             _createdObjects.Add(result);
 
@@ -232,7 +231,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateTextureForPattern(pattern, 128);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 128, 128, isNormalMap: true);
+            var result = ResizeToSize(source, 128, 128);
             _createdObjects.Add(result);
 
             var sourcePixels = source.GetPixels32();
@@ -305,7 +304,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(size);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, size, size, isNormalMap: true);
+            var result = ResizeToSize(source, size, size);
             _createdObjects.Add(result);
 
             var sourcePixels = source.GetPixels32();
@@ -344,7 +343,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(128);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 128, 128, isNormalMap: true);
+            var result = ResizeToSize(source, 128, 128);
             _createdObjects.Add(result);
 
             var sourcePixels = source.GetPixels32();
@@ -386,7 +385,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(sourceSize);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, targetSize, targetSize, isNormalMap: true);
+            var result = ResizeToSize(source, targetSize, targetSize);
             _createdObjects.Add(result);
 
             var resultPixels = result.GetPixels32();
@@ -414,61 +413,6 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region Non-NormalMap Comparison
-
-        [Test]
-        public void ResizeSameSize_WithoutNormalMapFlag_MayCorruptData()
-        {
-            var source = NormalMapTestTextureFactory.CreateSphere(128);
-            _createdObjects.Add(source);
-
-            var resultWithFlag = ResizeToSize(source, 128, 128, isNormalMap: true);
-            _createdObjects.Add(resultWithFlag);
-
-            var resultWithoutFlag = ResizeToSize(source, 128, 128, isNormalMap: false);
-            _createdObjects.Add(resultWithoutFlag);
-
-            var sourcePixels = source.GetPixels32();
-            var pixelsWithFlag = resultWithFlag.GetPixels32();
-            var pixelsWithoutFlag = resultWithoutFlag.GetPixels32();
-
-            // Compute angular errors for both paths
-            float withFlagErrorSum = 0f;
-            float withoutFlagErrorSum = 0f;
-            int count = 0;
-            int sampleCount = Mathf.Min(500, sourcePixels.Length);
-            int step = Mathf.Max(1, sourcePixels.Length / sampleCount);
-
-            for (int i = 0; i < sourcePixels.Length; i += step)
-            {
-                var srcN = NormalMapTestTextureFactory.DecodeNormal(sourcePixels[i]);
-                var withN = NormalMapTestTextureFactory.DecodeNormal(pixelsWithFlag[i]);
-                var withoutN = NormalMapTestTextureFactory.DecodeNormal(pixelsWithoutFlag[i]);
-
-                float dot1 = Mathf.Clamp(Vector3.Dot(srcN.normalized, withN.normalized), -1f, 1f);
-                float dot2 = Mathf.Clamp(
-                    Vector3.Dot(srcN.normalized, withoutN.normalized),
-                    -1f,
-                    1f
-                );
-                withFlagErrorSum += Mathf.Acos(dot1) * Mathf.Rad2Deg;
-                withoutFlagErrorSum += Mathf.Acos(dot2) * Mathf.Rad2Deg;
-                count++;
-            }
-
-            float withFlagAvg = count > 0 ? withFlagErrorSum / count : 0f;
-            float withoutFlagAvg = count > 0 ? withoutFlagErrorSum / count : 0f;
-
-            // The normal-map path must not be less accurate than the default path
-            Assert.That(
-                withFlagAvg,
-                Is.LessThanOrEqualTo(withoutFlagAvg + 0.1f),
-                "isNormalMap=true path should be at least as accurate as default resize path"
-            );
-        }
-
-        #endregion
-
         #region High Precision
 
         [Test]
@@ -477,7 +421,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateGradient(64);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 32, 32, isNormalMap: true);
+            var result = ResizeToSize(source, 32, 32);
             _createdObjects.Add(result);
 
             var sourcePixels = source.GetPixels32();
@@ -499,26 +443,17 @@ namespace dev.limitex.avatar.compressor.tests
 
         #region Helper Methods
 
-        private Texture2D ResizeSingle(
-            Texture2D source,
-            TextureAnalysisResult analysis,
-            bool isNormalMap = false
-        )
+        private Texture2D ResizeSingle(Texture2D source, TextureAnalysisResult analysis)
         {
-            var results = _processor.ResizeBatch(new[] { (source, analysis, isNormalMap) });
+            var results = _processor.ResizeBatch(new[] { (source, analysis) });
             return results[source];
         }
 
-        private Texture2D ResizeToSize(
-            Texture2D source,
-            int newWidth,
-            int newHeight,
-            bool isNormalMap = false
-        )
+        private Texture2D ResizeToSize(Texture2D source, int newWidth, int newHeight)
         {
             // Use divisor=2 to force ResizeBatch to use RecommendedResolution
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(newWidth, newHeight));
-            var results = _processor.ResizeBatch(new[] { (source, analysis, isNormalMap) });
+            var results = _processor.ResizeBatch(new[] { (source, analysis) });
             return results[source];
         }
 

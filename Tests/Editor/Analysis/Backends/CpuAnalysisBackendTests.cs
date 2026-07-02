@@ -277,7 +277,7 @@ namespace dev.limitex.avatar.compressor.tests
                 complexityCalc,
                 _processor
             );
-            var resized = _processor.ResizeSingle(texture, analysisResult, false);
+            var resized = _processor.ResizeSingle(texture, analysisResult);
             Assert.IsNotNull(resized);
             _createdObjects.Add(resized);
             Assert.IsFalse(
@@ -312,7 +312,7 @@ namespace dev.limitex.avatar.compressor.tests
                 complexityCalc,
                 _processor
             );
-            var resized = _processor.ResizeSingle(texture, analysisResult, false);
+            var resized = _processor.ResizeSingle(texture, analysisResult);
             Assert.IsNotNull(resized);
             _createdObjects.Add(resized);
             Assert.IsTrue(
@@ -347,7 +347,7 @@ namespace dev.limitex.avatar.compressor.tests
                 complexityCalc,
                 _processor
             );
-            var resized = _processor.ResizeSingle(texture, analysisResult, false);
+            var resized = _processor.ResizeSingle(texture, analysisResult);
             Assert.IsNotNull(resized);
             _createdObjects.Add(resized);
             Assert.IsTrue(

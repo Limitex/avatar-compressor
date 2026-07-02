@@ -250,11 +250,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 bool isNormalMap = textureInfo.IsNormalMap;
 
                 // Resize (lock acquired and released inside ResizeSingle)
-                var resizedTexture = _processor.ResizeSingle(
-                    originalTexture,
-                    analysis,
-                    isNormalMap
-                );
+                var resizedTexture = _processor.ResizeSingle(originalTexture, analysis);
                 if (resizedTexture == null)
                     continue;
 
@@ -286,7 +282,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 // Save original pixels BEFORE destructive normal map preprocessing (for fallback restore)
                 Color32[] originalPixels = null;
-                // isReadable is always true for BlitResize output (new Texture2D); guard is defensive
+                // isReadable is always true for resizer output (new Texture2D); guard is defensive
                 if (isNormalMap && resizedTexture.isReadable)
                 {
                     originalPixels = resizedTexture.GetPixels32();

@@ -98,18 +98,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Preferred over ResizeBatch when textures are processed one at a time to reduce peak memory.
         /// </summary>
         /// <returns>A new readable RGBA32 Texture2D, or null if resize failed.</returns>
-        public Texture2D ResizeSingle(
-            Texture2D source,
-            TextureAnalysisResult analysis,
-            bool isNormalMap
-        )
+        public Texture2D ResizeSingle(Texture2D source, TextureAnalysisResult analysis)
         {
             lock (RenderTextureLock)
             {
                 try
                 {
                     var (newWidth, newHeight) = CalculateResizeDimensions(source, analysis);
-                    return BlitResize(source, newWidth, newHeight, isNormalMap);
+                    return _resizer.Resize(source, newWidth, newHeight);
                 }
                 catch (System.Exception e)
                 {
@@ -125,7 +121,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Resizes multiple textures in a single lock scope for efficiency.
         /// </summary>
         public Dictionary<Texture2D, Texture2D> ResizeBatch(
-            IEnumerable<(Texture2D Source, TextureAnalysisResult Analysis, bool IsNormalMap)> items
+            IEnumerable<(Texture2D Source, TextureAnalysisResult Analysis)> items
         )
         {
             var result = new Dictionary<Texture2D, Texture2D>();
@@ -141,12 +137,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             item.Analysis
                         );
 
-                        result[item.Source] = BlitResize(
-                            item.Source,
-                            newWidth,
-                            newHeight,
-                            item.IsNormalMap
-                        );
+                        result[item.Source] = _resizer.Resize(item.Source, newWidth, newHeight);
                     }
                     catch (System.Exception e)
                     {
@@ -158,82 +149,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Core resize logic: delegates to ITextureResizer if available,
-        /// otherwise falls back to GPU blit.
-        /// Caller must hold RenderTextureLock when using the blit fallback path.
-        /// </summary>
-        private Texture2D BlitResize(
-            Texture2D source,
-            int newWidth,
-            int newHeight,
-            bool isNormalMap
-        )
-        {
-            if (_resizer != null)
-            {
-                var resizerResult = _resizer.Resize(source, newWidth, newHeight);
-                if (resizerResult != null)
-                    return resizerResult;
-            }
-
-            // Normal maps store vector data, not color, so they must be processed in linear space
-            // to avoid sRGB gamma correction that would corrupt the normal vectors.
-            var colorSpace = isNormalMap
-                ? RenderTextureReadWrite.Linear
-                : RenderTextureReadWrite.Default;
-
-            var rtFormat = SelectNormalMapRTFormat(isNormalMap);
-
-            var rt = new RenderTexture(newWidth, newHeight, 0, rtFormat, colorSpace);
-            RenderTexture previous = RenderTexture.active;
-            Texture2D resized = null;
-            try
-            {
-                rt.Create();
-                rt.filterMode = FilterMode.Bilinear;
-                RenderTexture.active = rt;
-                Graphics.Blit(source, rt);
-
-                resized = new Texture2D(
-                    newWidth,
-                    newHeight,
-                    TextureFormat.RGBA32,
-                    source.mipmapCount > 1,
-                    isNormalMap
-                );
-                resized.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
-                resized.Apply(source.mipmapCount > 1);
-
-                CopyTextureSettings(source, resized);
-                var result = resized;
-                resized = null;
-                return result;
-            }
-            finally
-            {
-                RenderTexture.active = previous;
-                rt.Release();
-                Object.DestroyImmediate(rt);
-                if (resized != null)
-                    Object.DestroyImmediate(resized);
-            }
-        }
-
-        /// <summary>
-        /// Selects the best RenderTextureFormat for normal map resize (float > half > ARGB32).
-        /// </summary>
-        private static RenderTextureFormat SelectNormalMapRTFormat(bool isNormalMap)
-        {
-            if (!isNormalMap)
-                return RenderTextureFormat.ARGB32;
-            if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBFloat))
-                return RenderTextureFormat.ARGBFloat;
-            if (SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf))
-                return RenderTextureFormat.ARGBHalf;
-            return RenderTextureFormat.ARGB32;
         }
 
         internal static void CopyTextureSettings(Texture2D source, Texture2D dest)

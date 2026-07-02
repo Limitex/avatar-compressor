@@ -14,15 +14,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly ComputeShader _shader;
         private readonly int _kernelHorizontal;
         private readonly int _kernelVertical;
+        private readonly ITextureResizer _fallback;
 
-        public GpuAreaAverageResizer(ComputeShader shader)
+        public GpuAreaAverageResizer(ComputeShader shader, ITextureResizer fallback = null)
         {
             _shader = shader;
             _kernelHorizontal = shader.FindKernel("AreaAverageHorizontal");
             _kernelVertical = shader.FindKernel("AreaAverageVertical");
+            _fallback = fallback;
         }
 
-        public static bool TryCreate(out GpuAreaAverageResizer resizer)
+        public static bool TryCreate(
+            out GpuAreaAverageResizer resizer,
+            ITextureResizer fallback = null
+        )
         {
             resizer = null;
 
@@ -35,7 +40,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             try
             {
-                resizer = new GpuAreaAverageResizer(shader);
+                resizer = new GpuAreaAverageResizer(shader, fallback);
                 return true;
             }
             catch (System.Exception e)
@@ -52,6 +57,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (source == null)
                 return null;
 
+            var result = ResizeOnGpu(source, targetWidth, targetHeight);
+            if (result == null && _fallback != null)
+            {
+                Debug.LogWarning(
+                    $"[TextureCompressor] GPU resize failed for '{source.name}'; "
+                        + "falling back to CPU area averaging"
+                );
+                result = _fallback.Resize(source, targetWidth, targetHeight);
+            }
+            return result;
+        }
+
+        private Texture2D ResizeOnGpu(Texture2D source, int targetWidth, int targetHeight)
+        {
             int srcW = source.width;
             int srcH = source.height;
 

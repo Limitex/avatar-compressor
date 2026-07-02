@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             if (
                 backendPreference != ResizeBackendPreference.CPU
-                && GpuAreaAverageResizer.TryCreate(out var gpuResizer)
+                && GpuAreaAverageResizer.TryCreate(out var gpuResizer, new CpuAreaAverageResizer())
             )
             {
                 return gpuResizer;
