@@ -14,10 +14,11 @@ uint _DstHeight;
 float _ScaleX;
 float _ScaleY;
 
-// When set (source is sRGB), the vertical kernel re-encodes the averaged
-// linear values back to sRGB so the readback bytes match the source encoding.
-// The GPU auto-decodes sRGB textures to linear on load, so both passes
-// average in linear space.
+// When set (sRGB source whose output stays sRGB), the vertical kernel
+// re-encodes the averaged linear values back to sRGB so the readback bytes
+// match the source encoding. Cleared for linear sources and for forced-linear
+// output (normal maps). The GPU auto-decodes sRGB textures to linear on load,
+// so both passes average in linear space either way.
 uint _ReencodeSRGB;
 
 float3 LinearToSRGB(float3 c)

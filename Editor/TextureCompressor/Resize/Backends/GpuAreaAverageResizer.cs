@@ -52,24 +52,34 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
         }
 
-        public Texture2D Resize(Texture2D source, int targetWidth, int targetHeight)
+        public Texture2D Resize(
+            Texture2D source,
+            int targetWidth,
+            int targetHeight,
+            bool forceLinearOutput
+        )
         {
             if (source == null)
                 return null;
 
-            var result = ResizeOnGpu(source, targetWidth, targetHeight);
+            var result = ResizeOnGpu(source, targetWidth, targetHeight, forceLinearOutput);
             if (result == null && _fallback != null)
             {
                 Debug.LogWarning(
                     $"[TextureCompressor] GPU resize failed for '{source.name}'; "
                         + "falling back to CPU area averaging"
                 );
-                result = _fallback.Resize(source, targetWidth, targetHeight);
+                result = _fallback.Resize(source, targetWidth, targetHeight, forceLinearOutput);
             }
             return result;
         }
 
-        private Texture2D ResizeOnGpu(Texture2D source, int targetWidth, int targetHeight)
+        private Texture2D ResizeOnGpu(
+            Texture2D source,
+            int targetWidth,
+            int targetHeight,
+            bool forceLinearOutput
+        )
         {
             int srcW = source.width;
             int srcH = source.height;
@@ -96,6 +106,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 // exception, so the CPU fallback cannot catch it. UAV-written
                 // RTs (the intermediate and output below) are unaffected.
                 bool isSRGB = source.isDataSRGB;
+                bool outputSRGB = isSRGB && !forceLinearOutput;
 
                 intermediateRT = CreateUAVRenderTexture(targetWidth, srcH);
                 if (intermediateRT == null)
@@ -110,7 +121,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 _shader.SetInt("_DstHeight", targetHeight);
                 _shader.SetFloat("_ScaleX", scaleX);
                 _shader.SetFloat("_ScaleY", scaleY);
-                _shader.SetInt("_ReencodeSRGB", isSRGB ? 1 : 0);
+                _shader.SetInt("_ReencodeSRGB", outputSRGB ? 1 : 0);
 
                 _shader.SetTexture(_kernelHorizontal, "_SourceTexture", source);
                 _shader.SetTexture(_kernelHorizontal, "_IntermediateTexture", intermediateRT);
@@ -136,7 +147,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     targetHeight,
                     TextureFormat.RGBA32,
                     source.mipmapCount > 1,
-                    linear: !isSRGB
+                    linear: !outputSRGB
                 );
                 result.ReadPixels(new Rect(0, 0, targetWidth, targetHeight), 0, 0);
                 result.Apply(source.mipmapCount > 1);

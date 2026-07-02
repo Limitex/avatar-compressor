@@ -441,18 +441,60 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region sRGB-Flagged Sources
+
+        [Test]
+        public void Resize_SRGBFlaggedNormalMap_OutputsLinearizedBytes()
+        {
+            // A texture left at sRGB (Default) import but bound to a normal-map
+            // slot: resize must decode to linear and flag the output linear,
+            // because BC5/DXTnm sampling never applies sRGB decode.
+            var source = NormalMapTestTextureFactory.CreateFlat(64, linear: false);
+            _createdObjects.Add(source);
+
+            var result = ResizeToSize(source, 32, 32);
+            _createdObjects.Add(result);
+
+            Assert.IsFalse(result.isDataSRGB, "Normal map output should be linear-flagged");
+
+            var pixels = result.GetPixels32();
+            // sRGB byte 128 decodes to linear ~0.216 -> byte ~55
+            Assert.That(pixels[0].r, Is.InRange((byte)53, (byte)57));
+            Assert.That(pixels[0].g, Is.InRange((byte)53, (byte)57));
+            Assert.That(pixels[0].b, Is.InRange((byte)253, (byte)255));
+        }
+
+        [Test]
+        public void Resize_SRGBFlaggedNormalMap_SameSize_AlsoLinearizes()
+        {
+            // The same-size fast path must not bypass the sRGB->linear decode.
+            var source = NormalMapTestTextureFactory.CreateFlat(64, linear: false);
+            _createdObjects.Add(source);
+
+            var result = ResizeToSize(source, 64, 64);
+            _createdObjects.Add(result);
+
+            Assert.IsFalse(result.isDataSRGB, "Normal map output should be linear-flagged");
+
+            var pixels = result.GetPixels32();
+            Assert.That(pixels[0].r, Is.InRange((byte)53, (byte)57));
+            Assert.That(pixels[0].g, Is.InRange((byte)53, (byte)57));
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private Texture2D ResizeSingle(Texture2D source, TextureAnalysisResult analysis)
         {
-            return _processor.ResizeSingle(source, analysis);
+            return _processor.ResizeSingle(source, analysis, isNormalMap: true);
         }
 
         private Texture2D ResizeToSize(Texture2D source, int newWidth, int newHeight)
         {
             // Use divisor=2 to force the resize to use RecommendedResolution
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(newWidth, newHeight));
-            return _processor.ResizeSingle(source, analysis);
+            return _processor.ResizeSingle(source, analysis, isNormalMap: true);
         }
 
         #endregion

@@ -94,16 +94,27 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         /// <summary>
         /// Resizes a single texture, acquiring and releasing the RenderTexture lock per call.
+        /// Normal maps store vectors, not color, so they are always resized into
+        /// linear-flagged output — their compressed formats (BC5 etc.) are sampled raw.
         /// </summary>
         /// <returns>A new readable RGBA32 Texture2D, or null if resize failed.</returns>
-        public Texture2D ResizeSingle(Texture2D source, TextureAnalysisResult analysis)
+        public Texture2D ResizeSingle(
+            Texture2D source,
+            TextureAnalysisResult analysis,
+            bool isNormalMap
+        )
         {
             lock (RenderTextureLock)
             {
                 try
                 {
                     var (newWidth, newHeight) = CalculateResizeDimensions(source, analysis);
-                    return _resizer.Resize(source, newWidth, newHeight);
+                    return _resizer.Resize(
+                        source,
+                        newWidth,
+                        newHeight,
+                        forceLinearOutput: isNormalMap
+                    );
                 }
                 catch (System.Exception e)
                 {

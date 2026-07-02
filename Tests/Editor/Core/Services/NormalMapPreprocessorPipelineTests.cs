@@ -46,7 +46,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             // Use divisor=2 to force the resize to use RecommendedResolution
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(newWidth, newHeight));
-            return _processor.ResizeSingle(source, analysis);
+            return _processor.ResizeSingle(source, analysis, isNormalMap: true);
         }
 
         #region RGB -> BC5 Pipeline

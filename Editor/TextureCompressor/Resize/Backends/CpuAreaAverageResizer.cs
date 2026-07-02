@@ -10,11 +10,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// sRGB sources are decoded to linear before averaging and re-encoded
     /// afterwards, and the output texture keeps the source's color space
     /// flag — so sampling the result yields the area average of what
-    /// sampling the source yielded.
+    /// sampling the source yielded. With forceLinearOutput the re-encode
+    /// is skipped and the output is flagged linear instead.
     /// </summary>
     public class CpuAreaAverageResizer : ITextureResizer
     {
-        public Texture2D Resize(Texture2D source, int targetWidth, int targetHeight)
+        public Texture2D Resize(
+            Texture2D source,
+            int targetWidth,
+            int targetHeight,
+            bool forceLinearOutput
+        )
         {
             if (source == null)
                 return null;
@@ -22,14 +28,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
             int srcW = source.width;
             int srcH = source.height;
             bool isSRGB = source.isDataSRGB;
+            bool outputSRGB = isSRGB && !forceLinearOutput;
 
             var pixels = GetStoredPixels(source);
             if (pixels == null || pixels.Length == 0)
                 return null;
 
-            if (targetWidth == srcW && targetHeight == srcH)
+            // Only an exact byte copy when no color-space conversion is needed;
+            // an sRGB source with forced-linear output must go through decode.
+            if (targetWidth == srcW && targetHeight == srcH && outputSRGB == isSRGB)
             {
-                return CreateOutput(pixels, targetWidth, targetHeight, source, isSRGB);
+                return CreateOutput(pixels, targetWidth, targetHeight, source, outputSRGB);
             }
 
             var decode = BuildDecodeTable(isSRGB);
@@ -87,12 +96,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             sum += intermediate[(s + t) * targetWidth + x] * planY.Weights[off + t];
                         }
 
-                        result[i * targetWidth + x] = EncodePixel(sum, isSRGB);
+                        result[i * targetWidth + x] = EncodePixel(sum, outputSRGB);
                     }
                 }
             );
 
-            return CreateOutput(result, targetWidth, targetHeight, source, isSRGB);
+            return CreateOutput(result, targetWidth, targetHeight, source, outputSRGB);
         }
 
         public struct AxisPlan
@@ -240,13 +249,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
             return table;
         }
 
-        private static Color32 EncodePixel(Vector4 linear, bool isSRGB)
+        private static Color32 EncodePixel(Vector4 linear, bool encodeSRGB)
         {
             float r = linear.x;
             float g = linear.y;
             float b = linear.z;
 
-            if (isSRGB)
+            if (encodeSRGB)
             {
                 r = Mathf.LinearToGammaSpace(r);
                 g = Mathf.LinearToGammaSpace(g);
@@ -340,7 +349,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             int width,
             int height,
             Texture2D source,
-            bool isSRGB
+            bool outputSRGB
         )
         {
             var output = new Texture2D(
@@ -348,7 +357,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 height,
                 TextureFormat.RGBA32,
                 source.mipmapCount > 1,
-                linear: !isSRGB
+                linear: !outputSRGB
             );
             output.SetPixels32(pixels);
             output.Apply(source.mipmapCount > 1);

@@ -250,7 +250,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 bool isNormalMap = textureInfo.IsNormalMap;
 
                 // Resize (lock acquired and released inside ResizeSingle)
-                var resizedTexture = _processor.ResizeSingle(originalTexture, analysis);
+                var resizedTexture = _processor.ResizeSingle(
+                    originalTexture,
+                    analysis,
+                    isNormalMap
+                );
                 if (resizedTexture == null)
                     continue;
 
