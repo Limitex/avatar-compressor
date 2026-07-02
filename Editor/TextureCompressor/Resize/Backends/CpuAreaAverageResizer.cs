@@ -299,6 +299,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             RenderTexture rt = null;
             Texture2D readable = null;
             var previous = RenderTexture.active;
+            var previousSRGBWrite = GL.sRGBWrite;
             try
             {
                 rt = new RenderTexture(
@@ -309,6 +310,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     colorSpace
                 );
                 rt.Create();
+                // The write-side linear->sRGB encode into an sRGB RT is gated by
+                // GL.sRGBWrite (editor IMGUI leaves it false), not by the RT's
+                // readWrite flag; without it the round-trip double-decodes and
+                // darkens the output. Harmless for linear RTs (no conversion).
+                GL.sRGBWrite = true;
                 Graphics.Blit(texture, rt);
                 RenderTexture.active = rt;
 
@@ -333,6 +339,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
             finally
             {
+                GL.sRGBWrite = previousSRGBWrite;
                 RenderTexture.active = previous;
                 if (readable != null)
                     UnityEngine.Object.DestroyImmediate(readable);

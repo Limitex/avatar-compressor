@@ -346,6 +346,72 @@ namespace dev.limitex.avatar.compressor.tests
             Object.DestroyImmediate(b);
         }
 
+        [Test]
+        public void Resize_NonReadableSrgbSource_PreservesBytes_WhenSRGBWriteDisabled()
+        {
+            // The readback blit must not depend on ambient GL.sRGBWrite (editor
+            // IMGUI leaves it false): without the write-side encode, the sRGB RT
+            // stores linear bytes and the decode table double-decodes, darkening
+            // mid-tones (128 -> ~55). Black/white are sRGB fixed points and
+            // cannot catch this.
+            var midGray = new Color(128f / 255f, 128f / 255f, 128f / 255f, 1f);
+            var source = CreateSolidTexture(64, 64, midGray);
+            source.Apply(false, true);
+            Assert.IsFalse(source.isReadable, "sanity: source is non-readable");
+            Assert.IsTrue(source.isDataSRGB, "sanity: source is sRGB");
+
+            var previousSRGBWrite = GL.sRGBWrite;
+            GL.sRGBWrite = false;
+            Texture2D result;
+            try
+            {
+                result = _resizer.Resize(source, 16, 16, forceLinearOutput: false);
+            }
+            finally
+            {
+                GL.sRGBWrite = previousSRGBWrite;
+            }
+
+            Assert.IsNotNull(result);
+            var pixel = result.GetPixels32()[0];
+            Assert.That(pixel.r, Is.InRange((byte)127, (byte)129));
+            Assert.That(pixel.g, Is.InRange((byte)127, (byte)129));
+            Assert.That(pixel.b, Is.InRange((byte)127, (byte)129));
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_NonReadableSrgbSource_SameSize_PreservesBytes_WhenSRGBWriteDisabled()
+        {
+            // The same-size byte-copy path reads back through the same blit.
+            var midGray = new Color(128f / 255f, 128f / 255f, 128f / 255f, 1f);
+            var source = CreateSolidTexture(64, 64, midGray);
+            source.Apply(false, true);
+
+            var previousSRGBWrite = GL.sRGBWrite;
+            GL.sRGBWrite = false;
+            Texture2D result;
+            try
+            {
+                result = _resizer.Resize(source, 64, 64, forceLinearOutput: false);
+            }
+            finally
+            {
+                GL.sRGBWrite = previousSRGBWrite;
+            }
+
+            Assert.IsNotNull(result);
+            var pixel = result.GetPixels32()[0];
+            Assert.That(pixel.r, Is.InRange((byte)127, (byte)129));
+            Assert.That(pixel.g, Is.InRange((byte)127, (byte)129));
+            Assert.That(pixel.b, Is.InRange((byte)127, (byte)129));
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
         #endregion
 
         #region Same Size / Edge Cases
