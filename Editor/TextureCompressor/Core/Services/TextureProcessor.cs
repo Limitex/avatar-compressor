@@ -174,7 +174,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             if (_resizer != null)
             {
-                var resizerResult = _resizer.Resize(source, newWidth, newHeight, isNormalMap);
+                var resizerResult = _resizer.Resize(source, newWidth, newHeight);
                 if (resizerResult != null)
                     return resizerResult;
             }

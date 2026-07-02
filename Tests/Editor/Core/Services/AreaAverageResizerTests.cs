@@ -104,8 +104,11 @@ namespace dev.limitex.avatar.compressor.tests
         #region Resize Color Tests
 
         [Test]
-        public void Resize_2x2To1x1_ReturnsExactAverage()
+        public void Resize_2x2To1x1_AveragesInLinearSpace()
         {
+            // sRGB source: channels are decoded to linear, averaged, then
+            // re-encoded. avg(1,0,0,1) = 0.5 linear -> 0.735 sRGB;
+            // avg(0,0,1,0) = 0.25 linear -> 0.537 sRGB.
             var source = CreateTextureWithPixels(
                 2,
                 2,
@@ -118,16 +121,16 @@ namespace dev.limitex.avatar.compressor.tests
                 }
             );
 
-            var result = _resizer.Resize(source, 1, 1, false);
+            var result = _resizer.Resize(source, 1, 1);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(1, result.width);
             Assert.AreEqual(1, result.height);
 
             var pixel = result.GetPixel(0, 0);
-            Assert.That(pixel.r, Is.EqualTo(0.5f).Within(0.02f));
-            Assert.That(pixel.g, Is.EqualTo(0.5f).Within(0.02f));
-            Assert.That(pixel.b, Is.EqualTo(0.25f).Within(0.02f));
+            Assert.That(pixel.r, Is.EqualTo(0.735f).Within(0.02f));
+            Assert.That(pixel.g, Is.EqualTo(0.735f).Within(0.02f));
+            Assert.That(pixel.b, Is.EqualTo(0.537f).Within(0.02f));
             Assert.That(pixel.a, Is.EqualTo(1f).Within(0.02f));
 
             Object.DestroyImmediate(source);
@@ -149,7 +152,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var source = CreateTextureWithPixels(4, 4, pixels);
 
-            var result = _resizer.Resize(source, 2, 2, false);
+            var result = _resizer.Resize(source, 2, 2);
 
             Assert.IsNotNull(result);
             var resultPixels = result.GetPixels();
@@ -170,7 +173,7 @@ namespace dev.limitex.avatar.compressor.tests
             var color = new Color(0.3f, 0.6f, 0.9f, 0.7f);
             var source = CreateSolidTexture(64, 64, color);
 
-            var result = _resizer.Resize(source, 16, 16, false);
+            var result = _resizer.Resize(source, 16, 16);
 
             Assert.IsNotNull(result);
             var pixel = result.GetPixel(8, 8);
@@ -184,8 +187,10 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void Resize_Checkerboard_ConvergesToGray()
+        public void Resize_Checkerboard_AveragesInLinearSpace()
         {
+            // avg(decode(0), decode(1)) = 0.5 linear -> 0.735 sRGB, matching
+            // the hardware linear-space filtering of the pre-branch blit path.
             int size = 64;
             var pixels = new Color[size * size];
             for (int y = 0; y < size; y++)
@@ -197,13 +202,13 @@ namespace dev.limitex.avatar.compressor.tests
             }
             var source = CreateTextureWithPixels(size, size, pixels);
 
-            var result = _resizer.Resize(source, 1, 1, false);
+            var result = _resizer.Resize(source, 1, 1);
 
             Assert.IsNotNull(result);
             var pixel = result.GetPixel(0, 0);
-            Assert.That(pixel.r, Is.EqualTo(0.5f).Within(0.02f));
-            Assert.That(pixel.g, Is.EqualTo(0.5f).Within(0.02f));
-            Assert.That(pixel.b, Is.EqualTo(0.5f).Within(0.02f));
+            Assert.That(pixel.r, Is.EqualTo(0.735f).Within(0.02f));
+            Assert.That(pixel.g, Is.EqualTo(0.735f).Within(0.02f));
+            Assert.That(pixel.b, Is.EqualTo(0.735f).Within(0.02f));
 
             Object.DestroyImmediate(source);
             Object.DestroyImmediate(result);
@@ -214,7 +219,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var source = CreateSolidTexture(128, 64, Color.white);
 
-            var result = _resizer.Resize(source, 32, 16, false);
+            var result = _resizer.Resize(source, 32, 16);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(32, result.width);
@@ -226,6 +231,71 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Color Space Policy
+
+        [Test]
+        public void Resize_LinearTexture_PreservesValuesAndLinearFlag()
+        {
+            var source = CreateLinearSolidTexture(64, 64, new Color(0.5f, 0.5f, 0.5f, 1f));
+            Assert.IsFalse(source.isDataSRGB, "sanity: linear source");
+
+            var result = _resizer.Resize(source, 16, 16);
+
+            Assert.IsNotNull(result);
+            Assert.IsFalse(result.isDataSRGB, "output must keep the source's linear flag");
+            var pixel = result.GetPixel(8, 8);
+            Assert.That(pixel.r, Is.EqualTo(0.5f).Within(0.01f));
+            Assert.That(pixel.g, Is.EqualTo(0.5f).Within(0.01f));
+            Assert.That(pixel.b, Is.EqualTo(0.5f).Within(0.01f));
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_SrgbTexture_KeepsSrgbFlag()
+        {
+            var source = CreateSolidTexture(64, 64, Color.gray);
+            Assert.IsTrue(source.isDataSRGB, "sanity: default source is sRGB");
+
+            var result = _resizer.Resize(source, 16, 16);
+
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.isDataSRGB, "output must keep the source's sRGB flag");
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_NonReadableSource_MatchesReadableSource()
+        {
+            var color = new Color(0.5f, 0.5f, 0.5f, 1f);
+            var readable = CreateLinearSolidTexture(64, 64, color);
+            var nonReadable = CreateLinearSolidTexture(64, 64, color);
+            nonReadable.Apply(false, true);
+            Assert.IsFalse(nonReadable.isReadable, "sanity: second texture is non-readable");
+
+            var a = _resizer.Resize(readable, 16, 16);
+            var b = _resizer.Resize(nonReadable, 16, 16);
+
+            Assert.IsNotNull(a);
+            Assert.IsNotNull(b);
+            var pa = a.GetPixel(8, 8);
+            var pb = b.GetPixel(8, 8);
+            Assert.That(pb.r, Is.EqualTo(pa.r).Within(0.01f));
+            Assert.That(pb.g, Is.EqualTo(pa.g).Within(0.01f));
+            Assert.That(pb.b, Is.EqualTo(pa.b).Within(0.01f));
+            Assert.That(pb.a, Is.EqualTo(pa.a).Within(0.01f));
+
+            Object.DestroyImmediate(readable);
+            Object.DestroyImmediate(nonReadable);
+            Object.DestroyImmediate(a);
+            Object.DestroyImmediate(b);
+        }
+
+        #endregion
+
         #region Same Size / Edge Cases
 
         [Test]
@@ -233,7 +303,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var source = CreateSolidTexture(64, 64, Color.red);
 
-            var result = _resizer.Resize(source, 64, 64, false);
+            var result = _resizer.Resize(source, 64, 64);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(64, result.width);
@@ -250,7 +320,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Resize_NullSource_ReturnsNull()
         {
-            var result = _resizer.Resize(null, 64, 64, false);
+            var result = _resizer.Resize(null, 64, 64);
             Assert.IsNull(result);
         }
 
@@ -263,7 +333,7 @@ namespace dev.limitex.avatar.compressor.tests
             source.filterMode = FilterMode.Trilinear;
             source.anisoLevel = 8;
 
-            var result = _resizer.Resize(source, 32, 32, false);
+            var result = _resizer.Resize(source, 32, 32);
 
             Assert.AreEqual(TextureWrapMode.Repeat, result.wrapModeU);
             Assert.AreEqual(TextureWrapMode.Clamp, result.wrapModeV);
@@ -284,7 +354,7 @@ namespace dev.limitex.avatar.compressor.tests
             source.SetPixels(pixels);
             source.Apply(true);
 
-            var result = _resizer.Resize(source, 32, 32, false);
+            var result = _resizer.Resize(source, 32, 32);
 
             Assert.IsNotNull(result);
             Assert.IsTrue(result.mipmapCount > 1);
@@ -301,9 +371,9 @@ namespace dev.limitex.avatar.compressor.tests
         public void Resize_NormalMap_FlatNormal_IsPreserved()
         {
             var flatNormal = new Color(0.5f, 0.5f, 1f, 1f); // (0,0,1) encoded
-            var source = CreateSolidTexture(64, 64, flatNormal);
+            var source = CreateLinearSolidTexture(64, 64, flatNormal);
 
-            var result = _resizer.Resize(source, 16, 16, isNormalMap: true);
+            var result = _resizer.Resize(source, 16, 16);
 
             Assert.IsNotNull(result);
             var pixel = result.GetPixel(8, 8);
@@ -322,9 +392,9 @@ namespace dev.limitex.avatar.compressor.tests
             float ny = 0.5f;
             float nz = Mathf.Sqrt(1f - nx * nx - ny * ny);
             var encoded = new Color(nx * 0.5f + 0.5f, ny * 0.5f + 0.5f, nz * 0.5f + 0.5f, 1f);
-            var source = CreateSolidTexture(64, 64, encoded);
+            var source = CreateLinearSolidTexture(64, 64, encoded);
 
-            var result = _resizer.Resize(source, 16, 16, isNormalMap: true);
+            var result = _resizer.Resize(source, 16, 16);
 
             Assert.IsNotNull(result);
             var pixel = result.GetPixel(8, 8);
@@ -340,9 +410,9 @@ namespace dev.limitex.avatar.compressor.tests
         public void Resize_NormalMap_NegativeZ_PreservesSign()
         {
             var encoded = new Color(0.5f, 0.5f, 0f, 1f); // (0, 0, -1)
-            var source = CreateSolidTexture(64, 64, encoded);
+            var source = CreateLinearSolidTexture(64, 64, encoded);
 
-            var result = _resizer.Resize(source, 16, 16, isNormalMap: true);
+            var result = _resizer.Resize(source, 16, 16);
 
             Assert.IsNotNull(result);
             var pixel = result.GetPixel(8, 8);
@@ -364,9 +434,9 @@ namespace dev.limitex.avatar.compressor.tests
             pixels[1] = normalB;
             pixels[2] = normalA;
             pixels[3] = normalB;
-            var source = CreateTextureWithPixels(2, 2, pixels);
+            var source = CreateLinearTextureWithPixels(2, 2, pixels);
 
-            var result = _resizer.Resize(source, 1, 1, isNormalMap: true);
+            var result = _resizer.Resize(source, 1, 1);
 
             Assert.IsNotNull(result);
             var pixel = result.GetPixel(0, 0);
@@ -427,9 +497,28 @@ namespace dev.limitex.avatar.compressor.tests
             return texture;
         }
 
+        private static Texture2D CreateLinearTextureWithPixels(int width, int height, Color[] pixels)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false, linear: true);
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return texture;
+        }
+
         private static Texture2D CreateSolidTexture(int width, int height, Color color)
         {
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            var pixels = new Color[width * height];
+            for (int i = 0; i < pixels.Length; i++)
+                pixels[i] = color;
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D CreateLinearSolidTexture(int width, int height, Color color)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false, linear: true);
             var pixels = new Color[width * height];
             for (int i = 0; i < pixels.Length; i++)
                 pixels[i] = color;

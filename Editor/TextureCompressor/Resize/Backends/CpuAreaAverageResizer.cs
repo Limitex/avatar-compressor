@@ -4,40 +4,39 @@ using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
 {
+    /// <summary>
+    /// CPU implementation of separable two-pass area averaging.
+    /// Color space policy: readback obtains the stored bytes unchanged,
+    /// sRGB sources are decoded to linear before averaging and re-encoded
+    /// afterwards, and the output texture keeps the source's color space
+    /// flag — so sampling the result yields the area average of what
+    /// sampling the source yielded.
+    /// </summary>
     public class CpuAreaAverageResizer : ITextureResizer
     {
-        public Texture2D Resize(
-            Texture2D source,
-            int targetWidth,
-            int targetHeight,
-            bool isNormalMap
-        )
+        public Texture2D Resize(Texture2D source, int targetWidth, int targetHeight)
         {
             if (source == null)
                 return null;
 
             int srcW = source.width;
             int srcH = source.height;
+            bool isSRGB = source.isDataSRGB;
 
-            if (targetWidth == srcW && targetHeight == srcH)
-            {
-                return CopyTexture(source, isNormalMap);
-            }
-
-            var pixels = GetRawPixels(source, isNormalMap);
+            var pixels = GetStoredPixels(source);
             if (pixels == null || pixels.Length == 0)
                 return null;
 
-            SplitChannels(pixels, srcW * srcH, out var r, out var g, out var b, out var a);
-            pixels = null;
+            if (targetWidth == srcW && targetHeight == srcH)
+            {
+                return CreateOutput(pixels, targetWidth, targetHeight, source, isSRGB);
+            }
 
+            var decode = BuildDecodeTable(isSRGB);
             var planX = BuildPlan(srcW, targetWidth);
             var planY = BuildPlan(srcH, targetHeight);
 
-            var rH = new float[targetWidth * srcH];
-            var gH = new float[targetWidth * srcH];
-            var bH = new float[targetWidth * srcH];
-            var aH = new float[targetWidth * srcH];
+            var intermediate = new Vector4[targetWidth * srcH];
 
             Parallel.For(
                 0,
@@ -46,44 +45,54 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     int srcRow = y * srcW;
                     int dstRow = y * targetWidth;
-                    ApplyPlanToRow(planX, r, srcRow, rH, dstRow);
-                    ApplyPlanToRow(planX, g, srcRow, gH, dstRow);
-                    ApplyPlanToRow(planX, b, srcRow, bH, dstRow);
-                    ApplyPlanToRow(planX, a, srcRow, aH, dstRow);
+                    for (int i = 0; i < targetWidth; i++)
+                    {
+                        var sum = Vector4.zero;
+                        int off = planX.Offset[i];
+                        int count = planX.Len[i];
+                        int s = planX.Start[i];
+
+                        for (int t = 0; t < count; t++)
+                        {
+                            var p = pixels[srcRow + s + t];
+                            float w = planX.Weights[off + t];
+                            sum.x += decode[p.r] * w;
+                            sum.y += decode[p.g] * w;
+                            sum.z += decode[p.b] * w;
+                            sum.w += (p.a / 255f) * w;
+                        }
+
+                        intermediate[dstRow + i] = sum;
+                    }
                 }
             );
 
-            var rF = new float[targetWidth * targetHeight];
-            var gF = new float[targetWidth * targetHeight];
-            var bF = new float[targetWidth * targetHeight];
-            var aF = new float[targetWidth * targetHeight];
+            var result = new Color32[targetWidth * targetHeight];
 
             Parallel.For(
                 0,
                 targetWidth,
                 x =>
                 {
-                    ApplyPlanToColumn(planY, rH, x, targetWidth, rF, x, targetWidth);
-                    ApplyPlanToColumn(planY, gH, x, targetWidth, gF, x, targetWidth);
-                    ApplyPlanToColumn(planY, bH, x, targetWidth, bF, x, targetWidth);
-                    ApplyPlanToColumn(planY, aH, x, targetWidth, aF, x, targetWidth);
+                    int dstN = planY.Start.Length;
+                    for (int i = 0; i < dstN; i++)
+                    {
+                        var sum = Vector4.zero;
+                        int off = planY.Offset[i];
+                        int count = planY.Len[i];
+                        int s = planY.Start[i];
+
+                        for (int t = 0; t < count; t++)
+                        {
+                            sum += intermediate[(s + t) * targetWidth + x] * planY.Weights[off + t];
+                        }
+
+                        result[i * targetWidth + x] = EncodePixel(sum, isSRGB);
+                    }
                 }
             );
 
-            var result = MergeChannels(rF, gF, bF, aF, targetWidth * targetHeight);
-
-            var output = new Texture2D(
-                targetWidth,
-                targetHeight,
-                TextureFormat.RGBA32,
-                source.mipmapCount > 1,
-                isNormalMap
-            );
-            output.SetPixels(result);
-            output.Apply(source.mipmapCount > 1);
-            TextureProcessor.CopyTextureSettings(source, output);
-
-            return output;
+            return CreateOutput(result, targetWidth, targetHeight, source, isSRGB);
         }
 
         public struct AxisPlan
@@ -155,78 +164,68 @@ namespace dev.limitex.avatar.compressor.editor.texture
             };
         }
 
-        private static void ApplyPlanToRow(
-            AxisPlan plan,
-            float[] src,
-            int srcOffset,
-            float[] dst,
-            int dstOffset
-        )
+        /// <summary>
+        /// Maps stored byte values to the averaging space: sRGB sources are
+        /// decoded to linear (exact sRGB curve, matching the GPU's hardware
+        /// decode), linear sources pass through unchanged.
+        /// </summary>
+        private static float[] BuildDecodeTable(bool isSRGB)
         {
-            int dstN = plan.Start.Length;
-            for (int i = 0; i < dstN; i++)
+            var table = new float[256];
+            for (int i = 0; i < 256; i++)
             {
-                float sum = 0f;
-                int off = plan.Offset[i];
-                int count = plan.Len[i];
-                int s = plan.Start[i];
-
-                for (int t = 0; t < count; t++)
-                {
-                    sum += src[srcOffset + s + t] * plan.Weights[off + t];
-                }
-
-                dst[dstOffset + i] = sum;
+                float v = i / 255f;
+                table[i] = isSRGB ? Mathf.GammaToLinearSpace(v) : v;
             }
+            return table;
         }
 
-        private static void ApplyPlanToColumn(
-            AxisPlan plan,
-            float[] src,
-            int srcCol,
-            int srcStride,
-            float[] dst,
-            int dstCol,
-            int dstStride
-        )
+        private static Color32 EncodePixel(Vector4 linear, bool isSRGB)
         {
-            int dstN = plan.Start.Length;
-            for (int i = 0; i < dstN; i++)
+            float r = linear.x;
+            float g = linear.y;
+            float b = linear.z;
+
+            if (isSRGB)
             {
-                float sum = 0f;
-                int off = plan.Offset[i];
-                int count = plan.Len[i];
-                int s = plan.Start[i];
-
-                for (int t = 0; t < count; t++)
-                {
-                    sum += src[(s + t) * srcStride + srcCol] * plan.Weights[off + t];
-                }
-
-                dst[i * dstStride + dstCol] = sum;
+                r = Mathf.LinearToGammaSpace(r);
+                g = Mathf.LinearToGammaSpace(g);
+                b = Mathf.LinearToGammaSpace(b);
             }
+
+            return new Color32(ToByte(r), ToByte(g), ToByte(b), ToByte(linear.w));
         }
 
-        private static Color[] GetRawPixels(Texture2D texture, bool isNormalMap = false)
+        private static byte ToByte(float value)
+        {
+            return (byte)Mathf.RoundToInt(Mathf.Clamp01(value) * 255f);
+        }
+
+        /// <summary>
+        /// Returns the texture's stored bytes unchanged. Non-readable textures
+        /// are read back through a RenderTexture whose color space matches the
+        /// source, so the hardware decode/encode round-trip preserves the bytes.
+        /// </summary>
+        private static Color32[] GetStoredPixels(Texture2D texture)
         {
             if (texture.isReadable)
             {
                 try
                 {
-                    return texture.GetPixels();
+                    return texture.GetPixels32();
                 }
                 catch (Exception e)
                 {
                     Debug.LogWarning(
-                        $"[TextureCompressor] GetPixels failed for '{texture.name}', "
+                        $"[TextureCompressor] GetPixels32 failed for '{texture.name}', "
                             + $"falling back to RenderTexture readback: {e.Message}"
                     );
                 }
             }
 
-            var colorSpace = isNormalMap
-                ? RenderTextureReadWrite.Linear
-                : RenderTextureReadWrite.sRGB;
+            var colorSpace = texture.isDataSRGB
+                ? RenderTextureReadWrite.sRGB
+                : RenderTextureReadWrite.Linear;
 
             RenderTexture rt = null;
             Texture2D readable = null;
@@ -249,12 +248,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     texture.height,
                     TextureFormat.RGBA32,
                     false,
-                    isNormalMap
+                    linear: !texture.isDataSRGB
                 );
                 readable.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
                 readable.Apply(false);
 
-                return readable.GetPixels();
+                return readable.GetPixels32();
             }
             catch (Exception e)
             {
@@ -276,58 +275,22 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
         }
 
-        private static void SplitChannels(
-            Color[] pixels,
-            int count,
-            out float[] r,
-            out float[] g,
-            out float[] b,
-            out float[] a
+        private static Texture2D CreateOutput(
+            Color32[] pixels,
+            int width,
+            int height,
+            Texture2D source,
+            bool isSRGB
         )
         {
-            r = new float[count];
-            g = new float[count];
-            b = new float[count];
-            a = new float[count];
-
-            for (int i = 0; i < count; i++)
-            {
-                r[i] = pixels[i].r;
-                g[i] = pixels[i].g;
-                b[i] = pixels[i].b;
-                a[i] = pixels[i].a;
-            }
-        }
-
-        private static Color[] MergeChannels(float[] r, float[] g, float[] b, float[] a, int count)
-        {
-            var result = new Color[count];
-            for (int i = 0; i < count; i++)
-            {
-                result[i] = new Color(
-                    Mathf.Clamp01(r[i]),
-                    Mathf.Clamp01(g[i]),
-                    Mathf.Clamp01(b[i]),
-                    Mathf.Clamp01(a[i])
-                );
-            }
-            return result;
-        }
-
-        private static Texture2D CopyTexture(Texture2D source, bool isNormalMap)
-        {
-            var pixels = GetRawPixels(source, isNormalMap);
-            if (pixels == null)
-                return null;
-
             var output = new Texture2D(
-                source.width,
-                source.height,
+                width,
+                height,
                 TextureFormat.RGBA32,
                 source.mipmapCount > 1,
-                isNormalMap
+                linear: !isSRGB
             );
-            output.SetPixels(pixels);
+            output.SetPixels32(pixels);
             output.Apply(source.mipmapCount > 1);
             TextureProcessor.CopyTextureSettings(source, output);
             return output;

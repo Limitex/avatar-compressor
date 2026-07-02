@@ -13,9 +13,10 @@ uint _DstHeight;
 float _ScaleX;
 float _ScaleY;
 
-// When set, the horizontal kernel re-encodes linear values to sRGB before
-// averaging so that the result matches CPU-side sRGB-space averaging.
-// The GPU auto-decodes sRGB textures to linear on load; this reverses that.
+// When set (source is sRGB), the vertical kernel re-encodes the averaged
+// linear values back to sRGB so the readback bytes match the source encoding.
+// The GPU auto-decodes sRGB textures to linear on load, so both passes
+// average in linear space.
 uint _ReencodeSRGB;
 
 float3 LinearToSRGB(float3 c)
@@ -49,10 +50,7 @@ void AreaAverageHorizontal(uint3 id : SV_DispatchThreadID)
     {
         float w = min((float)(sx + 1), b) - max((float)sx, a);
         w = max(w, 0);
-        float4 texel = _SourceTexture[int2(sx, id.y)];
-        if (_ReencodeSRGB)
-            texel.rgb = LinearToSRGB(texel.rgb);
-        sum += texel * w;
+        sum += _SourceTexture[int2(sx, id.y)] * w;
         totalWeight += w;
     }
 
@@ -90,5 +88,8 @@ void AreaAverageVertical(uint3 id : SV_DispatchThreadID)
     if (totalWeight > 1e-12)
         sum /= totalWeight;
 
-    _OutputTexture[int2(id.x, id.y)] = saturate(sum);
+    sum = saturate(sum);
+    if (_ReencodeSRGB)
+        sum.rgb = LinearToSRGB(sum.rgb);
+    _OutputTexture[int2(id.x, id.y)] = sum;
 }

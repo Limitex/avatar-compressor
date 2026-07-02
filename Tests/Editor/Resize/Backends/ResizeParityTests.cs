@@ -74,8 +74,8 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var source = Track(CreateSolidTexture(64, 64, new Color(0.3f, 0.6f, 0.9f, 0.7f)));
 
-            var cpuResult = Track(_cpuResizer.Resize(source, 16, 16, false));
-            var gpuResult = Track(_gpuResizer.Resize(source, 16, 16, false));
+            var cpuResult = Track(_cpuResizer.Resize(source, 16, 16));
+            var gpuResult = Track(_gpuResizer.Resize(source, 16, 16));
 
             AssertPixelsParity(cpuResult, gpuResult);
         }
@@ -85,8 +85,8 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var source = Track(CreateGradientTexture(128, 128));
 
-            var cpuResult = Track(_cpuResizer.Resize(source, 32, 32, false));
-            var gpuResult = Track(_gpuResizer.Resize(source, 32, 32, false));
+            var cpuResult = Track(_cpuResizer.Resize(source, 32, 32));
+            var gpuResult = Track(_gpuResizer.Resize(source, 32, 32));
 
             AssertPixelsParity(cpuResult, gpuResult);
         }
@@ -96,8 +96,8 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var source = Track(CreateCheckerboardTexture(64, 64));
 
-            var cpuResult = Track(_cpuResizer.Resize(source, 1, 1, false));
-            var gpuResult = Track(_gpuResizer.Resize(source, 1, 1, false));
+            var cpuResult = Track(_cpuResizer.Resize(source, 1, 1));
+            var gpuResult = Track(_gpuResizer.Resize(source, 1, 1));
 
             AssertPixelsParity(cpuResult, gpuResult);
         }
@@ -107,8 +107,8 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var source = Track(CreateSolidTexture(128, 64, Color.cyan));
 
-            var cpuResult = Track(_cpuResizer.Resize(source, 32, 16, false));
-            var gpuResult = Track(_gpuResizer.Resize(source, 32, 16, false));
+            var cpuResult = Track(_cpuResizer.Resize(source, 32, 16));
+            var gpuResult = Track(_gpuResizer.Resize(source, 32, 16));
 
             Assert.AreEqual(cpuResult.width, gpuResult.width);
             Assert.AreEqual(cpuResult.height, gpuResult.height);
@@ -120,8 +120,32 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var source = Track(CreateGradientTexture(256, 256));
 
-            var cpuResult = Track(_cpuResizer.Resize(source, 32, 32, false));
-            var gpuResult = Track(_gpuResizer.Resize(source, 32, 32, false));
+            var cpuResult = Track(_cpuResizer.Resize(source, 32, 32));
+            var gpuResult = Track(_gpuResizer.Resize(source, 32, 32));
+
+            AssertPixelsParity(cpuResult, gpuResult);
+        }
+
+        [Test]
+        public void Parity_LinearColorTexture_MatchesWithinTolerance()
+        {
+            var source = Track(CreateLinearTexture(64, 64, new Color(0.5f, 0.25f, 0.75f, 0.6f)));
+
+            var cpuResult = Track(_cpuResizer.Resize(source, 16, 16));
+            var gpuResult = Track(_gpuResizer.Resize(source, 16, 16));
+
+            AssertPixelsParity(cpuResult, gpuResult);
+        }
+
+        [Test]
+        public void Parity_NonReadableSource_MatchesWithinTolerance()
+        {
+            var source = Track(CreateCheckerboardTexture(64, 64));
+            source.Apply(false, true);
+            Assert.IsFalse(source.isReadable, "sanity: source must be non-readable");
+
+            var cpuResult = Track(_cpuResizer.Resize(source, 16, 16));
+            var gpuResult = Track(_gpuResizer.Resize(source, 16, 16));
 
             AssertPixelsParity(cpuResult, gpuResult);
         }
@@ -136,8 +160,8 @@ namespace dev.limitex.avatar.compressor.tests
             var flatNormal = new Color(0.5f, 0.5f, 1f, 1f);
             var source = Track(CreateLinearTexture(64, 64, flatNormal));
 
-            var cpuResult = Track(_cpuResizer.Resize(source, 16, 16, true));
-            var gpuResult = Track(_gpuResizer.Resize(source, 16, 16, true));
+            var cpuResult = Track(_cpuResizer.Resize(source, 16, 16));
+            var gpuResult = Track(_gpuResizer.Resize(source, 16, 16));
 
             AssertPixelsParity(cpuResult, gpuResult);
         }
@@ -151,8 +175,8 @@ namespace dev.limitex.avatar.compressor.tests
             var encoded = new Color(nx * 0.5f + 0.5f, ny * 0.5f + 0.5f, nz * 0.5f + 0.5f, 1f);
             var source = Track(CreateLinearTexture(64, 64, encoded));
 
-            var cpuResult = Track(_cpuResizer.Resize(source, 16, 16, true));
-            var gpuResult = Track(_gpuResizer.Resize(source, 16, 16, true));
+            var cpuResult = Track(_cpuResizer.Resize(source, 16, 16));
+            var gpuResult = Track(_gpuResizer.Resize(source, 16, 16));
 
             AssertPixelsParity(cpuResult, gpuResult);
         }

@@ -47,12 +47,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
         }
 
-        public Texture2D Resize(
-            Texture2D source,
-            int targetWidth,
-            int targetHeight,
-            bool isNormalMap
-        )
+        public Texture2D Resize(Texture2D source, int targetWidth, int targetHeight)
         {
             if (source == null)
                 return null;
@@ -71,9 +66,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             try
             {
                 // sRGB textures undergo hardware sRGB→Linear decode when read
-                // through the SRV; the shader re-encodes Linear→sRGB before
-                // averaging to match the CPU path's sRGB-space averaging.
-                bool isSRGB = source.isDataSRGB && !isNormalMap;
+                // through the SRV, so averaging happens in linear space; the
+                // shader re-encodes to sRGB after averaging so the readback
+                // bytes match the source encoding.
+                bool isSRGB = source.isDataSRGB;
 
                 intermediateRT = CreateUAVRenderTexture(targetWidth, srcH);
                 if (intermediateRT == null)
@@ -114,7 +110,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     targetHeight,
                     TextureFormat.RGBA32,
                     source.mipmapCount > 1,
-                    isNormalMap
+                    linear: !isSRGB
                 );
                 result.ReadPixels(new Rect(0, 0, targetWidth, targetHeight), 0, 0);
                 result.Apply(source.mipmapCount > 1);
