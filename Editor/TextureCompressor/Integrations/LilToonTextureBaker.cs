@@ -425,22 +425,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
         /// <summary>
         /// True when the layer is enabled, samples plain uv0 (the only UV mode the baker shader
-        /// reproduces), and no input that the bake would consume — the layer toggle, its
-        /// parameters, or its textures — is animated, protected, or driven by shader time.
-        /// Production composes the same checks inside <see cref="SelectOverlayLayersToBake"/>;
-        /// this is the test-facing per-layer entry point.
+        /// reproduces), and no input that the bake would consume is protected or driven by
+        /// shader time. Animation vetoes are applied separately by the caller so it can
+        /// classify animation-caused skips.
         /// </summary>
-        public static bool CanBakeOverlayLayer(
-            Material material,
-            IReadOnlyCollection<string> animatedProperties,
-            Func<Texture2D, bool> isProtectedTexture,
-            string layer
-        )
-        {
-            return CanBakeOverlayLayerIgnoringAnimation(material, isProtectedTexture, layer)
-                && !HasAnimatedOverlayLayerInput(animatedProperties, layer);
-        }
-
         private static bool CanBakeOverlayLayerIgnoringAnimation(
             Material material,
             Func<Texture2D, bool> isProtectedTexture,
@@ -874,47 +862,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 if (entry.Value != null)
                     UnityEngine.Object.DestroyImmediate(entry.Value);
             }
-        }
-
-        /// <summary>
-        /// Every property name the bake configures on the baker material. Exposed so tests can
-        /// verify against an installed lilToon that the baker shader still declares each one —
-        /// a lilToon release that renamed any of them would otherwise bake with shader defaults
-        /// silently.
-        /// </summary>
-        public static IReadOnlyList<string> GetBakerMaterialProperties()
-        {
-            var names = new List<string>
-            {
-                MainTexProperty,
-                MainColorProperty,
-                MainTexHsvgProperty,
-                MainGradationStrengthProperty,
-                MainGradationTexProperty,
-                MainColorAdjustMaskProperty,
-                AlphaMaskModeProperty,
-                AlphaMaskProperty,
-                AlphaMaskScaleProperty,
-                AlphaMaskValueProperty,
-            };
-
-            foreach (var layer in new[] { Layer2nd, Layer3rd })
-            {
-                names.Add(UseLayerProperty(layer));
-                names.Add(LayerColorProperty(layer));
-                names.Add(LayerTexProperty(layer));
-                names.Add(LayerBlendMaskProperty(layer));
-                foreach (var format in LayerFloatPropertyFormats)
-                {
-                    names.Add(string.Format(format, layer));
-                }
-                foreach (var format in LayerVectorPropertyFormats)
-                {
-                    names.Add(string.Format(format, layer));
-                }
-            }
-
-            return names;
         }
 
         /// <summary>

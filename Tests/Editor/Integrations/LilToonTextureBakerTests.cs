@@ -32,6 +32,19 @@ namespace dev.limitex.avatar.compressor.tests
             UnityEngine.Object.DestroyImmediate(_texture);
         }
 
+        private (bool Bake2nd, bool Bake3rd) SelectLayers(
+            IReadOnlyCollection<string> animatedProperties,
+            Func<Texture2D, bool> isProtectedTexture = null
+        )
+        {
+            var (bake2nd, bake3rd, _) = LilToonTextureBaker.SelectOverlayLayersToBake(
+                _material,
+                animatedProperties,
+                isProtectedTexture
+            );
+            return (bake2nd, bake3rd);
+        }
+
         [Test]
         public void Constructor_DoesNotThrow_RegardlessOfLilToonPresence()
         {
@@ -74,6 +87,49 @@ namespace dev.limitex.avatar.compressor.tests
                 "lilToon is not installed in this project; skipping the shader tripwire."
             );
 
+            // Keep in sync with the properties LilToonTextureBaker configures on the baker
+            // material (ConfigureMainBaker/ConfigureOverlayLayer/BakeAlphaMask).
+            var fixedNames = new[]
+            {
+                "_MainTex",
+                "_Color",
+                "_MainTexHSVG",
+                "_MainGradationStrength",
+                "_MainGradationTex",
+                "_MainColorAdjustMask",
+                "_AlphaMaskMode",
+                "_AlphaMask",
+                "_AlphaMaskScale",
+                "_AlphaMaskValue",
+            };
+            var layerFormats = new[]
+            {
+                "_UseMain{0}Tex",
+                "_Color{0}",
+                "_Main{0}Tex",
+                "_Main{0}BlendMask",
+                "_Main{0}TexAngle",
+                "_Main{0}TexIsDecal",
+                "_Main{0}TexIsLeftOnly",
+                "_Main{0}TexIsRightOnly",
+                "_Main{0}TexShouldCopy",
+                "_Main{0}TexShouldFlipMirror",
+                "_Main{0}TexShouldFlipCopy",
+                "_Main{0}TexIsMSDF",
+                "_Main{0}TexBlendMode",
+                "_Main{0}TexAlphaMode",
+                "_Main{0}TexDecalAnimation",
+                "_Main{0}TexDecalSubParam",
+            };
+            var expected = new List<string>(fixedNames);
+            foreach (var layer in new[] { "2nd", "3rd" })
+            {
+                foreach (var format in layerFormats)
+                {
+                    expected.Add(string.Format(format, layer));
+                }
+            }
+
             var declared = new HashSet<string>();
             int count = UnityEditor.ShaderUtil.GetPropertyCount(shader);
             for (int i = 0; i < count; i++)
@@ -81,7 +137,7 @@ namespace dev.limitex.avatar.compressor.tests
                 declared.Add(UnityEditor.ShaderUtil.GetPropertyName(shader, i));
             }
 
-            foreach (var name in LilToonTextureBaker.GetBakerMaterialProperties())
+            foreach (var name in expected)
             {
                 Assert.IsTrue(
                     declared.Contains(name),
@@ -313,168 +369,112 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region CanBakeOverlayLayer
+        #region SelectOverlayLayersToBake (per-layer gates)
 
         [Test]
-        public void CanBakeOverlayLayer_EnabledLayer_ReturnsTrue()
+        public void SelectOverlayLayersToBake_EnabledSecondLayer_Baked()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
-            Assert.IsTrue(
-                LilToonTextureBaker.CanBakeOverlayLayer(
-                    _material,
-                    Array.Empty<string>(),
-                    null,
-                    "2nd"
-                )
-            );
+            Assert.IsTrue(SelectLayers(Array.Empty<string>()).Bake2nd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_DisabledLayer_ReturnsFalse()
+        public void SelectOverlayLayersToBake_DisabledSecondLayer_NotBaked()
         {
-            Assert.IsFalse(
-                LilToonTextureBaker.CanBakeOverlayLayer(
-                    _material,
-                    Array.Empty<string>(),
-                    null,
-                    "2nd"
-                )
-            );
+            Assert.IsFalse(SelectLayers(Array.Empty<string>()).Bake2nd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_AnimatedToggle_ReturnsFalse()
+        public void SelectOverlayLayersToBake_AnimatedSecondToggle_SecondNotBaked()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             var props = new HashSet<string> { "_UseMain2ndTex" };
-            Assert.IsFalse(LilToonTextureBaker.CanBakeOverlayLayer(_material, props, null, "2nd"));
+            Assert.IsFalse(SelectLayers(props).Bake2nd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_AnimatedLayerParameter_ReturnsFalse()
+        public void SelectOverlayLayersToBake_AnimatedLayerParameter_SecondNotBaked()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             var props = new HashSet<string> { "_Main2ndTexAngle" };
-            Assert.IsFalse(LilToonTextureBaker.CanBakeOverlayLayer(_material, props, null, "2nd"));
+            Assert.IsFalse(SelectLayers(props).Bake2nd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_ProtectedLayerTexture_ReturnsFalse()
+        public void SelectOverlayLayersToBake_ProtectedLayerTexture_SecondNotBaked()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             _material.SetTexture("_Main2ndTex", _texture);
-            Assert.IsFalse(
-                LilToonTextureBaker.CanBakeOverlayLayer(
-                    _material,
-                    Array.Empty<string>(),
-                    t => t == _texture,
-                    "2nd"
-                )
-            );
+            Assert.IsFalse(SelectLayers(Array.Empty<string>(), t => t == _texture).Bake2nd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_ProtectedBlendMask_ReturnsFalse()
+        public void SelectOverlayLayersToBake_ProtectedBlendMask_ThirdNotBaked()
         {
             _material.SetFloat("_UseMain3rdTex", 1f);
             _material.SetTexture("_Main3rdBlendMask", _texture);
-            Assert.IsFalse(
-                LilToonTextureBaker.CanBakeOverlayLayer(
-                    _material,
-                    Array.Empty<string>(),
-                    t => t == _texture,
-                    "3rd"
-                )
-            );
+            Assert.IsFalse(SelectLayers(Array.Empty<string>(), t => t == _texture).Bake3rd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_UnprotectedLayerTexture_ReturnsTrue()
+        public void SelectOverlayLayersToBake_UnprotectedLayerTexture_SecondBaked()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             _material.SetTexture("_Main2ndTex", _texture);
-            Assert.IsTrue(
-                LilToonTextureBaker.CanBakeOverlayLayer(
-                    _material,
-                    Array.Empty<string>(),
-                    _ => false,
-                    "2nd"
-                )
-            );
+            Assert.IsTrue(SelectLayers(Array.Empty<string>(), _ => false).Bake2nd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_RenderTextureLayerTexture_ReturnsFalse()
+        public void SelectOverlayLayersToBake_RenderTextureLayerTexture_SecondNotBaked()
         {
             var renderTexture = new RenderTexture(4, 4, 0);
             _material.SetFloat("_UseMain2ndTex", 1f);
             _material.SetTexture("_Main2ndTex", renderTexture);
 
-            Assert.IsFalse(
-                LilToonTextureBaker.CanBakeOverlayLayer(
-                    _material,
-                    Array.Empty<string>(),
-                    null,
-                    "2nd"
-                )
-            );
+            Assert.IsFalse(SelectLayers(Array.Empty<string>()).Bake2nd);
 
             _material.SetTexture("_Main2ndTex", null);
             UnityEngine.Object.DestroyImmediate(renderTexture);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_DecalFlipbook_ReturnsFalse()
+        public void SelectOverlayLayersToBake_DecalFlipbookLayer_SecondNotBaked()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             _material.SetVector("_Main2ndTexDecalAnimation", new Vector4(4f, 4f, 16f, 30f));
-            Assert.IsFalse(
-                LilToonTextureBaker.CanBakeOverlayLayer(
-                    _material,
-                    Array.Empty<string>(),
-                    null,
-                    "2nd"
-                )
-            );
+            Assert.IsFalse(SelectLayers(Array.Empty<string>()).Bake2nd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_AnimatedLayerSt_ReturnsFalse()
+        public void SelectOverlayLayersToBake_AnimatedLayerSt_SecondNotBaked()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             var props = new HashSet<string> { "_Main2ndTex_ST" };
-            Assert.IsFalse(LilToonTextureBaker.CanBakeOverlayLayer(_material, props, null, "2nd"));
+            Assert.IsFalse(SelectLayers(props).Bake2nd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_AnimatedScrollRotate_ReturnsFalse()
+        public void SelectOverlayLayersToBake_AnimatedLayerScrollRotate_SecondNotBaked()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             var props = new HashSet<string> { "_Main2ndTex_ScrollRotate" };
-            Assert.IsFalse(LilToonTextureBaker.CanBakeOverlayLayer(_material, props, null, "2nd"));
+            Assert.IsFalse(SelectLayers(props).Bake2nd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_NonZeroUVMode_ReturnsFalse()
+        public void SelectOverlayLayersToBake_NonZeroUVMode_SecondNotBaked()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             _material.SetFloat("_Main2ndTex_UVMode", 1f);
-            Assert.IsFalse(
-                LilToonTextureBaker.CanBakeOverlayLayer(
-                    _material,
-                    Array.Empty<string>(),
-                    null,
-                    "2nd"
-                )
-            );
+            Assert.IsFalse(SelectLayers(Array.Empty<string>()).Bake2nd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_AnimatedUVMode_ReturnsFalse()
+        public void SelectOverlayLayersToBake_AnimatedUVMode_ThirdNotBaked()
         {
             _material.SetFloat("_UseMain3rdTex", 1f);
             var props = new HashSet<string> { "_Main3rdTex_UVMode" };
-            Assert.IsFalse(LilToonTextureBaker.CanBakeOverlayLayer(_material, props, null, "3rd"));
+            Assert.IsFalse(SelectLayers(props).Bake3rd);
         }
 
         #endregion
@@ -585,34 +585,27 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CanBakeOverlayLayer_DissolveLayer_ReturnsFalse()
+        public void SelectOverlayLayersToBake_DissolveLayer_SecondNotBaked()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             _material.SetVector("_Main2ndDissolveParams", new Vector4(1f, 0f, 0.5f, 0.1f));
-            Assert.IsFalse(
-                LilToonTextureBaker.CanBakeOverlayLayer(
-                    _material,
-                    Array.Empty<string>(),
-                    null,
-                    "2nd"
-                )
-            );
+            Assert.IsFalse(SelectLayers(Array.Empty<string>()).Bake2nd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_AnimatedEnableLighting_ReturnsFalse()
+        public void SelectOverlayLayersToBake_AnimatedEnableLighting_SecondNotBaked()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             var props = new HashSet<string> { "_Main2ndEnableLighting" };
-            Assert.IsFalse(LilToonTextureBaker.CanBakeOverlayLayer(_material, props, null, "2nd"));
+            Assert.IsFalse(SelectLayers(props).Bake2nd);
         }
 
         [Test]
-        public void CanBakeOverlayLayer_AnimatedAudioLinkToggle_ReturnsFalse()
+        public void SelectOverlayLayersToBake_AnimatedAudioLinkToggle_SecondNotBaked()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             var props = new HashSet<string> { "_AudioLink2Main2nd" };
-            Assert.IsFalse(LilToonTextureBaker.CanBakeOverlayLayer(_material, props, null, "2nd"));
+            Assert.IsFalse(SelectLayers(props).Bake2nd);
         }
 
         #endregion
