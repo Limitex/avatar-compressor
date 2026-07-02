@@ -162,10 +162,24 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 bool isSRGB = source.isDataSRGB;
                 bool outputSRGB = isSRGB && !forceLinearOutput;
 
-                intermediateRT = CreateUAVRenderTexture(targetWidth, srcH);
+                // The intermediate holds linear-light values: half precision keeps
+                // quantization (~2.4e-4) well below the smallest 8-bit sRGB step,
+                // while 8-bit linear storage would band shadows.
+                intermediateRT = CreateUAVRenderTexture(
+                    targetWidth,
+                    srcH,
+                    RenderTextureFormat.ARGBHalf
+                );
                 if (intermediateRT == null)
                     return null;
-                outputRT = CreateUAVRenderTexture(targetWidth, targetHeight);
+                // The vertical kernel writes saturated, already-encoded values, so
+                // an 8-bit UNORM store loses nothing over a float surface and
+                // quarters the ReadPixels bandwidth.
+                outputRT = CreateUAVRenderTexture(
+                    targetWidth,
+                    targetHeight,
+                    RenderTextureFormat.ARGB32
+                );
                 if (outputRT == null)
                     return null;
 
@@ -229,15 +243,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
         }
 
-        private static RenderTexture CreateUAVRenderTexture(int width, int height)
+        private static RenderTexture CreateUAVRenderTexture(
+            int width,
+            int height,
+            RenderTextureFormat format
+        )
         {
-            var rt = new RenderTexture(
-                width,
-                height,
-                0,
-                RenderTextureFormat.ARGBFloat,
-                RenderTextureReadWrite.Linear
-            );
+            var rt = new RenderTexture(width, height, 0, format, RenderTextureReadWrite.Linear);
             rt.enableRandomWrite = true;
             if (!rt.Create())
             {
