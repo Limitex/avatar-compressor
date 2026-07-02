@@ -103,8 +103,8 @@ RWStructuredBuffer<uint> _IntermediateBuffer;
 
 // Sample a pixel at sampled-space coordinates using nearest-neighbor.
 // Matches CPU PixelSampler.SampleIfNeeded index math for identical results.
-// sRGB-to-linear conversion is handled on the C# side by blitting sRGB textures
-// to a linear RenderTexture before binding, so no shader-side conversion is needed.
+// sRGB textures are bound directly; *_SRGB SRV formats decode to linear in
+// hardware even for Load(), so no shader-side conversion is needed.
 float4 SamplePixel(uint sx, uint sy)
 {
     float xStep = (float)_SourceWidth / (float)_Width;

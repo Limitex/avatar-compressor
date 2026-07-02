@@ -101,9 +101,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     Texture2D Tex,
                     AsyncGPUReadbackRequest Request,
                     ComputeBuffer ResultBuf,
-                    ComputeBuffer IntermediateBuf,
-                    TextureInfo Info,
-                    RenderTexture LinearRT
+                    ComputeBuffer IntermediateBuf
                 )>();
 
             try
@@ -130,45 +128,22 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         sizeof(uint)
                     );
 
-                    RenderTexture linearRT = null;
-
                     try
                     {
-                        // For sRGB textures, blit to a linear RenderTexture to ensure
-                        // consistent sRGB-to-linear conversion across all platforms.
-                        // This matches the CPU path (Graphics.Blit auto-decodes sRGB)
-                        // and avoids platform-dependent Load() behavior in compute shaders.
-                        Texture sourceTexture = texture;
-                        if (texture.isDataSRGB)
-                        {
-                            linearRT = new RenderTexture(
-                                texture.width,
-                                texture.height,
-                                0,
-                                RenderTextureFormat.ARGB32,
-                                RenderTextureReadWrite.Linear
-                            );
-                            linearRT.Create();
-                            var prev = RenderTexture.active;
-                            try
-                            {
-                                Graphics.Blit(texture, linearRT);
-                            }
-                            finally
-                            {
-                                RenderTexture.active = prev;
-                            }
-                            sourceTexture = linearRT;
-                        }
+                        // sRGB textures are bound directly: *_SRGB SRV formats decode to
+                        // linear in hardware even for Load(), so no shader-side conversion
+                        // or pre-blit is needed. Routing them through a Graphics.Blit
+                        // RenderTexture must be avoided here: editor GUI interference
+                        // (e.g. VRCFury synchronously repainting its progress window during
+                        // play-mode builds) can silently zero out RenderTexture reads in
+                        // compute shaders while leaving direct texture binds intact.
 
                         // Clear intermediate buffer
                         intermediateBuffer.SetData(Zeros);
 
                         // Set shared parameters
                         SetSharedParameters(
-                            sourceTexture,
-                            texture.width,
-                            texture.height,
+                            texture,
                             sampledWidth,
                             sampledHeight,
                             info.IsNormalMap,
@@ -181,16 +156,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                         // Queue async readback
                         var request = AsyncGPUReadback.Request(resultBuffer);
-                        pendingReadbacks.Add(
-                            (texture, request, resultBuffer, intermediateBuffer, info, linearRT)
-                        );
-                        linearRT = null; // Ownership transferred to pendingReadbacks
+                        pendingReadbacks.Add((texture, request, resultBuffer, intermediateBuffer));
                     }
                     catch (System.Exception e)
                     {
                         ReleaseBuffer(resultBuffer);
                         ReleaseBuffer(intermediateBuffer);
-                        DestroyRT(linearRT);
                         Debug.LogWarning(
                             $"[TextureCompressor] GPU analysis failed for '{texture.name}': {e.Message}"
                         );
@@ -223,7 +194,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 {
                     ReleaseBuffer(pending.ResultBuf);
                     ReleaseBuffer(pending.IntermediateBuf);
-                    DestroyRT(pending.LinearRT);
                 }
             }
 
@@ -231,9 +201,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         private void SetSharedParameters(
-            Texture sourceTexture,
-            int sourceWidth,
-            int sourceHeight,
+            Texture2D texture,
             int sampledWidth,
             int sampledHeight,
             bool isNormalMap,
@@ -243,8 +211,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             _shader.SetInt("_Width", sampledWidth);
             _shader.SetInt("_Height", sampledHeight);
-            _shader.SetInt("_SourceWidth", sourceWidth);
-            _shader.SetInt("_SourceHeight", sourceHeight);
+            _shader.SetInt("_SourceWidth", texture.width);
+            _shader.SetInt("_SourceHeight", texture.height);
             _shader.SetInt("_IsNormalMap", isNormalMap ? 1 : 0);
             _shader.SetInt("_StrategyType", GetStrategyIndex());
 
@@ -324,7 +292,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             foreach (int kernel in allKernels)
             {
-                _shader.SetTexture(kernel, "_InputTexture", sourceTexture);
+                _shader.SetTexture(kernel, "_InputTexture", texture);
                 _shader.SetBuffer(kernel, "_ResultBuffer", resultBuffer);
                 _shader.SetBuffer(kernel, "_IntermediateBuffer", intermediateBuffer);
             }
@@ -561,23 +529,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 Debug.LogWarning(
                     $"[TextureCompressor] Failed to release ComputeBuffer: {e.Message}"
-                );
-            }
-        }
-
-        private static void DestroyRT(RenderTexture rt)
-        {
-            if (rt == null)
-                return;
-            try
-            {
-                rt.Release();
-                Object.DestroyImmediate(rt);
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogWarning(
-                    $"[TextureCompressor] Failed to destroy RenderTexture: {e.Message}"
                 );
             }
         }
