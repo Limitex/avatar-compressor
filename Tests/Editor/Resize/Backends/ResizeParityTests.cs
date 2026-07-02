@@ -3,7 +3,6 @@ using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -26,26 +25,7 @@ namespace dev.limitex.avatar.compressor.tests
             _createdObjects = new List<Object>();
             _cpuResizer = new CpuAreaAverageResizer();
 
-            if (!SystemInfo.supportsComputeShaders)
-            {
-                Assert.Ignore("Compute shaders not supported on this platform");
-            }
-
-            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.OpenGLCore)
-            {
-                var deviceName = SystemInfo.graphicsDeviceName ?? "";
-                if (
-                    deviceName.Contains("llvmpipe")
-                    || deviceName.Contains("softpipe")
-                    || deviceName.Contains("SwiftShader")
-                    || deviceName.Contains("Mesa")
-                )
-                {
-                    Assert.Ignore(
-                        $"Software renderer detected ({deviceName}); parity tests require real hardware"
-                    );
-                }
-            }
+            GpuTestGuard.RequireRealGpu();
 
             var shader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderPath);
             if (shader == null)

@@ -35,35 +35,11 @@ namespace dev.limitex.avatar.compressor.tests
             _createdObjects = new List<Object>();
             _processor = new TextureProcessor(32, 2048, true);
 
-            if (!SystemInfo.supportsComputeShaders)
-            {
-                Assert.Ignore("Compute shaders not supported on this platform");
-            }
+            GpuTestGuard.RequireRealGpu();
 
             if (!SystemInfo.supportsAsyncGPUReadback)
             {
                 Assert.Ignore("Async GPU readback not supported on this platform");
-            }
-
-            // Software renderers (e.g. Mesa llvmpipe on CI runners without a GPU)
-            // report compute shader support but produce unreliable results.
-            // GPU/CPU parity can only be validated on real hardware.
-            if (
-                SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.OpenGLCore
-            )
-            {
-                var deviceName = SystemInfo.graphicsDeviceName ?? "";
-                if (
-                    deviceName.Contains("llvmpipe")
-                    || deviceName.Contains("softpipe")
-                    || deviceName.Contains("SwiftShader")
-                    || deviceName.Contains("Mesa")
-                )
-                {
-                    Assert.Ignore(
-                        $"Software renderer detected ({deviceName}); GPU parity tests require real hardware"
-                    );
-                }
             }
 
             _shader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderPath);
