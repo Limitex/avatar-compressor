@@ -88,6 +88,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 // through the SRV, so averaging happens in linear space; the
                 // shader re-encodes to sRGB after averaging so the readback
                 // bytes match the source encoding.
+                // The direct bind is also load-bearing: do not add a
+                // Graphics.Blit pre-pass here. Editor GUI interference
+                // (e.g. VRCFury synchronously repainting its progress window
+                // during play-mode builds) silently zeroes compute SRV reads
+                // of blit-written RenderTextures — output turns black with no
+                // exception, so the CPU fallback cannot catch it. UAV-written
+                // RTs (the intermediate and output below) are unaffected.
                 bool isSRGB = source.isDataSRGB;
 
                 intermediateRT = CreateUAVRenderTexture(targetWidth, srcH);
