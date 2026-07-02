@@ -490,7 +490,7 @@ namespace dev.limitex.avatar.compressor.tests
             _material.SetFloat("_UseMain2ndTex", 1f);
             _material.SetFloat("_UseMain3rdTex", 1f);
 
-            var (bake2nd, bake3rd) = LilToonTextureBaker.SelectOverlayLayersToBake(
+            var (bake2nd, bake3rd, _) = LilToonTextureBaker.SelectOverlayLayersToBake(
                 _material,
                 Array.Empty<string>(),
                 null
@@ -507,7 +507,7 @@ namespace dev.limitex.avatar.compressor.tests
             _material.SetFloat("_UseMain2ndTex", 1f);
             _material.SetFloat("_UseMain3rdTex", 1f);
 
-            var (bake2nd, bake3rd) = LilToonTextureBaker.SelectOverlayLayersToBake(
+            var (bake2nd, bake3rd, _) = LilToonTextureBaker.SelectOverlayLayersToBake(
                 _material,
                 Array.Empty<string>(),
                 null
@@ -523,7 +523,7 @@ namespace dev.limitex.avatar.compressor.tests
             _material.SetFloat("_UseMain2ndTex", 1f);
             var props = new HashSet<string> { "_Color" };
 
-            var (bake2nd, bake3rd) = LilToonTextureBaker.SelectOverlayLayersToBake(
+            var (bake2nd, bake3rd, _) = LilToonTextureBaker.SelectOverlayLayersToBake(
                 _material,
                 props,
                 null
@@ -542,7 +542,7 @@ namespace dev.limitex.avatar.compressor.tests
             _material.SetFloat("_UseMain3rdTex", 1f);
             var props = new HashSet<string> { "_UseMain2ndTex" };
 
-            var (bake2nd, bake3rd) = LilToonTextureBaker.SelectOverlayLayersToBake(
+            var (bake2nd, bake3rd, _) = LilToonTextureBaker.SelectOverlayLayersToBake(
                 _material,
                 props,
                 null
@@ -557,7 +557,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             _material.SetFloat("_UseMain3rdTex", 1f);
 
-            var (bake2nd, bake3rd) = LilToonTextureBaker.SelectOverlayLayersToBake(
+            var (bake2nd, bake3rd, _) = LilToonTextureBaker.SelectOverlayLayersToBake(
                 _material,
                 Array.Empty<string>(),
                 null
@@ -575,7 +575,7 @@ namespace dev.limitex.avatar.compressor.tests
             _material.SetFloat("_UseMain2ndTex", 1f);
             var props = new HashSet<string> { "_MainTex_ST" };
 
-            var (bake2nd, bake3rd) = LilToonTextureBaker.SelectOverlayLayersToBake(
+            var (bake2nd, bake3rd, _) = LilToonTextureBaker.SelectOverlayLayersToBake(
                 _material,
                 props,
                 null
@@ -591,7 +591,7 @@ namespace dev.limitex.avatar.compressor.tests
             _material.SetFloat("_UseMain2ndTex", 1f);
             _material.SetVector("_MainTex_ScrollRotate", new Vector4(0.1f, 0f, 0f, 0f));
 
-            var (bake2nd, bake3rd) = LilToonTextureBaker.SelectOverlayLayersToBake(
+            var (bake2nd, bake3rd, _) = LilToonTextureBaker.SelectOverlayLayersToBake(
                 _material,
                 Array.Empty<string>(),
                 null
@@ -607,7 +607,7 @@ namespace dev.limitex.avatar.compressor.tests
             _material.SetFloat("_UseMain2ndTex", 1f);
             var props = new HashSet<string> { "_MainTex_ScrollRotate" };
 
-            var (bake2nd, bake3rd) = LilToonTextureBaker.SelectOverlayLayersToBake(
+            var (bake2nd, bake3rd, _) = LilToonTextureBaker.SelectOverlayLayersToBake(
                 _material,
                 props,
                 null
@@ -624,7 +624,7 @@ namespace dev.limitex.avatar.compressor.tests
             _material.SetFloat("_UseMain3rdTex", 1f);
             var props = new HashSet<string> { "_UseMain2ndTex" };
 
-            var (bake2nd, bake3rd) = LilToonTextureBaker.SelectOverlayLayersToBake(
+            var (bake2nd, bake3rd, _) = LilToonTextureBaker.SelectOverlayLayersToBake(
                 _material,
                 props,
                 null
@@ -632,6 +632,89 @@ namespace dev.limitex.avatar.compressor.tests
 
             Assert.IsFalse(bake2nd);
             Assert.IsFalse(bake3rd);
+        }
+
+        [Test]
+        public void SelectOverlayLayersToBake_ThirdBlockedByAnimatedSecondToggle_ReportsAnimationVeto()
+        {
+            // Removing the 2nd-toggle animation would allow the 3rd layer to bake, so the
+            // layers-only no-op must be classified as animation-caused.
+            _material.SetFloat("_UseMain3rdTex", 1f);
+            var props = new HashSet<string> { "_UseMain2ndTex" };
+
+            var (_, _, vetoedByAnimation) = LilToonTextureBaker.SelectOverlayLayersToBake(
+                _material,
+                props,
+                null
+            );
+
+            Assert.IsTrue(vetoedByAnimation);
+        }
+
+        [Test]
+        public void SelectOverlayLayersToBake_NonWhiteColorWithAnimatedLayerInput_ReportsNoAnimationVeto()
+        {
+            // The static non-white tint blocks layer baking regardless of the animation, so
+            // this no-op is not animation-caused.
+            _material.SetColor("_Color", new Color(1f, 0.4f, 0.4f, 1f));
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            var props = new HashSet<string> { "_Main2ndTexAngle" };
+
+            var (_, _, vetoedByAnimation) = LilToonTextureBaker.SelectOverlayLayersToBake(
+                _material,
+                props,
+                null
+            );
+
+            Assert.IsFalse(vetoedByAnimation);
+        }
+
+        [Test]
+        public void SelectOverlayLayersToBake_AnimatedColorWithBakeableLayer_ReportsAnimationVeto()
+        {
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            var props = new HashSet<string> { "_Color" };
+
+            var (_, _, vetoedByAnimation) = LilToonTextureBaker.SelectOverlayLayersToBake(
+                _material,
+                props,
+                null
+            );
+
+            Assert.IsTrue(vetoedByAnimation);
+        }
+
+        [Test]
+        public void SelectOverlayLayersToBake_AnimatedColorWithProtectedLayer_ReportsNoAnimationVeto()
+        {
+            // Even without the _Color animation the protected layer texture would block the
+            // bake, so the no-op is not animation-caused.
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            _material.SetTexture("_Main2ndTex", _texture);
+            var props = new HashSet<string> { "_Color" };
+
+            var (_, _, vetoedByAnimation) = LilToonTextureBaker.SelectOverlayLayersToBake(
+                _material,
+                props,
+                t => t == _texture
+            );
+
+            Assert.IsFalse(vetoedByAnimation);
+        }
+
+        [Test]
+        public void SelectOverlayLayersToBake_AnimatedLayerInput_ReportsAnimationVeto()
+        {
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            var props = new HashSet<string> { "_Main2ndTexAngle" };
+
+            var (_, _, vetoedByAnimation) = LilToonTextureBaker.SelectOverlayLayersToBake(
+                _material,
+                props,
+                null
+            );
+
+            Assert.IsTrue(vetoedByAnimation);
         }
 
         #endregion

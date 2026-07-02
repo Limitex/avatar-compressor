@@ -260,14 +260,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (HasAnimatedMainBakeInput(animatedProperties))
                 return BakeOutcome.SkippedByAnimation;
 
-            var (bake2nd, bake3rd) = SelectOverlayLayersToBake(
+            var (bake2nd, bake3rd, layersVetoedByAnimation) = SelectOverlayLayersToBake(
                 material,
                 animatedProperties,
                 isProtectedTexture
             );
 
             if (!HasNonLayerAdjustments(material) && !bake2nd && !bake3rd)
-                return HasAnimationVetoedLayer(material, animatedProperties)
+                return layersVetoedByAnimation
                     ? BakeOutcome.SkippedByAnimation
                     : BakeOutcome.NotApplicable;
 
@@ -347,40 +347,61 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         /// with the main ST animated or any scroll/rotate active a baked-in layer would wrongly
         /// follow that movement. The 3rd layer additionally requires the 2nd to be baked as well
         /// or permanently absent — baking the 3rd under a live 2nd would invert lilToon's
-        /// main → 2nd → 3rd compositing order.
+        /// main → 2nd → 3rd compositing order. <c>VetoedByAnimation</c> reports whether removing
+        /// the animation-driven vetoes would have allowed at least one layer bake, so the caller
+        /// can classify a layers-only no-op as animation-caused for its skip counter.
         /// </remarks>
-        public static (bool Bake2nd, bool Bake3rd) SelectOverlayLayersToBake(
+        public static (
+            bool Bake2nd,
+            bool Bake3rd,
+            bool VetoedByAnimation
+        ) SelectOverlayLayersToBake(
             Material material,
             IReadOnlyCollection<string> animatedProperties,
             Func<Texture2D, bool> isProtectedTexture
         )
         {
-            bool layersAllowed =
+            bool layersAllowedStatic =
                 GetColor(material, MainColorProperty, Color.white) == Color.white
-                && !animatedProperties.Contains(MainColorProperty)
-                && !animatedProperties.Contains(MainTexStProperty)
-                && !animatedProperties.Contains(MainScrollRotateProperty)
                 && GetVector(material, MainScrollRotateProperty, Vector4.zero) == Vector4.zero;
-            if (!layersAllowed)
-                return (false, false);
+            if (!layersAllowedStatic)
+                return (false, false, false);
 
-            bool bake2nd = CanBakeOverlayLayer(
+            bool layer2ndEnabled = IsOverlayLayerEnabled(material, Layer2nd);
+            bool canBake2ndIgnoringAnimation = CanBakeOverlayLayerIgnoringAnimation(
                 material,
-                animatedProperties,
                 isProtectedTexture,
                 Layer2nd
             );
-            bool bake3rd =
-                CanBakeOverlayLayer(material, animatedProperties, isProtectedTexture, Layer3rd)
-                && (
-                    bake2nd
-                    || (
-                        !IsOverlayLayerEnabled(material, Layer2nd)
-                        && !animatedProperties.Contains(UseLayerProperty(Layer2nd))
-                    )
-                );
+            bool canBake3rdIgnoringAnimation = CanBakeOverlayLayerIgnoringAnimation(
+                material,
+                isProtectedTexture,
+                Layer3rd
+            );
+            bool bake3rdIgnoringAnimation =
+                canBake3rdIgnoringAnimation && (canBake2ndIgnoringAnimation || !layer2ndEnabled);
+            bool anyBakeIgnoringAnimation = canBake2ndIgnoringAnimation || bake3rdIgnoringAnimation;
 
-            return (bake2nd, bake3rd);
+            bool mainLevelAnimationVeto =
+                animatedProperties.Contains(MainColorProperty)
+                || animatedProperties.Contains(MainTexStProperty)
+                || animatedProperties.Contains(MainScrollRotateProperty);
+            if (mainLevelAnimationVeto)
+                return (false, false, anyBakeIgnoringAnimation);
+
+            bool bake2nd =
+                canBake2ndIgnoringAnimation
+                && !HasAnimatedOverlayLayerInput(animatedProperties, Layer2nd);
+            bool secondPermanentlyAbsent =
+                !layer2ndEnabled && !animatedProperties.Contains(UseLayerProperty(Layer2nd));
+            bool bake3rd =
+                canBake3rdIgnoringAnimation
+                && !HasAnimatedOverlayLayerInput(animatedProperties, Layer3rd)
+                && (bake2nd || secondPermanentlyAbsent);
+
+            bool vetoedByAnimation = anyBakeIgnoringAnimation && !bake2nd && !bake3rd;
+
+            return (bake2nd, bake3rd, vetoedByAnimation);
         }
 
         /// <summary>
@@ -395,9 +416,18 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             string layer
         )
         {
+            return CanBakeOverlayLayerIgnoringAnimation(material, isProtectedTexture, layer)
+                && !HasAnimatedOverlayLayerInput(animatedProperties, layer);
+        }
+
+        private static bool CanBakeOverlayLayerIgnoringAnimation(
+            Material material,
+            Func<Texture2D, bool> isProtectedTexture,
+            string layer
+        )
+        {
             return IsOverlayLayerEnabled(material, layer)
                 && GetFloat(material, LayerUVModeProperty(layer), 0f) == 0f
-                && !HasAnimatedOverlayLayerInput(animatedProperties, layer)
                 && !HasProtectedOverlayLayerInput(material, isProtectedTexture, layer)
                 && !HasTimeAnimatedLayer(material, layer);
         }
@@ -486,30 +516,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 return true;
 
             return isProtectedTexture != null && isProtectedTexture(texture2D);
-        }
-
-        /// <summary>
-        /// True when at least one enabled overlay layer was excluded from the bake because an
-        /// animated property (a layer input, or <c>_Color</c> gating all layers) vetoed it —
-        /// distinguishes an animation skip from a plain no-op when the layers were the only
-        /// bakeable content.
-        /// </summary>
-        private static bool HasAnimationVetoedLayer(
-            Material material,
-            IReadOnlyCollection<string> animatedProperties
-        )
-        {
-            bool layer2ndEnabled = IsOverlayLayerEnabled(material, Layer2nd);
-            bool layer3rdEnabled = IsOverlayLayerEnabled(material, Layer3rd);
-
-            if (
-                (layer2ndEnabled || layer3rdEnabled)
-                && animatedProperties.Contains(MainColorProperty)
-            )
-                return true;
-
-            return (layer2ndEnabled && HasAnimatedOverlayLayerInput(animatedProperties, Layer2nd))
-                || (layer3rdEnabled && HasAnimatedOverlayLayerInput(animatedProperties, Layer3rd));
         }
 
         private static void ConfigureMainBaker(
