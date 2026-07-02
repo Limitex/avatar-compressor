@@ -42,8 +42,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     "Bake color adjustments into textures",
                     "Bakes hue/saturation/gradation, active 2nd/3rd layers and the alpha mask "
                         + "into the main texture, and tone correction into the outline texture, "
-                        + "at build time. Bakes with animated inputs are skipped, excluded and "
-                        + "frozen textures are never baked or consumed, and colors (_Color, "
+                        + "at build time. Bakes with animated inputs are skipped; frozen textures "
+                        + "and textures referenced by animation curves are never baked or "
+                        + "consumed; excluded textures are never baked; colors (_Color, "
                         + "_OutlineColor) stay runtime tints. Requires lilToon; does nothing when "
                         + "it is not installed."
                 ),

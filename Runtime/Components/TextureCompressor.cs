@@ -97,9 +97,9 @@ namespace dev.limitex.avatar.compressor
                 + "the adjusted textures ship instead of the adjustment textures and per-pixel "
                 + "shader work. Any bake whose input property is driven by animation is skipped "
                 + "entirely, and colors (_Color, _OutlineColor) are never baked, so color-change "
-                + "animations keep working. Textures excluded or frozen in these settings are "
-                + "never baked or consumed. Requires lilToon; does nothing when it is not "
-                + "installed."
+                + "animations keep working. Frozen textures and textures referenced by animation "
+                + "curves are never baked or consumed, and excluded textures are never baked. "
+                + "Requires lilToon; does nothing when it is not installed."
         )]
         public bool BakeLilToonTextures = true;
 
