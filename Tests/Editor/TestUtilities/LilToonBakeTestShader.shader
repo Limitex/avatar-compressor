@@ -5,6 +5,7 @@ Shader "Hidden/LAC/Tests/LilToonBake"
     Properties
     {
         _MainTex ("Main", 2D) = "white" {}
+        _MainTex_ScrollRotate ("Main Scroll Rotate", Vector) = (0,0,0,0)
         _Color ("Color", Color) = (1,1,1,1)
         _MainTexHSVG ("HSVG", Vector) = (0,1,1,1)
         _MainGradationStrength ("Gradation Strength", Float) = 0
@@ -16,12 +17,14 @@ Shader "Hidden/LAC/Tests/LilToonBake"
         _Main2ndBlendMask ("2nd Blend Mask", 2D) = "white" {}
         _Main2ndTexDecalAnimation ("2nd Decal Animation", Vector) = (1,1,1,30)
         _Main2ndTex_ScrollRotate ("2nd Scroll Rotate", Vector) = (0,0,0,0)
+        _Main2ndTex_UVMode ("2nd UV Mode", Float) = 0
         _UseMain3rdTex ("Use 3rd", Float) = 0
         _Color3rd ("3rd Color", Color) = (1,1,1,1)
         _Main3rdTex ("3rd", 2D) = "white" {}
         _Main3rdBlendMask ("3rd Blend Mask", 2D) = "white" {}
         _Main3rdTexDecalAnimation ("3rd Decal Animation", Vector) = (1,1,1,30)
         _Main3rdTex_ScrollRotate ("3rd Scroll Rotate", Vector) = (0,0,0,0)
+        _Main3rdTex_UVMode ("3rd UV Mode", Float) = 0
         _AlphaMaskMode ("Alpha Mask Mode", Float) = 0
         _AlphaMask ("Alpha Mask", 2D) = "white" {}
         _AlphaMaskScale ("Alpha Mask Scale", Float) = 1

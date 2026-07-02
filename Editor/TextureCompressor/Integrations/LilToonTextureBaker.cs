@@ -44,6 +44,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         private const int SupportedVersionMax = 45;
 
         private const string MainTexProperty = "_MainTex";
+        private const string MainTexStProperty = "_MainTex_ST";
+        private const string MainScrollRotateProperty = "_MainTex_ScrollRotate";
         private const string MainColorProperty = "_Color";
         private const string MainTexHsvgProperty = "_MainTexHSVG";
         private const string MainGradationStrengthProperty = "_MainGradationStrength";
@@ -52,6 +54,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
         private const string AlphaMaskModeProperty = "_AlphaMaskMode";
         private const string AlphaMaskProperty = "_AlphaMask";
+        private const string AlphaMaskStProperty = "_AlphaMask_ST";
         private const string AlphaMaskScaleProperty = "_AlphaMaskScale";
         private const string AlphaMaskValueProperty = "_AlphaMaskValue";
         private const string AlphaMaskBakerKeyword = "_ALPHAMASK";
@@ -96,10 +99,21 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             "_Main{0}TexDecalSubParam",
         };
 
+        // Vetoed when animated but never copied to the baker: the layer ST is copied separately
+        // via SetTextureScale/Offset, and the baker shader cannot reproduce scroll/rotate or
+        // non-uv0 UV modes at all.
+        private static readonly string[] LayerAnimationVetoPropertyFormats =
+        {
+            "_Main{0}Tex_ST",
+            "_Main{0}Tex_ScrollRotate",
+            "_Main{0}Tex_UVMode",
+        };
+
         private static readonly string[] AlphaMaskBakeInputProperties =
         {
             MainTexProperty,
             AlphaMaskProperty,
+            AlphaMaskStProperty,
             AlphaMaskModeProperty,
             AlphaMaskScaleProperty,
             AlphaMaskValueProperty,
@@ -328,9 +342,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         /// <remarks>
         /// Layers may only be baked while <c>_Color</c> is white and not animated: at runtime
         /// lilToon applies <c>_Color</c> to the main layer before 2nd/3rd compositing, so baking
-        /// a layer under a non-white tint would tint the layer too. The 3rd layer additionally
-        /// requires the 2nd to be baked as well or permanently absent — baking the 3rd under a
-        /// live 2nd would invert lilToon's main → 2nd → 3rd compositing order.
+        /// a layer under a non-white tint would tint the layer too. The main UV must also stay
+        /// still: layers sample uv0-based coordinates while the main texture rides uvMain, so
+        /// with the main ST animated or any scroll/rotate active a baked-in layer would wrongly
+        /// follow that movement. The 3rd layer additionally requires the 2nd to be baked as well
+        /// or permanently absent — baking the 3rd under a live 2nd would invert lilToon's
+        /// main → 2nd → 3rd compositing order.
         /// </remarks>
         public static (bool Bake2nd, bool Bake3rd) SelectOverlayLayersToBake(
             Material material,
@@ -340,7 +357,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         {
             bool layersAllowed =
                 GetColor(material, MainColorProperty, Color.white) == Color.white
-                && !animatedProperties.Contains(MainColorProperty);
+                && !animatedProperties.Contains(MainColorProperty)
+                && !animatedProperties.Contains(MainTexStProperty)
+                && !animatedProperties.Contains(MainScrollRotateProperty)
+                && GetVector(material, MainScrollRotateProperty, Vector4.zero) == Vector4.zero;
             if (!layersAllowed)
                 return (false, false);
 
@@ -364,9 +384,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         }
 
         /// <summary>
-        /// True when the layer is enabled and no input that the bake would consume — the layer
-        /// toggle, its parameters, or its textures — is animated, protected, or driven by
-        /// shader time.
+        /// True when the layer is enabled, samples plain uv0 (the only UV mode the baker shader
+        /// reproduces), and no input that the bake would consume — the layer toggle, its
+        /// parameters, or its textures — is animated, protected, or driven by shader time.
         /// </summary>
         public static bool CanBakeOverlayLayer(
             Material material,
@@ -376,6 +396,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         )
         {
             return IsOverlayLayerEnabled(material, layer)
+                && GetFloat(material, LayerUVModeProperty(layer), 0f) == 0f
                 && !HasAnimatedOverlayLayerInput(animatedProperties, layer)
                 && !HasProtectedOverlayLayerInput(material, isProtectedTexture, layer)
                 && !HasTimeAnimatedLayer(material, layer);
@@ -422,6 +443,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             }
 
             foreach (var format in LayerVectorPropertyFormats)
+            {
+                if (animatedProperties.Contains(string.Format(format, layer)))
+                    return true;
+            }
+
+            foreach (var format in LayerAnimationVetoPropertyFormats)
             {
                 if (animatedProperties.Contains(string.Format(format, layer)))
                     return true;
@@ -952,6 +979,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
         private static string LayerScrollRotateProperty(string layer) =>
             "_Main" + layer + "Tex_ScrollRotate";
+
+        private static string LayerUVModeProperty(string layer) => "_Main" + layer + "Tex_UVMode";
 
         private static float GetFloat(Material material, string name, float fallback)
         {

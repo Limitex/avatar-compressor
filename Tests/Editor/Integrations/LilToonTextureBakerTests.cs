@@ -398,6 +398,45 @@ namespace dev.limitex.avatar.compressor.tests
             );
         }
 
+        [Test]
+        public void CanBakeOverlayLayer_AnimatedLayerSt_ReturnsFalse()
+        {
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            var props = new HashSet<string> { "_Main2ndTex_ST" };
+            Assert.IsFalse(LilToonTextureBaker.CanBakeOverlayLayer(_material, props, null, "2nd"));
+        }
+
+        [Test]
+        public void CanBakeOverlayLayer_AnimatedScrollRotate_ReturnsFalse()
+        {
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            var props = new HashSet<string> { "_Main2ndTex_ScrollRotate" };
+            Assert.IsFalse(LilToonTextureBaker.CanBakeOverlayLayer(_material, props, null, "2nd"));
+        }
+
+        [Test]
+        public void CanBakeOverlayLayer_NonZeroUVMode_ReturnsFalse()
+        {
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            _material.SetFloat("_Main2ndTex_UVMode", 1f);
+            Assert.IsFalse(
+                LilToonTextureBaker.CanBakeOverlayLayer(
+                    _material,
+                    Array.Empty<string>(),
+                    null,
+                    "2nd"
+                )
+            );
+        }
+
+        [Test]
+        public void CanBakeOverlayLayer_AnimatedUVMode_ReturnsFalse()
+        {
+            _material.SetFloat("_UseMain3rdTex", 1f);
+            var props = new HashSet<string> { "_Main3rdTex_UVMode" };
+            Assert.IsFalse(LilToonTextureBaker.CanBakeOverlayLayer(_material, props, null, "3rd"));
+        }
+
         #endregion
 
         #region HasTimeAnimatedLayer
@@ -529,6 +568,56 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void SelectOverlayLayersToBake_AnimatedMainTexSt_BakesNoLayers()
+        {
+            // Layers sample uv0 while the main texture rides uvMain: baking a layer under an
+            // animated main ST would make it wrongly follow the main UV movement.
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            var props = new HashSet<string> { "_MainTex_ST" };
+
+            var (bake2nd, bake3rd) = LilToonTextureBaker.SelectOverlayLayersToBake(
+                _material,
+                props,
+                null
+            );
+
+            Assert.IsFalse(bake2nd);
+            Assert.IsFalse(bake3rd);
+        }
+
+        [Test]
+        public void SelectOverlayLayersToBake_StaticMainScrollRotate_BakesNoLayers()
+        {
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            _material.SetVector("_MainTex_ScrollRotate", new Vector4(0.1f, 0f, 0f, 0f));
+
+            var (bake2nd, bake3rd) = LilToonTextureBaker.SelectOverlayLayersToBake(
+                _material,
+                Array.Empty<string>(),
+                null
+            );
+
+            Assert.IsFalse(bake2nd);
+            Assert.IsFalse(bake3rd);
+        }
+
+        [Test]
+        public void SelectOverlayLayersToBake_AnimatedMainScrollRotate_BakesNoLayers()
+        {
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            var props = new HashSet<string> { "_MainTex_ScrollRotate" };
+
+            var (bake2nd, bake3rd) = LilToonTextureBaker.SelectOverlayLayersToBake(
+                _material,
+                props,
+                null
+            );
+
+            Assert.IsFalse(bake2nd);
+            Assert.IsFalse(bake3rd);
+        }
+
+        [Test]
         public void SelectOverlayLayersToBake_ThirdLayerWithSecondToggleAnimatedOff_NotBaked()
         {
             // 2nd currently off but its toggle is animated, so it can appear at runtime.
@@ -655,6 +744,13 @@ namespace dev.limitex.avatar.compressor.tests
         public void HasAnimatedAlphaMaskBakeInput_AnimatedMainTex_ReturnsTrue()
         {
             var props = new HashSet<string> { "_MainTex" };
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(props));
+        }
+
+        [Test]
+        public void HasAnimatedAlphaMaskBakeInput_AnimatedMaskSt_ReturnsTrue()
+        {
+            var props = new HashSet<string> { "_AlphaMask_ST" };
             Assert.IsTrue(LilToonTextureBaker.HasAnimatedAlphaMaskBakeInput(props));
         }
 
