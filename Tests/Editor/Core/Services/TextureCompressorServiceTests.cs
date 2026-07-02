@@ -2912,6 +2912,30 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(0, baker.CallCount);
         }
 
+        [Test]
+        public void Compress_ContinuesPastMaterial_WhenBakerThrows()
+        {
+            var config = CreateConfig();
+            config.BakeLilToonTextures = true;
+            var baker = new FakeLilToonBaker(available: true) { ThrowOnBake = true };
+            var service = new TextureCompressorService(
+                config,
+                animationUsageMap: AnimationUsageMap.Empty,
+                lilToonBaker: baker
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterials = new[] { CreateMaterial(), CreateMaterial() };
+
+            Assert.DoesNotThrow(() => service.Compress(root, false));
+            Assert.AreEqual(
+                2,
+                baker.CallCount,
+                "A throwing bake must degrade to a per-material warning, not abort the loop"
+            );
+        }
+
         private sealed class FakeLilToonBaker : ILilToonBaker
         {
             private readonly bool _available;
@@ -2920,6 +2944,8 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 _available = available;
             }
+
+            public bool ThrowOnBake { get; set; }
 
             public int CallCount { get; private set; }
 
@@ -2946,6 +2972,8 @@ namespace dev.limitex.avatar.compressor.tests
                 LastAnimatedProperties = animatedProperties;
                 LastCanReplaceTexture = canReplaceTexture;
                 LastIsProtectedTexture = isProtectedTexture;
+                if (ThrowOnBake)
+                    throw new System.InvalidOperationException("bake failed");
                 return default;
             }
 

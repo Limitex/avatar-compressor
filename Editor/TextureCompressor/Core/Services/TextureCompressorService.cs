@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
@@ -340,7 +341,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                             )
                         )
                         {
-                            Object.DestroyImmediate(resizedTexture);
+                            UnityEngine.Object.DestroyImmediate(resizedTexture);
                             continue;
                         }
                     }
@@ -411,14 +412,25 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             foreach (var material in clonedMaterials)
             {
-                var result = _lilToonBaker.Bake(
-                    material,
-                    _animationUsageMap.AnimatedProperties,
-                    _collector.WouldProcess,
-                    IsProtectedTexture
-                );
-                bakedSlots += result.BakedSlots;
-                skippedByAnimation += result.SkippedByAnimation;
+                try
+                {
+                    var result = _lilToonBaker.Bake(
+                        material,
+                        _animationUsageMap.AnimatedProperties,
+                        _collector.WouldProcess,
+                        IsProtectedTexture
+                    );
+                    bakedSlots += result.BakedSlots;
+                    skippedByAnimation += result.SkippedByAnimation;
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning(
+                        $"[{Name}] lilToon texture baking failed for material "
+                            + $"'{material.name}': {ex.Message}. The material keeps its "
+                            + "unbaked adjustments and the build continues."
+                    );
+                }
             }
 
             if (enableLogging && (bakedSlots > 0 || skippedByAnimation > 0))
