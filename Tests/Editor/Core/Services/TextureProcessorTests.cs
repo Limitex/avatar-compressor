@@ -23,8 +23,7 @@ namespace dev.limitex.avatar.compressor.tests
             TextureAnalysisResult analysis
         )
         {
-            var results = processor.ResizeBatch(new[] { (source, analysis) });
-            return results[source];
+            return processor.ResizeSingle(source, analysis);
         }
 
         private Texture2D ResizeToSize(
@@ -34,10 +33,9 @@ namespace dev.limitex.avatar.compressor.tests
             int newHeight
         )
         {
-            // Use divisor=2 to force ResizeBatch to use RecommendedResolution
+            // Use divisor=2 to force the resize to use RecommendedResolution
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(newWidth, newHeight));
-            var results = processor.ResizeBatch(new[] { (source, analysis) });
-            return results[source];
+            return processor.ResizeSingle(source, analysis);
         }
 
         #region CalculateNewDimensions Tests

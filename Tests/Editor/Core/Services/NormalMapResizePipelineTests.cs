@@ -445,16 +445,14 @@ namespace dev.limitex.avatar.compressor.tests
 
         private Texture2D ResizeSingle(Texture2D source, TextureAnalysisResult analysis)
         {
-            var results = _processor.ResizeBatch(new[] { (source, analysis) });
-            return results[source];
+            return _processor.ResizeSingle(source, analysis);
         }
 
         private Texture2D ResizeToSize(Texture2D source, int newWidth, int newHeight)
         {
-            // Use divisor=2 to force ResizeBatch to use RecommendedResolution
+            // Use divisor=2 to force the resize to use RecommendedResolution
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(newWidth, newHeight));
-            var results = _processor.ResizeBatch(new[] { (source, analysis) });
-            return results[source];
+            return _processor.ResizeSingle(source, analysis);
         }
 
         #endregion

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
@@ -95,7 +94,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         /// <summary>
         /// Resizes a single texture, acquiring and releasing the RenderTexture lock per call.
-        /// Preferred over ResizeBatch when textures are processed one at a time to reduce peak memory.
+        /// Textures are processed one at a time to reduce peak memory.
         /// </summary>
         /// <returns>A new readable RGBA32 Texture2D, or null if resize failed.</returns>
         public Texture2D ResizeSingle(Texture2D source, TextureAnalysisResult analysis)
@@ -115,40 +114,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     return null;
                 }
             }
-        }
-
-        /// <summary>
-        /// Resizes multiple textures in a single lock scope for efficiency.
-        /// </summary>
-        public Dictionary<Texture2D, Texture2D> ResizeBatch(
-            IEnumerable<(Texture2D Source, TextureAnalysisResult Analysis)> items
-        )
-        {
-            var result = new Dictionary<Texture2D, Texture2D>();
-
-            lock (RenderTextureLock)
-            {
-                foreach (var item in items)
-                {
-                    try
-                    {
-                        var (newWidth, newHeight) = CalculateResizeDimensions(
-                            item.Source,
-                            item.Analysis
-                        );
-
-                        result[item.Source] = _resizer.Resize(item.Source, newWidth, newHeight);
-                    }
-                    catch (System.Exception e)
-                    {
-                        Debug.LogWarning(
-                            $"[TextureCompressor] Failed to resize texture '{item.Source.name}': {e.Message}"
-                        );
-                    }
-                }
-            }
-
-            return result;
         }
 
         internal static void CopyTextureSettings(Texture2D source, Texture2D dest)
