@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Not reflected in the inspector preview (it requires the NDMF build context); the preview shows a notice while the feature is enabled
   - Enabled by default, toggleable per avatar in the inspector
 
+### Fixed
+
+- **GPU analysis no longer breaks when other tools repaint the editor GUI during the build** - Coexisting build tools that synchronously repaint an editor window mid-build (e.g. VRCFury's progress window during play-mode builds) corrupted the editor graphics state so that compute shaders silently read all-zero pixels from RenderTextures, collapsing every sRGB texture's complexity to the sparse-texture penalty (10%) and over-compressing the whole avatar to minimum resolution
+  - The GPU backend now binds sRGB textures directly to the compute shader instead of pre-blitting them into a linear RenderTexture; `*_SRGB` texture formats decode to linear in hardware even for `Load()`, and direct texture binds are unaffected by the corruption
+  - Also removes the per-texture RenderTexture allocation, and sRGB pixel values are no longer quantized to 8-bit before analysis
+
 ## [v0.8.0] - 2026-05-01
 
 ### Added

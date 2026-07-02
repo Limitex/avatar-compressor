@@ -130,7 +130,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// For non-readable or sRGB textures, performs GPU→CPU readback via RenderTexture.
         /// sRGB textures always go through the blit path with an explicit linear RT
         /// so that hardware sRGB-to-linear decode is applied, matching the GPU analysis
-        /// backend which also blits sRGB textures to a linear RenderTexture.
+        /// backend which gets the same hardware decode by binding sRGB textures directly.
         /// The temporary resources are released immediately, keeping peak memory low.
         /// </summary>
         public Color[] GetReadablePixelsSingle(Texture2D texture)
@@ -165,7 +165,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     // so that native GPU memory is freed immediately by DestroyImmediate,
                     // rather than being held in Unity's RT pool across calls.
                     // Force Linear color space so that sRGB textures are decoded to linear
-                    // by the hardware during blit, matching the GPU analysis backend.
+                    // by the hardware during blit.
                     rt = new RenderTexture(
                         texture.width,
                         texture.height,

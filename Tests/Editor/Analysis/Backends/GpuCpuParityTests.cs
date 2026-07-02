@@ -17,9 +17,10 @@ namespace dev.limitex.avatar.compressor.tests
     {
         private const float ScoreTolerance = 0.02f;
 
-        // sRGB textures use slightly wider tolerance than linear because GPU pow()
-        // and CPU hardware sRGB decode may differ by a few ULP at float32 precision.
-        // With the exact piecewise formula on GPU, divergence is typically <0.02.
+        // sRGB textures use slightly wider tolerance than linear: both backends rely
+        // on hardware sRGB decode, but the CPU path quantizes the decoded values to
+        // 8-bit via its ARGB32 RenderTexture readback while the GPU path reads the
+        // decoded values at full precision directly from the source texture.
         private const float SRGBScoreTolerance = 0.03f;
         private const string ShaderPath =
             "Packages/dev.limitex.avatar-compressor/"
