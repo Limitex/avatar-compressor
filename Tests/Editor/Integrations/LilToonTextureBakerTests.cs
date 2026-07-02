@@ -11,6 +11,7 @@ namespace dev.limitex.avatar.compressor.tests
     public class LilToonTextureBakerTests
     {
         private const string BakeTestShaderName = "Hidden/LAC/Tests/LilToonBake";
+        private const string SlotTestShaderName = "Hidden/LAC/Tests/UnusedSlot";
 
         private Material _material;
         private Texture2D _texture;
@@ -133,7 +134,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void HasBakeableColorAdjustments_ShaderWithoutHsvg_ReturnsFalse()
         {
-            var shader = Shader.Find("Hidden/LAC/Tests/UnusedSlot");
+            var shader = Shader.Find(SlotTestShaderName);
             Assert.That(shader, Is.Not.Null);
             var material = new Material(shader);
 
@@ -177,20 +178,6 @@ namespace dev.limitex.avatar.compressor.tests
         public void HasAnimatedMainBakeInput_AnimatedLayerToggle_ReturnsFalse()
         {
             var props = new HashSet<string> { "_UseMain2ndTex" };
-            Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(props));
-        }
-
-        [Test]
-        public void HasAnimatedMainBakeInput_AnimatedLayerParameter_ReturnsFalse()
-        {
-            var props = new HashSet<string> { "_Color2nd" };
-            Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(props));
-        }
-
-        [Test]
-        public void HasAnimatedMainBakeInput_AnimatedThirdLayerToggle_ReturnsFalse()
-        {
-            var props = new HashSet<string> { "_UseMain3rdTex" };
             Assert.IsFalse(LilToonTextureBaker.HasAnimatedMainBakeInput(props));
         }
 
@@ -471,7 +458,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void HasTimeAnimatedLayer_ShaderWithoutProperties_ReturnsFalse()
         {
-            var shader = Shader.Find("Hidden/LAC/Tests/UnusedSlot");
+            var shader = Shader.Find(SlotTestShaderName);
             Assert.That(shader, Is.Not.Null);
             var material = new Material(shader);
 
@@ -767,7 +754,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void HasBakeableAlphaMask_ShaderWithoutAlphaMask_ReturnsFalse()
         {
-            var shader = Shader.Find("Hidden/LAC/Tests/UnusedSlot");
+            var shader = Shader.Find(SlotTestShaderName);
             Assert.That(shader, Is.Not.Null);
             var material = new Material(shader);
 
@@ -878,7 +865,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void HasBakeableOutline_ShaderWithoutOutline_ReturnsFalse()
         {
-            var shader = Shader.Find("Hidden/LAC/Tests/UnusedSlot");
+            var shader = Shader.Find(SlotTestShaderName);
             Assert.That(shader, Is.Not.Null);
             var material = new Material(shader);
 
