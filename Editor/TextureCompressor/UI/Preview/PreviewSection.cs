@@ -145,16 +145,18 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             if (config.DetectUnusedTextures || config.BakeLilToonTextures)
             {
-                var features = new System.Collections.Generic.List<string>();
-                if (config.DetectUnusedTextures)
-                    features.Add("unused texture slot removal");
-                if (config.BakeLilToonTextures)
-                    features.Add("lilToon texture baking");
+                string features =
+                    config.DetectUnusedTextures && config.BakeLilToonTextures
+                        ? "Unused texture slot removal and lilToon texture baking run only "
+                            + "during the NDMF build and are"
+                        : config.DetectUnusedTextures
+                            ? "Unused texture slot removal runs only during the NDMF build and is"
+                            : "lilToon texture baking runs only during the NDMF build and is";
 
                 EditorGUILayout.HelpBox(
-                    string.Join(" and ", features)
-                        + " run only during the NDMF build and are not reflected here. "
-                        + "Actual results can be smaller than shown.",
+                    features
+                        + " not reflected in this preview, so actual build sizes may differ "
+                        + "from the estimate shown.",
                     MessageType.Info
                 );
             }
