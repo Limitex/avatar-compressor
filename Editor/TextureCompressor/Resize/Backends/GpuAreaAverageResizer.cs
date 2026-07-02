@@ -187,8 +187,17 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             if (rt == null)
                 return;
-            rt.Release();
-            Object.DestroyImmediate(rt);
+            try
+            {
+                rt.Release();
+                Object.DestroyImmediate(rt);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning(
+                    $"[TextureCompressor] Failed to destroy RenderTexture: {e.Message}"
+                );
+            }
         }
     }
 }

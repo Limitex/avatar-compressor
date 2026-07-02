@@ -109,43 +109,21 @@ namespace dev.limitex.avatar.compressor.editor
                     EditorGUILayout.LabelField("Texture Compressor", EditorStyles.boldLabel);
                     AnalysisBackend = (AnalysisBackendPreference)
                         EditorGUILayout.EnumPopup(AnalysisBackendContent, AnalysisBackend);
-
-                    var analysisBackendName = AnalysisBackendFactory.ResolveBackendName(
-                        AnalysisBackend
+                    DrawBackendHelpBox(
+                        AnalysisBackend == AnalysisBackendPreference.CPU,
+                        AnalysisBackendFactory.ResolveBackendName(AnalysisBackend),
+                        "texture analysis"
                     );
-                    var analysisHelp = AnalysisBackend switch
-                    {
-                        AnalysisBackendPreference.Auto =>
-                            $"Currently using {analysisBackendName}. Uses GPU compute shaders when available, otherwise falls back to CPU.",
-                        AnalysisBackendPreference.CPU =>
-                            "Always uses CPU for texture analysis. Useful when GPU results are unstable or for debugging.",
-                        _ => null,
-                    };
-                    if (analysisHelp != null)
-                    {
-                        EditorGUILayout.HelpBox(analysisHelp, MessageType.Info);
-                    }
 
                     EditorGUILayout.Space(4);
 
                     ResizeBackend = (ResizeBackendPreference)
                         EditorGUILayout.EnumPopup(ResizeBackendContent, ResizeBackend);
-
-                    var resizeBackendName = AreaAverageResizerFactory.ResolveBackendName(
-                        ResizeBackend
+                    DrawBackendHelpBox(
+                        ResizeBackend == ResizeBackendPreference.CPU,
+                        AreaAverageResizerFactory.ResolveBackendName(ResizeBackend),
+                        "Area Averaging resize"
                     );
-                    var resizeHelp = ResizeBackend switch
-                    {
-                        ResizeBackendPreference.Auto =>
-                            $"Currently using {resizeBackendName}. Uses GPU compute shaders for Area Averaging resize when available, otherwise falls back to CPU.",
-                        ResizeBackendPreference.CPU =>
-                            "Always uses CPU for texture resize. Useful when GPU results are unstable or for debugging.",
-                        _ => null,
-                    };
-                    if (resizeHelp != null)
-                    {
-                        EditorGUILayout.HelpBox(resizeHelp, MessageType.Info);
-                    }
 
                     EditorGUILayout.EndVertical();
                 },
@@ -165,6 +143,18 @@ namespace dev.limitex.avatar.compressor.editor
                     "Texture",
                 },
             };
+        }
+
+        private static void DrawBackendHelpBox(
+            bool isCpuForced,
+            string resolvedName,
+            string subject
+        )
+        {
+            var help = isCpuForced
+                ? $"Always uses CPU for {subject}. Useful when GPU results are unstable or for debugging."
+                : $"Currently using {resolvedName}. Uses GPU compute shaders for {subject} when available, otherwise falls back to CPU.";
+            EditorGUILayout.HelpBox(help, MessageType.Info);
         }
     }
 }
