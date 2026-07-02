@@ -1,18 +1,39 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
 {
     /// <summary>
+    /// Result of running texture baking over one material: how many texture slots received a
+    /// baked replacement, and how many bake operations were skipped because one of their input
+    /// properties is driven by animation.
+    /// </summary>
+    public readonly struct LilToonBakeResult
+    {
+        public LilToonBakeResult(int bakedSlots, int skippedByAnimation)
+        {
+            BakedSlots = bakedSlots;
+            SkippedByAnimation = skippedByAnimation;
+        }
+
+        /// <summary>Number of texture slots replaced with a baked texture.</summary>
+        public int BakedSlots { get; }
+
+        /// <summary>Number of bake operations skipped because an input property is animated.</summary>
+        public int SkippedByAnimation { get; }
+    }
+
+    /// <summary>
     /// Bakes lilToon's color adjustments into textures at build time so the adjusted texture
     /// ships instead of runtime shader parameters plus their input textures.
     /// </summary>
     /// <remarks>
     /// This is the boundary between the build pipeline and the optional, externally-owned lilToon
-    /// package, mirroring <see cref="IUnusedSlotOptimizer"/>: the implementation wraps lilToon via
-    /// reflection so the project compiles whether or not it is installed; when it is absent it
-    /// reports <see cref="IsAvailable"/> = false and does nothing. See the <c>Integrations</c>
-    /// folder for the concrete implementation.
+    /// package, mirroring <see cref="IUnusedSlotOptimizer"/>: the implementation depends only on
+    /// lilToon's baker shader and property names, so the project compiles whether or not lilToon
+    /// is installed; when it is absent it reports <see cref="IsAvailable"/> = false and does
+    /// nothing. See the <c>Integrations</c> folder for the concrete implementation.
     /// </remarks>
     public interface ILilToonBaker
     {
@@ -30,7 +51,22 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// Material property names driven by animation; a bake whose input appears here is
         /// skipped entirely so the animation keeps working.
         /// </param>
-        /// <returns>The baked textures created by this call (empty if nothing was baked).</returns>
-        Texture2D[] Bake(Material material, IReadOnlyCollection<string> animatedProperties);
+        /// <param name="canReplaceTexture">
+        /// Consulted with (texture, propertyName) before a slot's texture is replaced; returning
+        /// false skips that bake. Used to honor the user's exclusion and frozen-skip settings —
+        /// baked output is uncompressed, so baking a texture the pipeline will then refuse to
+        /// recompress would inflate it. Null means always allowed.
+        /// </param>
+        /// <param name="isFrozenTexture">
+        /// Returns true for textures pinned by frozen settings ("ship exactly as configured").
+        /// A bake never consumes (and clears the slot of) a frozen input texture; the affected
+        /// bake or layer is skipped instead. Null means no textures are frozen.
+        /// </param>
+        LilToonBakeResult Bake(
+            Material material,
+            IReadOnlyCollection<string> animatedProperties,
+            Func<Texture2D, string, bool> canReplaceTexture,
+            Func<Texture2D, bool> isFrozenTexture
+        );
     }
 }

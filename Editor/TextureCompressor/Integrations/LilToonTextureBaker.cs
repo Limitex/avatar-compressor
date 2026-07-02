@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using nadena.dev.ndmf;
@@ -141,7 +140,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
         public bool IsAvailable => _bakerShader != null;
 
-        public Texture2D[] Bake(Material material, IReadOnlyCollection<string> animatedProperties)
+        private enum BakeOutcome
+        {
+            NotApplicable,
+            Baked,
+            SkippedByAnimation,
+        }
+
+        public LilToonBakeResult Bake(
+            Material material,
+            IReadOnlyCollection<string> animatedProperties,
+            Func<Texture2D, string, bool> canReplaceTexture,
+            Func<Texture2D, bool> isFrozenTexture
+        )
         {
             if (
                 !IsAvailable
@@ -149,44 +160,76 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 || material.shader == null
                 || animatedProperties == null
             )
-                return Array.Empty<Texture2D>();
+                return default;
 
             if (!IsLilToonShader(material.shader))
-                return Array.Empty<Texture2D>();
+                return default;
 
-            var bakedTextures = new List<Texture2D>();
+            // Order matters: the alpha-mask bake reads _MainTex, which the main bake may have
+            // just replaced.
+            var outcomes = new[]
+            {
+                BakeMainTexture(material, animatedProperties, canReplaceTexture, isFrozenTexture),
+                BakeAlphaMask(material, animatedProperties, canReplaceTexture, isFrozenTexture),
+                BakeOutlineTexture(material, animatedProperties, canReplaceTexture),
+            };
 
-            BakeMainTexture(material, animatedProperties, bakedTextures);
-            BakeAlphaMask(material, animatedProperties, bakedTextures);
-            BakeOutlineTexture(material, animatedProperties, bakedTextures);
+            int bakedSlots = 0;
+            int skippedByAnimation = 0;
+            foreach (var outcome in outcomes)
+            {
+                if (outcome == BakeOutcome.Baked)
+                    bakedSlots++;
+                else if (outcome == BakeOutcome.SkippedByAnimation)
+                    skippedByAnimation++;
+            }
 
-            return bakedTextures.ToArray();
+            return new LilToonBakeResult(bakedSlots, skippedByAnimation);
         }
 
-        private void BakeMainTexture(
+        private BakeOutcome BakeMainTexture(
             Material material,
             IReadOnlyCollection<string> animatedProperties,
-            List<Texture2D> bakedTextures
+            Func<Texture2D, string, bool> canReplaceTexture,
+            Func<Texture2D, bool> isFrozenTexture
         )
         {
             if (!HasBakeableColorAdjustments(material))
-                return;
+                return BakeOutcome.NotApplicable;
 
             var mainTexture = GetTexture(material, MainTexProperty) as Texture2D;
             if (mainTexture == null)
-                return;
+                return BakeOutcome.NotApplicable;
 
             if (!IsDefaultTilingOffset(material, MainTexProperty))
-                return;
+                return BakeOutcome.NotApplicable;
 
-            if (AnyAnimated(animatedProperties, MainBakeInputProperties))
-                return;
+            if (canReplaceTexture != null && !canReplaceTexture(mainTexture, MainTexProperty))
+                return BakeOutcome.NotApplicable;
 
-            bool bake2nd = CanBakeOverlayLayer(material, animatedProperties, Layer2nd);
-            bool bake3rd = CanBakeOverlayLayer(material, animatedProperties, Layer3rd);
+            if (HasFrozenMainBakeInput(material, isFrozenTexture))
+                return BakeOutcome.NotApplicable;
+
+            if (HasAnimatedMainBakeInput(animatedProperties))
+                return BakeOutcome.SkippedByAnimation;
+
+            bool bake2nd = CanBakeOverlayLayer(
+                material,
+                animatedProperties,
+                isFrozenTexture,
+                Layer2nd
+            );
+            bool bake3rd = CanBakeOverlayLayer(
+                material,
+                animatedProperties,
+                isFrozenTexture,
+                Layer3rd
+            );
 
             if (!HasNonLayerAdjustments(material) && !bake2nd && !bake3rd)
-                return;
+                return HasAnimationVetoedLayer(material, animatedProperties)
+                    ? BakeOutcome.SkippedByAnimation
+                    : BakeOutcome.NotApplicable;
 
             var baked = BakeTexture(
                 mainTexture,
@@ -194,7 +237,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 baker => ConfigureMainBaker(material, baker, mainTexture, bake2nd, bake3rd)
             );
             if (baked == null)
-                return;
+                return BakeOutcome.NotApplicable;
 
             material.SetTexture(MainTexProperty, baked);
             material.SetVector(MainTexHsvgProperty, DefaultHsvg);
@@ -207,7 +250,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (bake3rd)
                 ClearOverlayLayer(material, Layer3rd);
 
-            bakedTextures.Add(baked);
+            return BakeOutcome.Baked;
         }
 
         /// <summary>
@@ -229,15 +272,22 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         /// Layer toggles and layer-specific properties are checked separately per layer — an
         /// animated layer is excluded from the bake rather than vetoing the whole operation.
         /// </summary>
-        public static bool HasAnimatedMainBakeInput(
+        public static bool HasAnimatedMainBakeInput(IReadOnlyCollection<string> animatedProperties)
+        {
+            return AnyAnimated(animatedProperties, MainBakeInputProperties);
+        }
+
+        /// <summary>
+        /// True when a texture consumed (and cleared) by the main bake — the gradation map or
+        /// the color-adjust mask — is pinned by frozen settings.
+        /// </summary>
+        public static bool HasFrozenMainBakeInput(
             Material material,
-            IReadOnlyCollection<string> animatedProperties
+            Func<Texture2D, bool> isFrozenTexture
         )
         {
-            if (material == null || animatedProperties == null)
-                return false;
-
-            return AnyAnimated(animatedProperties, MainBakeInputProperties);
+            return IsFrozenSlot(material, MainGradationTexProperty, isFrozenTexture)
+                || IsFrozenSlot(material, MainColorAdjustMaskProperty, isFrozenTexture);
         }
 
         private static bool HasNonLayerAdjustments(Material material)
@@ -246,28 +296,30 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 || GetFloat(material, MainGradationStrengthProperty, 0f) != 0f;
         }
 
-        private static bool CanBakeOverlayLayer(
+        /// <summary>
+        /// True when the layer is enabled and no input that the bake would consume — the layer
+        /// toggle, its parameters, or its textures — is animated or frozen.
+        /// </summary>
+        public static bool CanBakeOverlayLayer(
             Material material,
             IReadOnlyCollection<string> animatedProperties,
+            Func<Texture2D, bool> isFrozenTexture,
             string layer
         )
         {
             return IsOverlayLayerEnabled(material, layer)
-                && !animatedProperties.Contains(UseLayerProperty(layer))
-                && !HasAnimatedOverlayLayerInput(material, animatedProperties, layer);
+                && !HasAnimatedOverlayLayerInput(animatedProperties, layer)
+                && !HasFrozenOverlayLayerInput(material, isFrozenTexture, layer);
         }
 
         private static bool HasAnimatedOverlayLayerInput(
-            Material material,
             IReadOnlyCollection<string> animatedProperties,
             string layer
         )
         {
-            if (!IsOverlayLayerEnabled(material, layer))
-                return false;
-
             if (
-                animatedProperties.Contains(LayerColorProperty(layer))
+                animatedProperties.Contains(UseLayerProperty(layer))
+                || animatedProperties.Contains(LayerColorProperty(layer))
                 || animatedProperties.Contains(LayerTexProperty(layer))
                 || animatedProperties.Contains(LayerBlendMaskProperty(layer))
             )
@@ -286,6 +338,47 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             }
 
             return false;
+        }
+
+        private static bool HasFrozenOverlayLayerInput(
+            Material material,
+            Func<Texture2D, bool> isFrozenTexture,
+            string layer
+        )
+        {
+            return IsFrozenSlot(material, LayerTexProperty(layer), isFrozenTexture)
+                || IsFrozenSlot(material, LayerBlendMaskProperty(layer), isFrozenTexture);
+        }
+
+        private static bool IsFrozenSlot(
+            Material material,
+            string property,
+            Func<Texture2D, bool> isFrozenTexture
+        )
+        {
+            return isFrozenTexture != null
+                && GetTexture(material, property) is Texture2D texture
+                && isFrozenTexture(texture);
+        }
+
+        /// <summary>
+        /// True when at least one enabled overlay layer was excluded from the bake because one
+        /// of its inputs is animated — distinguishes an animation skip from a plain no-op when
+        /// the layers were the only bakeable content.
+        /// </summary>
+        private static bool HasAnimationVetoedLayer(
+            Material material,
+            IReadOnlyCollection<string> animatedProperties
+        )
+        {
+            return (
+                    IsOverlayLayerEnabled(material, Layer2nd)
+                    && HasAnimatedOverlayLayerInput(animatedProperties, Layer2nd)
+                )
+                || (
+                    IsOverlayLayerEnabled(material, Layer3rd)
+                    && HasAnimatedOverlayLayerInput(animatedProperties, Layer3rd)
+                );
         }
 
         private static void ConfigureMainBaker(
@@ -412,24 +505,31 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             AppendTextureKey(key, material, LayerBlendMaskProperty(layer));
         }
 
-        private void BakeAlphaMask(
+        private BakeOutcome BakeAlphaMask(
             Material material,
             IReadOnlyCollection<string> animatedProperties,
-            List<Texture2D> bakedTextures
+            Func<Texture2D, string, bool> canReplaceTexture,
+            Func<Texture2D, bool> isFrozenTexture
         )
         {
             if (!HasBakeableAlphaMask(material))
-                return;
+                return BakeOutcome.NotApplicable;
 
             var mainTexture = GetTexture(material, MainTexProperty) as Texture2D;
             if (mainTexture == null)
-                return;
+                return BakeOutcome.NotApplicable;
 
             if (!IsDefaultTilingOffset(material, MainTexProperty))
-                return;
+                return BakeOutcome.NotApplicable;
+
+            if (canReplaceTexture != null && !canReplaceTexture(mainTexture, MainTexProperty))
+                return BakeOutcome.NotApplicable;
+
+            if (IsFrozenSlot(material, AlphaMaskProperty, isFrozenTexture))
+                return BakeOutcome.NotApplicable;
 
             if (HasAnimatedAlphaMaskBakeInput(animatedProperties))
-                return;
+                return BakeOutcome.SkippedByAnimation;
 
             var baked = BakeTexture(
                 mainTexture,
@@ -456,13 +556,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 }
             );
             if (baked == null)
-                return;
+                return BakeOutcome.NotApplicable;
 
             material.SetTexture(MainTexProperty, baked);
             material.SetFloat(AlphaMaskModeProperty, 0f);
             material.SetTexture(AlphaMaskProperty, null);
             material.SetFloat(AlphaMaskValueProperty, 0f);
-            bakedTextures.Add(baked);
+            return BakeOutcome.Baked;
         }
 
         public static bool HasBakeableAlphaMask(Material material)
@@ -500,21 +600,27 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             return key.ToString();
         }
 
-        private void BakeOutlineTexture(
+        private BakeOutcome BakeOutlineTexture(
             Material material,
             IReadOnlyCollection<string> animatedProperties,
-            List<Texture2D> bakedTextures
+            Func<Texture2D, string, bool> canReplaceTexture
         )
         {
             if (!HasBakeableOutline(material))
-                return;
+                return BakeOutcome.NotApplicable;
 
             var outlineTexture = GetTexture(material, OutlineTexProperty) as Texture2D;
             if (outlineTexture == null)
-                return;
+                return BakeOutcome.NotApplicable;
+
+            if (
+                canReplaceTexture != null
+                && !canReplaceTexture(outlineTexture, OutlineTexProperty)
+            )
+                return BakeOutcome.NotApplicable;
 
             if (HasAnimatedOutlineBakeInput(animatedProperties))
-                return;
+                return BakeOutcome.SkippedByAnimation;
 
             Vector4 outlineHsvg = material.GetVector(OutlineTexHsvgProperty);
             var baked = BakeTexture(
@@ -528,11 +634,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 }
             );
             if (baked == null)
-                return;
+                return BakeOutcome.NotApplicable;
 
             material.SetTexture(OutlineTexProperty, baked);
             material.SetVector(OutlineTexHsvgProperty, DefaultHsvg);
-            bakedTextures.Add(baked);
+            return BakeOutcome.Baked;
         }
 
         public static bool HasBakeableOutline(Material material)

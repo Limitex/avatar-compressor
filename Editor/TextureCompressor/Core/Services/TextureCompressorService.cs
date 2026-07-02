@@ -400,24 +400,34 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         /// <summary>
         /// Per-material decisions (lilToon check, no-op detection, animation veto) live in the
-        /// baker (see <see cref="ILilToonBaker"/>); this only drives it across the build.
+        /// baker (see <see cref="ILilToonBaker"/>); this drives it across the build and hands it
+        /// the collector's filter and the frozen pin so excluded/frozen-skipped textures are
+        /// never baked and frozen input textures are never consumed.
         /// </summary>
         private void BakeLilToonAdjustments(List<Material> clonedMaterials, bool enableLogging)
         {
             int bakedSlots = 0;
+            int skippedByAnimation = 0;
 
             foreach (var material in clonedMaterials)
             {
-                var bakedTextures = _lilToonBaker.Bake(
+                var result = _lilToonBaker.Bake(
                     material,
-                    _animationUsageMap.AnimatedProperties
+                    _animationUsageMap.AnimatedProperties,
+                    _collector.WouldProcess,
+                    IsFrozenTexture
                 );
-                bakedSlots += bakedTextures.Length;
+                bakedSlots += result.BakedSlots;
+                skippedByAnimation += result.SkippedByAnimation;
             }
 
-            if (enableLogging && bakedSlots > 0)
+            if (enableLogging && (bakedSlots > 0 || skippedByAnimation > 0))
             {
-                Debug.Log($"[{Name}] lilToon texture baking: baked {bakedSlots} texture slot(s).");
+                Debug.Log(
+                    $"[{Name}] lilToon texture baking: baked {bakedSlots} texture slot(s), "
+                        + $"skipped {skippedByAnimation} bake(s) whose inputs are driven by "
+                        + "animation."
+                );
             }
         }
 

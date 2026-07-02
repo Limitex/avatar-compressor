@@ -2837,6 +2837,15 @@ namespace dev.limitex.avatar.compressor.tests
                 baker.LastAnimatedProperties.Contains("_MainTexHSVG"),
                 "The animated properties must reach the baker"
             );
+            Assert.IsNotNull(
+                baker.LastCanReplaceTexture,
+                "The collector filter must reach the baker so excluded/frozen-skipped "
+                    + "textures are never baked"
+            );
+            Assert.IsNotNull(
+                baker.LastIsFrozenTexture,
+                "The frozen pin must reach the baker so frozen input textures are never consumed"
+            );
         }
 
         [Test]
@@ -2919,16 +2928,28 @@ namespace dev.limitex.avatar.compressor.tests
                 private set;
             }
 
+            public System.Func<Texture2D, string, bool> LastCanReplaceTexture
+            {
+                get;
+                private set;
+            }
+
+            public System.Func<Texture2D, bool> LastIsFrozenTexture { get; private set; }
+
             public bool IsAvailable => _available;
 
-            public Texture2D[] Bake(
+            public LilToonBakeResult Bake(
                 Material material,
-                System.Collections.Generic.IReadOnlyCollection<string> animatedProperties
+                System.Collections.Generic.IReadOnlyCollection<string> animatedProperties,
+                System.Func<Texture2D, string, bool> canReplaceTexture,
+                System.Func<Texture2D, bool> isFrozenTexture
             )
             {
                 CallCount++;
                 LastAnimatedProperties = animatedProperties;
-                return System.Array.Empty<Texture2D>();
+                LastCanReplaceTexture = canReplaceTexture;
+                LastIsFrozenTexture = isFrozenTexture;
+                return default;
             }
         }
 

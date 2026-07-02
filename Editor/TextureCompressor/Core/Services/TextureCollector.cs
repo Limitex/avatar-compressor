@@ -222,6 +222,22 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
+        /// Returns true if a texture assigned to the given property would be collected for
+        /// processing under the current filter settings. Lets earlier pipeline steps (e.g.
+        /// lilToon texture baking) avoid replacing a texture whose replacement the pipeline
+        /// would then refuse to compress.
+        /// </summary>
+        public bool WouldProcess(Texture2D texture, string propertyName)
+        {
+            if (texture == null)
+                return false;
+
+            var info = new TextureInfo();
+            EvaluateProcessability(info, texture, propertyName);
+            return info.IsProcessed;
+        }
+
+        /// <summary>
         /// Evaluates whether a texture should be processed and populates the TextureInfo accordingly.
         /// Resolves the original asset via ObjectRegistry for textures replaced by upstream NDMF plugins.
         /// </summary>
