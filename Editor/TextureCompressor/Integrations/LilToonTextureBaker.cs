@@ -176,6 +176,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                         + "Texture baking is disabled for this build."
                 );
             }
+
+            // Baking an unknown lilToon (shaders present, C# constants missing) would run with
+            // no version guard at all, so treat it as untested instead.
+            if (_bakerShader != null && !version.HasValue)
+            {
+                _bakerShader = null;
+                Debug.LogWarning(
+                    "[LAC Texture Compressor] The lilToon baker shader is present, but "
+                        + "lilToon's version constant could not be read, so the "
+                        + "supported-version guard cannot run. Texture baking is disabled "
+                        + "for this build."
+                );
+            }
         }
 
         public bool IsAvailable => _bakerShader != null;
