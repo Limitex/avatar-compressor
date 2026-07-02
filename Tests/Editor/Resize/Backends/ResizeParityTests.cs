@@ -138,6 +138,28 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void Parity_Upscale_MatchesWithinTolerance()
+        {
+            var source = Track(CreateGradientTexture(32, 32));
+
+            var cpuResult = Track(_cpuResizer.Resize(source, 64, 64));
+            var gpuResult = Track(_gpuResizer.Resize(source, 64, 64));
+
+            AssertPixelsParity(cpuResult, gpuResult);
+        }
+
+        [Test]
+        public void Parity_MixedAxes_MatchesWithinTolerance()
+        {
+            var source = Track(CreateGradientTexture(128, 16));
+
+            var cpuResult = Track(_cpuResizer.Resize(source, 32, 32));
+            var gpuResult = Track(_gpuResizer.Resize(source, 32, 32));
+
+            AssertPixelsParity(cpuResult, gpuResult);
+        }
+
+        [Test]
         public void Parity_NonReadableSource_MatchesWithinTolerance()
         {
             var source = Track(CreateCheckerboardTexture(64, 64));

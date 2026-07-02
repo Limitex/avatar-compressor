@@ -95,7 +95,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     1
                 );
 
-                _shader.SetTexture(_kernelVertical, "_IntermediateTexture", intermediateRT);
+                _shader.SetTexture(_kernelVertical, "_IntermediateRead", intermediateRT);
                 _shader.SetTexture(_kernelVertical, "_OutputTexture", outputRT);
                 _shader.Dispatch(
                     _kernelVertical,

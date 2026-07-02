@@ -103,7 +103,67 @@ namespace dev.limitex.avatar.compressor.editor.texture
             public float[] Weights;
         }
 
+        /// <summary>
+        /// Builds per-output-pixel taps for one axis: a box filter over the
+        /// covered source interval when downscaling, 2-tap bilinear
+        /// interpolation when upscaling (a box interval covers at most one
+        /// source pixel there, which would degenerate to nearest-neighbor
+        /// replication). Must match ResampleAxis in AreaAverageResize.compute.
+        /// </summary>
         public static AxisPlan BuildPlan(int srcN, int dstN)
+        {
+            return dstN > srcN ? BuildBilinearPlan(srcN, dstN) : BuildBoxPlan(srcN, dstN);
+        }
+
+        private static AxisPlan BuildBilinearPlan(int srcN, int dstN)
+        {
+            float scale = (float)srcN / dstN;
+
+            var start = new int[dstN];
+            var len = new int[dstN];
+            var offset = new int[dstN];
+
+            int totalTaps = 0;
+            for (int i = 0; i < dstN; i++)
+            {
+                float c = (i + 0.5f) * scale - 0.5f;
+                int i0 = Mathf.FloorToInt(c);
+                int s0 = Mathf.Clamp(i0, 0, srcN - 1);
+                int s1 = Mathf.Clamp(i0 + 1, 0, srcN - 1);
+
+                start[i] = s0;
+                len[i] = s1 > s0 ? 2 : 1;
+                offset[i] = totalTaps;
+                totalTaps += len[i];
+            }
+
+            var weights = new float[totalTaps];
+            for (int i = 0; i < dstN; i++)
+            {
+                float c = (i + 0.5f) * scale - 0.5f;
+                float f = c - Mathf.FloorToInt(c);
+
+                if (len[i] == 2)
+                {
+                    weights[offset[i]] = 1f - f;
+                    weights[offset[i] + 1] = f;
+                }
+                else
+                {
+                    weights[offset[i]] = 1f;
+                }
+            }
+
+            return new AxisPlan
+            {
+                Start = start,
+                Len = len,
+                Offset = offset,
+                Weights = weights,
+            };
+        }
+
+        private static AxisPlan BuildBoxPlan(int srcN, int dstN)
         {
             float scale = (float)srcN / dstN;
 

@@ -82,6 +82,22 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void BuildPlan_Upscale2x_UsesBilinearTaps()
+        {
+            var plan = CpuAreaAverageResizer.BuildPlan(4, 8);
+
+            // dst 3 center maps to src 1.25 -> taps at src 1 (0.75) and src 2 (0.25)
+            Assert.AreEqual(1, plan.Start[3]);
+            Assert.AreEqual(2, plan.Len[3]);
+            Assert.That(plan.Weights[plan.Offset[3]], Is.EqualTo(0.75f).Within(1e-5f));
+            Assert.That(plan.Weights[plan.Offset[3] + 1], Is.EqualTo(0.25f).Within(1e-5f));
+
+            // edge pixels clamp to a single source tap
+            Assert.AreEqual(1, plan.Len[0]);
+            Assert.That(plan.Weights[plan.Offset[0]], Is.EqualTo(1f).Within(1e-5f));
+        }
+
+        [Test]
         public void BuildPlan_ToSinglePixel_AllSourcePixelsContribute()
         {
             var plan = CpuAreaAverageResizer.BuildPlan(8, 1);
@@ -224,6 +240,43 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.IsNotNull(result);
             Assert.AreEqual(32, result.width);
             Assert.AreEqual(16, result.height);
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_Upscale2x_InterpolatesBetweenPixels()
+        {
+            var pixels = new[] { new Color(0f, 0f, 0f, 1f), new Color(1f, 1f, 1f, 1f) };
+            var source = CreateLinearTextureWithPixels(2, 1, pixels);
+
+            var result = _resizer.Resize(source, 4, 1);
+
+            Assert.IsNotNull(result);
+            // dst 1 maps to src 0.25, dst 2 to src 0.75 -> interpolated values,
+            // not the nearest-neighbor replication a box plan would produce
+            Assert.That(result.GetPixel(1, 0).r, Is.EqualTo(0.25f).Within(0.01f));
+            Assert.That(result.GetPixel(2, 0).r, Is.EqualTo(0.75f).Within(0.01f));
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_MixedDownscaleAndUpscale_ReturnsCorrectDimensions()
+        {
+            var source = CreateLinearSolidTexture(128, 16, new Color(0.25f, 0.5f, 0.75f, 1f));
+
+            var result = _resizer.Resize(source, 32, 32);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(32, result.width);
+            Assert.AreEqual(32, result.height);
+            var pixel = result.GetPixel(16, 16);
+            Assert.That(pixel.r, Is.EqualTo(0.25f).Within(0.01f));
+            Assert.That(pixel.g, Is.EqualTo(0.5f).Within(0.01f));
+            Assert.That(pixel.b, Is.EqualTo(0.75f).Within(0.01f));
 
             Object.DestroyImmediate(source);
             Object.DestroyImmediate(result);
