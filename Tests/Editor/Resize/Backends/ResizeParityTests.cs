@@ -193,6 +193,11 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.IsNotNull(gpu, "GPU result should not be null");
             Assert.AreEqual(cpu.width, gpu.width);
             Assert.AreEqual(cpu.height, gpu.height);
+            Assert.AreEqual(
+                cpu.isDataSRGB,
+                gpu.isDataSRGB,
+                "Backends must agree on the output color-space flag"
+            );
 
             var cpuPixels = cpu.GetPixels();
             var gpuPixels = gpu.GetPixels();
