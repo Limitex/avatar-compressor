@@ -46,7 +46,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateFlat(64);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 64, 64);
+            var result = ResizeToSize(source, 64, 64, isNormalMap: true);
             _createdObjects.Add(result);
 
             var sourcePixels = source.GetPixels32();
@@ -64,7 +64,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateFlat(64);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 32, 32);
+            var result = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(result);
 
             var resultPixels = result.GetPixels32();
@@ -81,7 +81,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(64);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 32, 32);
+            var result = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(result);
 
             var pixels = result.GetPixels32();
@@ -119,7 +119,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(32, 32));
 
-            var result = ResizeSingle(source, analysis);
+            var result = ResizeSingle(source, analysis, isNormalMap: true);
             _createdObjects.Add(result);
 
             Assert.AreEqual(32, result.width);
@@ -138,7 +138,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             var analysis = new TextureAnalysisResult(0.8f, 1, new Vector2Int(64, 64));
 
-            var result = ResizeSingle(source, analysis);
+            var result = ResizeSingle(source, analysis, isNormalMap: true);
             _createdObjects.Add(result);
 
             Assert.AreEqual(64, result.width);
@@ -231,7 +231,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = CreateTextureForPattern(pattern, 128);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 128, 128);
+            var result = ResizeToSize(source, 128, 128, isNormalMap: true);
             _createdObjects.Add(result);
 
             var sourcePixels = source.GetPixels32();
@@ -304,7 +304,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(size);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, size, size);
+            var result = ResizeToSize(source, size, size, isNormalMap: true);
             _createdObjects.Add(result);
 
             var sourcePixels = source.GetPixels32();
@@ -343,7 +343,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(128);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 128, 128);
+            var result = ResizeToSize(source, 128, 128, isNormalMap: true);
             _createdObjects.Add(result);
 
             var sourcePixels = source.GetPixels32();
@@ -385,7 +385,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateSphere(sourceSize);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, targetSize, targetSize);
+            var result = ResizeToSize(source, targetSize, targetSize, isNormalMap: true);
             _createdObjects.Add(result);
 
             var resultPixels = result.GetPixels32();
@@ -421,7 +421,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateGradient(64);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 32, 32);
+            var result = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(result);
 
             var sourcePixels = source.GetPixels32();
@@ -452,7 +452,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateFlat(64, linear: false);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 32, 32);
+            var result = ResizeToSize(source, 32, 32, isNormalMap: true);
             _createdObjects.Add(result);
 
             Assert.IsFalse(result.isDataSRGB, "Normal map output should be linear-flagged");
@@ -471,7 +471,7 @@ namespace dev.limitex.avatar.compressor.tests
             var source = NormalMapTestTextureFactory.CreateFlat(64, linear: false);
             _createdObjects.Add(source);
 
-            var result = ResizeToSize(source, 64, 64);
+            var result = ResizeToSize(source, 64, 64, isNormalMap: true);
             _createdObjects.Add(result);
 
             Assert.IsFalse(result.isDataSRGB, "Normal map output should be linear-flagged");
@@ -485,16 +485,25 @@ namespace dev.limitex.avatar.compressor.tests
 
         #region Helper Methods
 
-        private Texture2D ResizeSingle(Texture2D source, TextureAnalysisResult analysis)
+        private Texture2D ResizeSingle(
+            Texture2D source,
+            TextureAnalysisResult analysis,
+            bool isNormalMap = false
+        )
         {
-            return _processor.ResizeSingle(source, analysis, isNormalMap: true);
+            return _processor.ResizeSingle(source, analysis, isNormalMap);
         }
 
-        private Texture2D ResizeToSize(Texture2D source, int newWidth, int newHeight)
+        private Texture2D ResizeToSize(
+            Texture2D source,
+            int newWidth,
+            int newHeight,
+            bool isNormalMap = false
+        )
         {
             // Use divisor=2 to force the resize to use RecommendedResolution
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(newWidth, newHeight));
-            return _processor.ResizeSingle(source, analysis, isNormalMap: true);
+            return _processor.ResizeSingle(source, analysis, isNormalMap);
         }
 
         #endregion

@@ -87,23 +87,6 @@ namespace dev.limitex.avatar.compressor.tests
         #region ComputeSettingsHash Tests
 
         [Test]
-        public void ComputeSettingsHash_DifferentResizeBackend_ReturnsDifferentHash()
-        {
-            int hash1 = PreviewGenerator.ComputeSettingsHash(
-                _config,
-                AnalysisBackendPreference.Auto,
-                ResizeBackendPreference.Auto
-            );
-            int hash2 = PreviewGenerator.ComputeSettingsHash(
-                _config,
-                AnalysisBackendPreference.Auto,
-                ResizeBackendPreference.CPU
-            );
-
-            Assert.That(hash1, Is.Not.EqualTo(hash2));
-        }
-
-        [Test]
         public void ComputeSettingsHash_SameConfig_ReturnsSameHash()
         {
             int hash1 = ComputeHash(_config);
@@ -445,11 +428,13 @@ namespace dev.limitex.avatar.compressor.tests
         {
             int hash1 = PreviewGenerator.ComputeSettingsHash(
                 _config,
-                AnalysisBackendPreference.Auto
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.Auto
             );
             int hash2 = PreviewGenerator.ComputeSettingsHash(
                 _config,
-                AnalysisBackendPreference.CPU
+                AnalysisBackendPreference.CPU,
+                ResizeBackendPreference.Auto
             );
 
             Assert.That(
