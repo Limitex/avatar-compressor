@@ -4,6 +4,12 @@ using UnityEngine.Rendering;
 
 namespace dev.limitex.avatar.compressor.editor.texture
 {
+    /// <summary>
+    /// GPU compute implementation of separable two-pass area averaging.
+    /// Sources are bound directly as SRVs (hardware sRGB decode); see the
+    /// comment in ResizeOnGpu for why a Graphics.Blit pre-pass must never be
+    /// added. Point-filtered and same-size sources delegate to the CPU path.
+    /// </summary>
     public class GpuAreaAverageResizer : ITextureResizer
     {
         internal const string ShaderPath =
@@ -65,6 +71,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 || deviceName.Contains("SwiftShader");
         }
 
+        /// <summary>
+        /// Creates the resizer when the GPU is usable (compute support, no
+        /// software rasterizer, shader compiled). Never throws; logs and
+        /// returns false on initialization failure.
+        /// </summary>
         public static bool TryCreate(
             out GpuAreaAverageResizer resizer,
             ITextureResizer fallback = null
@@ -89,6 +100,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
         }
 
+        /// <summary>
+        /// Resizes on the GPU; a detectable per-texture failure (RT allocation,
+        /// exception) silently falls back to the injected CPU resizer when one
+        /// was provided, so callers get a result rather than null.
+        /// </summary>
         public Texture2D Resize(
             Texture2D source,
             int targetWidth,
