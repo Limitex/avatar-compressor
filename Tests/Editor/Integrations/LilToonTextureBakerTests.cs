@@ -88,7 +88,10 @@ namespace dev.limitex.avatar.compressor.tests
             );
 
             // Keep in sync with the properties LilToonTextureBaker configures on the baker
-            // material (ConfigureMainBaker/ConfigureOverlayLayer/BakeAlphaMask).
+            // material (ConfigureMainBaker/ConfigureOverlayLayer/BakeAlphaMask), minus the
+            // decal animation pair: those bind to HLSL uniforms without a Properties-block
+            // declaration on lilToon 1.x, so only the cross-version declared surface is
+            // asserted here.
             var fixedNames = new[]
             {
                 "_MainTex",
@@ -117,9 +120,6 @@ namespace dev.limitex.avatar.compressor.tests
                 "_Main{0}TexShouldFlipCopy",
                 "_Main{0}TexIsMSDF",
                 "_Main{0}TexBlendMode",
-                "_Main{0}TexAlphaMode",
-                "_Main{0}TexDecalAnimation",
-                "_Main{0}TexDecalSubParam",
             };
             var expected = new List<string>(fixedNames);
             foreach (var layer in new[] { "2nd", "3rd" })

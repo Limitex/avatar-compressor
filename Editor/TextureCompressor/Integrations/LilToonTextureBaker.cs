@@ -90,7 +90,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             "_Main{0}TexShouldFlipCopy",
             "_Main{0}TexIsMSDF",
             "_Main{0}TexBlendMode",
-            "_Main{0}TexAlphaMode",
         };
 
         private static readonly string[] LayerVectorPropertyFormats =
@@ -101,13 +100,15 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
         // Vetoed when animated but never copied to the baker: the layer ST is copied separately
         // via SetTextureScale/Offset, and the baker shader cannot reproduce the rest at all
-        // (scroll/rotate, non-uv0 UV modes, or the runtime layer features listed in
-        // HasUnbakeableLayerFeature).
+        // (scroll/rotate, non-uv0 UV modes, the alpha mode — no supported baker shader declares
+        // it and non-zero values are statically vetoed — or the runtime layer features listed
+        // in HasUnbakeableLayerFeature).
         private static readonly string[] LayerAnimationVetoPropertyFormats =
         {
             "_Main{0}Tex_ST",
             "_Main{0}Tex_ScrollRotate",
             "_Main{0}Tex_UVMode",
+            "_Main{0}TexAlphaMode",
             "_Main{0}DissolveParams",
             "_Main{0}EnableLighting",
             "_Main{0}DistanceFade",
