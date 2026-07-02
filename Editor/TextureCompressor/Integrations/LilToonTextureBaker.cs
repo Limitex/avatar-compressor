@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text;
 using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace dev.limitex.avatar.compressor.editor.texture.integrations
 {
@@ -114,6 +115,21 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         public LilToonTextureBaker()
         {
             var version = GetLilToonVersion();
+
+            // Without a GPU (-batchmode -nographics) Blit/ReadPixels return undefined data, so
+            // baking would silently replace textures with garbage. Same guard idea as the
+            // analysis backend's CPU fallback.
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+            {
+                if (version.HasValue)
+                {
+                    Debug.LogWarning(
+                        "[LAC Texture Compressor] No graphics device is available "
+                            + "(-nographics); texture baking is disabled for this build."
+                    );
+                }
+                return;
+            }
 
             if (version.HasValue && version.Value > SupportedVersionMax)
             {
