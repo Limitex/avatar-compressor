@@ -221,7 +221,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
             return RenderTextureFormat.ARGB32;
         }
 
-        private static void CopyTextureSettings(Texture2D source, Texture2D dest)
+        /// <summary>
+        /// Copies the sampler settings (wrap, filter, anisotropy) from source to dest so a
+        /// texture generated from another keeps sampling the way the original was imported.
+        /// </summary>
+        public static void CopyTextureSettings(Texture2D source, Texture2D dest)
         {
             dest.wrapModeU = source.wrapModeU;
             dest.wrapModeV = source.wrapModeV;

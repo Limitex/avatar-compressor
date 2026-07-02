@@ -749,6 +749,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         {
             int width = source.width;
             int height = source.height;
+            bool mipChain = source.mipmapCount > 1;
             var rt = new RenderTexture(width, height, 0);
             RenderTexture previous = RenderTexture.active;
             Texture2D output = null;
@@ -758,9 +759,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 RenderTexture.active = rt;
                 Graphics.Blit(source, rt, baker);
 
-                output = new Texture2D(width, height);
+                output = new Texture2D(width, height, TextureFormat.RGBA32, mipChain);
                 output.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-                output.Apply();
+                output.Apply(mipChain);
+                TextureProcessor.CopyTextureSettings(source, output);
 
                 var result = output;
                 output = null;
