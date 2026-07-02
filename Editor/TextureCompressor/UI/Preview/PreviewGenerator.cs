@@ -43,7 +43,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// </summary>
         public TexturePreviewData[] Generate(
             TextureCompressor config,
-            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
+            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto,
+            ResizeBackendPreference resizeBackendPreference = ResizeBackendPreference.Auto
         )
         {
             var frozenLookup = FrozenTextureSettings.BuildLookup(config.FrozenTextures);
@@ -64,7 +65,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             var processor = new TextureProcessor(
                 config.MinResolution,
                 config.MaxResolution,
-                config.ForcePowerOfTwo
+                config.ForcePowerOfTwo,
+                resizeBackendPreference
             );
 
             var complexityCalc = new ComplexityCalculator(
@@ -442,13 +444,15 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// </summary>
         public static int ComputeSettingsHash(
             TextureCompressor config,
-            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
+            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto,
+            ResizeBackendPreference resizeBackendPreference = ResizeBackendPreference.Auto
         )
         {
             unchecked
             {
                 // Start from analysis hash (Strategy, Weights, Thresholds, Resolution)
                 int hash = ComputeAnalysisHash(config, backendPreference);
+                hash = hash * 31 + resizeBackendPreference.GetHashCode();
                 hash = hash * 31 + config.Preset.GetHashCode();
                 hash = hash * 31 + config.ProcessMainTextures.GetHashCode();
                 hash = hash * 31 + config.ProcessNormalMaps.GetHashCode();

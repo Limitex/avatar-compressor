@@ -430,6 +430,27 @@ namespace dev.limitex.avatar.compressor.tests
             );
         }
 
+        [Test]
+        public void ComputeSettingsHash_DifferentResizeBackendPreference_ReturnsDifferentHash()
+        {
+            int hash1 = PreviewGenerator.ComputeSettingsHash(
+                _config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.Auto
+            );
+            int hash2 = PreviewGenerator.ComputeSettingsHash(
+                _config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.CPU
+            );
+
+            Assert.That(
+                hash1,
+                Is.Not.EqualTo(hash2),
+                "Resize backend preference change should invalidate hash"
+            );
+        }
+
         #endregion
 
         #region PreviewGenerator Instance Tests
