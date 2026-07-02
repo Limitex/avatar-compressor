@@ -2843,8 +2843,9 @@ namespace dev.limitex.avatar.compressor.tests
                     + "textures are never baked"
             );
             Assert.IsNotNull(
-                baker.LastIsFrozenTexture,
-                "The frozen pin must reach the baker so frozen input textures are never consumed"
+                baker.LastIsProtectedTexture,
+                "The protection pin must reach the baker so protected textures are never "
+                    + "repainted or consumed"
             );
         }
 
@@ -2930,7 +2931,7 @@ namespace dev.limitex.avatar.compressor.tests
 
             public System.Func<Texture2D, string, bool> LastCanReplaceTexture { get; private set; }
 
-            public System.Func<Texture2D, bool> LastIsFrozenTexture { get; private set; }
+            public System.Func<Texture2D, bool> LastIsProtectedTexture { get; private set; }
 
             public bool IsAvailable => _available;
 
@@ -2938,13 +2939,13 @@ namespace dev.limitex.avatar.compressor.tests
                 Material material,
                 System.Collections.Generic.IReadOnlyCollection<string> animatedProperties,
                 System.Func<Texture2D, string, bool> canReplaceTexture,
-                System.Func<Texture2D, bool> isFrozenTexture
+                System.Func<Texture2D, bool> isProtectedTexture
             )
             {
                 CallCount++;
                 LastAnimatedProperties = animatedProperties;
                 LastCanReplaceTexture = canReplaceTexture;
-                LastIsFrozenTexture = isFrozenTexture;
+                LastIsProtectedTexture = isProtectedTexture;
                 return default;
             }
         }

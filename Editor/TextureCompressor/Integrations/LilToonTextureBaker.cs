@@ -171,7 +171,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             Material material,
             IReadOnlyCollection<string> animatedProperties,
             Func<Texture2D, string, bool> canReplaceTexture,
-            Func<Texture2D, bool> isFrozenTexture
+            Func<Texture2D, bool> isProtectedTexture
         )
         {
             if (
@@ -189,9 +189,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             // just replaced.
             var outcomes = new[]
             {
-                BakeMainTexture(material, animatedProperties, canReplaceTexture, isFrozenTexture),
-                BakeAlphaMask(material, animatedProperties, canReplaceTexture, isFrozenTexture),
-                BakeOutlineTexture(material, animatedProperties, canReplaceTexture),
+                BakeMainTexture(
+                    material,
+                    animatedProperties,
+                    canReplaceTexture,
+                    isProtectedTexture
+                ),
+                BakeAlphaMask(material, animatedProperties, canReplaceTexture, isProtectedTexture),
+                BakeOutlineTexture(
+                    material,
+                    animatedProperties,
+                    canReplaceTexture,
+                    isProtectedTexture
+                ),
             };
 
             int bakedSlots = 0;
@@ -211,7 +221,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             Material material,
             IReadOnlyCollection<string> animatedProperties,
             Func<Texture2D, string, bool> canReplaceTexture,
-            Func<Texture2D, bool> isFrozenTexture
+            Func<Texture2D, bool> isProtectedTexture
         )
         {
             if (!HasBakeableColorAdjustments(material))
@@ -227,7 +237,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (canReplaceTexture != null && !canReplaceTexture(mainTexture, MainTexProperty))
                 return BakeOutcome.NotApplicable;
 
-            if (HasFrozenMainBakeInput(material, isFrozenTexture))
+            if (isProtectedTexture != null && isProtectedTexture(mainTexture))
+                return BakeOutcome.NotApplicable;
+
+            if (HasProtectedMainBakeInput(material, isProtectedTexture))
                 return BakeOutcome.NotApplicable;
 
             if (HasAnimatedMainBakeInput(animatedProperties))
@@ -236,7 +249,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             var (bake2nd, bake3rd) = SelectOverlayLayersToBake(
                 material,
                 animatedProperties,
-                isFrozenTexture
+                isProtectedTexture
             );
 
             if (!HasNonLayerAdjustments(material) && !bake2nd && !bake3rd)
@@ -291,15 +304,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
         /// <summary>
         /// True when a texture consumed (and cleared) by the main bake — the gradation map or
-        /// the color-adjust mask — is pinned by frozen settings.
+        /// the color-adjust mask — is protected, or is not a Texture2D the bake can safely
+        /// consume (e.g. a CustomRenderTexture whose content changes at runtime).
         /// </summary>
-        public static bool HasFrozenMainBakeInput(
+        public static bool HasProtectedMainBakeInput(
             Material material,
-            Func<Texture2D, bool> isFrozenTexture
+            Func<Texture2D, bool> isProtectedTexture
         )
         {
-            return IsFrozenSlot(material, MainGradationTexProperty, isFrozenTexture)
-                || IsFrozenSlot(material, MainColorAdjustMaskProperty, isFrozenTexture);
+            return IsBlockedInputSlot(material, MainGradationTexProperty, isProtectedTexture)
+                || IsBlockedInputSlot(material, MainColorAdjustMaskProperty, isProtectedTexture);
         }
 
         private static bool HasNonLayerAdjustments(Material material)
@@ -321,7 +335,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         public static (bool Bake2nd, bool Bake3rd) SelectOverlayLayersToBake(
             Material material,
             IReadOnlyCollection<string> animatedProperties,
-            Func<Texture2D, bool> isFrozenTexture
+            Func<Texture2D, bool> isProtectedTexture
         )
         {
             bool layersAllowed =
@@ -333,11 +347,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             bool bake2nd = CanBakeOverlayLayer(
                 material,
                 animatedProperties,
-                isFrozenTexture,
+                isProtectedTexture,
                 Layer2nd
             );
             bool bake3rd =
-                CanBakeOverlayLayer(material, animatedProperties, isFrozenTexture, Layer3rd)
+                CanBakeOverlayLayer(material, animatedProperties, isProtectedTexture, Layer3rd)
                 && (
                     bake2nd
                     || (
@@ -351,19 +365,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
         /// <summary>
         /// True when the layer is enabled and no input that the bake would consume — the layer
-        /// toggle, its parameters, or its textures — is animated, frozen, or driven by shader
-        /// time.
+        /// toggle, its parameters, or its textures — is animated, protected, or driven by
+        /// shader time.
         /// </summary>
         public static bool CanBakeOverlayLayer(
             Material material,
             IReadOnlyCollection<string> animatedProperties,
-            Func<Texture2D, bool> isFrozenTexture,
+            Func<Texture2D, bool> isProtectedTexture,
             string layer
         )
         {
             return IsOverlayLayerEnabled(material, layer)
                 && !HasAnimatedOverlayLayerInput(animatedProperties, layer)
-                && !HasFrozenOverlayLayerInput(material, isFrozenTexture, layer)
+                && !HasProtectedOverlayLayerInput(material, isProtectedTexture, layer)
                 && !HasTimeAnimatedLayer(material, layer);
         }
 
@@ -416,25 +430,35 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             return false;
         }
 
-        private static bool HasFrozenOverlayLayerInput(
+        private static bool HasProtectedOverlayLayerInput(
             Material material,
-            Func<Texture2D, bool> isFrozenTexture,
+            Func<Texture2D, bool> isProtectedTexture,
             string layer
         )
         {
-            return IsFrozenSlot(material, LayerTexProperty(layer), isFrozenTexture)
-                || IsFrozenSlot(material, LayerBlendMaskProperty(layer), isFrozenTexture);
+            return IsBlockedInputSlot(material, LayerTexProperty(layer), isProtectedTexture)
+                || IsBlockedInputSlot(material, LayerBlendMaskProperty(layer), isProtectedTexture);
         }
 
-        private static bool IsFrozenSlot(
+        /// <summary>
+        /// True when the slot's texture must not be consumed by a bake: a non-Texture2D texture
+        /// (e.g. a CustomRenderTexture — live content the bake would freeze to one frame), or a
+        /// Texture2D the protection predicate pins.
+        /// </summary>
+        private static bool IsBlockedInputSlot(
             Material material,
             string property,
-            Func<Texture2D, bool> isFrozenTexture
+            Func<Texture2D, bool> isProtectedTexture
         )
         {
-            return isFrozenTexture != null
-                && GetTexture(material, property) is Texture2D texture
-                && isFrozenTexture(texture);
+            var texture = GetTexture(material, property);
+            if (texture == null)
+                return false;
+
+            if (!(texture is Texture2D texture2D))
+                return true;
+
+            return isProtectedTexture != null && isProtectedTexture(texture2D);
         }
 
         /// <summary>
@@ -589,7 +613,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             Material material,
             IReadOnlyCollection<string> animatedProperties,
             Func<Texture2D, string, bool> canReplaceTexture,
-            Func<Texture2D, bool> isFrozenTexture
+            Func<Texture2D, bool> isProtectedTexture
         )
         {
             if (!HasBakeableAlphaMask(material))
@@ -605,7 +629,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (canReplaceTexture != null && !canReplaceTexture(mainTexture, MainTexProperty))
                 return BakeOutcome.NotApplicable;
 
-            if (IsFrozenSlot(material, AlphaMaskProperty, isFrozenTexture))
+            if (isProtectedTexture != null && isProtectedTexture(mainTexture))
+                return BakeOutcome.NotApplicable;
+
+            if (IsBlockedInputSlot(material, AlphaMaskProperty, isProtectedTexture))
                 return BakeOutcome.NotApplicable;
 
             if (HasAnimatedAlphaMaskBakeInput(animatedProperties))
@@ -690,7 +717,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         private BakeOutcome BakeOutlineTexture(
             Material material,
             IReadOnlyCollection<string> animatedProperties,
-            Func<Texture2D, string, bool> canReplaceTexture
+            Func<Texture2D, string, bool> canReplaceTexture,
+            Func<Texture2D, bool> isProtectedTexture
         )
         {
             if (!HasBakeableOutline(material))
@@ -701,6 +729,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 return BakeOutcome.NotApplicable;
 
             if (canReplaceTexture != null && !canReplaceTexture(outlineTexture, OutlineTexProperty))
+                return BakeOutcome.NotApplicable;
+
+            if (isProtectedTexture != null && isProtectedTexture(outlineTexture))
                 return BakeOutcome.NotApplicable;
 
             if (HasAnimatedOutlineBakeInput(animatedProperties))

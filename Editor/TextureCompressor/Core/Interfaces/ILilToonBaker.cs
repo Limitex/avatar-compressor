@@ -57,16 +57,19 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// baked output is uncompressed, so baking a texture the pipeline will then refuse to
         /// recompress would inflate it. Null means always allowed.
         /// </param>
-        /// <param name="isFrozenTexture">
-        /// Returns true for textures pinned by frozen settings ("ship exactly as configured").
-        /// A bake never consumes (and clears the slot of) a frozen input texture; the affected
-        /// bake or layer is skipped instead. Null means no textures are frozen.
+        /// <param name="isProtectedTexture">
+        /// Returns true for textures the bake must not repaint or drop: pinned by frozen
+        /// settings ("ship exactly as configured"), or referenced by an animation curve — such
+        /// a texture ships with the avatar regardless, so consuming its slot would only stop it
+        /// from being collected and compressed. A protected texture is never used as a bake
+        /// target and never consumed (slot-cleared) as a bake input; the affected bake or layer
+        /// is skipped instead. Null means no textures are protected.
         /// </param>
         LilToonBakeResult Bake(
             Material material,
             IReadOnlyCollection<string> animatedProperties,
             Func<Texture2D, string, bool> canReplaceTexture,
-            Func<Texture2D, bool> isFrozenTexture
+            Func<Texture2D, bool> isProtectedTexture
         );
     }
 }

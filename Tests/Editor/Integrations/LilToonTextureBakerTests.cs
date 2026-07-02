@@ -217,44 +217,58 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region Frozen Input Gates
+        #region Protected Input Gates
 
         [Test]
-        public void HasFrozenMainBakeInput_NullPredicate_ReturnsFalse()
+        public void HasProtectedMainBakeInput_NullPredicate_ReturnsFalse()
         {
             _material.SetTexture("_MainGradationTex", _texture);
-            Assert.IsFalse(LilToonTextureBaker.HasFrozenMainBakeInput(_material, null));
+            Assert.IsFalse(LilToonTextureBaker.HasProtectedMainBakeInput(_material, null));
         }
 
         [Test]
-        public void HasFrozenMainBakeInput_NoInputTextures_ReturnsFalse()
+        public void HasProtectedMainBakeInput_NoInputTextures_ReturnsFalse()
         {
-            Assert.IsFalse(LilToonTextureBaker.HasFrozenMainBakeInput(_material, _ => true));
+            Assert.IsFalse(LilToonTextureBaker.HasProtectedMainBakeInput(_material, _ => true));
         }
 
         [Test]
-        public void HasFrozenMainBakeInput_FrozenGradationTex_ReturnsTrue()
+        public void HasProtectedMainBakeInput_ProtectedGradationTex_ReturnsTrue()
         {
             _material.SetTexture("_MainGradationTex", _texture);
             Assert.IsTrue(
-                LilToonTextureBaker.HasFrozenMainBakeInput(_material, t => t == _texture)
+                LilToonTextureBaker.HasProtectedMainBakeInput(_material, t => t == _texture)
             );
         }
 
         [Test]
-        public void HasFrozenMainBakeInput_FrozenColorAdjustMask_ReturnsTrue()
+        public void HasProtectedMainBakeInput_ProtectedColorAdjustMask_ReturnsTrue()
         {
             _material.SetTexture("_MainColorAdjustMask", _texture);
             Assert.IsTrue(
-                LilToonTextureBaker.HasFrozenMainBakeInput(_material, t => t == _texture)
+                LilToonTextureBaker.HasProtectedMainBakeInput(_material, t => t == _texture)
             );
         }
 
         [Test]
-        public void HasFrozenMainBakeInput_UnfrozenInputTextures_ReturnsFalse()
+        public void HasProtectedMainBakeInput_UnprotectedInputTextures_ReturnsFalse()
         {
             _material.SetTexture("_MainGradationTex", _texture);
-            Assert.IsFalse(LilToonTextureBaker.HasFrozenMainBakeInput(_material, _ => false));
+            Assert.IsFalse(LilToonTextureBaker.HasProtectedMainBakeInput(_material, _ => false));
+        }
+
+        [Test]
+        public void HasProtectedMainBakeInput_RenderTextureInput_ReturnsTrue()
+        {
+            // A non-Texture2D input (e.g. a CustomRenderTexture) must block the bake even with
+            // no protection predicate: its content changes at runtime and cannot be consumed.
+            var renderTexture = new RenderTexture(4, 4, 0);
+            _material.SetTexture("_MainGradationTex", renderTexture);
+
+            Assert.IsTrue(LilToonTextureBaker.HasProtectedMainBakeInput(_material, null));
+
+            _material.SetTexture("_MainGradationTex", null);
+            UnityEngine.Object.DestroyImmediate(renderTexture);
         }
 
         #endregion
@@ -305,7 +319,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CanBakeOverlayLayer_FrozenLayerTexture_ReturnsFalse()
+        public void CanBakeOverlayLayer_ProtectedLayerTexture_ReturnsFalse()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             _material.SetTexture("_Main2ndTex", _texture);
@@ -320,7 +334,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CanBakeOverlayLayer_FrozenBlendMask_ReturnsFalse()
+        public void CanBakeOverlayLayer_ProtectedBlendMask_ReturnsFalse()
         {
             _material.SetFloat("_UseMain3rdTex", 1f);
             _material.SetTexture("_Main3rdBlendMask", _texture);
@@ -335,7 +349,7 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CanBakeOverlayLayer_UnfrozenLayerTexture_ReturnsTrue()
+        public void CanBakeOverlayLayer_UnprotectedLayerTexture_ReturnsTrue()
         {
             _material.SetFloat("_UseMain2ndTex", 1f);
             _material.SetTexture("_Main2ndTex", _texture);
@@ -347,6 +361,26 @@ namespace dev.limitex.avatar.compressor.tests
                     "2nd"
                 )
             );
+        }
+
+        [Test]
+        public void CanBakeOverlayLayer_RenderTextureLayerTexture_ReturnsFalse()
+        {
+            var renderTexture = new RenderTexture(4, 4, 0);
+            _material.SetFloat("_UseMain2ndTex", 1f);
+            _material.SetTexture("_Main2ndTex", renderTexture);
+
+            Assert.IsFalse(
+                LilToonTextureBaker.CanBakeOverlayLayer(
+                    _material,
+                    Array.Empty<string>(),
+                    null,
+                    "2nd"
+                )
+            );
+
+            _material.SetTexture("_Main2ndTex", null);
+            UnityEngine.Object.DestroyImmediate(renderTexture);
         }
 
         [Test]

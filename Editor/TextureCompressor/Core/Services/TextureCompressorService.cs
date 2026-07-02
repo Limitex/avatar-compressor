@@ -401,8 +401,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <summary>
         /// Per-material decisions (lilToon check, no-op detection, animation veto) live in the
         /// baker (see <see cref="ILilToonBaker"/>); this drives it across the build and hands it
-        /// the collector's filter and the frozen pin so excluded/frozen-skipped textures are
-        /// never baked and frozen input textures are never consumed.
+        /// the collector's filter and the protection pin so excluded/frozen-skipped textures are
+        /// never baked and protected textures are never repainted or consumed.
         /// </summary>
         private void BakeLilToonAdjustments(List<Material> clonedMaterials, bool enableLogging)
         {
@@ -415,7 +415,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     material,
                     _animationUsageMap.AnimatedProperties,
                     _collector.WouldProcess,
-                    IsFrozenTexture
+                    IsProtectedTexture
                 );
                 bakedSlots += result.BakedSlots;
                 skippedByAnimation += result.SkippedByAnimation;
@@ -452,6 +452,18 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         + "from the build."
                 );
             }
+        }
+
+        /// <summary>
+        /// Textures the lilToon bake must not repaint or drop: frozen settings are an explicit
+        /// user pin ("ship this texture exactly as configured"), and a texture referenced by an
+        /// animation curve ships with the avatar regardless, so consuming its slot would only
+        /// stop it from being collected and compressed (the same reasoning as the
+        /// <see cref="UnusedSlotPruner"/> restore path).
+        /// </summary>
+        private bool IsProtectedTexture(Texture2D texture)
+        {
+            return IsFrozenTexture(texture) || _animationUsageMap.IsTextureAnimated(texture);
         }
 
         /// <summary>
