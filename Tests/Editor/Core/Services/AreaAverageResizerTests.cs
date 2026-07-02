@@ -567,6 +567,68 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Point Filter
+
+        [Test]
+        public void Resize_PointFiltered_Downscale_PicksNearestTexels()
+        {
+            // 4x4 with a distinct color per 2x2 quadrant; nearest neighbor must
+            // return exact palette colors, never blends.
+            var colors = new Color[16];
+            for (int y = 0; y < 4; y++)
+            {
+                for (int x = 0; x < 4; x++)
+                {
+                    colors[y * 4 + x] =
+                        y < 2
+                            ? (x < 2 ? Color.red : Color.green)
+                            : (x < 2 ? Color.blue : Color.yellow);
+                }
+            }
+            var source = CreateTextureWithPixels(4, 4, colors);
+            source.filterMode = FilterMode.Point;
+
+            var result = _resizer.Resize(source, 2, 2, forceLinearOutput: false);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(FilterMode.Point, result.filterMode);
+            var pixels = result.GetPixels32();
+            Assert.AreEqual(new Color32(255, 0, 0, 255), pixels[0]);
+            Assert.AreEqual(new Color32(0, 255, 0, 255), pixels[1]);
+            Assert.AreEqual(new Color32(0, 0, 255, 255), pixels[2]);
+            Assert.AreEqual(new Color32(255, 255, 0, 255), pixels[3]);
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
+        public void Resize_PointFiltered_Upscale_ReplicatesTexels()
+        {
+            var colors = new[] { Color.red, Color.green, Color.blue, Color.yellow };
+            var source = CreateTextureWithPixels(2, 2, colors);
+            source.filterMode = FilterMode.Point;
+
+            var result = _resizer.Resize(source, 4, 4, forceLinearOutput: false);
+
+            Assert.IsNotNull(result);
+            var pixels = result.GetPixels32();
+            // Each source texel becomes an exact 2x2 block.
+            Assert.AreEqual(new Color32(255, 0, 0, 255), pixels[0]);
+            Assert.AreEqual(new Color32(255, 0, 0, 255), pixels[5]);
+            Assert.AreEqual(new Color32(0, 255, 0, 255), pixels[2]);
+            Assert.AreEqual(new Color32(0, 255, 0, 255), pixels[7]);
+            Assert.AreEqual(new Color32(0, 0, 255, 255), pixels[8]);
+            Assert.AreEqual(new Color32(0, 0, 255, 255), pixels[13]);
+            Assert.AreEqual(new Color32(255, 255, 0, 255), pixels[10]);
+            Assert.AreEqual(new Color32(255, 255, 0, 255), pixels[15]);
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        #endregion
+
         #region Integration with TextureProcessor
 
         [Test]

@@ -34,6 +34,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (pixels == null || pixels.Length == 0)
                 return null;
 
+            if (source.filterMode == FilterMode.Point)
+            {
+                return ResizeNearest(
+                    pixels,
+                    srcW,
+                    srcH,
+                    targetWidth,
+                    targetHeight,
+                    source,
+                    isSRGB,
+                    outputSRGB
+                );
+            }
+
             // Only an exact byte copy when no color-space conversion is needed;
             // an sRGB source with forced-linear output must go through decode.
             if (targetWidth == srcW && targetHeight == srcH && outputSRGB == isSRGB)
@@ -102,6 +116,58 @@ namespace dev.limitex.avatar.compressor.editor.texture
             );
 
             return CreateOutput(result, targetWidth, targetHeight, source, outputSRGB);
+        }
+
+        /// <summary>
+        /// Point-filtered sources are resampled with nearest neighbor to keep
+        /// exact texel values (pixel art): averaging would introduce blended
+        /// colors that the Point filter then displays crisply. Matches the old
+        /// blit path, which sampled with the source's own filter mode.
+        /// </summary>
+        private static Texture2D ResizeNearest(
+            Color32[] pixels,
+            int srcW,
+            int srcH,
+            int dstW,
+            int dstH,
+            Texture2D source,
+            bool isSRGB,
+            bool outputSRGB
+        )
+        {
+            float scaleX = (float)srcW / dstW;
+            float scaleY = (float)srcH / dstH;
+
+            var result = new Color32[dstW * dstH];
+            for (int y = 0; y < dstH; y++)
+            {
+                int sy = Math.Min((int)((y + 0.5f) * scaleY), srcH - 1);
+                int srcRow = sy * srcW;
+                int dstRow = y * dstW;
+                for (int x = 0; x < dstW; x++)
+                {
+                    int sx = Math.Min((int)((x + 0.5f) * scaleX), srcW - 1);
+                    result[dstRow + x] = pixels[srcRow + sx];
+                }
+            }
+
+            if (isSRGB && !outputSRGB)
+            {
+                // Forced-linear output (normal maps) still needs the sRGB decode.
+                var decode = BuildDecodeTable(true);
+                for (int i = 0; i < result.Length; i++)
+                {
+                    var p = result[i];
+                    result[i] = new Color32(
+                        ToByte(decode[p.r]),
+                        ToByte(decode[p.g]),
+                        ToByte(decode[p.b]),
+                        p.a
+                    );
+                }
+            }
+
+            return CreateOutput(result, dstW, dstH, source, outputSRGB);
         }
 
         public struct AxisPlan

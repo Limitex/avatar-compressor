@@ -62,6 +62,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (source == null)
                 return null;
 
+            // Point-filtered sources use nearest neighbor (see CpuAreaAverageResizer);
+            // route them to the CPU path instead of teaching the kernels a third mode.
+            if (source.filterMode == FilterMode.Point)
+            {
+                var nearest = _fallback ?? new CpuAreaAverageResizer();
+                return nearest.Resize(source, targetWidth, targetHeight, forceLinearOutput);
+            }
+
             var result = ResizeOnGpu(source, targetWidth, targetHeight, forceLinearOutput);
             if (result == null && _fallback != null)
             {
