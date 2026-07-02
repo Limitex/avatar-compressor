@@ -38,6 +38,59 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.DoesNotThrow(() => new LilToonTextureBaker());
         }
 
+        // The two sentinels below run only when lilToon is installed, so a broken bridge fails
+        // loudly there instead of every bake test silently Assume-skipping (the absent-path
+        // counterpart is Bake_ReturnsZeroResult_WhenLilToonNotInstalled).
+
+        [Test]
+        public void IsAvailable_True_WhenLilToonInstalledWithGraphicsDevice()
+        {
+            Assume.That(
+                Shader.Find("lilToon"),
+                Is.Not.Null,
+                "lilToon is not installed in this project; skipping the installed-path check."
+            );
+            Assume.That(
+                SystemInfo.graphicsDeviceType,
+                Is.Not.EqualTo(UnityEngine.Rendering.GraphicsDeviceType.Null),
+                "No graphics device; the baker deliberately disables itself."
+            );
+
+            Assert.IsTrue(
+                new LilToonTextureBaker().IsAvailable,
+                "lilToon is installed but the baker is unavailable — the baker shader is "
+                    + "missing, the version constant is unreadable, or this lilToon is newer "
+                    + "than the tested version and the mapping must be re-checked."
+            );
+        }
+
+        [Test]
+        public void BakerShader_DeclaresAllConfiguredProperties_WhenLilToonInstalled()
+        {
+            var shader = Shader.Find("Hidden/ltsother_baker");
+            Assume.That(
+                shader,
+                Is.Not.Null,
+                "lilToon is not installed in this project; skipping the shader tripwire."
+            );
+
+            var declared = new HashSet<string>();
+            int count = UnityEditor.ShaderUtil.GetPropertyCount(shader);
+            for (int i = 0; i < count; i++)
+            {
+                declared.Add(UnityEditor.ShaderUtil.GetPropertyName(shader, i));
+            }
+
+            foreach (var name in LilToonTextureBaker.GetBakerMaterialProperties())
+            {
+                Assert.IsTrue(
+                    declared.Contains(name),
+                    $"The lilToon baker shader no longer declares '{name}'; the property "
+                        + "mapping must be re-checked against this lilToon version."
+                );
+            }
+        }
+
         [Test]
         public void Bake_ReturnsZeroResult_WhenLilToonNotInstalled()
         {
