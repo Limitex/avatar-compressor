@@ -550,7 +550,11 @@ namespace dev.limitex.avatar.compressor.tests
             return texture;
         }
 
-        private static Texture2D CreateLinearTextureWithPixels(int width, int height, Color[] pixels)
+        private static Texture2D CreateLinearTextureWithPixels(
+            int width,
+            int height,
+            Color[] pixels
+        )
         {
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false, linear: true);
             texture.SetPixels(pixels);
