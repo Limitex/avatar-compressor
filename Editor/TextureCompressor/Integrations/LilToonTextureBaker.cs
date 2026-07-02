@@ -213,17 +213,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (HasAnimatedMainBakeInput(animatedProperties))
                 return BakeOutcome.SkippedByAnimation;
 
-            bool bake2nd = CanBakeOverlayLayer(
+            var (bake2nd, bake3rd) = SelectOverlayLayersToBake(
                 material,
                 animatedProperties,
-                isFrozenTexture,
-                Layer2nd
-            );
-            bool bake3rd = CanBakeOverlayLayer(
-                material,
-                animatedProperties,
-                isFrozenTexture,
-                Layer3rd
+                isFrozenTexture
             );
 
             if (!HasNonLayerAdjustments(material) && !bake2nd && !bake3rd)
@@ -297,8 +290,50 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         }
 
         /// <summary>
+        /// Decides which overlay layers the main bake may composite into the main texture.
+        /// </summary>
+        /// <remarks>
+        /// Layers may only be baked while <c>_Color</c> is white and not animated: at runtime
+        /// lilToon applies <c>_Color</c> to the main layer before 2nd/3rd compositing, so baking
+        /// a layer under a non-white tint would tint the layer too. The 3rd layer additionally
+        /// requires the 2nd to be baked as well or permanently absent — baking the 3rd under a
+        /// live 2nd would invert lilToon's main → 2nd → 3rd compositing order.
+        /// </remarks>
+        public static (bool Bake2nd, bool Bake3rd) SelectOverlayLayersToBake(
+            Material material,
+            IReadOnlyCollection<string> animatedProperties,
+            Func<Texture2D, bool> isFrozenTexture
+        )
+        {
+            bool layersAllowed =
+                GetColor(material, MainColorProperty, Color.white) == Color.white
+                && !animatedProperties.Contains(MainColorProperty);
+            if (!layersAllowed)
+                return (false, false);
+
+            bool bake2nd = CanBakeOverlayLayer(
+                material,
+                animatedProperties,
+                isFrozenTexture,
+                Layer2nd
+            );
+            bool bake3rd =
+                CanBakeOverlayLayer(material, animatedProperties, isFrozenTexture, Layer3rd)
+                && (
+                    bake2nd
+                    || (
+                        !IsOverlayLayerEnabled(material, Layer2nd)
+                        && !animatedProperties.Contains(UseLayerProperty(Layer2nd))
+                    )
+                );
+
+            return (bake2nd, bake3rd);
+        }
+
+        /// <summary>
         /// True when the layer is enabled and no input that the bake would consume — the layer
-        /// toggle, its parameters, or its textures — is animated or frozen.
+        /// toggle, its parameters, or its textures — is animated, frozen, or driven by shader
+        /// time.
         /// </summary>
         public static bool CanBakeOverlayLayer(
             Material material,
@@ -309,7 +344,29 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         {
             return IsOverlayLayerEnabled(material, layer)
                 && !HasAnimatedOverlayLayerInput(animatedProperties, layer)
-                && !HasFrozenOverlayLayerInput(material, isFrozenTexture, layer);
+                && !HasFrozenOverlayLayerInput(material, isFrozenTexture, layer)
+                && !HasTimeAnimatedLayer(material, layer);
+        }
+
+        /// <summary>
+        /// True when the layer's appearance changes with shader time and no animation clip — a
+        /// decal flipbook (frame count &gt; 1 at nonzero FPS) or a nonzero UV scroll/rotate.
+        /// Baking such a layer would freeze it at whatever frame the build happened to render;
+        /// lilToon's own baker does not reproduce scroll/rotate either, so any nonzero value
+        /// also makes the bake inexact.
+        /// </summary>
+        public static bool HasTimeAnimatedLayer(Material material, string layer)
+        {
+            Vector4 decalAnimation = GetVector(
+                material,
+                LayerDecalAnimationProperty(layer),
+                new Vector4(1f, 1f, 1f, 30f)
+            );
+            if (decalAnimation.z > 1f && decalAnimation.w != 0f)
+                return true;
+
+            return GetVector(material, LayerScrollRotateProperty(layer), Vector4.zero)
+                != Vector4.zero;
         }
 
         private static bool HasAnimatedOverlayLayerInput(
@@ -362,23 +419,27 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         }
 
         /// <summary>
-        /// True when at least one enabled overlay layer was excluded from the bake because one
-        /// of its inputs is animated — distinguishes an animation skip from a plain no-op when
-        /// the layers were the only bakeable content.
+        /// True when at least one enabled overlay layer was excluded from the bake because an
+        /// animated property (a layer input, or <c>_Color</c> gating all layers) vetoed it —
+        /// distinguishes an animation skip from a plain no-op when the layers were the only
+        /// bakeable content.
         /// </summary>
         private static bool HasAnimationVetoedLayer(
             Material material,
             IReadOnlyCollection<string> animatedProperties
         )
         {
-            return (
-                    IsOverlayLayerEnabled(material, Layer2nd)
-                    && HasAnimatedOverlayLayerInput(animatedProperties, Layer2nd)
-                )
-                || (
-                    IsOverlayLayerEnabled(material, Layer3rd)
-                    && HasAnimatedOverlayLayerInput(animatedProperties, Layer3rd)
-                );
+            bool layer2ndEnabled = IsOverlayLayerEnabled(material, Layer2nd);
+            bool layer3rdEnabled = IsOverlayLayerEnabled(material, Layer3rd);
+
+            if (
+                (layer2ndEnabled || layer3rdEnabled)
+                && animatedProperties.Contains(MainColorProperty)
+            )
+                return true;
+
+            return (layer2ndEnabled && HasAnimatedOverlayLayerInput(animatedProperties, Layer2nd))
+                || (layer3rdEnabled && HasAnimatedOverlayLayerInput(animatedProperties, Layer3rd));
         }
 
         private static void ConfigureMainBaker(
@@ -757,6 +818,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         private static string LayerTexProperty(string layer) => "_Main" + layer + "Tex";
 
         private static string LayerBlendMaskProperty(string layer) => "_Main" + layer + "BlendMask";
+
+        private static string LayerDecalAnimationProperty(string layer) =>
+            "_Main" + layer + "TexDecalAnimation";
+
+        private static string LayerScrollRotateProperty(string layer) =>
+            "_Main" + layer + "Tex_ScrollRotate";
 
         private static float GetFloat(Material material, string name, float fallback)
         {
