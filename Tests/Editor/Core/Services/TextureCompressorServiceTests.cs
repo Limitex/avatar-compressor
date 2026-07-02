@@ -2948,6 +2948,10 @@ namespace dev.limitex.avatar.compressor.tests
                 LastIsProtectedTexture = isProtectedTexture;
                 return default;
             }
+
+            public void DestroyOrphanedBakes(
+                System.Collections.Generic.IEnumerable<Material> materials
+            ) { }
         }
 
         #endregion

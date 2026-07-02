@@ -71,5 +71,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
             Func<Texture2D, string, bool> canReplaceTexture,
             Func<Texture2D, bool> isProtectedTexture
         );
+
+        /// <summary>
+        /// Destroys baked textures no longer referenced by any of the given materials —
+        /// intermediates superseded by a chained bake or by the compressed copy the pipeline
+        /// swapped in. Implementations cache bake outputs, so every consumer must call this
+        /// once the build has finished using them (after animation-reference remapping);
+        /// otherwise full-resolution intermediates stay alive until domain reload.
+        /// </summary>
+        void DestroyOrphanedBakes(IEnumerable<Material> materials);
     }
 }

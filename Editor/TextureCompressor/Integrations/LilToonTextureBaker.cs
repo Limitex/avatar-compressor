@@ -818,43 +818,30 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         /// superseded by a chained bake (the alpha-mask bake replaces a just-baked main) or by
         /// the compressed copy the pipeline swapped in. Full-resolution RGBA32 textures would
         /// otherwise stay alive until domain reload. Call only after the build has finished
-        /// using the bake outputs, including animation-reference remapping.
+        /// using the bake outputs, including animation-reference remapping. Cache values are
+        /// unique (each entry stores a texture freshly created for it), so one pass suffices.
         /// </summary>
         public void DestroyOrphanedBakes(IEnumerable<Material> materials)
         {
             if (_bakeCache.Count == 0)
                 return;
 
-            var orphaned = new HashSet<Texture2D>(
-                FindOrphanedTextures(_bakeCache.Values, materials)
-            );
-            if (orphaned.Count == 0)
-                return;
+            var live = CollectLiveTextures(materials);
+            foreach (var entry in _bakeCache.ToList())
+            {
+                if (entry.Value != null && live.Contains(entry.Value))
+                    continue;
 
-            var orphanedKeys = new List<(Texture2D, string)>();
-            foreach (var kvp in _bakeCache)
-            {
-                if (orphaned.Contains(kvp.Value))
-                    orphanedKeys.Add(kvp.Key);
-            }
-            foreach (var key in orphanedKeys)
-            {
-                _bakeCache.Remove(key);
-            }
-            foreach (var texture in orphaned)
-            {
-                UnityEngine.Object.DestroyImmediate(texture);
+                _bakeCache.Remove(entry.Key);
+                if (entry.Value != null)
+                    UnityEngine.Object.DestroyImmediate(entry.Value);
             }
         }
 
         /// <summary>
-        /// Returns the candidates that are not assigned to any texture slot of the given
-        /// materials.
+        /// Collects every Texture2D assigned to a texture slot of the given materials.
         /// </summary>
-        public static List<Texture2D> FindOrphanedTextures(
-            IReadOnlyCollection<Texture2D> candidates,
-            IEnumerable<Material> materials
-        )
+        public static HashSet<Texture2D> CollectLiveTextures(IEnumerable<Material> materials)
         {
             var live = new HashSet<Texture2D>();
             foreach (var material in materials)
@@ -868,14 +855,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                         live.Add(texture);
                 }
             }
-
-            var orphaned = new List<Texture2D>();
-            foreach (var candidate in candidates)
-            {
-                if (candidate != null && !live.Contains(candidate))
-                    orphaned.Add(candidate);
-            }
-            return orphaned;
+            return live;
         }
 
         private Texture2D BakeTexture(Texture2D source, string key, Action<Material> configure)

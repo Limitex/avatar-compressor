@@ -941,39 +941,29 @@ namespace dev.limitex.avatar.compressor.tests
         #region Orphaned Bake Cleanup
 
         [Test]
-        public void FindOrphanedTextures_UnreferencedTexture_IsOrphaned()
-        {
-            var orphaned = LilToonTextureBaker.FindOrphanedTextures(
-                new[] { _texture },
-                new[] { _material }
-            );
-
-            Assert.AreEqual(1, orphaned.Count);
-            Assert.AreSame(_texture, orphaned[0]);
-        }
-
-        [Test]
-        public void FindOrphanedTextures_ReferencedTexture_IsNotOrphaned()
+        public void CollectLiveTextures_ReferencedTexture_IsLive()
         {
             _material.SetTexture("_MainTex", _texture);
 
-            var orphaned = LilToonTextureBaker.FindOrphanedTextures(
-                new[] { _texture },
-                new[] { _material }
-            );
+            var live = LilToonTextureBaker.CollectLiveTextures(new[] { _material });
 
-            Assert.AreEqual(0, orphaned.Count);
+            Assert.IsTrue(live.Contains(_texture));
         }
 
         [Test]
-        public void FindOrphanedTextures_NullMaterial_IsIgnored()
+        public void CollectLiveTextures_UnreferencedTexture_IsNotLive()
         {
-            var orphaned = LilToonTextureBaker.FindOrphanedTextures(
-                new[] { _texture },
-                new Material[] { null }
-            );
+            var live = LilToonTextureBaker.CollectLiveTextures(new[] { _material });
 
-            Assert.AreEqual(1, orphaned.Count);
+            Assert.IsFalse(live.Contains(_texture));
+        }
+
+        [Test]
+        public void CollectLiveTextures_NullMaterial_IsIgnored()
+        {
+            var live = LilToonTextureBaker.CollectLiveTextures(new Material[] { null });
+
+            Assert.AreEqual(0, live.Count);
         }
 
         [Test]
