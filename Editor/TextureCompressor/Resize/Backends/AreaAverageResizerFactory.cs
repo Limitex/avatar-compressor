@@ -5,24 +5,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
 {
     public static class AreaAverageResizerFactory
     {
-        // GPU availability is static per editor session (reset on domain
-        // reload); cached so the Preferences window doesn't re-probe the
-        // shader asset on every repaint.
-        private static bool? _gpuAvailable;
-
-        private static bool GpuAvailable
-        {
-            get
-            {
-                _gpuAvailable ??=
-                    SystemInfo.supportsComputeShaders
-                    && AssetDatabase.LoadAssetAtPath<ComputeShader>(
-                        GpuAreaAverageResizer.ShaderPath
-                    ) != null;
-                return _gpuAvailable.Value;
-            }
-        }
-
         public static ITextureResizer Create(
             ResizeBackendPreference backendPreference = ResizeBackendPreference.Auto
         )
@@ -47,8 +29,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (backendPreference == ResizeBackendPreference.CPU)
                 return "CPU";
 
-            if (GpuAvailable)
+            if (
+                SystemInfo.supportsComputeShaders
+                && AssetDatabase.LoadAssetAtPath<ComputeShader>(GpuAreaAverageResizer.ShaderPath)
+                    != null
+            )
+            {
                 return "GPU";
+            }
 
             return "CPU (GPU unavailable)";
         }
