@@ -164,9 +164,35 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
             }
 
+            var readable = BlitToReadable(texture, RenderTextureReadWrite.Linear, linearFlag: true);
+            if (readable == null)
+                return new Color[0];
+            try
+            {
+                return readable.GetPixels();
+            }
+            finally
+            {
+                Object.DestroyImmediate(readable);
+            }
+        }
+
+        /// <summary>
+        /// Blits a texture into a temporary RenderTexture with the given color-space
+        /// policy and returns a readable RGBA32 copy (no mip chain, settings not
+        /// copied), or null on failure. Owns the RenderTexture lock, the active-RT
+        /// save/restore, and the GL.sRGBWrite guard. Caller destroys the result.
+        /// </summary>
+        internal static Texture2D BlitToReadable(
+            Texture2D source,
+            RenderTextureReadWrite colorSpace,
+            bool linearFlag
+        )
+        {
             lock (RenderTextureLock)
             {
                 RenderTexture previous = RenderTexture.active;
+                var previousSRGBWrite = GL.sRGBWrite;
                 RenderTexture rt = null;
                 Texture2D readable = null;
                 try
@@ -174,41 +200,46 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     // Use explicit RenderTexture lifecycle instead of GetTemporary/ReleaseTemporary
                     // so that native GPU memory is freed immediately by DestroyImmediate,
                     // rather than being held in Unity's RT pool across calls.
-                    // Force Linear color space so that sRGB textures are decoded to linear
-                    // by the hardware during blit.
                     rt = new RenderTexture(
-                        texture.width,
-                        texture.height,
+                        source.width,
+                        source.height,
                         0,
                         RenderTextureFormat.ARGB32,
-                        RenderTextureReadWrite.Linear
+                        colorSpace
                     );
                     rt.Create();
 
-                    Graphics.Blit(texture, rt);
+                    // The write-side linear->sRGB encode into an sRGB RT is gated by
+                    // GL.sRGBWrite (editor IMGUI leaves it false), not by the RT's
+                    // readWrite flag. Harmless for linear RTs (no conversion).
+                    GL.sRGBWrite = true;
+                    Graphics.Blit(source, rt);
                     RenderTexture.active = rt;
 
                     readable = new Texture2D(
-                        texture.width,
-                        texture.height,
+                        source.width,
+                        source.height,
                         TextureFormat.RGBA32,
-                        texture.mipmapCount > 1,
-                        linear: true
+                        false,
+                        linearFlag
                     );
-                    readable.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
-                    readable.Apply(texture.mipmapCount > 1);
+                    readable.ReadPixels(new Rect(0, 0, source.width, source.height), 0, 0);
+                    readable.Apply(false);
 
-                    return readable.GetPixels();
+                    var result = readable;
+                    readable = null;
+                    return result;
                 }
                 catch (System.Exception e)
                 {
                     Debug.LogWarning(
-                        $"[TextureCompressor] Failed to read pixels from texture '{texture.name}': {e.Message}"
+                        $"[TextureCompressor] Failed to read back texture '{source.name}': {e.Message}"
                     );
-                    return new Color[0];
+                    return null;
                 }
                 finally
                 {
+                    GL.sRGBWrite = previousSRGBWrite;
                     RenderTexture.active = previous;
                     if (readable != null)
                         Object.DestroyImmediate(readable);

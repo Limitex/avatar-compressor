@@ -279,75 +279,27 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             if (texture.isReadable)
             {
-                try
-                {
-                    return texture.GetPixels32();
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning(
-                        $"[TextureCompressor] GetPixels32 failed for '{texture.name}', "
-                            + $"falling back to RenderTexture readback: {e.Message}"
-                    );
-                }
+                return texture.GetPixels32();
             }
 
             var colorSpace = texture.isDataSRGB
                 ? RenderTextureReadWrite.sRGB
                 : RenderTextureReadWrite.Linear;
 
-            RenderTexture rt = null;
-            Texture2D readable = null;
-            var previous = RenderTexture.active;
-            var previousSRGBWrite = GL.sRGBWrite;
+            var readable = TextureProcessor.BlitToReadable(
+                texture,
+                colorSpace,
+                linearFlag: !texture.isDataSRGB
+            );
+            if (readable == null)
+                return null;
             try
             {
-                rt = new RenderTexture(
-                    texture.width,
-                    texture.height,
-                    0,
-                    RenderTextureFormat.ARGB32,
-                    colorSpace
-                );
-                rt.Create();
-                // The write-side linear->sRGB encode into an sRGB RT is gated by
-                // GL.sRGBWrite (editor IMGUI leaves it false), not by the RT's
-                // readWrite flag; without it the round-trip double-decodes and
-                // darkens the output. Harmless for linear RTs (no conversion).
-                GL.sRGBWrite = true;
-                Graphics.Blit(texture, rt);
-                RenderTexture.active = rt;
-
-                readable = new Texture2D(
-                    texture.width,
-                    texture.height,
-                    TextureFormat.RGBA32,
-                    false,
-                    linear: !texture.isDataSRGB
-                );
-                readable.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
-                readable.Apply(false);
-
                 return readable.GetPixels32();
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning(
-                    $"[TextureCompressor] Failed to read pixels from '{texture.name}': {e.Message}"
-                );
-                return null;
             }
             finally
             {
-                GL.sRGBWrite = previousSRGBWrite;
-                RenderTexture.active = previous;
-                if (readable != null)
-                    UnityEngine.Object.DestroyImmediate(readable);
-                if (rt != null)
-                {
-                    rt.Release();
-                    UnityEngine.Object.DestroyImmediate(rt);
-                }
+                UnityEngine.Object.DestroyImmediate(readable);
             }
         }
 
