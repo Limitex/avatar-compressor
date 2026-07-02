@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using dev.limitex.avatar.compressor;
 using dev.limitex.avatar.compressor.editor;
+using dev.limitex.avatar.compressor.editor.texture;
 using dev.limitex.avatar.compressor.editor.texture.ui;
 using NUnit.Framework;
 using UnityEditor;

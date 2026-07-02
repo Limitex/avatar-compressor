@@ -59,8 +59,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private void GeneratePreview(TextureCompressor config)
         {
-            var analysisBackend = AvatarCompressorPreferences.AnalysisBackend;
-            var resizeBackend = AvatarCompressorPreferences.ResizeBackend;
+            var analysisBackend = TextureCompressorPreferences.AnalysisBackend;
+            var resizeBackend = TextureCompressorPreferences.ResizeBackend;
             _previewSettingsHash = PreviewGenerator.ComputeSettingsHash(
                 config,
                 analysisBackend,
@@ -77,8 +77,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             return PreviewGenerator.ComputeSettingsHash(
                     config,
-                    AvatarCompressorPreferences.AnalysisBackend,
-                    AvatarCompressorPreferences.ResizeBackend
+                    TextureCompressorPreferences.AnalysisBackend,
+                    TextureCompressorPreferences.ResizeBackend
                 ) != _previewSettingsHash;
         }
 
