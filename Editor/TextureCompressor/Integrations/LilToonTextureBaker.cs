@@ -61,6 +61,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         private const string Layer2nd = "2nd";
         private const string Layer3rd = "3rd";
 
+        /// <summary>
+        /// lilToon's neutral HSVG (hue 0, saturation/value/gamma 1) — the "no adjustment" value.
+        /// </summary>
         public static readonly Vector4 DefaultHsvg = new Vector4(0f, 1f, 1f, 1f);
 
         private static readonly string[] MainBakeInputProperties =
@@ -271,8 +274,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (material == null || !material.HasProperty(MainTexHsvgProperty))
                 return false;
 
-            return material.GetVector(MainTexHsvgProperty) != DefaultHsvg
-                || GetFloat(material, MainGradationStrengthProperty, 0f) != 0f
+            return HasNonLayerAdjustments(material)
                 || IsOverlayLayerEnabled(material, Layer2nd)
                 || IsOverlayLayerEnabled(material, Layer3rd);
         }
@@ -642,6 +644,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             return BakeOutcome.Baked;
         }
 
+        /// <summary>
+        /// True when the alpha-mask bake applies: mask mode on, a mask assigned, and default
+        /// mask tiling. False when the shader does not declare the alpha-mask properties.
+        /// </summary>
         public static bool HasBakeableAlphaMask(Material material)
         {
             if (
@@ -660,6 +666,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             return IsDefaultTilingOffset(material, AlphaMaskProperty);
         }
 
+        /// <summary>
+        /// True when any input consumed by the alpha-mask bake is driven by animation.
+        /// </summary>
         public static bool HasAnimatedAlphaMaskBakeInput(
             IReadOnlyCollection<string> animatedProperties
         )
@@ -718,6 +727,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             return BakeOutcome.Baked;
         }
 
+        /// <summary>
+        /// True when the outline bake applies: an outline texture with a non-default tone
+        /// correction and default tiling.
+        /// </summary>
         public static bool HasBakeableOutline(Material material)
         {
             return material != null
@@ -728,6 +741,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 && IsDefaultTilingOffset(material, OutlineTexProperty);
         }
 
+        /// <summary>
+        /// True when any input consumed by the outline bake is driven by animation.
+        /// </summary>
         public static bool HasAnimatedOutlineBakeInput(
             IReadOnlyCollection<string> animatedProperties
         )
@@ -882,7 +898,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         {
             var texture = GetTexture(material, name);
             key.Append('|').Append(texture != null ? texture.GetInstanceID() : 0);
-            if (texture != null && material.HasProperty(name))
+            if (texture != null)
             {
                 key.Append('@').Append(material.GetTextureScale(name).ToString("R"));
                 key.Append('+').Append(material.GetTextureOffset(name).ToString("R"));
@@ -938,18 +954,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
         private static int? GetLilToonVersion()
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                var type = assembly.GetType(LilConstantsTypeName, throwOnError: false);
-                if (type == null)
-                    continue;
-                var field = type.GetField(
-                    VersionFieldName,
-                    BindingFlags.Public | BindingFlags.Static
-                );
-                if (field?.GetValue(null) is int v)
-                    return v;
-            }
+            var type = OptionalStaticMethod.FindType(LilConstantsTypeName);
+            var field = type?.GetField(VersionFieldName, BindingFlags.Public | BindingFlags.Static);
+            if (field?.GetValue(null) is int version)
+                return version;
             return null;
         }
     }
