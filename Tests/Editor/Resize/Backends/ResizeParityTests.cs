@@ -142,12 +142,66 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Parity_NonReadableSource_MatchesWithinTolerance()
         {
-            var source = Track(CreateCheckerboardTexture(64, 64));
+            // Mid-tone colors: 0 and 1 are fixed points of the sRGB curve and
+            // would hide color-space errors in the non-readable readback path.
+            var midGrayA = new Color(96f / 255f, 96f / 255f, 96f / 255f, 1f);
+            var midGrayB = new Color(160f / 255f, 160f / 255f, 160f / 255f, 1f);
+            var source = Track(CreateCheckerboardTexture(64, 64, midGrayA, midGrayB));
             source.Apply(false, true);
             Assert.IsFalse(source.isReadable, "sanity: source must be non-readable");
 
             var cpuResult = Track(_cpuResizer.Resize(source, 16, 16, forceLinearOutput: false));
             var gpuResult = Track(_gpuResizer.Resize(source, 16, 16, forceLinearOutput: false));
+
+            AssertPixelsParity(cpuResult, gpuResult);
+        }
+
+        [Test]
+        public void Parity_VerticalGradient_NonIntegralDownscale_MatchesWithinTolerance()
+        {
+            // Exercises the vertical pass's fractional box weights against the
+            // CPU plan; x-only patterns are constant per column and cannot.
+            var source = Track(CreateGradientTexture(48, 48, vertical: true));
+
+            var cpuResult = Track(_cpuResizer.Resize(source, 20, 20, forceLinearOutput: false));
+            var gpuResult = Track(_gpuResizer.Resize(source, 20, 20, forceLinearOutput: false));
+
+            AssertPixelsParity(cpuResult, gpuResult);
+        }
+
+        [Test]
+        public void Parity_VerticalGradient_Upscale_MatchesWithinTolerance()
+        {
+            // Exercises the vertical pass's bilinear lerp factor.
+            var source = Track(CreateGradientTexture(20, 20, vertical: true));
+
+            var cpuResult = Track(_cpuResizer.Resize(source, 48, 48, forceLinearOutput: false));
+            var gpuResult = Track(_gpuResizer.Resize(source, 48, 48, forceLinearOutput: false));
+
+            AssertPixelsParity(cpuResult, gpuResult);
+        }
+
+        [Test]
+        public void Parity_HorizontalGradient_NonIntegralDownscale_MatchesWithinTolerance()
+        {
+            var source = Track(CreateGradientTexture(48, 48));
+
+            var cpuResult = Track(_cpuResizer.Resize(source, 20, 20, forceLinearOutput: false));
+            var gpuResult = Track(_gpuResizer.Resize(source, 20, 20, forceLinearOutput: false));
+
+            AssertPixelsParity(cpuResult, gpuResult);
+        }
+
+        [Test]
+        public void Parity_SameSize_MatchesWithinTolerance()
+        {
+            // The fixture's GPU resizer has no fallback, so this runs the full
+            // compute pipeline at scale 1.0 against the CPU byte copy.
+            var midGray = new Color(128f / 255f, 128f / 255f, 128f / 255f, 1f);
+            var source = Track(CreateSolidTexture(64, 64, midGray));
+
+            var cpuResult = Track(_cpuResizer.Resize(source, 64, 64, forceLinearOutput: false));
+            var gpuResult = Track(_gpuResizer.Resize(source, 64, 64, forceLinearOutput: false));
 
             AssertPixelsParity(cpuResult, gpuResult);
         }
@@ -180,6 +234,22 @@ namespace dev.limitex.avatar.compressor.tests
             var cpuResult = Track(_cpuResizer.Resize(source, 16, 16, forceLinearOutput: false));
             var gpuResult = Track(_gpuResizer.Resize(source, 16, 16, forceLinearOutput: false));
 
+            AssertPixelsParity(cpuResult, gpuResult);
+        }
+
+        [Test]
+        public void Parity_SRGBSource_ForcedLinearOutput_MatchesWithinTolerance()
+        {
+            // An sRGB-flagged texture bound to a normal-map slot: both backends
+            // must decode to linear, skip the re-encode, and flag the output
+            // linear (AssertPixelsParity checks the flag too).
+            var flatNormal = new Color(0.5f, 0.5f, 1f, 1f);
+            var source = Track(CreateSolidTexture(64, 64, flatNormal));
+
+            var cpuResult = Track(_cpuResizer.Resize(source, 16, 16, forceLinearOutput: true));
+            var gpuResult = Track(_gpuResizer.Resize(source, 16, 16, forceLinearOutput: true));
+
+            Assert.IsFalse(cpuResult.isDataSRGB, "forced-linear output must be linear-flagged");
             AssertPixelsParity(cpuResult, gpuResult);
         }
 
@@ -258,7 +328,7 @@ namespace dev.limitex.avatar.compressor.tests
             return texture;
         }
 
-        private static Texture2D CreateGradientTexture(int width, int height)
+        private static Texture2D CreateGradientTexture(int width, int height, bool vertical = false)
         {
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
             var pixels = new Color[width * height];
@@ -266,7 +336,7 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 for (int x = 0; x < width; x++)
                 {
-                    float t = (float)x / (width - 1);
+                    float t = vertical ? (float)y / (height - 1) : (float)x / (width - 1);
                     pixels[y * width + x] = new Color(t, 1f - t, 0.5f, 1f);
                 }
             }
@@ -277,13 +347,23 @@ namespace dev.limitex.avatar.compressor.tests
 
         private static Texture2D CreateCheckerboardTexture(int width, int height)
         {
+            return CreateCheckerboardTexture(width, height, Color.white, Color.black);
+        }
+
+        private static Texture2D CreateCheckerboardTexture(
+            int width,
+            int height,
+            Color even,
+            Color odd
+        )
+        {
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
             var pixels = new Color[width * height];
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    pixels[y * width + x] = ((x + y) % 2 == 0) ? Color.white : Color.black;
+                    pixels[y * width + x] = ((x + y) % 2 == 0) ? even : odd;
                 }
             }
             texture.SetPixels(pixels);
