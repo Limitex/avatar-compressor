@@ -699,10 +699,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (outlineTexture == null)
                 return BakeOutcome.NotApplicable;
 
-            if (
-                canReplaceTexture != null
-                && !canReplaceTexture(outlineTexture, OutlineTexProperty)
-            )
+            if (canReplaceTexture != null && !canReplaceTexture(outlineTexture, OutlineTexProperty))
                 return BakeOutcome.NotApplicable;
 
             if (HasAnimatedOutlineBakeInput(animatedProperties))

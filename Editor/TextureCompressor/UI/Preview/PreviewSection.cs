@@ -149,9 +149,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     config.DetectUnusedTextures && config.BakeLilToonTextures
                         ? "Unused texture slot removal and lilToon texture baking run only "
                             + "during the NDMF build and are"
-                        : config.DetectUnusedTextures
-                            ? "Unused texture slot removal runs only during the NDMF build and is"
-                            : "lilToon texture baking runs only during the NDMF build and is";
+                    : config.DetectUnusedTextures
+                        ? "Unused texture slot removal runs only during the NDMF build and is"
+                    : "lilToon texture baking runs only during the NDMF build and is";
 
                 EditorGUILayout.HelpBox(
                     features

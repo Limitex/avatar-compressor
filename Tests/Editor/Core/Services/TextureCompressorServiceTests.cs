@@ -2928,11 +2928,7 @@ namespace dev.limitex.avatar.compressor.tests
                 private set;
             }
 
-            public System.Func<Texture2D, string, bool> LastCanReplaceTexture
-            {
-                get;
-                private set;
-            }
+            public System.Func<Texture2D, string, bool> LastCanReplaceTexture { get; private set; }
 
             public System.Func<Texture2D, bool> LastIsFrozenTexture { get; private set; }
 
