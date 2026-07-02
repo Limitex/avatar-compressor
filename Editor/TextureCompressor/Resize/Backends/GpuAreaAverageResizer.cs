@@ -70,6 +70,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 return nearest.Resize(source, targetWidth, targetHeight, forceLinearOutput);
             }
 
+            // A same-size target only needs a readable copy; the CPU path is an
+            // exact byte copy, while this pipeline would spend two full-resolution
+            // float RTs, two dispatches, and a readback on it. Common case: the
+            // service resizes every texture, including "recompress format only".
+            if (targetWidth == source.width && targetHeight == source.height && _fallback != null)
+            {
+                return _fallback.Resize(source, targetWidth, targetHeight, forceLinearOutput);
+            }
+
             var result = ResizeOnGpu(source, targetWidth, targetHeight, forceLinearOutput);
             if (result == null && _fallback != null)
             {
