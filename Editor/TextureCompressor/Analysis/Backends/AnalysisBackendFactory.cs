@@ -82,7 +82,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Returns a display name indicating which backend would be selected
+        /// Returns a display name indicating which backend Create would select
         /// given the current system capabilities and the backend preference.
         /// </summary>
         public static string ResolveBackendName(AnalysisBackendPreference backendPreference)
@@ -93,7 +93,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (
                 SystemInfo.supportsComputeShaders
                 && SystemInfo.supportsAsyncGPUReadback
-                && TryLoadShader(out _)
+                && TryLoadShader(out var shader)
+                // HasKernel is false for compile-failed assets, which still load
+                // non-null and would make Create's ctor throw and fall back to
+                // CPU. One sentinel kernel catches that class without duplicating
+                // the full required-kernel list from GpuAnalysisBackend.
+                && shader.HasKernel("Preprocess")
             )
             {
                 return "GPU";

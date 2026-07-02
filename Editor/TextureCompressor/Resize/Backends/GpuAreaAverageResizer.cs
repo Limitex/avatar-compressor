@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace dev.limitex.avatar.compressor.editor.texture
 {
@@ -8,6 +9,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
         internal const string ShaderPath =
             "Packages/dev.limitex.avatar-compressor/"
             + "Editor/TextureCompressor/Resize/Shaders/AreaAverageResize.compute";
+
+        private const string KernelHorizontalName = "AreaAverageHorizontal";
+        private const string KernelVerticalName = "AreaAverageVertical";
 
         private const int ThreadGroupSize = 16;
 
@@ -19,9 +23,46 @@ namespace dev.limitex.avatar.compressor.editor.texture
         public GpuAreaAverageResizer(ComputeShader shader, ITextureResizer fallback = null)
         {
             _shader = shader;
-            _kernelHorizontal = shader.FindKernel("AreaAverageHorizontal");
-            _kernelVertical = shader.FindKernel("AreaAverageVertical");
+            _kernelHorizontal = shader.FindKernel(KernelHorizontalName);
+            _kernelVertical = shader.FindKernel(KernelVerticalName);
             _fallback = fallback;
+        }
+
+        /// <summary>
+        /// Non-throwing availability probe shared by the factory's Create and
+        /// ResolveBackendName, so the preferences UI reports the backend Create
+        /// actually selects. HasKernel is false for compile-failed shader
+        /// assets, which still load as non-null.
+        /// </summary>
+        internal static bool IsGpuUsable(out ComputeShader shader)
+        {
+            shader = null;
+
+            if (!SystemInfo.supportsComputeShaders || IsUnreliableComputeRenderer())
+                return false;
+
+            shader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderPath);
+            return shader != null
+                && shader.HasKernel(KernelHorizontalName)
+                && shader.HasKernel(KernelVerticalName);
+        }
+
+        /// <summary>
+        /// Software rasterizers advertise compute support but produce unreliable
+        /// results, and wrong-but-non-null GPU output cannot be caught by the
+        /// null-triggered CPU fallback. Bare "Mesa" is deliberately not matched —
+        /// real Linux GPUs run Mesa drivers; only known software implementations
+        /// are listed.
+        /// </summary>
+        private static bool IsUnreliableComputeRenderer()
+        {
+            if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.OpenGLCore)
+                return false;
+
+            var deviceName = SystemInfo.graphicsDeviceName ?? "";
+            return deviceName.Contains("llvmpipe")
+                || deviceName.Contains("softpipe")
+                || deviceName.Contains("SwiftShader");
         }
 
         public static bool TryCreate(
@@ -31,11 +72,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             resizer = null;
 
-            if (!SystemInfo.supportsComputeShaders)
-                return false;
-
-            var shader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderPath);
-            if (shader == null)
+            if (!IsGpuUsable(out var shader))
                 return false;
 
             try

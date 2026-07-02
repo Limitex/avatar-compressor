@@ -1,6 +1,3 @@
-using UnityEditor;
-using UnityEngine;
-
 namespace dev.limitex.avatar.compressor.editor.texture
 {
     public static class AreaAverageResizerFactory
@@ -21,7 +18,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Returns a display name indicating which backend would be selected
+        /// Returns a display name indicating which backend Create would select
         /// given the current system capabilities and the backend preference.
         /// </summary>
         public static string ResolveBackendName(ResizeBackendPreference backendPreference)
@@ -29,16 +26,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (backendPreference == ResizeBackendPreference.CPU)
                 return "CPU";
 
-            if (
-                SystemInfo.supportsComputeShaders
-                && AssetDatabase.LoadAssetAtPath<ComputeShader>(GpuAreaAverageResizer.ShaderPath)
-                    != null
-            )
-            {
-                return "GPU";
-            }
-
-            return "CPU (GPU unavailable)";
+            return GpuAreaAverageResizer.IsGpuUsable(out _) ? "GPU" : "CPU (GPU unavailable)";
         }
     }
 }

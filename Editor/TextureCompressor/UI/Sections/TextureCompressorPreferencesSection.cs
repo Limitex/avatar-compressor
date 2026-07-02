@@ -27,12 +27,15 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         public void Draw()
         {
+            // Change checks keep EditorPrefs writes off the repaint path.
+            EditorGUI.BeginChangeCheck();
             var analysisBackend = (AnalysisBackendPreference)
                 EditorGUILayout.EnumPopup(
                     AnalysisBackendContent,
                     TextureCompressorPreferences.AnalysisBackend
                 );
-            TextureCompressorPreferences.AnalysisBackend = analysisBackend;
+            if (EditorGUI.EndChangeCheck())
+                TextureCompressorPreferences.AnalysisBackend = analysisBackend;
             DrawBackendHelpBox(
                 analysisBackend == AnalysisBackendPreference.CPU,
                 AnalysisBackendFactory.ResolveBackendName(analysisBackend),
@@ -41,12 +44,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             EditorGUILayout.Space(4);
 
+            EditorGUI.BeginChangeCheck();
             var resizeBackend = (ResizeBackendPreference)
                 EditorGUILayout.EnumPopup(
                     ResizeBackendContent,
                     TextureCompressorPreferences.ResizeBackend
                 );
-            TextureCompressorPreferences.ResizeBackend = resizeBackend;
+            if (EditorGUI.EndChangeCheck())
+                TextureCompressorPreferences.ResizeBackend = resizeBackend;
             DrawBackendHelpBox(
                 resizeBackend == ResizeBackendPreference.CPU,
                 AreaAverageResizerFactory.ResolveBackendName(resizeBackend),
