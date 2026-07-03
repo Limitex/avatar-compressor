@@ -9,10 +9,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             if (
                 backendPreference != ResizeBackendPreference.CPU
-                && GpuAreaAverageResizer.TryCreate(out var gpuResizer, new CpuAreaAverageResizer())
+                && GpuAreaAverageResizer.IsGpuUsable(out var shader)
             )
             {
-                return gpuResizer;
+                return new GpuAreaAverageResizer(shader, new CpuAreaAverageResizer());
             }
 
             return new CpuAreaAverageResizer();

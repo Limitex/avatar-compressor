@@ -56,35 +56,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Creates the resizer when the GPU is usable (compute support, no
-        /// software rasterizer, shader compiled). Never throws; logs and
-        /// returns false on initialization failure.
-        /// </summary>
-        public static bool TryCreate(
-            out GpuAreaAverageResizer resizer,
-            ITextureResizer fallback = null
-        )
-        {
-            resizer = null;
-
-            if (!IsGpuUsable(out var shader))
-                return false;
-
-            try
-            {
-                resizer = new GpuAreaAverageResizer(shader, fallback);
-                return true;
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogWarning(
-                    $"[TextureCompressor] GPU area average resizer initialization failed: {e.Message}"
-                );
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Resizes on the GPU; a detectable per-texture failure (RT allocation,
         /// exception) silently falls back to the injected CPU resizer when one
         /// was provided, so callers get a result rather than null.
