@@ -27,6 +27,10 @@ namespace dev.limitex.avatar.compressor.editor
         {
             lock (RenderTextureLock)
             {
+                // Graphics.Blit changes RenderTexture.active, so the caller's
+                // active RT must be captured before the blit, not inside
+                // ReadbackToTexture2D (which would capture — and restore — rt).
+                var previousActive = RenderTexture.active;
                 var previousSRGBWrite = GL.sRGBWrite;
                 RenderTexture rt = null;
                 try
@@ -67,6 +71,7 @@ namespace dev.limitex.avatar.compressor.editor
                 finally
                 {
                     GL.sRGBWrite = previousSRGBWrite;
+                    RenderTexture.active = previousActive;
                     if (rt != null)
                     {
                         rt.Release();
