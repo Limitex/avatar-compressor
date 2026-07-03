@@ -33,7 +33,9 @@ namespace dev.limitex.avatar.compressor.tests
                 Assert.Ignore("Compute shader asset not found (not running inside Unity package)");
             }
 
-            _gpuResizer = new GpuAreaAverageResizer(shader);
+            // No fallback: every CPU delegation is disabled so parity tests
+            // exercise the full GPU pipeline, including at scale 1.0.
+            _gpuResizer = new GpuAreaAverageResizer(shader, fallback: null);
         }
 
         [TearDown]

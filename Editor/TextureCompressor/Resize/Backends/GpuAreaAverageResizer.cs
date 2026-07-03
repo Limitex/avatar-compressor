@@ -24,7 +24,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private readonly int _kernelVertical;
         private readonly ITextureResizer _fallback;
 
-        public GpuAreaAverageResizer(ComputeShader shader, ITextureResizer fallback = null)
+        /// <summary>
+        /// The fallback handles Point-filtered and same-size sources and
+        /// per-texture GPU failures. Passing null is a test-only seam: it
+        /// disables every CPU delegation so the full GPU pipeline runs even
+        /// at scale 1.0, and failures surface as null results.
+        /// </summary>
+        public GpuAreaAverageResizer(ComputeShader shader, ITextureResizer fallback)
         {
             _shader = shader;
             _kernelHorizontal = shader.FindKernel(KernelHorizontalName);
@@ -74,8 +80,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // route them to the CPU path instead of teaching the kernels a third mode.
             if (source.filterMode == FilterMode.Point)
             {
-                var nearest = _fallback ?? new CpuAreaAverageResizer();
-                return nearest.Resize(source, targetWidth, targetHeight, forceLinearOutput);
+                return _fallback?.Resize(source, targetWidth, targetHeight, forceLinearOutput);
             }
 
             // A same-size target only needs a readable copy; the CPU path is an
