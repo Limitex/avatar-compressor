@@ -119,8 +119,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             RenderTexture intermediateRT = null;
             RenderTexture outputRT = null;
-            Texture2D result = null;
-            var previous = RenderTexture.active;
 
             try
             {
@@ -185,22 +183,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     1
                 );
 
-                RenderTexture.active = outputRT;
-                result = new Texture2D(
+                var result = TextureReadback.ReadbackToTexture2D(
+                    outputRT,
                     targetWidth,
                     targetHeight,
-                    TextureFormat.RGBA32,
-                    source.mipmapCount > 1,
+                    mipChain: source.mipmapCount > 1,
                     linear: !outputSRGB
                 );
-                result.ReadPixels(new Rect(0, 0, targetWidth, targetHeight), 0, 0);
-                result.Apply(source.mipmapCount > 1);
-
-                TextureProcessor.CopyTextureSettings(source, result);
-
-                var output = result;
-                result = null;
-                return output;
+                TextureReadback.CopyTextureSettings(source, result);
+                return result;
             }
             catch (System.Exception e)
             {
@@ -211,9 +202,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
             }
             finally
             {
-                RenderTexture.active = previous;
-                if (result != null)
-                    Object.DestroyImmediate(result);
                 DestroyRT(intermediateRT);
                 DestroyRT(outputRT);
             }

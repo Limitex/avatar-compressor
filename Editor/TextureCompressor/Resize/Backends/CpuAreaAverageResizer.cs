@@ -412,7 +412,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 ? RenderTextureReadWrite.sRGB
                 : RenderTextureReadWrite.Linear;
 
-            var readable = TextureProcessor.BlitToReadable(
+            var readable = TextureReadback.BlitToReadable(
                 texture,
                 colorSpace,
                 linearFlag: !texture.isDataSRGB
@@ -446,7 +446,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             );
             output.SetPixels32(pixels);
             output.Apply(source.mipmapCount > 1);
-            TextureProcessor.CopyTextureSettings(source, output);
+            TextureReadback.CopyTextureSettings(source, output);
             return output;
         }
     }
