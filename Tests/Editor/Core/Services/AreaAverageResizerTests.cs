@@ -514,6 +514,46 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void Resize_TallNonIntegralRatio_StreamsRowsCorrectly()
+        {
+            // 1024 -> 333 output rows span several parallel row chunks with a
+            // fractional tap window; a mis-seamed chunk boundary or stale ring
+            // row shows up as a wrong row value.
+            const int width = 8;
+            const int srcH = 1024;
+            const int dstH = 333;
+            var pixels = new Color[width * srcH];
+            for (int y = 0; y < srcH; y++)
+            {
+                float v = (float)y / (srcH - 1);
+                for (int x = 0; x < width; x++)
+                    pixels[y * width + x] = new Color(v, v, v, 1f);
+            }
+            var source = CreateLinearTextureWithPixels(width, srcH, pixels);
+
+            var result = _resizer.Resize(source, width, dstH, forceLinearOutput: false);
+
+            Assert.IsNotNull(result);
+            var resultPixels = result.GetPixels32();
+            float scale = (float)srcH / dstH;
+            for (int i = 0; i < dstH; i++)
+            {
+                // Box-averaging a linear gradient yields the value at the
+                // window's coverage centroid.
+                float expected = ((i + 0.5f) * scale - 0.5f) / (srcH - 1);
+                float actual = resultPixels[i * width + width / 2].r / 255f;
+                Assert.That(
+                    actual,
+                    Is.EqualTo(expected).Within(0.01f),
+                    $"Output row {i} deviates from the gradient centroid"
+                );
+            }
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
         public void Resize_PreservesMipmaps()
         {
             var source = new Texture2D(64, 64, TextureFormat.RGBA32, true);

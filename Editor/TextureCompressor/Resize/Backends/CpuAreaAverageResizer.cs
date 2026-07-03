@@ -63,63 +63,110 @@ namespace dev.limitex.avatar.compressor.editor.texture
             var planX = BuildPlan(srcW, targetWidth);
             var planY = BuildPlan(srcH, targetHeight);
 
-            var intermediate = new Vector4[targetWidth * srcH];
-
-            Parallel.For(
-                0,
-                srcH,
-                y =>
-                {
-                    int srcRow = y * srcW;
-                    int dstRow = y * targetWidth;
-                    for (int i = 0; i < targetWidth; i++)
-                    {
-                        var sum = Vector4.zero;
-                        int off = planX.Offset[i];
-                        int count = planX.Len[i];
-                        int s = planX.Start[i];
-
-                        for (int t = 0; t < count; t++)
-                        {
-                            var p = pixels[srcRow + s + t];
-                            float w = planX.Weights[off + t];
-                            sum.x += decode[p.r] * w;
-                            sum.y += decode[p.g] * w;
-                            sum.z += decode[p.b] * w;
-                            sum.w += (p.a / 255f) * w;
-                        }
-
-                        intermediate[dstRow + i] = sum;
-                    }
-                }
-            );
-
             var result = new Color32[targetWidth * targetHeight];
 
+            // Output rows are processed in contiguous chunks, each streaming
+            // the horizontal pass through a ring buffer that holds only one
+            // vertical tap window. Peak memory is O(targetWidth * tap window)
+            // instead of the full-image O(targetWidth * srcH) intermediate,
+            // which exceeded the 2 GiB managed-array limit for 16K sources.
+            // Chunks re-run the horizontal pass only for the few tap-window
+            // rows they share with a neighbour. Per-pixel tap order is
+            // unchanged, so the output is bit-identical to the two-pass form.
+            int ringRows = 0;
+            for (int i = 0; i < targetHeight; i++)
+                ringRows = Math.Max(ringRows, planY.Len[i]);
+
+            int chunkCount = Math.Min(Environment.ProcessorCount, targetHeight);
+
             Parallel.For(
                 0,
-                targetWidth,
-                x =>
+                chunkCount,
+                c =>
                 {
-                    int dstN = planY.Start.Length;
-                    for (int i = 0; i < dstN; i++)
+                    int rowStart = (int)((long)targetHeight * c / chunkCount);
+                    int rowEnd = (int)((long)targetHeight * (c + 1) / chunkCount);
+                    var ring = new Vector4[ringRows * targetWidth];
+                    int nextSourceRow = planY.Start[rowStart];
+
+                    for (int i = rowStart; i < rowEnd; i++)
                     {
-                        var sum = Vector4.zero;
                         int off = planY.Offset[i];
                         int count = planY.Len[i];
                         int s = planY.Start[i];
 
-                        for (int t = 0; t < count; t++)
+                        for (int y = Math.Max(nextSourceRow, s); y < s + count; y++)
                         {
-                            sum += intermediate[(s + t) * targetWidth + x] * planY.Weights[off + t];
+                            ResampleRowHorizontally(
+                                pixels,
+                                srcW,
+                                y,
+                                decode,
+                                planX,
+                                ring,
+                                ringRows,
+                                targetWidth
+                            );
                         }
+                        nextSourceRow = Math.Max(nextSourceRow, s + count);
 
-                        result[i * targetWidth + x] = EncodePixel(sum, outputSRGB);
+                        int dstRow = i * targetWidth;
+                        for (int x = 0; x < targetWidth; x++)
+                        {
+                            var sum = Vector4.zero;
+                            for (int t = 0; t < count; t++)
+                            {
+                                sum +=
+                                    ring[((s + t) % ringRows) * targetWidth + x]
+                                    * planY.Weights[off + t];
+                            }
+
+                            result[dstRow + x] = EncodePixel(sum, outputSRGB);
+                        }
                     }
                 }
             );
 
             return CreateOutput(result, targetWidth, targetHeight, source, outputSRGB);
+        }
+
+        /// <summary>
+        /// Horizontal pass for one source row: box/bilinear taps from planX,
+        /// decoded into the averaging space, written to the row's ring slot
+        /// (source row index modulo the ring height).
+        /// </summary>
+        private static void ResampleRowHorizontally(
+            Color32[] pixels,
+            int srcW,
+            int y,
+            float[] decode,
+            AxisPlan planX,
+            Vector4[] ring,
+            int ringRows,
+            int targetWidth
+        )
+        {
+            int srcRow = y * srcW;
+            int dstRow = (y % ringRows) * targetWidth;
+            for (int i = 0; i < targetWidth; i++)
+            {
+                var sum = Vector4.zero;
+                int off = planX.Offset[i];
+                int count = planX.Len[i];
+                int s = planX.Start[i];
+
+                for (int t = 0; t < count; t++)
+                {
+                    var p = pixels[srcRow + s + t];
+                    float w = planX.Weights[off + t];
+                    sum.x += decode[p.r] * w;
+                    sum.y += decode[p.g] * w;
+                    sum.z += decode[p.b] * w;
+                    sum.w += (p.a / 255f) * w;
+                }
+
+                ring[dstRow + i] = sum;
+            }
         }
 
         /// <summary>

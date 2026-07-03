@@ -193,6 +193,19 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void Parity_TallNonIntegralDownscale_MatchesWithinTolerance()
+        {
+            // Enough output rows to span several of the CPU backend's parallel
+            // row chunks, with a fractional tap window crossing every boundary.
+            var source = Track(CreateGradientTexture(64, 1024, vertical: true));
+
+            var cpuResult = Track(_cpuResizer.Resize(source, 48, 333, forceLinearOutput: false));
+            var gpuResult = Track(_gpuResizer.Resize(source, 48, 333, forceLinearOutput: false));
+
+            AssertPixelsParity(cpuResult, gpuResult);
+        }
+
+        [Test]
         public void Parity_SameSize_MatchesWithinTolerance()
         {
             // The fixture's GPU resizer has no fallback, so this runs the full
