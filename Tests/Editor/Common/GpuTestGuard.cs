@@ -1,3 +1,4 @@
+using dev.limitex.avatar.compressor.editor;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -12,8 +13,9 @@ namespace dev.limitex.avatar.compressor.tests
     {
         /// <summary>
         /// Skips the running test unless real GPU hardware with compute
-        /// shader support is available. Matching bare "Mesa" can skip real
-        /// GPUs too; over-skipping is safe for parity tests.
+        /// shader support is available. On top of the production denylist,
+        /// bare "Mesa" is matched too: that can skip real GPUs, but
+        /// over-skipping is safe for parity tests.
         /// </summary>
         public static void RequireRealGpu()
         {
@@ -22,20 +24,15 @@ namespace dev.limitex.avatar.compressor.tests
                 Assert.Ignore("Compute shaders not supported on this platform");
             }
 
-            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.OpenGLCore)
+            var deviceName = SystemInfo.graphicsDeviceName ?? "";
+            bool bareMesa =
+                SystemInfo.graphicsDeviceType == GraphicsDeviceType.OpenGLCore
+                && deviceName.Contains("Mesa");
+            if (ComputeShaderSupport.IsUnreliableComputeRenderer() || bareMesa)
             {
-                var deviceName = SystemInfo.graphicsDeviceName ?? "";
-                if (
-                    deviceName.Contains("llvmpipe")
-                    || deviceName.Contains("softpipe")
-                    || deviceName.Contains("SwiftShader")
-                    || deviceName.Contains("Mesa")
-                )
-                {
-                    Assert.Ignore(
-                        $"Software renderer detected ({deviceName}); requires real GPU hardware"
-                    );
-                }
+                Assert.Ignore(
+                    $"Software renderer detected ({deviceName}); requires real GPU hardware"
+                );
             }
         }
     }

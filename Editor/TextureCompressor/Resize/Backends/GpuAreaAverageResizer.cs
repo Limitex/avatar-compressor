@@ -1,6 +1,4 @@
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace dev.limitex.avatar.compressor.editor.texture
 {
@@ -37,38 +35,24 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// <summary>
         /// Non-throwing availability probe shared by the factory's Create and
         /// ResolveBackendName, so the preferences UI reports the backend Create
-        /// actually selects. HasKernel is false for compile-failed shader
-        /// assets, which still load as non-null.
+        /// actually selects.
         /// </summary>
         internal static bool IsGpuUsable(out ComputeShader shader)
         {
             shader = null;
 
-            if (!SystemInfo.supportsComputeShaders || IsUnreliableComputeRenderer())
+            if (
+                !SystemInfo.supportsComputeShaders
+                || ComputeShaderSupport.IsUnreliableComputeRenderer()
+            )
                 return false;
 
-            shader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderPath);
-            return shader != null
-                && shader.HasKernel(KernelHorizontalName)
-                && shader.HasKernel(KernelVerticalName);
-        }
-
-        /// <summary>
-        /// Software rasterizers advertise compute support but produce unreliable
-        /// results, and wrong-but-non-null GPU output cannot be caught by the
-        /// null-triggered CPU fallback. Bare "Mesa" is deliberately not matched —
-        /// real Linux GPUs run Mesa drivers; only known software implementations
-        /// are listed.
-        /// </summary>
-        private static bool IsUnreliableComputeRenderer()
-        {
-            if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.OpenGLCore)
-                return false;
-
-            var deviceName = SystemInfo.graphicsDeviceName ?? "";
-            return deviceName.Contains("llvmpipe")
-                || deviceName.Contains("softpipe")
-                || deviceName.Contains("SwiftShader");
+            return ComputeShaderSupport.TryLoadCompiledShader(
+                ShaderPath,
+                out shader,
+                KernelHorizontalName,
+                KernelVerticalName
+            );
         }
 
         /// <summary>
