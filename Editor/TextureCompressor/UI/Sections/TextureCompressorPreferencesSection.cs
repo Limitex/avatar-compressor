@@ -25,6 +25,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         public IEnumerable<string> Keywords =>
             new[] { "Texture", "Analysis", "Resize", "Backend", "GPU", "CPU", "Software" };
 
+        // GPU availability is static per editor session (statics reset on
+        // domain reload), so resolved names are cached per preference value
+        // to keep the shader-asset probes off the repaint path.
+        private AnalysisBackendPreference? _analysisNameFor;
+        private string _analysisName;
+        private ResizeBackendPreference? _resizeNameFor;
+        private string _resizeName;
+
         public void Draw()
         {
             // Change checks keep EditorPrefs writes off the repaint path.
@@ -36,9 +44,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 );
             if (EditorGUI.EndChangeCheck())
                 TextureCompressorPreferences.AnalysisBackend = analysisBackend;
+            if (_analysisNameFor != analysisBackend)
+            {
+                _analysisName = AnalysisBackendFactory.ResolveBackendName(analysisBackend);
+                _analysisNameFor = analysisBackend;
+            }
             DrawBackendHelpBox(
                 analysisBackend == AnalysisBackendPreference.CPU,
-                AnalysisBackendFactory.ResolveBackendName(analysisBackend),
+                _analysisName,
                 "texture analysis"
             );
 
@@ -52,9 +65,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 );
             if (EditorGUI.EndChangeCheck())
                 TextureCompressorPreferences.ResizeBackend = resizeBackend;
+            if (_resizeNameFor != resizeBackend)
+            {
+                _resizeName = AreaAverageResizerFactory.ResolveBackendName(resizeBackend);
+                _resizeNameFor = resizeBackend;
+            }
             DrawBackendHelpBox(
                 resizeBackend == ResizeBackendPreference.CPU,
-                AreaAverageResizerFactory.ResolveBackendName(resizeBackend),
+                _resizeName,
                 "Area Averaging resize"
             );
         }
