@@ -436,6 +436,32 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void Resize_SameSize_MippedSource_PreservesMipmapsAndBytes()
+        {
+            var source = new Texture2D(64, 64, TextureFormat.RGBA32, true);
+            var pixels = new Color32[64 * 64];
+            for (int i = 0; i < pixels.Length; i++)
+                pixels[i] = new Color32(200, 100, 50, 255);
+            source.SetPixels32(pixels);
+            source.Apply(true);
+
+            var result = _resizer.Resize(source, 64, 64, forceLinearOutput: false);
+
+            Assert.IsNotNull(result);
+            Assert.IsTrue(
+                result.mipmapCount > 1,
+                "Same-size byte copy should preserve the mip chain"
+            );
+            var pixel = result.GetPixels32()[0];
+            Assert.AreEqual((byte)200, pixel.r);
+            Assert.AreEqual((byte)100, pixel.g);
+            Assert.AreEqual((byte)50, pixel.b);
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
         public void Resize_NullSource_ReturnsNull()
         {
             var result = _resizer.Resize(null, 64, 64, forceLinearOutput: false);

@@ -315,7 +315,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
 
-            var result = ResizeToSize(_processor, sourceTexture, 256, 256, isNormalMap: true);
+            var result = ResizeToSize(_processor, sourceTexture, 256, 256);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(256, result.width);
@@ -334,7 +334,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
 
-            var result = ResizeToSize(_processor, sourceTexture, 256, 256, isNormalMap: true);
+            var result = ResizeToSize(_processor, sourceTexture, 256, 256);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(256, result.height);
@@ -358,7 +358,7 @@ namespace dev.limitex.avatar.compressor.tests
             sourceTexture.filterMode = FilterMode.Trilinear;
             sourceTexture.anisoLevel = 4;
 
-            var result = ResizeToSize(_processor, sourceTexture, 256, 256, isNormalMap: true);
+            var result = ResizeToSize(_processor, sourceTexture, 256, 256);
 
             Assert.AreEqual(TextureWrapMode.Repeat, result.wrapModeU);
             Assert.AreEqual(TextureWrapMode.Clamp, result.wrapModeV);
@@ -374,7 +374,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var sourceTexture = new Texture2D(512, 512, TextureFormat.RGBA32, true);
 
-            var result = ResizeToSize(_processor, sourceTexture, 512, 512, isNormalMap: true);
+            var result = ResizeToSize(_processor, sourceTexture, 512, 512);
 
             Assert.AreEqual(512, result.width);
             Assert.AreEqual(512, result.height);
