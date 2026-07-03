@@ -2,9 +2,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
 {
     public static class AreaAverageResizerFactory
     {
-        public static ITextureResizer Create(
-            ResizeBackendPreference backendPreference = ResizeBackendPreference.Auto
-        )
+        // No default for the backend preference: production call sites resolve
+        // it from TextureCompressorPreferences, and tests must pick
+        // deterministically.
+        public static ITextureResizer Create(ResizeBackendPreference backendPreference)
         {
             if (
                 backendPreference != ResizeBackendPreference.CPU
