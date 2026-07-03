@@ -31,15 +31,46 @@ namespace dev.limitex.avatar.compressor.editor
             set => EditorPrefs.SetBool(EnableLoggingKey, value);
         }
 
+        /// <summary>
+        /// Instantiates and title-sorts the preference sections. A section
+        /// that fails to construct — or whose Title/Keywords getters throw —
+        /// is skipped with an error, so one broken implementer cannot take
+        /// down the whole settings page (SettingsService drops the entire
+        /// provider when its factory throws).
+        /// </summary>
+        public static List<IPreferencesSection> CreateSections(IEnumerable<System.Type> types)
+        {
+            var sections = new List<IPreferencesSection>();
+            foreach (var type in types)
+            {
+                if (type.IsAbstract)
+                    continue;
+
+                try
+                {
+                    var section = (IPreferencesSection)System.Activator.CreateInstance(type);
+                    // Evaluate everything the provider reads inside the guard,
+                    // so a broken member surfaces here and not mid-layout.
+                    _ = section.Title;
+                    _ = section.Keywords.Count();
+                    sections.Add(section);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError(
+                        $"[AvatarCompressor] Skipping preferences section '{type.FullName}': {e}"
+                    );
+                }
+            }
+
+            sections.Sort((a, b) => System.StringComparer.Ordinal.Compare(a.Title, b.Title));
+            return sections;
+        }
+
         [SettingsProvider]
         private static SettingsProvider CreateProvider()
         {
-            var sections = TypeCache
-                .GetTypesDerivedFrom<IPreferencesSection>()
-                .Where(type => !type.IsAbstract)
-                .Select(type => (IPreferencesSection)System.Activator.CreateInstance(type))
-                .OrderBy(section => section.Title, System.StringComparer.Ordinal)
-                .ToList();
+            var sections = CreateSections(TypeCache.GetTypesDerivedFrom<IPreferencesSection>());
 
             var keywords = new HashSet<string> { "Avatar", "Compressor", "LAC", "Log", "Debug" };
             foreach (var section in sections)
