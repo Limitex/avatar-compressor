@@ -48,10 +48,14 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 );
             }
 
-            // Only an exact byte copy when no color-space conversion is needed;
-            // an sRGB source with forced-linear output must go through decode.
-            if (targetWidth == srcW && targetHeight == srcH && outputSRGB == isSRGB)
+            // A same-size target needs no filtering: copy the bytes, decoding
+            // sRGB to linear first when the output is forced linear (normal
+            // maps). Skipping the two-pass filter also skips its full-image
+            // intermediate buffer.
+            if (targetWidth == srcW && targetHeight == srcH)
             {
+                if (outputSRGB != isSRGB)
+                    DecodeToLinear(pixels);
                 return CreateOutput(pixels, targetWidth, targetHeight, source, outputSRGB);
             }
 
@@ -154,17 +158,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (isSRGB && !outputSRGB)
             {
                 // Forced-linear output (normal maps) still needs the sRGB decode.
-                var decode = BuildDecodeTable(true);
-                for (int i = 0; i < result.Length; i++)
-                {
-                    var p = result[i];
-                    result[i] = new Color32(
-                        ToByte(decode[p.r]),
-                        ToByte(decode[p.g]),
-                        ToByte(decode[p.b]),
-                        p.a
-                    );
-                }
+                DecodeToLinear(result);
             }
 
             return CreateOutput(result, dstW, dstH, source, outputSRGB);
@@ -297,6 +291,25 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 Offset = offset,
                 Weights = weights,
             };
+        }
+
+        /// <summary>
+        /// In-place sRGB→linear decode of the RGB channels (alpha is stored
+        /// linearly). Used by the 1:1 paths where no filtering runs.
+        /// </summary>
+        private static void DecodeToLinear(Color32[] pixels)
+        {
+            var decode = BuildDecodeTable(true);
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                var p = pixels[i];
+                pixels[i] = new Color32(
+                    ToByte(decode[p.r]),
+                    ToByte(decode[p.g]),
+                    ToByte(decode[p.b]),
+                    p.a
+                );
+            }
         }
 
         /// <summary>

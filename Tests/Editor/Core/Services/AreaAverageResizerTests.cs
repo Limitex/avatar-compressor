@@ -462,6 +462,31 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
+        public void Resize_SameSize_SrgbSourceForcedLinear_DecodesWithoutFiltering()
+        {
+            var source = new Texture2D(64, 64, TextureFormat.RGBA32, true);
+            var pixels = new Color32[64 * 64];
+            for (int i = 0; i < pixels.Length; i++)
+                pixels[i] = new Color32(188, 188, 188, 255);
+            source.SetPixels32(pixels);
+            source.Apply(true);
+
+            var result = _resizer.Resize(source, 64, 64, forceLinearOutput: true);
+
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.mipmapCount > 1, "Same-size decode should preserve the mip chain");
+            // sRGB 188 decodes to linear ~0.502 -> byte ~128.
+            var pixel = result.GetPixels32()[0];
+            Assert.That(pixel.r, Is.InRange((byte)127, (byte)129));
+            Assert.That(pixel.g, Is.InRange((byte)127, (byte)129));
+            Assert.That(pixel.b, Is.InRange((byte)127, (byte)129));
+            Assert.AreEqual((byte)255, pixel.a);
+
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(result);
+        }
+
+        [Test]
         public void Resize_NullSource_ReturnsNull()
         {
             var result = _resizer.Resize(null, 64, 64, forceLinearOutput: false);
