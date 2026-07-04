@@ -3,7 +3,7 @@ namespace dev.limitex.avatar.compressor
     /// <summary>
     /// Predefined path exclusion presets for common packages.
     /// </summary>
-    public static class ExcludedPathPresets
+    internal static class ExcludedPathPresets
     {
         public static readonly ExcludedPathPreset[] Presets = new[]
         {

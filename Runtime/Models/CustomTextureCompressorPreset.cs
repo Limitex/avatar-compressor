@@ -10,7 +10,7 @@ namespace dev.limitex.avatar.compressor
         fileName = "NewTextureCompressorPreset",
         menuName = "Avatar Compressor/Texture Compressor/CustomTextureCompressorPreset"
     )]
-    public sealed class CustomTextureCompressorPreset : ScriptableObject
+    internal sealed class CustomTextureCompressorPreset : ScriptableObject
     {
         [Header("Preset Settings")]
         [Tooltip("Lock this preset to prevent editing when selected")]

@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor
     /// <summary>
     /// Format options for frozen textures.
     /// </summary>
-    public enum FrozenTextureFormat
+    internal enum FrozenTextureFormat
     {
         Auto, // Use automatic format selection
         DXT1, // RGB only, 4 bpp (Desktop)
@@ -22,7 +22,7 @@ namespace dev.limitex.avatar.compressor
     /// Settings for a frozen texture with user-specified compression overrides.
     /// </summary>
     [System.Serializable]
-    public sealed class FrozenTextureSettings
+    internal sealed class FrozenTextureSettings
     {
         /// <summary>
         /// GUID of the texture asset (stable identifier that survives renames/moves).
