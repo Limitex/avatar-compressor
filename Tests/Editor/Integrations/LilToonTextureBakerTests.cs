@@ -1099,5 +1099,141 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         #endregion
+
+        #region BlitBake Color Space
+
+        // The test shader passes _MainTex through unchanged, so a bake through it must be an
+        // identity transform on the stored bytes — which only holds when BlitBake forces the
+        // write-side sRGB encode instead of inheriting the ambient GL.sRGBWrite state.
+
+        private static void RequireGraphicsDevice()
+        {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+                Assert.Ignore("No graphics device; the baker deliberately disables itself.");
+        }
+
+        private static Texture2D CreateGradientTexture(bool linear, out Color32[] pixels)
+        {
+            var texture = new Texture2D(4, 4, TextureFormat.RGBA32, false, linear);
+            pixels = new Color32[16];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = new Color32((byte)(i * 16 + 8), (byte)(255 - i * 16), 128, 255);
+            }
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            return texture;
+        }
+
+        [Test]
+        public void BlitBake_SRGBSource_RoundTripsBytes_WhenSRGBWriteLeftDisabled()
+        {
+            RequireGraphicsDevice();
+
+            var source = CreateGradientTexture(linear: false, out var pixels);
+            bool previousSRGBWrite = GL.sRGBWrite;
+            Texture2D baked = null;
+            try
+            {
+                // Editor IMGUI leaves sRGBWrite false; the bake must not depend on it.
+                GL.sRGBWrite = false;
+                baked = LilToonTextureBaker.BlitBake(source, _material);
+
+                Assert.IsNotNull(baked);
+                var bakedPixels = baked.GetPixels32();
+                for (int i = 0; i < pixels.Length; i++)
+                {
+                    Assert.That(bakedPixels[i].r, Is.EqualTo(pixels[i].r).Within(2), $"R at {i}");
+                    Assert.That(bakedPixels[i].g, Is.EqualTo(pixels[i].g).Within(2), $"G at {i}");
+                    Assert.That(bakedPixels[i].b, Is.EqualTo(pixels[i].b).Within(2), $"B at {i}");
+                    Assert.AreEqual(pixels[i].a, bakedPixels[i].a, $"A at {i}");
+                }
+            }
+            finally
+            {
+                GL.sRGBWrite = previousSRGBWrite;
+                UnityEngine.Object.DestroyImmediate(source);
+                if (baked != null)
+                    UnityEngine.Object.DestroyImmediate(baked);
+            }
+        }
+
+        [Test]
+        public void BlitBake_LinearSource_PreservesSampledValues()
+        {
+            RequireGraphicsDevice();
+
+            var source = CreateGradientTexture(linear: true, out var pixels);
+            bool previousSRGBWrite = GL.sRGBWrite;
+            Texture2D baked = null;
+            try
+            {
+                GL.sRGBWrite = false;
+                baked = LilToonTextureBaker.BlitBake(source, _material);
+
+                Assert.IsNotNull(baked);
+                Assert.IsTrue(
+                    baked.isDataSRGB,
+                    "The bake output keeps the sRGB flag regardless of the source flag"
+                );
+
+                // Linear bytes are re-encoded to sRGB storage, so decoding the stored byte
+                // must yield the original linear value.
+                var bakedPixels = baked.GetPixels32();
+                for (int i = 0; i < pixels.Length; i++)
+                {
+                    byte expectedR = EncodeSRGB(pixels[i].r);
+                    byte expectedG = EncodeSRGB(pixels[i].g);
+                    byte expectedB = EncodeSRGB(pixels[i].b);
+                    Assert.That(bakedPixels[i].r, Is.EqualTo(expectedR).Within(2), $"R at {i}");
+                    Assert.That(bakedPixels[i].g, Is.EqualTo(expectedG).Within(2), $"G at {i}");
+                    Assert.That(bakedPixels[i].b, Is.EqualTo(expectedB).Within(2), $"B at {i}");
+                    Assert.AreEqual(pixels[i].a, bakedPixels[i].a, $"A at {i}");
+                }
+            }
+            finally
+            {
+                GL.sRGBWrite = previousSRGBWrite;
+                UnityEngine.Object.DestroyImmediate(source);
+                if (baked != null)
+                    UnityEngine.Object.DestroyImmediate(baked);
+            }
+        }
+
+        private static byte EncodeSRGB(byte linearValue)
+        {
+            return (byte)Mathf.RoundToInt(Mathf.LinearToGammaSpace(linearValue / 255f) * 255f);
+        }
+
+        [Test]
+        public void BlitBake_RestoresSRGBWriteAndActiveRenderTexture()
+        {
+            RequireGraphicsDevice();
+
+            var source = CreateGradientTexture(linear: false, out _);
+            bool previousSRGBWrite = GL.sRGBWrite;
+            var previousActive = RenderTexture.active;
+            Texture2D baked = null;
+            try
+            {
+                GL.sRGBWrite = false;
+                baked = LilToonTextureBaker.BlitBake(source, _material);
+
+                Assert.IsFalse(GL.sRGBWrite, "GL.sRGBWrite must be restored after the bake");
+                Assert.IsTrue(
+                    RenderTexture.active == previousActive,
+                    "RenderTexture.active must be restored after the bake"
+                );
+            }
+            finally
+            {
+                GL.sRGBWrite = previousSRGBWrite;
+                UnityEngine.Object.DestroyImmediate(source);
+                if (baked != null)
+                    UnityEngine.Object.DestroyImmediate(baked);
+            }
+        }
+
+        #endregion
     }
 }

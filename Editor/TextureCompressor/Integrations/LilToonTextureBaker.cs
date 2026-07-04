@@ -911,36 +911,61 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             return baked;
         }
 
-        private static Texture2D BlitBake(Texture2D source, Material baker)
+        /// <summary>
+        /// Runs the baker material over the source texture and reads the result back into a new
+        /// readable RGBA32 texture. The RenderTexture keeps the Default color-space policy
+        /// (sRGB in linear projects, raw in gamma projects) and the output keeps the sRGB flag,
+        /// so sampling the result yields what the baker shader produced — for the rare
+        /// linear-flagged color source the bytes are re-encoded to sRGB but the sampled values
+        /// are preserved.
+        /// </summary>
+        public static Texture2D BlitBake(Texture2D source, Material baker)
         {
             int width = source.width;
             int height = source.height;
             bool mipChain = source.mipmapCount > 1;
-            var rt = new RenderTexture(width, height, 0);
-            RenderTexture previous = RenderTexture.active;
-            Texture2D output = null;
-            try
-            {
-                rt.Create();
-                RenderTexture.active = rt;
-                Graphics.Blit(source, rt, baker);
 
-                output = new Texture2D(width, height, TextureFormat.RGBA32, mipChain);
-                output.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-                output.Apply(mipChain);
-                TextureReadback.CopyTextureSettings(source, output);
-
-                var result = output;
-                output = null;
-                return result;
-            }
-            finally
+            lock (TextureReadback.RenderTextureLock)
             {
-                RenderTexture.active = previous;
-                rt.Release();
-                UnityEngine.Object.DestroyImmediate(rt);
-                if (output != null)
-                    UnityEngine.Object.DestroyImmediate(output);
+                // Graphics.Blit changes RenderTexture.active, so the caller's active RT must
+                // be captured before the blit (ReadbackToTexture2D only restores the RT it was
+                // handed).
+                var previousActive = RenderTexture.active;
+                var previousSRGBWrite = GL.sRGBWrite;
+                RenderTexture rt = null;
+                try
+                {
+                    rt = new RenderTexture(width, height, 0);
+                    rt.Create();
+
+                    // The write-side linear->sRGB encode into the sRGB RT is gated by
+                    // GL.sRGBWrite, which editor IMGUI leaves false — e.g. right after another
+                    // plugin repaints its progress window mid-build. Without forcing it the
+                    // baked bytes come out linear-encoded but sRGB-flagged: visibly darker,
+                    // with no exception to catch.
+                    GL.sRGBWrite = true;
+                    Graphics.Blit(source, rt, baker);
+
+                    var output = TextureReadback.ReadbackToTexture2D(
+                        rt,
+                        width,
+                        height,
+                        mipChain,
+                        linear: false
+                    );
+                    TextureReadback.CopyTextureSettings(source, output);
+                    return output;
+                }
+                finally
+                {
+                    GL.sRGBWrite = previousSRGBWrite;
+                    RenderTexture.active = previousActive;
+                    if (rt != null)
+                    {
+                        rt.Release();
+                        UnityEngine.Object.DestroyImmediate(rt);
+                    }
+                }
             }
         }
 
