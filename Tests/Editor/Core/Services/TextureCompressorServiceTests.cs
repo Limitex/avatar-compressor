@@ -2828,6 +2828,190 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region LilToon Bake Gate Tests
+
+        [Test]
+        public void Compress_CallsLilToonBaker_AndForwardsAnimatedProperties()
+        {
+            var config = CreateConfig();
+            config.BakeLilToonTextures = true;
+            var map = new AnimationUsageMap(new[] { "_MainTexHSVG" });
+            var baker = new FakeLilToonBaker(available: true);
+            var service = new TextureCompressorService(
+                config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.CPU,
+                animationUsageMap: map,
+                lilToonBaker: baker
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = CreateMaterial();
+
+            service.Compress(root, false);
+
+            Assert.AreEqual(1, baker.CallCount);
+            Assert.IsNotNull(baker.LastAnimatedProperties);
+            Assert.IsTrue(
+                baker.LastAnimatedProperties.Contains("_MainTexHSVG"),
+                "The animated properties must reach the baker"
+            );
+            Assert.IsNotNull(
+                baker.LastCanReplaceTexture,
+                "The collector filter must reach the baker so excluded/frozen-skipped "
+                    + "textures are never baked"
+            );
+            Assert.IsNotNull(
+                baker.LastIsProtectedTexture,
+                "The protection pin must reach the baker so protected textures are never "
+                    + "repainted or consumed"
+            );
+        }
+
+        [Test]
+        public void Compress_SkipsLilToonBaking_WhenDisabledInConfig()
+        {
+            var config = CreateConfig();
+            config.BakeLilToonTextures = false;
+            var baker = new FakeLilToonBaker(available: true);
+            var service = new TextureCompressorService(
+                config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.CPU,
+                animationUsageMap: AnimationUsageMap.Empty,
+                lilToonBaker: baker
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = CreateMaterial();
+
+            service.Compress(root, false);
+
+            Assert.AreEqual(0, baker.CallCount);
+        }
+
+        [Test]
+        public void Compress_SkipsLilToonBaking_WhenAnimationMapMissing()
+        {
+            var config = CreateConfig();
+            config.BakeLilToonTextures = true;
+            var baker = new FakeLilToonBaker(available: true);
+            var service = new TextureCompressorService(
+                config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.CPU,
+                animationUsageMap: null,
+                lilToonBaker: baker
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = CreateMaterial();
+
+            service.Compress(root, false);
+
+            Assert.AreEqual(0, baker.CallCount);
+        }
+
+        [Test]
+        public void Compress_SkipsLilToonBaking_WhenBakerUnavailable()
+        {
+            var config = CreateConfig();
+            config.BakeLilToonTextures = true;
+            var baker = new FakeLilToonBaker(available: false);
+            var service = new TextureCompressorService(
+                config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.CPU,
+                animationUsageMap: AnimationUsageMap.Empty,
+                lilToonBaker: baker
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = CreateMaterial();
+
+            service.Compress(root, false);
+
+            Assert.AreEqual(0, baker.CallCount);
+        }
+
+        [Test]
+        public void Compress_ContinuesPastMaterial_WhenBakerThrows()
+        {
+            var config = CreateConfig();
+            config.BakeLilToonTextures = true;
+            var baker = new FakeLilToonBaker(available: true) { ThrowOnBake = true };
+            var service = new TextureCompressorService(
+                config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.CPU,
+                animationUsageMap: AnimationUsageMap.Empty,
+                lilToonBaker: baker
+            );
+
+            var root = CreateGameObject("Root");
+            var renderer = root.AddComponent<MeshRenderer>();
+            renderer.sharedMaterials = new[] { CreateMaterial(), CreateMaterial() };
+
+            Assert.DoesNotThrow(() => service.Compress(root, false));
+            Assert.AreEqual(
+                2,
+                baker.CallCount,
+                "A throwing bake must degrade to a per-material warning, not abort the loop"
+            );
+        }
+
+        private sealed class FakeLilToonBaker : ILilToonBaker
+        {
+            private readonly bool _available;
+
+            public FakeLilToonBaker(bool available)
+            {
+                _available = available;
+            }
+
+            public bool ThrowOnBake { get; set; }
+
+            public int CallCount { get; private set; }
+
+            public System.Collections.Generic.IReadOnlyCollection<string> LastAnimatedProperties
+            {
+                get;
+                private set;
+            }
+
+            public System.Func<Texture2D, string, bool> LastCanReplaceTexture { get; private set; }
+
+            public System.Func<Texture2D, bool> LastIsProtectedTexture { get; private set; }
+
+            public bool IsAvailable => _available;
+
+            public LilToonBakeResult Bake(
+                Material material,
+                System.Collections.Generic.IReadOnlyCollection<string> animatedProperties,
+                System.Func<Texture2D, string, bool> canReplaceTexture,
+                System.Func<Texture2D, bool> isProtectedTexture
+            )
+            {
+                CallCount++;
+                LastAnimatedProperties = animatedProperties;
+                LastCanReplaceTexture = canReplaceTexture;
+                LastIsProtectedTexture = isProtectedTexture;
+                if (ThrowOnBake)
+                    throw new System.InvalidOperationException("bake failed");
+                return default;
+            }
+
+            public void DestroyOrphanedBakes(
+                System.Collections.Generic.IEnumerable<Material> materials
+            ) { }
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private TextureCompressor CreateConfig()

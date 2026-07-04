@@ -26,34 +26,49 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         }
 
         /// <summary>
-        /// Draws the unused-texture detection toggle with foldout.
+        /// Draws the lilToon optimization section containing texture baking and unused-slot
+        /// detection toggles under a shared foldout.
         /// </summary>
-        public static void DrawUnusedDetection(TextureCompressor config, ref bool showSection)
+        public static void DrawLilToonOptimizations(TextureCompressor config, ref bool showSection)
         {
-            showSection = EditorGUILayout.Foldout(showSection, "Unused Texture Detection", true);
+            showSection = EditorGUILayout.Foldout(showSection, "lilToon Optimizations", true);
             if (!showSection)
                 return;
 
             EditorGUI.BeginChangeCheck();
+
+            bool bake = EditorGUILayout.ToggleLeft(
+                new GUIContent(
+                    "Bake color adjustments into textures",
+                    "Bakes hue/saturation/gradation, active 2nd/3rd layers and the alpha mask "
+                        + "into the main texture, and tone correction into the outline texture, "
+                        + "at build time. Bakes with animated inputs are skipped; frozen textures "
+                        + "and textures referenced by animation curves are never baked or "
+                        + "consumed; excluded textures are never baked; colors (_Color, "
+                        + "_OutlineColor) stay runtime tints. Requires lilToon; does nothing when "
+                        + "it is not installed."
+                ),
+                config.BakeLilToonTextures
+            );
+
             bool detect = EditorGUILayout.ToggleLeft(
-                "Remove unused texture slots (recommended)",
+                new GUIContent(
+                    "Remove unused texture slots",
+                    "Clears lilToon slots whose feature toggle is off and not animated, dropping "
+                        + "textures that become unreferenced from the upload. Frozen textures and "
+                        + "textures referenced by animation curves are never removed. Exclusion "
+                        + "filters do not apply here."
+                ),
                 config.DetectUnusedTextures
             );
+
             if (EditorGUI.EndChangeCheck())
             {
-                Undo.RecordObject(config, "Change Unused Texture Detection");
+                Undo.RecordObject(config, "Change lilToon Optimizations");
+                config.BakeLilToonTextures = bake;
                 config.DetectUnusedTextures = detect;
                 EditorUtility.SetDirty(config);
             }
-
-            EditorGUI.indentLevel++;
-            EditorGUILayout.LabelField(
-                "Clears lilToon slots whose feature toggle is off and not animated, dropping "
-                    + "textures that become unreferenced. Frozen textures and textures referenced "
-                    + "by animations are never removed. Exclusion filters do not apply here.",
-                EditorStyles.miniLabel
-            );
-            EditorGUI.indentLevel--;
         }
 
         /// <summary>

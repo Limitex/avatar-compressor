@@ -105,7 +105,12 @@ namespace dev.limitex.avatar.compressor.editor
             }
         }
 
-        private static Type FindType(string fullName)
+        /// <summary>
+        /// Resolves a type from any loaded assembly, or null when the declaring package is not
+        /// installed. Shared with integrations that need more than a static method from the
+        /// optional package (e.g. reading a constant field).
+        /// </summary>
+        public static Type FindType(string fullName)
         {
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
