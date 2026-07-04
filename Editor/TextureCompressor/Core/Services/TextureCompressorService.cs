@@ -194,8 +194,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             // Bake lilToon color adjustments into main textures before slot pruning and
             // collection so the baked texture (not its source) is what gets analyzed and
-            // compressed, and so input textures consumed by the bake (gradation maps, 2nd/3rd
-            // layers, alpha masks) drop out of the build via the slot pruning below.
+            // compressed. Consumed input slots (gradation maps, 2nd/3rd layers, alpha masks)
+            // are cleared by the baker itself; the pruning below only sweeps leftovers on
+            // layers the bake turned off (e.g. a still-assigned dissolve mask).
             if (_lilToonBakeEnabled)
             {
                 BakeLilToonAdjustments(clonedMaterialList, enableLogging);
