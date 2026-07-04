@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor.texture;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.TestTools;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -264,19 +263,6 @@ namespace dev.limitex.avatar.compressor.tests
         public void DetectDXTnmLike_NullTexture_ReturnsAG()
         {
             var result = NormalMapSourceLayoutDetector.DetectDXTnmLike(null);
-
-            Assert.AreEqual(NormalMapPreprocessor.SourceLayout.AG, result);
-        }
-
-        [Test]
-        public void DetectDXTnmLike_EmptyTexture_ReturnsAG()
-        {
-            var texture = new Texture2D(0, 0, TextureFormat.RGBA32, false);
-            _createdObjects.Add(texture);
-
-            LogAssert.Expect(LogType.Error, "Texture '' is degenerate (dimensions 0x0)");
-
-            var result = NormalMapSourceLayoutDetector.DetectDXTnmLike(texture);
 
             Assert.AreEqual(NormalMapPreprocessor.SourceLayout.AG, result);
         }

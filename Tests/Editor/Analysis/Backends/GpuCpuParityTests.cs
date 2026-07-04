@@ -17,9 +17,10 @@ namespace dev.limitex.avatar.compressor.tests
     {
         private const float ScoreTolerance = 0.02f;
 
-        // sRGB textures use slightly wider tolerance than linear because GPU pow()
-        // and CPU hardware sRGB decode may differ by a few ULP at float32 precision.
-        // With the exact piecewise formula on GPU, divergence is typically <0.02.
+        // sRGB textures use slightly wider tolerance than linear: both backends rely
+        // on hardware sRGB decode, but the CPU path quantizes the decoded values to
+        // 8-bit via its ARGB32 RenderTexture readback while the GPU path reads the
+        // decoded values at full precision directly from the source texture.
         private const float SRGBScoreTolerance = 0.03f;
         private const string ShaderPath =
             "Packages/dev.limitex.avatar-compressor/"
@@ -33,37 +34,13 @@ namespace dev.limitex.avatar.compressor.tests
         public void SetUp()
         {
             _createdObjects = new List<Object>();
-            _processor = new TextureProcessor(32, 2048, true);
+            _processor = new TextureProcessor(32, 2048, true, ResizeBackendPreference.CPU);
 
-            if (!SystemInfo.supportsComputeShaders)
-            {
-                Assert.Ignore("Compute shaders not supported on this platform");
-            }
+            GpuTestGuard.RequireRealGpu();
 
             if (!SystemInfo.supportsAsyncGPUReadback)
             {
                 Assert.Ignore("Async GPU readback not supported on this platform");
-            }
-
-            // Software renderers (e.g. Mesa llvmpipe on CI runners without a GPU)
-            // report compute shader support but produce unreliable results.
-            // GPU/CPU parity can only be validated on real hardware.
-            if (
-                SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.OpenGLCore
-            )
-            {
-                var deviceName = SystemInfo.graphicsDeviceName ?? "";
-                if (
-                    deviceName.Contains("llvmpipe")
-                    || deviceName.Contains("softpipe")
-                    || deviceName.Contains("SwiftShader")
-                    || deviceName.Contains("Mesa")
-                )
-                {
-                    Assert.Ignore(
-                        $"Software renderer detected ({deviceName}); GPU parity tests require real hardware"
-                    );
-                }
             }
 
             _shader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderPath);

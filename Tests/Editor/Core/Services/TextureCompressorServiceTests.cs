@@ -69,13 +69,31 @@ namespace dev.limitex.avatar.compressor.tests
             }
         }
 
+        // Analysis stays on the pre-existing Auto behavior; resize is pinned to
+        // CPU so pipeline assertions do not depend on untrusted GPU compute
+        // results (dedicated parity suites cover the GPU resize path).
+        private static TextureCompressorService CreateService(
+            TextureCompressor config,
+            AnimationUsageMap animationUsageMap = null,
+            IUnusedSlotOptimizer unusedSlotOptimizer = null
+        )
+        {
+            return new TextureCompressorService(
+                config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.CPU,
+                animationUsageMap,
+                unusedSlotOptimizer
+            );
+        }
+
         #region Constructor Tests
 
         [Test]
         public void Constructor_WithValidConfig_CreatesService()
         {
             var config = CreateConfig();
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             Assert.IsNotNull(service);
             Assert.AreEqual("Texture Compressor", service.Name);
@@ -97,7 +115,7 @@ namespace dev.limitex.avatar.compressor.tests
             {
                 var config = CreateConfig();
                 config.ApplyPreset(preset);
-                var service = new TextureCompressorService(config);
+                var service = CreateService(config);
                 Assert.IsNotNull(service, $"Failed to create service with preset {preset}");
             }
         }
@@ -110,7 +128,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void Compress_EmptyHierarchy_CompletesWithoutError()
         {
             var config = CreateConfig();
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
             var root = CreateGameObject("EmptyRoot");
 
             Assert.DoesNotThrow(() => service.Compress(root, false));
@@ -120,7 +138,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void Compress_NoTextures_CompletesWithoutError()
         {
             var config = CreateConfig();
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -135,7 +153,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var config = CreateConfig();
             config.MinSourceSize = 512; // High min size
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -161,7 +179,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -190,7 +208,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -224,7 +242,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var child1 = CreateGameObject("Child1");
@@ -267,7 +285,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -297,7 +315,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var child1 = CreateGameObject("Child1");
@@ -339,7 +357,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.MaxResolution = 512;
             config.MinDivisor = 1;
             config.MaxDivisor = 8;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -367,7 +385,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
             config.ForcePowerOfTwo = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -397,7 +415,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var level1 = CreateGameObject("Level1");
@@ -430,7 +448,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var inactiveChild = CreateGameObject("InactiveChild");
@@ -465,7 +483,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.ProcessMainTextures = false;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -496,7 +514,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var config = CreateConfig();
             config.ApplyPreset(CompressorPreset.HighQuality);
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -521,7 +539,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var config = CreateConfig();
             config.ApplyPreset(CompressorPreset.Aggressive);
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -551,7 +569,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -576,7 +594,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -605,7 +623,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var additionalMaterial = CreateMaterial();
             var texture = CreateTexture(256, 256);
@@ -643,7 +661,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -676,7 +694,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var additionalMaterial = CreateMaterial();
             additionalMaterial.name = "AdditionalMaterial";
@@ -710,7 +728,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var additionalMaterial = CreateMaterial();
             var originalTexture = CreateTexture(256, 256);
@@ -750,7 +768,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -794,7 +812,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -844,7 +862,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var references = new List<MaterialReference>();
 
@@ -863,7 +881,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             // Material without textures
             var additionalMaterial = CreateMaterial();
@@ -898,7 +916,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -926,7 +944,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -956,7 +974,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.ProcessMainTextures = true;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1011,7 +1029,7 @@ namespace dev.limitex.avatar.compressor.tests
                     Skip = false,
                 },
             };
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1052,7 +1070,7 @@ namespace dev.limitex.avatar.compressor.tests
                     Skip = false,
                 },
             };
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1096,7 +1114,7 @@ namespace dev.limitex.avatar.compressor.tests
                 },
             };
 
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1137,7 +1155,7 @@ namespace dev.limitex.avatar.compressor.tests
                     Skip = true,
                 },
             };
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1183,7 +1201,7 @@ namespace dev.limitex.avatar.compressor.tests
                     Skip = false,
                 },
             };
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1216,7 +1234,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1249,7 +1267,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1295,7 +1313,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.MinSourceSize = 64;
             config.SkipIfSmallerThan = 0;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var child1 = CreateGameObject("Child1");
@@ -1344,7 +1362,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.UseHighQualityFormatForHighComplexity = true;
             config.HighComplexityThreshold = 0.7f;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1374,7 +1392,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.UseHighQualityFormatForHighComplexity = false;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1405,7 +1423,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.UseHighQualityFormatForHighComplexity = true;
             config.HighComplexityThreshold = 0.3f;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1435,7 +1453,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1465,7 +1483,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1500,7 +1518,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.TargetPlatform = CompressionPlatform.Mobile;
             config.UseHighQualityFormatForHighComplexity = true;
             config.HighComplexityThreshold = 0.7f;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1532,7 +1550,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Mobile;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1563,7 +1581,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.TargetPlatform = CompressionPlatform.Mobile;
             config.UseHighQualityFormatForHighComplexity = true;
             config.HighComplexityThreshold = 0.3f;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1594,7 +1612,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.TargetPlatform = CompressionPlatform.Mobile;
             config.UseHighQualityFormatForHighComplexity = true;
             config.HighComplexityThreshold = 0.9f;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1645,7 +1663,7 @@ namespace dev.limitex.avatar.compressor.tests
                 },
             };
 
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1689,7 +1707,7 @@ namespace dev.limitex.avatar.compressor.tests
                 },
             };
 
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1734,7 +1752,7 @@ namespace dev.limitex.avatar.compressor.tests
                 },
             };
 
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1766,7 +1784,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.HighComplexityThreshold = 0.7f;
             config.FrozenTextures = new List<FrozenTextureSettings>();
 
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1803,7 +1821,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var root = CreateGameObject("Root");
             var renderer = root.AddComponent<MeshRenderer>();
@@ -1856,7 +1874,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var normalTexture = CreateNormalMapTexture(64, 64);
 
@@ -1910,7 +1928,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.ProcessNormalMaps = true;
             config.MinDivisor = 2;
             config.MaxDivisor = 2;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var normalTexture = CreateNormalMapTexture(128, 128);
 
@@ -1971,7 +1989,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessMainTextures = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var texture = CreateOpaqueTexture(64, 64);
             EditorUtility.CompressTexture(
@@ -2008,7 +2026,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessMainTextures = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var texture = CreateTextureWithAlpha(64, 64);
             EditorUtility.CompressTexture(
@@ -2045,7 +2063,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var source = CreateCompressedDXT5NormalMap(
                 128,
@@ -2086,7 +2104,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.ProcessNormalMaps = true;
             config.MinDivisor = 1;
             config.MaxDivisor = 1;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             const float expectedX = 0.35f;
             const float expectedY = -0.25f;
@@ -2139,7 +2157,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessMainTextures = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var texture = CreateOpaqueTexture(64, 64);
             EditorUtility.CompressTexture(
@@ -2176,7 +2194,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessMainTextures = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var texture = CreateOpaqueTexture(64, 64);
             EditorUtility.CompressTexture(
@@ -2217,7 +2235,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var source = CreateNormalMapTextureWithAlpha(128, 128);
             var preprocessor = new NormalMapPreprocessor();
@@ -2271,7 +2289,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var source = CreateNormalMapTextureWithBinaryAlpha(128, 128);
             var preprocessor = new NormalMapPreprocessor();
@@ -2325,7 +2343,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var source = CreateBC7RGBLayoutObjectSpaceNormalWithOpaqueAlpha(128, 128);
 
@@ -2371,7 +2389,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var source = CreateBC7RGBLayoutObjectSpaceNormalWithOpaqueAlphaSingleSign(
                 128,
@@ -2411,7 +2429,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var source = CreateBC7RGLayoutNormalMapWithBinaryAlpha(128, 128);
 
@@ -2452,7 +2470,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var source = CreateBC7RGLayoutNormalMapWithBinaryAlpha(128, 128, bValue: 0);
 
@@ -2488,7 +2506,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.TargetPlatform = CompressionPlatform.Desktop;
             config.ProcessNormalMaps = true;
-            var service = new TextureCompressorService(config);
+            var service = CreateService(config);
 
             var source = CreateBC7RGLayoutNormalMapWithOpaqueAlpha(128, 128, bValue: 0);
 
@@ -2634,7 +2652,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.DetectUnusedTextures = true;
             var map = new AnimationUsageMap(new[] { "_UseEmission" });
             var optimizer = new FakeUnusedSlotOptimizer(available: true);
-            var service = new TextureCompressorService(
+            var service = CreateService(
                 config,
                 animationUsageMap: map,
                 unusedSlotOptimizer: optimizer
@@ -2660,7 +2678,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.DetectUnusedTextures = false;
             var optimizer = new FakeUnusedSlotOptimizer(available: true);
-            var service = new TextureCompressorService(
+            var service = CreateService(
                 config,
                 animationUsageMap: AnimationUsageMap.Empty,
                 unusedSlotOptimizer: optimizer
@@ -2681,7 +2699,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.DetectUnusedTextures = true;
             var optimizer = new FakeUnusedSlotOptimizer(available: true);
-            var service = new TextureCompressorService(
+            var service = CreateService(
                 config,
                 animationUsageMap: null,
                 unusedSlotOptimizer: optimizer
@@ -2702,7 +2720,7 @@ namespace dev.limitex.avatar.compressor.tests
             var config = CreateConfig();
             config.DetectUnusedTextures = true;
             var optimizer = new FakeUnusedSlotOptimizer(available: false);
-            var service = new TextureCompressorService(
+            var service = CreateService(
                 config,
                 animationUsageMap: AnimationUsageMap.Empty,
                 unusedSlotOptimizer: optimizer
@@ -2728,7 +2746,7 @@ namespace dev.limitex.avatar.compressor.tests
             config.SkipIfSmallerThan = 0;
             config.DetectUnusedTextures = true;
             var optimizer = new FakeUnusedSlotOptimizer(available: true, "_EmissionMap");
-            var service = new TextureCompressorService(
+            var service = CreateService(
                 config,
                 animationUsageMap: AnimationUsageMap.Empty,
                 unusedSlotOptimizer: optimizer
@@ -2821,6 +2839,8 @@ namespace dev.limitex.avatar.compressor.tests
             var baker = new FakeLilToonBaker(available: true);
             var service = new TextureCompressorService(
                 config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.CPU,
                 animationUsageMap: map,
                 lilToonBaker: baker
             );
@@ -2857,6 +2877,8 @@ namespace dev.limitex.avatar.compressor.tests
             var baker = new FakeLilToonBaker(available: true);
             var service = new TextureCompressorService(
                 config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.CPU,
                 animationUsageMap: AnimationUsageMap.Empty,
                 lilToonBaker: baker
             );
@@ -2878,6 +2900,8 @@ namespace dev.limitex.avatar.compressor.tests
             var baker = new FakeLilToonBaker(available: true);
             var service = new TextureCompressorService(
                 config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.CPU,
                 animationUsageMap: null,
                 lilToonBaker: baker
             );
@@ -2899,6 +2923,8 @@ namespace dev.limitex.avatar.compressor.tests
             var baker = new FakeLilToonBaker(available: false);
             var service = new TextureCompressorService(
                 config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.CPU,
                 animationUsageMap: AnimationUsageMap.Empty,
                 lilToonBaker: baker
             );
@@ -2920,6 +2946,8 @@ namespace dev.limitex.avatar.compressor.tests
             var baker = new FakeLilToonBaker(available: true) { ThrowOnBake = true };
             var service = new TextureCompressorService(
                 config,
+                AnalysisBackendPreference.Auto,
+                ResizeBackendPreference.CPU,
                 animationUsageMap: AnimationUsageMap.Empty,
                 lilToonBaker: baker
             );

@@ -14,7 +14,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void SetUp()
         {
             // Default: min=32, max=2048, forcePowerOfTwo=true
-            _processor = new TextureProcessor(32, 2048, true);
+            _processor = new TextureProcessor(32, 2048, true, ResizeBackendPreference.CPU);
         }
 
         private Texture2D ResizeSingle(
@@ -24,8 +24,7 @@ namespace dev.limitex.avatar.compressor.tests
             bool isNormalMap = false
         )
         {
-            var results = processor.ResizeBatch(new[] { (source, analysis, isNormalMap) });
-            return results[source];
+            return processor.ResizeSingle(source, analysis, isNormalMap);
         }
 
         private Texture2D ResizeToSize(
@@ -36,10 +35,9 @@ namespace dev.limitex.avatar.compressor.tests
             bool isNormalMap = false
         )
         {
-            // Use divisor=2 to force ResizeBatch to use RecommendedResolution
+            // Use divisor=2 to force the resize to use RecommendedResolution
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(newWidth, newHeight));
-            var results = processor.ResizeBatch(new[] { (source, analysis, isNormalMap) });
-            return results[source];
+            return processor.ResizeSingle(source, analysis, isNormalMap);
         }
 
         #region CalculateNewDimensions Tests
@@ -108,7 +106,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             // Without forcePowerOfTwo, dimensions are still rounded to multiples of 4
             // for DXT/BC compression compatibility. 300/2=150, rounded up to 152 (next multiple of 4)
-            var resizerNoPow2 = new TextureProcessor(32, 2048, false);
+            var resizerNoPow2 = new TextureProcessor(32, 2048, false, ResizeBackendPreference.CPU);
             var result = resizerNoPow2.CalculateNewDimensions(300, 300, 2);
             Assert.AreEqual(152, result.x);
             Assert.AreEqual(152, result.y);
@@ -145,7 +143,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void CalculateNewDimensions_CustomMinMax_Respected()
         {
-            var customResizer = new TextureProcessor(64, 512, true);
+            var customResizer = new TextureProcessor(64, 512, true, ResizeBackendPreference.CPU);
             var result = customResizer.CalculateNewDimensions(1024, 1024, 1);
             Assert.AreEqual(512, result.x);
             Assert.AreEqual(512, result.y);
@@ -180,7 +178,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void CalculateNewDimensions_WithoutForcePowerOfTwo_ExactMultipleOf4_ReturnsExact()
         {
             // 400/2=200, which is already a multiple of 4, so no rounding needed
-            var resizerNoPow2 = new TextureProcessor(32, 2048, false);
+            var resizerNoPow2 = new TextureProcessor(32, 2048, false, ResizeBackendPreference.CPU);
             var result = resizerNoPow2.CalculateNewDimensions(400, 400, 2);
             Assert.AreEqual(200, result.x);
             Assert.AreEqual(200, result.y);
@@ -189,7 +187,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void CalculateNewDimensions_WithoutForcePowerOfTwo_AllResultsAreMultipleOf4()
         {
-            var resizerNoPow2 = new TextureProcessor(32, 2048, false);
+            var resizerNoPow2 = new TextureProcessor(32, 2048, false, ResizeBackendPreference.CPU);
             int[] sizes = { 100, 150, 200, 300, 500, 600, 700, 800, 1000 };
             int[] divisors = { 1, 2, 4, 8 };
 
@@ -220,7 +218,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void CalculateNewDimensions_PowerOfTwoMaxClamp_HandlesCorrectly()
         {
             // When result exceeds max and needs power of 2 adjustment
-            var customResizer = new TextureProcessor(32, 300, true);
+            var customResizer = new TextureProcessor(32, 300, true, ResizeBackendPreference.CPU);
             var result = customResizer.CalculateNewDimensions(1024, 1024, 1);
             // Max is 300, closest power of 2 should be 256 or adjusted
             Assert.That(result.x, Is.LessThanOrEqualTo(300));
@@ -291,7 +289,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Constructor_WithParameters_CreatesInstance()
         {
-            var processor = new TextureProcessor(32, 2048, true);
+            var processor = new TextureProcessor(32, 2048, true, ResizeBackendPreference.CPU);
             Assert.IsNotNull(processor);
         }
 
@@ -301,7 +299,8 @@ namespace dev.limitex.avatar.compressor.tests
             var processor = new TextureProcessor(
                 minResolution: 64,
                 maxResolution: 1024,
-                forcePowerOfTwo: false
+                forcePowerOfTwo: false,
+                resizeBackendPreference: ResizeBackendPreference.CPU
             );
 
             Assert.IsNotNull(processor);
@@ -490,7 +489,12 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Resize_NormalMap_WithDivisor2_ReturnsHalfSize()
         {
-            var processorNoPow2 = new TextureProcessor(32, 2048, false);
+            var processorNoPow2 = new TextureProcessor(
+                32,
+                2048,
+                false,
+                ResizeBackendPreference.CPU
+            );
             var source = CreateTexture(512, 512);
             var analysis = new TextureAnalysisResult(0.3f, 2, new Vector2Int(256, 256));
 
@@ -524,7 +528,12 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         public void Resize_NormalMap_WhenNoDivisor_ReturnsSameSize()
         {
-            var processorNoPow2 = new TextureProcessor(32, 2048, false);
+            var processorNoPow2 = new TextureProcessor(
+                32,
+                2048,
+                false,
+                ResizeBackendPreference.CPU
+            );
             var source = CreateTexture(256, 256);
             var analysis = new TextureAnalysisResult(0.8f, 1, new Vector2Int(256, 256));
 
@@ -625,7 +634,12 @@ namespace dev.limitex.avatar.compressor.tests
         public void Resize_EnsuresDimensionsAreMultipleOf4()
         {
             // Using non-power-of-two processor
-            var processorNoPow2 = new TextureProcessor(32, 2048, false);
+            var processorNoPow2 = new TextureProcessor(
+                32,
+                2048,
+                false,
+                ResizeBackendPreference.CPU
+            );
             var source = CreateTexture(300, 300);
             var analysis = new TextureAnalysisResult(0.5f, 1, new Vector2Int(300, 300));
 

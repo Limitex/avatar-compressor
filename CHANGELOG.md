@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Consumed inputs (gradation map, layer textures, alpha mask) are cleared on the cloned material and drop out of the upload via unused-slot pruning; baked intermediates are destroyed after the build
   - The source texture's sampler settings (wrap/filter/anisotropy) and mip setting carry over to the baked replacement, and shared textures are baked once per distinct adjustment
   - Enabled by default, toggleable per avatar under the "lilToon Optimizations" foldout; runs only during the NDMF build and is not reflected in the inspector preview
+- **Area Averaging resize** - Replaces the single-pass GPU bilinear blit with a separable 2-pass area averaging (box) filter that considers all source pixels overlapping each output pixel, eliminating aliasing and moiré artifacts on large downscale ratios (e.g. 4096→512). GPU compute shader implementation with CPU fallback, independently selectable via the Resize Backend preference
+  - Averaging happens in linear color space keyed off each texture's own sRGB flag, and the output keeps the source's color space — so sRGB albedo, linear masks (metallic/roughness), and normal maps all round-trip correctly on both backends, readable or not
+  - Targets larger than the source (per-axis Min Resolution clamp, multiple-of-4 rounding) are interpolated bilinearly per axis instead of degenerating to pixel replication
+  - A per-texture GPU failure (e.g. VRAM pressure) falls back to the CPU area-average implementation rather than a lower-quality path, and the Inspector preview honors the Resize Backend preference
+  - HDR sources (e.g. RGBAHalf/BC6H emission) are clamped to [0,1] per source texel before averaging so both backends filter identical values; texels above 1.0 next to dark texels average slightly darker than the old blit, which clamped once after filtering
+  - The CPU backend streams the filter through a bounded ring buffer, keeping peak memory at a few tap-window rows instead of a full-image intermediate — 16K sources resize without gigabyte-scale allocations
+- **Software rasterizer exclusion for GPU analysis** - The analysis backend's Auto selection now refuses known software rasterizers (llvmpipe, softpipe, SwiftShader) the same way the resize backend does, since they advertise compute support but produce unreliable results that the CPU fallback cannot detect
 - **Unused texture slot detection** - During the NDMF build, clears texture slots whose lilToon feature toggle (e.g. `_UseEmission`, `_UseBumpMap`) is off on the cloned material, then drops any texture left unreferenced so it is excluded from the upload entirely — cutting download size and VRAM for hidden slots
   - Delegates the unused-slot decision to lilToon's own `lilMaterialUtils.RemoveUnusedTexture` via reflection, so the logic always matches lilToon's maintained behavior (covering every gated slot it knows) rather than a copy that can drift; the lilToon API also strips serialized properties not declared by the shader, on the build-time clone only
   - lilToon is treated as an optional external dependency: when it is not installed the feature passes through silently, and the project compiles either way (no hard reference); when lilToon is installed but older than 1.8.0 (no `RemoveUnusedTexture(Material, params string[])` overload), a warning explains that slot removal is skipped instead of failing silently. Behavior verified against lilToon source 1.8.0 through 2.3.2, and CI runs the integration tests against the real lilToon API
@@ -28,6 +35,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Acts at the material level: exclusion filters control compression only and do not keep an unused slot's texture in the upload
   - Not reflected in the inspector preview (it requires the NDMF build context); the preview shows a notice while the feature is enabled
   - Enabled by default, toggleable per avatar in the inspector
+
+### Fixed
+
+- **GPU analysis no longer breaks when other tools repaint the editor GUI during the build** - Coexisting build tools that synchronously repaint an editor window mid-build (e.g. VRCFury's progress window during play-mode builds) corrupted the editor graphics state so that compute shaders silently read all-zero pixels from RenderTextures, collapsing every sRGB texture's complexity to the sparse-texture penalty (10%) and over-compressing the whole avatar to minimum resolution
+  - The GPU backend now binds sRGB textures directly to the compute shader instead of pre-blitting them into a linear RenderTexture; `*_SRGB` texture formats decode to linear in hardware even for `Load()`, and direct texture binds are unaffected by the corruption
+  - Also removes the per-texture RenderTexture allocation, and sRGB pixel values are no longer quantized to 8-bit before analysis
 
 ## [v0.8.0] - 2026-05-01
 

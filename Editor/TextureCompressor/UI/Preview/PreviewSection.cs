@@ -59,9 +59,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         private void GeneratePreview(TextureCompressor config)
         {
-            var backend = AvatarCompressorPreferences.AnalysisBackend;
-            _previewSettingsHash = PreviewGenerator.ComputeSettingsHash(config, backend);
-            _previewData = _generator.Generate(config, backend);
+            var analysisBackend = TextureCompressorPreferences.AnalysisBackend;
+            var resizeBackend = TextureCompressorPreferences.ResizeBackend;
+            _previewSettingsHash = PreviewGenerator.ComputeSettingsHash(
+                config,
+                analysisBackend,
+                resizeBackend
+            );
+            _previewData = _generator.Generate(config, analysisBackend, resizeBackend);
             _searchBox.InvalidateCountCache();
         }
 
@@ -72,7 +77,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             return PreviewGenerator.ComputeSettingsHash(
                     config,
-                    AvatarCompressorPreferences.AnalysisBackend
+                    TextureCompressorPreferences.AnalysisBackend,
+                    TextureCompressorPreferences.ResizeBackend
                 ) != _previewSettingsHash;
         }
 

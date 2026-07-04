@@ -1,0 +1,114 @@
+#pragma kernel AreaAverageHorizontal
+#pragma kernel AreaAverageVertical
+
+Texture2D<float4> _SourceTexture;
+RWTexture2D<float4> _IntermediateTexture;
+Texture2D<float4> _IntermediateRead;
+RWTexture2D<float4> _OutputTexture;
+
+uint _SrcWidth;
+uint _SrcHeight;
+uint _DstWidth;
+uint _DstHeight;
+
+float _ScaleX;
+float _ScaleY;
+
+// When set (sRGB source whose output stays sRGB), the vertical kernel
+// re-encodes the averaged linear values back to sRGB so the readback bytes
+// match the source encoding. Cleared for linear sources and for forced-linear
+// output (normal maps). The GPU auto-decodes sRGB textures to linear on load,
+// so both passes average in linear space either way.
+uint _ReencodeSRGB;
+
+float3 LinearToSRGB(float3 c)
+{
+    c = max(c, 0);
+    return float3(
+        c.r <= 0.0031308 ? c.r * 12.92 : 1.055 * pow(c.r, 1.0 / 2.4) - 0.055,
+        c.g <= 0.0031308 ? c.g * 12.92 : 1.055 * pow(c.g, 1.0 / 2.4) - 0.055,
+        c.b <= 0.0031308 ? c.b * 12.92 : 1.055 * pow(c.b, 1.0 / 2.4) - 0.055
+    );
+}
+
+// Resamples one axis for a single output index: box filter over the covered
+// source interval when downscaling, 2-tap bilinear interpolation when
+// upscaling (a box interval covers at most one source pixel there, which
+// would degenerate to nearest-neighbor replication).
+// Must match CpuAreaAverageResizer.BuildPlan.
+float4 ResampleAxis(
+    Texture2D<float4> tex,
+    uint dstIndex,
+    float scale,
+    uint srcN,
+    uint fixedCoord,
+    bool horizontal
+)
+{
+    float4 result = float4(0, 0, 0, 0);
+
+    // Each tap is clamped to [0,1] BEFORE weighting so HDR sources average the
+    // same as the CPU backend's 8-bit-clamped input (clamp-then-average, not
+    // average-then-clamp).
+    if (scale < 1.0)
+    {
+        float c = (dstIndex + 0.5) * scale - 0.5;
+        int i0 = (int)floor(c);
+        float f = c - i0;
+        int s0 = clamp(i0, 0, (int)srcN - 1);
+        int s1 = clamp(i0 + 1, 0, (int)srcN - 1);
+        float4 t0 = saturate(horizontal ? tex[int2(s0, fixedCoord)] : tex[int2(fixedCoord, s0)]);
+        float4 t1 = saturate(horizontal ? tex[int2(s1, fixedCoord)] : tex[int2(fixedCoord, s1)]);
+        result = lerp(t0, t1, f);
+    }
+    else
+    {
+        float a = dstIndex * scale;
+        float b = (dstIndex + 1) * scale;
+
+        int s = (int)a;
+        int e = min((int)ceil(b), (int)srcN);
+        if (e <= s)
+            e = min(s + 1, (int)srcN);
+
+        float4 sum = float4(0, 0, 0, 0);
+        float totalWeight = 0;
+
+        for (int sx = s; sx < e; sx++)
+        {
+            float w = min((float)(sx + 1), b) - max((float)sx, a);
+            w = max(w, 0);
+            sum += saturate(horizontal ? tex[int2(sx, fixedCoord)] : tex[int2(fixedCoord, sx)]) * w;
+            totalWeight += w;
+        }
+
+        if (totalWeight > 1e-12)
+            sum /= totalWeight;
+
+        result = sum;
+    }
+
+    return result;
+}
+
+[numthreads(16, 16, 1)]
+void AreaAverageHorizontal(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _DstWidth || id.y >= _SrcHeight)
+        return;
+
+    _IntermediateTexture[int2(id.x, id.y)] =
+        ResampleAxis(_SourceTexture, id.x, _ScaleX, _SrcWidth, id.y, true);
+}
+
+[numthreads(16, 16, 1)]
+void AreaAverageVertical(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _DstWidth || id.y >= _DstHeight)
+        return;
+
+    float4 sum = saturate(ResampleAxis(_IntermediateRead, id.y, _ScaleY, _SrcHeight, id.x, false));
+    if (_ReencodeSRGB)
+        sum.rgb = LinearToSRGB(sum.rgb);
+    _OutputTexture[int2(id.x, id.y)] = sum;
+}

@@ -928,7 +928,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 output = new Texture2D(width, height, TextureFormat.RGBA32, mipChain);
                 output.ReadPixels(new Rect(0, 0, width, height), 0, 0);
                 output.Apply(mipChain);
-                TextureProcessor.CopyTextureSettings(source, output);
+                TextureReadback.CopyTextureSettings(source, output);
 
                 var result = output;
                 output = null;

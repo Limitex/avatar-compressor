@@ -49,7 +49,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             // Create service and compress textures
             var service = new TextureCompressorService(
                 config,
-                AvatarCompressorPreferences.AnalysisBackend,
+                TextureCompressorPreferences.AnalysisBackend,
+                TextureCompressorPreferences.ResizeBackend,
                 animationUsageMap,
                 unusedSlotOptimizer,
                 lilToonBaker
