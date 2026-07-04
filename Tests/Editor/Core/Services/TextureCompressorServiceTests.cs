@@ -2567,7 +2567,7 @@ namespace dev.limitex.avatar.compressor.tests
         [Test]
         [TestCase((byte)0, "NegativeZ", NormalMapPreprocessor.SourceLayout.RGB)]
         [TestCase((byte)255, "PositiveZ", NormalMapPreprocessor.SourceLayout.RGB)]
-        public void DetectDXTnmLikeSourceLayout_BC7RGBLayout_WithSingleSignedZOpaqueAlpha_ReturnsExpectedLayout(
+        internal void DetectDXTnmLikeSourceLayout_BC7RGBLayout_WithSingleSignedZOpaqueAlpha_ReturnsExpectedLayout(
             byte encodedZ,
             string signedZLabel,
             NormalMapPreprocessor.SourceLayout expectedLayout

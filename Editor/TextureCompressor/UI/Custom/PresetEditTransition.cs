@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// Handles edit mode transitions with user confirmation dialogs.
     /// Coordinates between PresetEditorState and the UI layer.
     /// </summary>
-    public static class PresetEditTransition
+    internal static class PresetEditTransition
     {
         /// <summary>
         /// Validates edit state consistency and auto-exits edit mode if the preset became locked.

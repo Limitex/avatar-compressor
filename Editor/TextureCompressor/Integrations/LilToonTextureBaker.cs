@@ -36,7 +36,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
     /// loaded assets.
     /// </para>
     /// </remarks>
-    public sealed class LilToonTextureBaker : ILilToonBaker
+    internal sealed class LilToonTextureBaker : ILilToonBaker
     {
         private const string BakerShaderName = "Hidden/ltsother_baker";
         private const string LilConstantsTypeName = "lilToon.lilConstants";

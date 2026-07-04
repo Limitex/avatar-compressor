@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
     /// <summary>
     /// Draws the GitHub link section at the bottom of the inspector.
     /// </summary>
-    public static class GitHubSection
+    internal static class GitHubSection
     {
         private const string GitHubUrl = "https://github.com/Limitex/avatar-compressor";
         private const string LinkText = "Limitex/avatar-compressor";

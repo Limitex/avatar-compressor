@@ -12,7 +12,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// not it is installed; when it is absent they report <see cref="IsAvailable"/> = false and do
     /// nothing. See the <c>Integrations</c> folder for concrete implementations.
     /// </remarks>
-    public interface IUnusedSlotOptimizer
+    internal interface IUnusedSlotOptimizer
     {
         /// <summary>
         /// True if the backing shader package was found and can be invoked.

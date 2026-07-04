@@ -10,7 +10,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Reads pixels via RenderTexture GPU→CPU readback, then runs
     /// analysis strategies on thread pool threads via Parallel.ForEach.
     /// </summary>
-    public class CpuAnalysisBackend : ITextureAnalysisBackend
+    internal sealed class CpuAnalysisBackend : ITextureAnalysisBackend
     {
         private readonly ITextureComplexityAnalyzer _standardAnalyzer;
         private readonly ITextureComplexityAnalyzer _normalMapAnalyzer;

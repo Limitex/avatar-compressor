@@ -6,6 +6,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Interface for texture complexity analysis strategies.
     /// Inherits from IAnalyzer for consistency with the common interface pattern.
     /// </summary>
-    public interface ITextureComplexityAnalyzer
+    internal interface ITextureComplexityAnalyzer
         : IAnalyzer<ProcessedPixelData, TextureComplexityResult> { }
 }

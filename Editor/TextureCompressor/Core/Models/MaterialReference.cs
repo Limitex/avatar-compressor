@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Represents the source type of a material reference.
     /// </summary>
-    public enum MaterialSourceType
+    internal enum MaterialSourceType
     {
         /// <summary>Material is referenced by a Renderer component.</summary>
         Renderer,
@@ -21,7 +21,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Represents a material and its reference source.
     /// Used to track where materials are referenced from for proper cloning and reference updates.
     /// </summary>
-    public class MaterialReference
+    internal sealed class MaterialReference
     {
         /// <summary>
         /// The referenced material.

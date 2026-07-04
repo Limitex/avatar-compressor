@@ -886,7 +886,7 @@ namespace dev.limitex.avatar.compressor.tests
         [TestCase(CompressorPreset.Balanced)]
         [TestCase(CompressorPreset.Aggressive)]
         [TestCase(CompressorPreset.Maximum)]
-        public void Compress_WithPreset_OriginalAssetsRemainUnchanged(CompressorPreset preset)
+        internal void Compress_WithPreset_OriginalAssetsRemainUnchanged(CompressorPreset preset)
         {
             var root = CreateRootGameObject($"Root_{preset}");
             var renderer = root.AddComponent<MeshRenderer>();

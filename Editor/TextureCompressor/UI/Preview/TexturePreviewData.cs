@@ -7,7 +7,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// Data class for texture preview display.
     /// Uses class instead of struct because it contains reference types (FrozenTextureSettings).
     /// </summary>
-    public class TexturePreviewData
+    internal sealed class TexturePreviewData
     {
         public Texture2D Texture { get; set; }
         public string Guid { get; set; }

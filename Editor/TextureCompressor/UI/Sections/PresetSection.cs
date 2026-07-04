@@ -9,7 +9,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// <summary>
     /// Draws the preset selection section.
     /// </summary>
-    public static class PresetSection
+    internal static class PresetSection
     {
         /// <summary>
         /// Draws the complete preset section including buttons, description, and summary.

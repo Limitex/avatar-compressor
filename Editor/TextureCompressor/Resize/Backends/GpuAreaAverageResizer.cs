@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// comment in ResizeOnGpu for why a Graphics.Blit pre-pass must never be
     /// added. Point-filtered and same-size sources delegate to the CPU path.
     /// </summary>
-    public class GpuAreaAverageResizer : ITextureResizer
+    internal sealed class GpuAreaAverageResizer : ITextureResizer
     {
         internal const string ShaderPath =
             "Packages/dev.limitex.avatar-compressor/"

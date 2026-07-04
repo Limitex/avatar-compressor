@@ -9,7 +9,7 @@ namespace dev.limitex.avatar.compressor.editor
     /// Base class for compressor custom editors with common utilities.
     /// Uses Template Method pattern to ensure consistent UI structure across all compressor editors.
     /// </summary>
-    public abstract class CompressorEditorBase : Editor
+    internal abstract class CompressorEditorBase : Editor
     {
         protected bool _showAdvancedSettings;
 

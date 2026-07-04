@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Service for calculating recommended divisor from complexity score.
     /// </summary>
-    public class ComplexityCalculator
+    internal sealed class ComplexityCalculator
     {
         private readonly float _highComplexityThreshold;
         private readonly float _lowComplexityThreshold;

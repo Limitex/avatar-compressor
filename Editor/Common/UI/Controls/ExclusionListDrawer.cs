@@ -9,7 +9,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
     /// Reusable static drawer for exclusion list sections (foldout + list + add/remove).
     /// Specific item drawing and behavior are provided via delegate callbacks.
     /// </summary>
-    public static class ExclusionListDrawer
+    internal static class ExclusionListDrawer
     {
         /// <summary>
         /// Draws a full exclusion list section with foldout, item rows, and add/remove buttons.

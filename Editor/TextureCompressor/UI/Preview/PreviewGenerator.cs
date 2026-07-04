@@ -10,7 +10,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// <summary>
     /// Generates preview data for texture compression.
     /// </summary>
-    public class PreviewGenerator
+    internal sealed class PreviewGenerator
     {
         private static LruCache<
             (string guid, Hash128 contentHash, int analysisHash, bool isNormalMap, bool isEmission),

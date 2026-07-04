@@ -9,7 +9,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Service for collecting textures from avatar hierarchy.
     /// </summary>
-    public class TextureCollector
+    internal sealed class TextureCollector
     {
         private readonly int _minSourceSize;
         private readonly int _skipIfSmallerThan;

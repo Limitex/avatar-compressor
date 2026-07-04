@@ -7,7 +7,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Sub-strategies run sequentially; outer-level parallelism (CpuAnalysisBackend.Parallel.ForEach)
     /// provides throughput by processing multiple textures concurrently.
     /// </summary>
-    public class CombinedStrategy : ITextureComplexityAnalyzer
+    internal sealed class CombinedStrategy : ITextureComplexityAnalyzer
     {
         private readonly FastAnalysisStrategy _fastStrategy;
         private readonly HighAccuracyStrategy _highAccuracyStrategy;

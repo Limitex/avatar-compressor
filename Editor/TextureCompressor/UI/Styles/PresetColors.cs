@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// <summary>
     /// Defines colors for compression presets.
     /// </summary>
-    public static class PresetColors
+    internal static class PresetColors
     {
         public static readonly Color HighQuality = new Color(0.1f, 0.9f, 0.6f);
         public static readonly Color Quality = new Color(0.2f, 0.8f, 0.4f);

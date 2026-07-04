@@ -25,9 +25,9 @@ namespace dev.limitex.avatar.compressor.editor
     /// per build, scoping the disable to that build.
     /// </para>
     /// </remarks>
-    public sealed class OptionalStaticMethod
+    internal sealed class OptionalStaticMethod
     {
-        public enum ResolutionStatus
+        internal enum ResolutionStatus
         {
             /// <summary>The declaring type does not exist: the package is not installed.</summary>
             TypeNotFound,

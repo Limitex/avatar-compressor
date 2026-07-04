@@ -11,7 +11,7 @@ namespace dev.limitex.avatar.compressor.editor
     /// </summary>
     /// <typeparam name="TKey">The type of keys in the cache.</typeparam>
     /// <typeparam name="TValue">The type of values in the cache.</typeparam>
-    public class LruCache<TKey, TValue>
+    internal sealed class LruCache<TKey, TValue>
     {
         private readonly Dictionary<TKey, (TValue value, double accessTime)> _cache = new();
         private readonly int _maxCapacity;

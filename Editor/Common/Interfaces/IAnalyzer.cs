@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor
     /// </summary>
     /// <typeparam name="TInput">Input data type</typeparam>
     /// <typeparam name="TResult">Result type implementing IAnalysisResult</typeparam>
-    public interface IAnalyzer<in TInput, out TResult>
+    internal interface IAnalyzer<in TInput, out TResult>
         where TResult : IAnalysisResult
     {
         /// <summary>

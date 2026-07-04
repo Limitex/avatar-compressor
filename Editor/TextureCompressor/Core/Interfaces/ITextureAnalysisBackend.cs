@@ -7,7 +7,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Backend interface for texture analysis.
     /// Implementations may use CPU (thread pool) or GPU (compute shaders).
     /// </summary>
-    public interface ITextureAnalysisBackend
+    internal interface ITextureAnalysisBackend
     {
         /// <summary>
         /// Analyzes a batch of textures and returns per-texture raw complexity scores (0-1).

@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Utility for extracting opaque pixels and converting to grayscale.
     /// Preserves 2D structure for spatial analysis algorithms.
     /// </summary>
-    public static class AlphaExtractor
+    internal static class AlphaExtractor
     {
         private const float TransparentMarker = -1f;
 

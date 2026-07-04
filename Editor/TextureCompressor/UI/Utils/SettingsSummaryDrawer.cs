@@ -7,7 +7,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// Draws settings summary for TextureCompressor.
     /// Extracted to avoid circular dependency between PresetSection and CustomSection.
     /// </summary>
-    public static class SettingsSummaryDrawer
+    internal static class SettingsSummaryDrawer
     {
         /// <summary>
         /// Draws a compact summary of the current compression settings.

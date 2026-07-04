@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
     /// Styles are lazily initialized to avoid issues with Unity's skin not being ready.
     /// Cache is cleared on domain reload to ensure fresh styles after script recompilation.
     /// </summary>
-    public static class EditorStylesCache
+    internal static class EditorStylesCache
     {
         private static GUIStyle _centeredLabel;
         private static GUIStyle _centeredBoldLabel;

@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// Manages editor-only state for custom preset mode.
     /// State resets on domain reload; objects with presets default to use-only mode.
     /// </summary>
-    public static class PresetEditorState
+    internal static class PresetEditorState
     {
         private const int MaxCachedStates = 64;
 

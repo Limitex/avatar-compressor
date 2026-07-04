@@ -11,7 +11,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
     /// Reusable search control with fuzzy search support.
     /// Holds search state, draws the UI via Unity's <see cref="SearchField"/>, and provides matching logic.
     /// </summary>
-    public class SearchBoxControl
+    internal sealed class SearchBoxControl
     {
         /// <summary>
         /// Current search text.

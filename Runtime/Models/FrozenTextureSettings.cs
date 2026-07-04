@@ -22,7 +22,7 @@ namespace dev.limitex.avatar.compressor
     /// Settings for a frozen texture with user-specified compression overrides.
     /// </summary>
     [System.Serializable]
-    public class FrozenTextureSettings
+    public sealed class FrozenTextureSettings
     {
         /// <summary>
         /// GUID of the texture asset (stable identifier that survives renames/moves).

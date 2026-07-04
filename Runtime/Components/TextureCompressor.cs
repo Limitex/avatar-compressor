@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor
 {
     [DisallowMultipleComponent]
     [AddComponentMenu("Avatar Compressor/LAC Texture Compressor")]
-    public class TextureCompressor : MonoBehaviour, IEditorOnly
+    public sealed class TextureCompressor : MonoBehaviour, IEditorOnly
     {
         [Header("Preset")]
         [Tooltip("Quick preset selection for common use cases")]

@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Factory for creating texture complexity analyzers.
     /// </summary>
-    public static class AnalyzerFactory
+    internal static class AnalyzerFactory
     {
         /// <summary>
         /// Creates an analyzer for the specified strategy type.

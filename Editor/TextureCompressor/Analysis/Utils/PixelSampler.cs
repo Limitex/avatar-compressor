@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Utility for sampling pixels from large textures.
     /// </summary>
-    public static class PixelSampler
+    internal static class PixelSampler
     {
         private const int MaxSampledPixels = AnalysisConstants.MaxSampledPixels;
 

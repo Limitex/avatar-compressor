@@ -16,9 +16,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// emission upgrades) and filter rules then apply to surviving bindings only, with no
     /// after-the-fact reconciliation that could drift from the collector's semantics.
     /// </remarks>
-    public static class UnusedSlotPruner
+    internal static class UnusedSlotPruner
     {
-        public readonly struct PruneResult
+        internal readonly struct PruneResult
         {
             public PruneResult(int clearedSlots, int droppedTextures)
             {

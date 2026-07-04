@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Backend selection for texture analysis.
     /// </summary>
-    public enum AnalysisBackendPreference
+    internal enum AnalysisBackendPreference
     {
         /// <summary>Use GPU if available, otherwise fall back to CPU.</summary>
         Auto,
@@ -19,7 +19,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Backend selection for texture resize (Area Averaging).
     /// </summary>
-    public enum ResizeBackendPreference
+    internal enum ResizeBackendPreference
     {
         /// <summary>Use GPU if available, otherwise fall back to CPU.</summary>
         Auto,
@@ -33,7 +33,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Texture Compressor editor preferences, shown as a section of the
     /// shared Avatar Compressor preferences window.
     /// </summary>
-    public static class TextureCompressorPreferences
+    internal static class TextureCompressorPreferences
     {
         private const string AnalysisBackendKey =
             AvatarCompressorPreferences.PrefsPrefix + "analysisBackend";

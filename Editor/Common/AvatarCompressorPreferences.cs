@@ -11,7 +11,7 @@ namespace dev.limitex.avatar.compressor.editor
     /// features through IPreferencesSection.
     /// Accessible via Edit > Preferences > Avatar Compressor.
     /// </summary>
-    public static class AvatarCompressorPreferences
+    internal static class AvatarCompressorPreferences
     {
         public const string PrefsPrefix = "dev.limitex.avatar-compressor.";
         private const string BasePath = "Preferences/Avatar Compressor";

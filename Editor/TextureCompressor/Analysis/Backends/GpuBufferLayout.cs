@@ -4,7 +4,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// C# mirror of the intermediate buffer layout defined in TextureAnalysisCommon.hlsl.
     /// All index constants must match the corresponding #define values in the shader.
     /// </summary>
-    public static class GpuBufferLayout
+    internal static class GpuBufferLayout
     {
         // Fast strategy — color mean accumulation (indices 6-9: R, G, B, count)
         public const int IdxColorSumR = 6;

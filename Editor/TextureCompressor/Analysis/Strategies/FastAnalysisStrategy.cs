@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Fast analysis strategy using Sobel gradient, spatial frequency, and color variance.
     /// </summary>
-    public class FastAnalysisStrategy : ITextureComplexityAnalyzer
+    internal sealed class FastAnalysisStrategy : ITextureComplexityAnalyzer
     {
         public TextureComplexityResult Analyze(ProcessedPixelData data)
         {

@@ -9,7 +9,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// <summary>
     /// Draws the texture filter and exclusion list sections.
     /// </summary>
-    public static class FilterSection
+    internal static class FilterSection
     {
         /// <summary>
         /// Draws the unified exclusions section containing both texture and path exclusions.

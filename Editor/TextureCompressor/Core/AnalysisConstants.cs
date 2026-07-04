@@ -3,7 +3,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Centralized constants for texture analysis algorithms.
     /// </summary>
-    public static class AnalysisConstants
+    internal static class AnalysisConstants
     {
         #region Image Processing
 

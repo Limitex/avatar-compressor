@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Factory that selects the appropriate analysis backend
     /// based on system capabilities.
     /// </summary>
-    public static class AnalysisBackendFactory
+    internal static class AnalysisBackendFactory
     {
         private const string ShaderPath =
             "Packages/dev.limitex.avatar-compressor/"

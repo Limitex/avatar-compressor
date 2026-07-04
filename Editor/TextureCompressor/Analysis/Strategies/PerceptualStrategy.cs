@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Perceptual analysis strategy using variance, edge density, and detail density.
     /// </summary>
-    public class PerceptualStrategy : ITextureComplexityAnalyzer
+    internal sealed class PerceptualStrategy : ITextureComplexityAnalyzer
     {
         public TextureComplexityResult Analyze(ProcessedPixelData data)
         {

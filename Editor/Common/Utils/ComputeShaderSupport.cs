@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.editor
     /// GPU compute availability checks shared by the backend factories, so the
     /// preferences UI and the actual backend selection cannot drift apart.
     /// </summary>
-    public static class ComputeShaderSupport
+    internal static class ComputeShaderSupport
     {
         /// <summary>
         /// Software rasterizers advertise compute support but produce unreliable

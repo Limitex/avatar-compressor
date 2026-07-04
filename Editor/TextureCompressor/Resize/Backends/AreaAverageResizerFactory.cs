@@ -1,6 +1,6 @@
 namespace dev.limitex.avatar.compressor.editor.texture
 {
-    public static class AreaAverageResizerFactory
+    internal static class AreaAverageResizerFactory
     {
         // No default for the backend preference: production call sites resolve
         // it from TextureCompressorPreferences, and tests must pick

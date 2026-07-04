@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// High accuracy analysis strategy using DCT, GLCM, and entropy.
     /// </summary>
-    public class HighAccuracyStrategy : ITextureComplexityAnalyzer
+    internal sealed class HighAccuracyStrategy : ITextureComplexityAnalyzer
     {
         public TextureComplexityResult Analyze(ProcessedPixelData data)
         {

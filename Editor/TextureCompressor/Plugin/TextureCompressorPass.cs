@@ -12,7 +12,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Pass that compresses avatar textures, including those referenced by animations.
     /// </summary>
-    internal class TextureCompressorPass : Pass<TextureCompressorPass>
+    internal sealed class TextureCompressorPass : Pass<TextureCompressorPass>
     {
         public override string DisplayName => "Avatar Compressor: Compress Avatar Textures";
 

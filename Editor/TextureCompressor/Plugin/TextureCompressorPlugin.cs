@@ -10,7 +10,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// NDMF plugin that integrates TextureCompressorService into the avatar build pipeline.
     /// </summary>
-    public class TextureCompressorPlugin : Plugin<TextureCompressorPlugin>
+    internal sealed class TextureCompressorPlugin : Plugin<TextureCompressorPlugin>
     {
         public override string DisplayName => "LAC Texture Compressor";
         public override string QualifiedName => "dev.limitex.avatar-compressor.texture";

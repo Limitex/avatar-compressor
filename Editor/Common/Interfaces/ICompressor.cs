@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor
     /// <summary>
     /// Common interface for all compressors.
     /// </summary>
-    public interface ICompressor
+    internal interface ICompressor
     {
         /// <summary>
         /// Display name of the compressor.

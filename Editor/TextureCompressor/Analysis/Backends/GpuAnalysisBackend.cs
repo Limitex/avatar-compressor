@@ -13,7 +13,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// AsyncGPUReadback.
     /// Must be called from the main thread (Unity GPU dispatch constraint).
     /// </summary>
-    public class GpuAnalysisBackend : ITextureAnalysisBackend
+    internal sealed class GpuAnalysisBackend : ITextureAnalysisBackend
     {
         private const int IntermediateBufferSize = GpuBufferLayout.IntermediateBufferSize;
         private const int ResultBufferSize = GpuBufferLayout.ResultBufferSize;

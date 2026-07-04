@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Mathematical utilities for image processing.
     /// Supports transparent pixel skipping via negative grayscale values.
     /// </summary>
-    public static class ImageMath
+    internal static class ImageMath
     {
         private const int DctBlockSize = AnalysisConstants.DctBlockSize;
         private const int GlcmLevels = AnalysisConstants.GlcmLevels;

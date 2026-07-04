@@ -13,7 +13,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Service for collecting materials from various sources in an avatar hierarchy.
     /// </summary>
-    public static class MaterialCollector
+    internal static class MaterialCollector
     {
         /// <summary>
         /// Collects all materials from Renderer components in the hierarchy.
