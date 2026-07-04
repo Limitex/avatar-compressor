@@ -1112,6 +1112,15 @@ namespace dev.limitex.avatar.compressor.tests
                 Assert.Ignore("No graphics device; the baker deliberately disables itself.");
         }
 
+        // llvmpipe (GameCI's software rasterizer) does not round-trip bytes through the
+        // material-blit sRGB raster path, so byte-exact assertions are only meaningful on
+        // a GPU renderer — same skip as NormalMapResizePipelineTests' blit precision tests.
+        private static void RequireGpuRasterizer()
+        {
+            if (SystemInfo.graphicsDeviceName.Contains("llvmpipe"))
+                Assert.Ignore("Byte-exact blit test requires a GPU renderer.");
+        }
+
         private static Texture2D CreateGradientTexture(bool linear, out Color32[] pixels)
         {
             var texture = new Texture2D(4, 4, TextureFormat.RGBA32, false, linear);
@@ -1129,6 +1138,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void BlitBake_SRGBSource_RoundTripsBytes_WhenSRGBWriteLeftDisabled()
         {
             RequireGraphicsDevice();
+            RequireGpuRasterizer();
 
             var source = CreateGradientTexture(linear: false, out var pixels);
             bool previousSRGBWrite = GL.sRGBWrite;
@@ -1162,6 +1172,7 @@ namespace dev.limitex.avatar.compressor.tests
         public void BlitBake_LinearSource_PreservesSampledValues()
         {
             RequireGraphicsDevice();
+            RequireGpuRasterizer();
 
             var source = CreateGradientTexture(linear: true, out var pixels);
             bool previousSRGBWrite = GL.sRGBWrite;
