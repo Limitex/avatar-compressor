@@ -34,9 +34,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
         // Flag to avoid repeating build context warning (per-build instance)
         private bool _buildContextWarningShown;
 
+        // No defaults for the backend preferences: production call sites resolve
+        // them from TextureCompressorPreferences, and tests must pick deterministically.
         public TextureCompressorService(
             TextureCompressor config,
-            AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto,
+            AnalysisBackendPreference backendPreference,
+            ResizeBackendPreference resizeBackendPreference,
             AnimationUsageMap animationUsageMap = null,
             IUnusedSlotOptimizer unusedSlotOptimizer = null
         )
@@ -69,7 +72,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
             _processor = new TextureProcessor(
                 config.MinResolution,
                 config.MaxResolution,
-                config.ForcePowerOfTwo
+                config.ForcePowerOfTwo,
+                resizeBackendPreference
             );
 
             _formatSelector = new TextureFormatSelector(
@@ -284,7 +288,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 // Save original pixels BEFORE destructive normal map preprocessing (for fallback restore)
                 Color32[] originalPixels = null;
-                // isReadable is always true for BlitResize output (new Texture2D); guard is defensive
+                // isReadable is always true for resizer output (new Texture2D); guard is defensive
                 if (isNormalMap && resizedTexture.isReadable)
                 {
                     originalPixels = resizedTexture.GetPixels32();

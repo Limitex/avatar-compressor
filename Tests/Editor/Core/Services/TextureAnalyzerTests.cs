@@ -14,7 +14,7 @@ namespace dev.limitex.avatar.compressor.tests
         [SetUp]
         public void SetUp()
         {
-            _processor = new TextureProcessor(32, 2048, true);
+            _processor = new TextureProcessor(32, 2048, true, ResizeBackendPreference.CPU);
         }
 
         #region Constructor Tests

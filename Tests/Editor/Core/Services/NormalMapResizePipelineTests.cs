@@ -23,7 +23,7 @@ namespace dev.limitex.avatar.compressor.tests
         [SetUp]
         public void SetUp()
         {
-            _processor = new TextureProcessor(32, 2048, false);
+            _processor = new TextureProcessor(32, 2048, false, ResizeBackendPreference.CPU);
             _createdObjects = new List<Object>();
         }
 
@@ -168,7 +168,7 @@ namespace dev.limitex.avatar.compressor.tests
             source.SetPixels32(pixels);
             source.Apply();
 
-            var result = ResizeToSize(source, 32, 32, isNormalMap: false);
+            var result = ResizeToSize(source, 32, 32);
             _createdObjects.Add(result);
 
             Assert.AreEqual(32, result.width);
@@ -188,7 +188,6 @@ namespace dev.limitex.avatar.compressor.tests
             source.SetPixels32(pixels);
             source.Apply();
 
-            // No isNormalMap parameter -> defaults to false
             var result = ResizeToSize(source, 32, 32);
             _createdObjects.Add(result);
 
@@ -414,61 +413,6 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
-        #region Non-NormalMap Comparison
-
-        [Test]
-        public void ResizeSameSize_WithoutNormalMapFlag_MayCorruptData()
-        {
-            var source = NormalMapTestTextureFactory.CreateSphere(128);
-            _createdObjects.Add(source);
-
-            var resultWithFlag = ResizeToSize(source, 128, 128, isNormalMap: true);
-            _createdObjects.Add(resultWithFlag);
-
-            var resultWithoutFlag = ResizeToSize(source, 128, 128, isNormalMap: false);
-            _createdObjects.Add(resultWithoutFlag);
-
-            var sourcePixels = source.GetPixels32();
-            var pixelsWithFlag = resultWithFlag.GetPixels32();
-            var pixelsWithoutFlag = resultWithoutFlag.GetPixels32();
-
-            // Compute angular errors for both paths
-            float withFlagErrorSum = 0f;
-            float withoutFlagErrorSum = 0f;
-            int count = 0;
-            int sampleCount = Mathf.Min(500, sourcePixels.Length);
-            int step = Mathf.Max(1, sourcePixels.Length / sampleCount);
-
-            for (int i = 0; i < sourcePixels.Length; i += step)
-            {
-                var srcN = NormalMapTestTextureFactory.DecodeNormal(sourcePixels[i]);
-                var withN = NormalMapTestTextureFactory.DecodeNormal(pixelsWithFlag[i]);
-                var withoutN = NormalMapTestTextureFactory.DecodeNormal(pixelsWithoutFlag[i]);
-
-                float dot1 = Mathf.Clamp(Vector3.Dot(srcN.normalized, withN.normalized), -1f, 1f);
-                float dot2 = Mathf.Clamp(
-                    Vector3.Dot(srcN.normalized, withoutN.normalized),
-                    -1f,
-                    1f
-                );
-                withFlagErrorSum += Mathf.Acos(dot1) * Mathf.Rad2Deg;
-                withoutFlagErrorSum += Mathf.Acos(dot2) * Mathf.Rad2Deg;
-                count++;
-            }
-
-            float withFlagAvg = count > 0 ? withFlagErrorSum / count : 0f;
-            float withoutFlagAvg = count > 0 ? withoutFlagErrorSum / count : 0f;
-
-            // The normal-map path must not be less accurate than the default path
-            Assert.That(
-                withFlagAvg,
-                Is.LessThanOrEqualTo(withoutFlagAvg + 0.1f),
-                "isNormalMap=true path should be at least as accurate as default resize path"
-            );
-        }
-
-        #endregion
-
         #region High Precision
 
         [Test]
@@ -497,6 +441,48 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region sRGB-Flagged Sources
+
+        [Test]
+        public void Resize_SRGBFlaggedNormalMap_OutputsLinearizedBytes()
+        {
+            // A texture left at sRGB (Default) import but bound to a normal-map
+            // slot: resize must decode to linear and flag the output linear,
+            // because BC5/DXTnm sampling never applies sRGB decode.
+            var source = NormalMapTestTextureFactory.CreateFlat(64, linear: false);
+            _createdObjects.Add(source);
+
+            var result = ResizeToSize(source, 32, 32, isNormalMap: true);
+            _createdObjects.Add(result);
+
+            Assert.IsFalse(result.isDataSRGB, "Normal map output should be linear-flagged");
+
+            var pixels = result.GetPixels32();
+            // sRGB byte 128 decodes to linear ~0.216 -> byte ~55
+            Assert.That(pixels[0].r, Is.InRange((byte)53, (byte)57));
+            Assert.That(pixels[0].g, Is.InRange((byte)53, (byte)57));
+            Assert.That(pixels[0].b, Is.InRange((byte)253, (byte)255));
+        }
+
+        [Test]
+        public void Resize_SRGBFlaggedNormalMap_SameSize_AlsoLinearizes()
+        {
+            // The same-size fast path must not bypass the sRGB->linear decode.
+            var source = NormalMapTestTextureFactory.CreateFlat(64, linear: false);
+            _createdObjects.Add(source);
+
+            var result = ResizeToSize(source, 64, 64, isNormalMap: true);
+            _createdObjects.Add(result);
+
+            Assert.IsFalse(result.isDataSRGB, "Normal map output should be linear-flagged");
+
+            var pixels = result.GetPixels32();
+            Assert.That(pixels[0].r, Is.InRange((byte)53, (byte)57));
+            Assert.That(pixels[0].g, Is.InRange((byte)53, (byte)57));
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private Texture2D ResizeSingle(
@@ -505,8 +491,7 @@ namespace dev.limitex.avatar.compressor.tests
             bool isNormalMap = false
         )
         {
-            var results = _processor.ResizeBatch(new[] { (source, analysis, isNormalMap) });
-            return results[source];
+            return _processor.ResizeSingle(source, analysis, isNormalMap);
         }
 
         private Texture2D ResizeToSize(
@@ -516,10 +501,9 @@ namespace dev.limitex.avatar.compressor.tests
             bool isNormalMap = false
         )
         {
-            // Use divisor=2 to force ResizeBatch to use RecommendedResolution
+            // Use divisor=2 to force the resize to use RecommendedResolution
             var analysis = new TextureAnalysisResult(0.5f, 2, new Vector2Int(newWidth, newHeight));
-            var results = _processor.ResizeBatch(new[] { (source, analysis, isNormalMap) });
-            return results[source];
+            return _processor.ResizeSingle(source, analysis, isNormalMap);
         }
 
         #endregion

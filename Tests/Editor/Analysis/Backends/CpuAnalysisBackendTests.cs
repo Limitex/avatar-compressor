@@ -16,7 +16,7 @@ namespace dev.limitex.avatar.compressor.tests
         [SetUp]
         public void SetUp()
         {
-            _processor = new TextureProcessor(32, 2048, true);
+            _processor = new TextureProcessor(32, 2048, true, ResizeBackendPreference.CPU);
             var standardAnalyzer = AnalyzerFactory.Create(AnalysisStrategyType.Fast);
             var normalMapAnalyzer = AnalyzerFactory.CreateNormalMapAnalyzer();
             _backend = new CpuAnalysisBackend(standardAnalyzer, normalMapAnalyzer, _processor);
@@ -277,7 +277,7 @@ namespace dev.limitex.avatar.compressor.tests
                 complexityCalc,
                 _processor
             );
-            var resized = _processor.ResizeSingle(texture, analysisResult, false);
+            var resized = _processor.ResizeSingle(texture, analysisResult, isNormalMap: false);
             Assert.IsNotNull(resized);
             _createdObjects.Add(resized);
             Assert.IsFalse(
@@ -312,7 +312,7 @@ namespace dev.limitex.avatar.compressor.tests
                 complexityCalc,
                 _processor
             );
-            var resized = _processor.ResizeSingle(texture, analysisResult, false);
+            var resized = _processor.ResizeSingle(texture, analysisResult, isNormalMap: false);
             Assert.IsNotNull(resized);
             _createdObjects.Add(resized);
             Assert.IsTrue(
@@ -347,7 +347,7 @@ namespace dev.limitex.avatar.compressor.tests
                 complexityCalc,
                 _processor
             );
-            var resized = _processor.ResizeSingle(texture, analysisResult, false);
+            var resized = _processor.ResizeSingle(texture, analysisResult, isNormalMap: false);
             Assert.IsNotNull(resized);
             _createdObjects.Add(resized);
             Assert.IsTrue(

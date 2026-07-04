@@ -1,4 +1,3 @@
-using UnityEditor;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
@@ -27,12 +26,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             AnalysisBackendPreference backendPreference = AnalysisBackendPreference.Auto
         )
         {
-            if (
-                backendPreference != AnalysisBackendPreference.CPU
-                && SystemInfo.supportsComputeShaders
-                && SystemInfo.supportsAsyncGPUReadback
-                && TryLoadShader(out var shader)
-            )
+            if (backendPreference != AnalysisBackendPreference.CPU && IsGpuUsable(out var shader))
             {
                 try
                 {
@@ -82,7 +76,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         }
 
         /// <summary>
-        /// Returns a display name indicating which backend would be selected
+        /// Returns a display name indicating which backend Create would select
         /// given the current system capabilities and the backend preference.
         /// </summary>
         public static string ResolveBackendName(AnalysisBackendPreference backendPreference)
@@ -90,22 +84,29 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (backendPreference == AnalysisBackendPreference.CPU)
                 return "CPU";
 
-            if (
-                SystemInfo.supportsComputeShaders
-                && SystemInfo.supportsAsyncGPUReadback
-                && TryLoadShader(out _)
-            )
-            {
-                return "GPU";
-            }
-
-            return "CPU (GPU unavailable)";
+            return IsGpuUsable(out _) ? "GPU" : "CPU (GPU unavailable)";
         }
 
-        private static bool TryLoadShader(out ComputeShader shader)
+        /// <summary>
+        /// Non-throwing availability probe shared by Create and
+        /// ResolveBackendName, so the preferences UI reports the backend Create
+        /// actually selects. The "Preprocess" sentinel kernel catches
+        /// compile-failed assets without duplicating the full required-kernel
+        /// list from GpuAnalysisBackend; a rarer per-kernel failure still makes
+        /// Create's ctor throw and fall back to CPU with a warning.
+        /// </summary>
+        private static bool IsGpuUsable(out ComputeShader shader)
         {
-            shader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderPath);
-            return shader != null;
+            shader = null;
+
+            if (
+                !SystemInfo.supportsComputeShaders
+                || !SystemInfo.supportsAsyncGPUReadback
+                || ComputeShaderSupport.IsUnreliableComputeRenderer()
+            )
+                return false;
+
+            return ComputeShaderSupport.TryLoadCompiledShader(ShaderPath, out shader, "Preprocess");
         }
     }
 }

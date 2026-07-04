@@ -506,17 +506,6 @@ namespace dev.limitex.avatar.compressor.tests
             return EncodeNormalRGB(x, y, z);
         }
 
-        /// <summary>
-        /// Decodes a Color32 from RGB layout to a normal vector.
-        /// </summary>
-        public static Vector3 DecodeNormal(Color32 pixel)
-        {
-            float x = (pixel.r / 255f) * 2f - 1f;
-            float y = (pixel.g / 255f) * 2f - 1f;
-            float z = (pixel.b / 255f) * 2f - 1f;
-            return new Vector3(x, y, z);
-        }
-
         private static Color32 EncodeNormalRGB(float x, float y, float z)
         {
             byte r = (byte)Mathf.Clamp((x * 0.5f + 0.5f) * 255f, 0f, 255f);
