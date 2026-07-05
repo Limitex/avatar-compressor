@@ -9,7 +9,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// baked replacement, and how many bake operations were skipped because one of their input
     /// properties is driven by animation.
     /// </summary>
-    public readonly struct LilToonBakeResult
+    internal readonly struct LilToonBakeResult
     {
         public LilToonBakeResult(int bakedSlots, int skippedByAnimation)
         {

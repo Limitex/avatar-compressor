@@ -36,6 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Not reflected in the inspector preview (it requires the NDMF build context); the preview shows a notice while the feature is enabled
   - Enabled by default, toggleable per avatar in the inspector
 
+### Changed
+
+- **The package no longer exposes a public C# API** - All runtime and editor types are now `internal` (the package's own editor and test assemblies keep access via `InternalsVisibleTo`), non-inherited classes are `sealed`, and members used only within their declaring class are `private`; components, presets, and the Inspector UI are unaffected
+
 ### Fixed
 
 - **GPU analysis no longer breaks when other tools repaint the editor GUI during the build** - Coexisting build tools that synchronously repaint an editor window mid-build (e.g. VRCFury's progress window during play-mode builds) corrupted the editor graphics state so that compute shaders silently read all-zero pixels from RenderTextures, collapsing every sRGB texture's complexity to the sparse-texture penalty (10%) and over-compressing the whole avatar to minimum resolution

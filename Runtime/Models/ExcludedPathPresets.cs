@@ -24,7 +24,7 @@ namespace dev.limitex.avatar.compressor
     /// <summary>
     /// Represents a predefined path exclusion preset.
     /// </summary>
-    public readonly struct ExcludedPathPreset
+    internal readonly struct ExcludedPathPreset
     {
         public readonly string Label;
         public readonly string Path;

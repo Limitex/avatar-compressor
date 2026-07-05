@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Result of texture complexity analysis.
     /// </summary>
-    public readonly struct TextureAnalysisResult : IAnalysisResult
+    internal readonly struct TextureAnalysisResult : IAnalysisResult
     {
         /// <summary>
         /// Normalized complexity value (0-1).

@@ -10,7 +10,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// </summary>
     internal sealed class GpuAreaAverageResizer : ITextureResizer
     {
-        internal const string ShaderPath =
+        private const string ShaderPath =
             "Packages/dev.limitex.avatar-compressor/"
             + "Editor/TextureCompressor/Resize/Shaders/AreaAverageResize.compute";
 

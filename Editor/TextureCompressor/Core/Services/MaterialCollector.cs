@@ -95,7 +95,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         /// </summary>
         /// <param name="ctx">NDMF BuildContext</param>
         /// <returns>List of material references from animations</returns>
-        public static List<MaterialReference> CollectFromAnimator(BuildContext ctx)
+        private static List<MaterialReference> CollectFromAnimator(BuildContext ctx)
         {
             var references = new List<MaterialReference>();
 

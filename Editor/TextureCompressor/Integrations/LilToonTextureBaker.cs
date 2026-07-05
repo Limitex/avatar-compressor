@@ -68,7 +68,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         /// <summary>
         /// lilToon's neutral HSVG (hue 0, saturation/value/gamma 1) — the "no adjustment" value.
         /// </summary>
-        public static readonly Vector4 DefaultHsvg = new Vector4(0f, 1f, 1f, 1f);
+        private static readonly Vector4 DefaultHsvg = new Vector4(0f, 1f, 1f, 1f);
 
         private static readonly string[] MainBakeInputProperties =
         {
