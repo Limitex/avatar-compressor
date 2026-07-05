@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class FrozenTextureSettingsTests
+    internal class FrozenTextureSettingsTests
     {
         #region Constructor Tests
 
@@ -91,7 +91,7 @@ namespace dev.limitex.avatar.compressor.tests
     }
 
     [TestFixture]
-    public class FrozenTextureFormatTests
+    internal class FrozenTextureFormatTests
     {
         #region Enum Value Tests
 

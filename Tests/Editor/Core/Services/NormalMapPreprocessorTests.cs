@@ -6,7 +6,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class NormalMapPreprocessorTests
+    internal class NormalMapPreprocessorTests
     {
         private NormalMapPreprocessor _preprocessor;
         private List<Object> _createdObjects;

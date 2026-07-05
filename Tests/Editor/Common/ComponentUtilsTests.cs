@@ -5,7 +5,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class ComponentUtilsTests
+    internal class ComponentUtilsTests
     {
         #region SafeDestroy Tests
 

@@ -13,7 +13,7 @@ namespace dev.limitex.avatar.compressor.tests
     /// Automatically skipped when GPU compute shaders are unavailable.
     /// </summary>
     [TestFixture]
-    public class GpuCpuParityTests
+    internal class GpuCpuParityTests
     {
         private const float ScoreTolerance = 0.02f;
 

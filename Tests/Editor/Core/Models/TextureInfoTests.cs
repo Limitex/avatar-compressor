@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class TextureInfoTests
+    internal class TextureInfoTests
     {
         #region Default Values Tests
 
@@ -123,7 +123,7 @@ namespace dev.limitex.avatar.compressor.tests
     }
 
     [TestFixture]
-    public class MaterialTextureReferenceTests
+    internal class MaterialTextureReferenceTests
     {
         #region Default Values Tests
 
@@ -153,7 +153,7 @@ namespace dev.limitex.avatar.compressor.tests
     }
 
     [TestFixture]
-    public class SkipReasonTests
+    internal class SkipReasonTests
     {
         [Test]
         public void SkipReason_None_HasValueZero()

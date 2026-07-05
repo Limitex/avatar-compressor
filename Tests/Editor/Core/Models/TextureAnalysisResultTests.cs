@@ -5,7 +5,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class TextureAnalysisResultTests
+    internal class TextureAnalysisResultTests
     {
         #region Constructor Tests
 

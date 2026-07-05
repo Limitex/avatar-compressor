@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class TextureComplexityResultTests
+    internal class TextureComplexityResultTests
     {
         #region Constructor Tests
 

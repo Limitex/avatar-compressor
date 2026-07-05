@@ -9,7 +9,7 @@ namespace dev.limitex.avatar.compressor.tests
     /// Shared Assert.Ignore guard for tests that require trustworthy GPU
     /// compute results.
     /// </summary>
-    public static class GpuTestGuard
+    internal static class GpuTestGuard
     {
         /// <summary>
         /// Skips the running test unless real GPU hardware with compute

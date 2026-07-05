@@ -7,7 +7,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class AnalysisBackendFactoryTests
+    internal class AnalysisBackendFactoryTests
     {
         private TextureProcessor _processor;
 

@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class ExcludedPathPresetsTests
+    internal class ExcludedPathPresetsTests
     {
         #region GetDefaultPaths Tests
 

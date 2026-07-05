@@ -7,7 +7,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class PresetScannerTests
+    internal class PresetScannerTests
     {
         private CustomTextureCompressorPreset _presetWithMenuPath;
         private CustomTextureCompressorPreset _presetWithoutMenuPath;

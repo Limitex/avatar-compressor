@@ -5,7 +5,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class ImageMathTests
+    internal class ImageMathTests
     {
         #region Sobel Gradient Tests
 

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class LilToonUnusedSlotOptimizerTests
+    internal class LilToonUnusedSlotOptimizerTests
     {
         // lilToon is optional; both presence states are exercised across two CI runs (gameci.yml pins
         // it, gameci-minimal.yml installs required deps only). Real-API tests are Assume-guarded, so

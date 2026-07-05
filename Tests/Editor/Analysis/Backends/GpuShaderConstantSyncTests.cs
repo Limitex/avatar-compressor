@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class GpuShaderConstantSyncTests
+    internal class GpuShaderConstantSyncTests
     {
         private Dictionary<string, string> _hlslDefines;
 

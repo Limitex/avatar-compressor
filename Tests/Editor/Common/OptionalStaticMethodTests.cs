@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class OptionalStaticMethodTests
+    internal class OptionalStaticMethodTests
     {
         // The target type is resolved by its full name string, exactly like an external package's
         // type would be — the test assembly plays the role of the optional package.
@@ -141,7 +141,7 @@ namespace dev.limitex.avatar.compressor.tests
     /// <summary>
     /// Stand-in for an optional external package's static API, looked up by full type name.
     /// </summary>
-    public static class OptionalStaticMethodTestTarget
+    internal static class OptionalStaticMethodTestTarget
     {
         public static int CallCount;
 

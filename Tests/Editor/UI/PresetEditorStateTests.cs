@@ -6,7 +6,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class PresetEditorStateTests
+    internal class PresetEditorStateTests
     {
         private GameObject _gameObject;
         private TextureCompressor _config;

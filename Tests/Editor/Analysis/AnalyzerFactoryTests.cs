@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class AnalyzerFactoryTests
+    internal class AnalyzerFactoryTests
     {
         #region Create Tests - Strategy Types
 

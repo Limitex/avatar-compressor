@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class LruCacheTests
+    internal class LruCacheTests
     {
         private double _mockTime;
         private LruCache<int, string> _cache;
