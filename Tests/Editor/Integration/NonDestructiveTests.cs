@@ -13,7 +13,7 @@ namespace dev.limitex.avatar.compressor.tests
     /// After compression, original assets (materials, textures) should remain unchanged.
     /// </summary>
     [TestFixture]
-    public class NonDestructiveTests
+    internal class NonDestructiveTests
     {
         private const string CloneSuffix = "_clone";
         private const string CompressedSuffix = "_compressed";
@@ -886,7 +886,7 @@ namespace dev.limitex.avatar.compressor.tests
         [TestCase(CompressorPreset.Balanced)]
         [TestCase(CompressorPreset.Aggressive)]
         [TestCase(CompressorPreset.Maximum)]
-        internal void Compress_WithPreset_OriginalAssetsRemainUnchanged(CompressorPreset preset)
+        public void Compress_WithPreset_OriginalAssetsRemainUnchanged(CompressorPreset preset)
         {
             var root = CreateRootGameObject($"Root_{preset}");
             var renderer = root.AddComponent<MeshRenderer>();

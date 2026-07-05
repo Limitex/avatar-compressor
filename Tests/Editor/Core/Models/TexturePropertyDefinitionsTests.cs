@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class TexturePropertyDefinitionsTests
+    internal class TexturePropertyDefinitionsTests
     {
         #region Unity Standard Properties
 
@@ -167,7 +167,7 @@ namespace dev.limitex.avatar.compressor.tests
         [TestCase("_MetallicGlossMap", TexturePropertyCategory.Other)]
         [TestCase("_OcclusionMap", TexturePropertyCategory.Other)]
         [TestCase("_MatCapTex", TexturePropertyCategory.Other)]
-        internal void GetCategory_ReturnsCorrectCategory(
+        public void GetCategory_ReturnsCorrectCategory(
             string propertyName,
             TexturePropertyCategory expected
         )
