@@ -12,52 +12,6 @@ namespace dev.limitex.avatar.compressor.editor.ui
     internal static class ExclusionListDrawer
     {
         /// <summary>
-        /// Draws a full exclusion list section with foldout, item rows, and add/remove buttons.
-        /// </summary>
-        /// <param name="undoTarget">The Object to record undo on.</param>
-        /// <param name="list">The backing list to draw and modify.</param>
-        /// <param name="showSection">Foldout state (passed by ref).</param>
-        /// <param name="sectionLabel">Label for the foldout header (count is appended automatically).</param>
-        /// <param name="emptyHelpText">Help text shown when the list is empty.</param>
-        /// <param name="drawItemField">Draws the input field for one item and returns the new value.</param>
-        /// <param name="addButtonLabel">Label for the add button.</param>
-        /// <param name="onAdd">Called when the add button is clicked. If null, appends default(T).</param>
-        /// <param name="validateChange">Returns true to accept a change. If null, all changes are accepted.</param>
-        /// <param name="drawItemExtra">Draws optional extra UI below each item row. Can be null.</param>
-        public static void Draw<T>(
-            UnityEngine.Object undoTarget,
-            List<T> list,
-            ref bool showSection,
-            string sectionLabel,
-            string emptyHelpText,
-            Func<T, T> drawItemField,
-            string addButtonLabel = "+ Add",
-            Action<UnityEngine.Object, List<T>> onAdd = null,
-            Func<T, int, List<T>, bool> validateChange = null,
-            Action<T, int> drawItemExtra = null
-        )
-        {
-            int count = list.Count;
-            string label = count > 0 ? $"{sectionLabel} ({count})" : sectionLabel;
-
-            showSection = EditorGUILayout.Foldout(showSection, label, true);
-            if (!showSection)
-                return;
-
-            DrawContent(
-                undoTarget,
-                list,
-                drawItemField,
-                sectionLabel,
-                emptyHelpText,
-                addButtonLabel,
-                onAdd,
-                validateChange,
-                drawItemExtra
-            );
-        }
-
-        /// <summary>
         /// Draws the list content without a foldout wrapper.
         /// Use this when the caller manages the foldout externally.
         /// </summary>
