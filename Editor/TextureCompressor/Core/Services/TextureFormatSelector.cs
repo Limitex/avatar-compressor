@@ -7,7 +7,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Service for selecting texture compression formats based on platform and texture properties.
     /// Provides format prediction without performing actual compression.
     /// </summary>
-    public class TextureFormatSelector
+    internal sealed class TextureFormatSelector
     {
         private readonly CompressionPlatform _targetPlatform;
         private readonly bool _useHighQualityFormatForHighComplexity;

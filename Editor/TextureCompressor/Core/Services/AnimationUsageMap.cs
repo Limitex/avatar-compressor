@@ -30,7 +30,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// is disabled rather than guessing from static state.
     /// </para>
     /// </remarks>
-    public sealed class AnimationUsageMap
+    internal sealed class AnimationUsageMap
     {
         private const string MaterialBindingPrefix = "material.";
 

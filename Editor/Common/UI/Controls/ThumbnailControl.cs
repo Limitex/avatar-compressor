@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
     /// <summary>
     /// Provides clickable thumbnail drawing for textures.
     /// </summary>
-    public static class ThumbnailControl
+    internal static class ThumbnailControl
     {
         /// <summary>
         /// Draws a clickable thumbnail that pings the asset in Project window when clicked.

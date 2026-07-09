@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// For ambiguous formats (DXT5, BC7), pixel heuristics are used to distinguish
     /// between AG (DXTnm), RG, and RGB channel layouts.
     /// </summary>
-    public static class NormalMapSourceLayoutDetector
+    internal static class NormalMapSourceLayoutDetector
     {
         /// <summary>Maximum number of pixels to sample for heuristic analysis.</summary>
         private const int MaxSamplePixels = 4096;

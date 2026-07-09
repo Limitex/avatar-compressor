@@ -5,7 +5,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class AnalysisStrategyTests
+    internal class AnalysisStrategyTests
     {
         #region Fast Strategy Tests
 

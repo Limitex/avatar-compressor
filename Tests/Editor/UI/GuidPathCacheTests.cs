@@ -8,7 +8,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class GuidPathCacheTests
+    internal class GuidPathCacheTests
     {
         private const string TestAssetFolder = "Assets/_LAC_TMP_GuidPathCache";
         private List<string> _createdAssetPaths;

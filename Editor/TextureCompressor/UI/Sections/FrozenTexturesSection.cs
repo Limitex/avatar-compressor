@@ -10,7 +10,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// Draws the frozen textures section for manual texture overrides.
     /// Owns its own search box and all UI state.
     /// </summary>
-    public class FrozenTexturesSection
+    internal sealed class FrozenTexturesSection
     {
         private readonly SearchBoxControl _searchBox = new();
         private bool _showSection = true;

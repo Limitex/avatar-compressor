@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class MathUtilsTests
+    internal class MathUtilsTests
     {
         #region NormalizeWithPercentile Tests
 

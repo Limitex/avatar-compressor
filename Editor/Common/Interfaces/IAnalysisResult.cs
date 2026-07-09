@@ -3,7 +3,7 @@ namespace dev.limitex.avatar.compressor.editor
     /// <summary>
     /// Common interface for analysis results.
     /// </summary>
-    public interface IAnalysisResult
+    internal interface IAnalysisResult
     {
         /// <summary>
         /// Normalized score (0-1) representing optimization potential.

@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// <summary>
     /// Provides texture format display utilities.
     /// </summary>
-    public static class TextureFormatUtils
+    internal static class TextureFormatUtils
     {
         /// <summary>
         /// Gets a user-friendly display name for a texture format.

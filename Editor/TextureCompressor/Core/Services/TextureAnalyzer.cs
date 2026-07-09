@@ -7,7 +7,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Facade for texture complexity analysis.
     /// Delegates to an ITextureAnalysisBackend implementation (CPU or GPU).
     /// </summary>
-    public class TextureAnalyzer
+    internal sealed class TextureAnalyzer
     {
         private readonly ITextureAnalysisBackend _backend;
 

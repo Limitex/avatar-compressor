@@ -9,7 +9,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class TextureCollectorTests
+    internal class TextureCollectorTests
     {
         private const string TestAssetFolder = "Assets/_LAC_TMP";
         private TextureCollector _collector;

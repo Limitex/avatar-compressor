@@ -3,7 +3,7 @@ namespace dev.limitex.avatar.compressor
     /// <summary>
     /// Predefined path exclusion presets for common packages.
     /// </summary>
-    public static class ExcludedPathPresets
+    internal static class ExcludedPathPresets
     {
         public static readonly ExcludedPathPreset[] Presets = new[]
         {
@@ -24,7 +24,7 @@ namespace dev.limitex.avatar.compressor
     /// <summary>
     /// Represents a predefined path exclusion preset.
     /// </summary>
-    public readonly struct ExcludedPathPreset
+    internal readonly struct ExcludedPathPreset
     {
         public readonly string Label;
         public readonly string Path;

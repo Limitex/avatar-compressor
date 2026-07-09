@@ -23,7 +23,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     ///   - Poiyomi Toon Shader (https://github.com/poiyomi/PoiyomiToonShader)
     ///   - UTS2 (https://github.com/unity3d-jp/UnityChanToonShaderVer2_Project)
     /// </summary>
-    public static class TexturePropertyDefinitions
+    internal static class TexturePropertyDefinitions
     {
         /// <summary>
         /// Unity Standard / URP / HDRP texture properties.

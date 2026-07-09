@@ -10,7 +10,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// Draws the preview section with texture analysis results.
     /// Owns its own search box.
     /// </summary>
-    public class PreviewSection
+    internal sealed class PreviewSection
     {
         private readonly PreviewGenerator _generator = new PreviewGenerator();
         private readonly SearchBoxControl _searchBox = new();

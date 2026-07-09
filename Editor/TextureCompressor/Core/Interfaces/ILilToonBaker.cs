@@ -9,7 +9,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// baked replacement, and how many bake operations were skipped because one of their input
     /// properties is driven by animation.
     /// </summary>
-    public readonly struct LilToonBakeResult
+    internal readonly struct LilToonBakeResult
     {
         public LilToonBakeResult(int bakedSlots, int skippedByAnimation)
         {
@@ -35,7 +35,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// is installed; when it is absent it reports <see cref="IsAvailable"/> = false and does
     /// nothing. See the <c>Integrations</c> folder for the concrete implementation.
     /// </remarks>
-    public interface ILilToonBaker
+    internal interface ILilToonBaker
     {
         /// <summary>
         /// True if the backing shader package was found and can be invoked.

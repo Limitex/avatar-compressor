@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor
     /// <summary>
     /// Common mathematical utility methods.
     /// </summary>
-    public static class MathUtils
+    internal static class MathUtils
     {
         /// <summary>
         /// Normalizes a value using expected percentile range.

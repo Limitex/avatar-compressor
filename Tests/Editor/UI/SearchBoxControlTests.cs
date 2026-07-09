@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class SearchBoxControlTests
+    internal class SearchBoxControlTests
     {
         private SearchBoxControl _searchBox;
 

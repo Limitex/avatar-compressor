@@ -12,7 +12,7 @@ namespace dev.limitex.avatar.compressor.tests
     // the test assembly is loaded. The guard is exercised with types that
     // fail construction instead.
     [TestFixture]
-    public class PreferencesSectionCreationTests
+    internal class PreferencesSectionCreationTests
     {
         [Test]
         public void CreateSections_RealSection_IsCreated()

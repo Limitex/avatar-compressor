@@ -5,7 +5,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class AnimationUsageMapTests
+    internal class AnimationUsageMapTests
     {
         [Test]
         public void Constructor_FiltersNullAndEmptyEntries()

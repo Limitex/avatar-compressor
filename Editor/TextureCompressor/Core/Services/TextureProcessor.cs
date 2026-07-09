@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Service for processing textures (resizing only).
     /// All output dimensions are guaranteed to be multiples of 4 for DXT/BC compression compatibility.
     /// </summary>
-    public class TextureProcessor
+    internal sealed class TextureProcessor
     {
         private readonly int _minResolution;
         private readonly int _maxResolution;

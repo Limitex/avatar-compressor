@@ -5,7 +5,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class PixelSamplerTests
+    internal class PixelSamplerTests
     {
         #region SampleIfNeeded Tests - No Sampling Required
 

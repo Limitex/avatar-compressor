@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor
     /// <summary>
     /// Fuzzy string matching using the Bitap algorithm with Wu-Manber extension.
     /// </summary>
-    public static class FuzzyMatcher
+    internal static class FuzzyMatcher
     {
         private const int MaxPatternLength = 31;
         private const int NoMatchMask = ~0;

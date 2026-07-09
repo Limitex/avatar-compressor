@@ -10,7 +10,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// Main UI for Custom preset mode.
     /// Handles mode selection, preset management, and detail panels.
     /// </summary>
-    public static class CustomSection
+    internal static class CustomSection
     {
         private const float ButtonSpacing = 2f;
         private const int MaxCachedRects = 32;

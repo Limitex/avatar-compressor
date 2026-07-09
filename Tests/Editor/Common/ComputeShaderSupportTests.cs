@@ -6,7 +6,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class ComputeShaderSupportTests
+    internal class ComputeShaderSupportTests
     {
         private const string ResizeShaderPath =
             "Packages/dev.limitex.avatar-compressor/"

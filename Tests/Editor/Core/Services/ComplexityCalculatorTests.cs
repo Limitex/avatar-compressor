@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class ComplexityCalculatorTests
+    internal class ComplexityCalculatorTests
     {
         private ComplexityCalculator _calculator;
 

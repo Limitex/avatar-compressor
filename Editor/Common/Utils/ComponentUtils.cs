@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor
     /// <summary>
     /// Utility methods for component operations.
     /// </summary>
-    public static class ComponentUtils
+    internal static class ComponentUtils
     {
         /// <summary>
         /// Safely destroys a component.

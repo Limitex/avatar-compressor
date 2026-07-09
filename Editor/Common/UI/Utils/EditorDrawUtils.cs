@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
     /// <summary>
     /// Provides common drawing utilities for editor UI.
     /// </summary>
-    public static class EditorDrawUtils
+    internal static class EditorDrawUtils
     {
         /// <summary>
         /// Draws a section header with bold label.

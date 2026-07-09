@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor
 {
     [DisallowMultipleComponent]
     [AddComponentMenu("Avatar Compressor/LAC Texture Compressor")]
-    public class TextureCompressor : MonoBehaviour, IEditorOnly
+    internal sealed class TextureCompressor : MonoBehaviour, IEditorOnly
     {
         [Header("Preset")]
         [Tooltip("Quick preset selection for common use cases")]
@@ -350,7 +350,7 @@ namespace dev.limitex.avatar.compressor
         }
     }
 
-    public enum CompressorPreset
+    internal enum CompressorPreset
     {
         HighQuality,
         Quality,
@@ -363,7 +363,7 @@ namespace dev.limitex.avatar.compressor
     /// <summary>
     /// Strategy type for complexity analysis.
     /// </summary>
-    public enum AnalysisStrategyType
+    internal enum AnalysisStrategyType
     {
         Fast,
         HighAccuracy,
@@ -374,7 +374,7 @@ namespace dev.limitex.avatar.compressor
     /// <summary>
     /// Target platform for texture compression format selection.
     /// </summary>
-    public enum CompressionPlatform
+    internal enum CompressionPlatform
     {
         Auto, // Detect from build target
         Desktop, // DXT/BC formats (PC VRChat)

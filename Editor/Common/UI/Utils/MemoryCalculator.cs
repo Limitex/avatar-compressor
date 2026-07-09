@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
     /// <summary>
     /// Provides memory calculation utilities for textures.
     /// </summary>
-    public static class MemoryCalculator
+    internal static class MemoryCalculator
     {
         /// <summary>
         /// Calculates compressed memory size based on format and mipmap count.

@@ -12,7 +12,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Service that handles texture compression logic.
     /// Implements ICompressor for consistency with other compressors.
     /// </summary>
-    public class TextureCompressorService : ICompressor
+    internal sealed class TextureCompressorService : ICompressor
     {
         public string Name => "Texture Compressor";
 

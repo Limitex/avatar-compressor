@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.tests
     /// <summary>
     /// Factory for creating test normal map textures with known patterns.
     /// </summary>
-    public static class NormalMapTestTextureFactory
+    internal static class NormalMapTestTextureFactory
     {
         /// <summary>
         /// Creates a flat normal map (all pixels pointing straight up: 0, 0, 1).

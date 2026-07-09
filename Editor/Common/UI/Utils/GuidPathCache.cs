@@ -7,7 +7,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
     /// Shared cache of GUID-to-asset-path lookups. Auto-clears on Unity project changes.
     /// </summary>
     [InitializeOnLoad]
-    public static class GuidPathCache
+    internal static class GuidPathCache
     {
         private static readonly Dictionary<string, string> s_cache = new();
 

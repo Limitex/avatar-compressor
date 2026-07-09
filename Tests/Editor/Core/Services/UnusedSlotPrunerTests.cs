@@ -6,7 +6,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class UnusedSlotPrunerTests
+    internal class UnusedSlotPrunerTests
     {
         private const string TestShaderName = "Hidden/LAC/Tests/UnusedSlot";
 

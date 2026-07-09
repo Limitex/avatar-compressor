@@ -12,7 +12,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class PreviewGeneratorTests
+    internal class PreviewGeneratorTests
     {
         private const string TestAssetFolder = "Assets/_LAC_TMP";
         private GameObject _testObject;

@@ -10,7 +10,7 @@ using UnityEngine.Rendering;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class TextureCompressorServiceTests
+    internal class TextureCompressorServiceTests
     {
         private static bool IsSoftwareRenderer =>
             SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null

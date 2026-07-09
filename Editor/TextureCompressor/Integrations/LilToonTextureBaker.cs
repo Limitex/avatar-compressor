@@ -36,7 +36,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
     /// loaded assets.
     /// </para>
     /// </remarks>
-    public sealed class LilToonTextureBaker : ILilToonBaker
+    internal sealed class LilToonTextureBaker : ILilToonBaker
     {
         private const string BakerShaderName = "Hidden/ltsother_baker";
         private const string LilConstantsTypeName = "lilToon.lilConstants";
@@ -68,7 +68,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         /// <summary>
         /// lilToon's neutral HSVG (hue 0, saturation/value/gamma 1) — the "no adjustment" value.
         /// </summary>
-        public static readonly Vector4 DefaultHsvg = new Vector4(0f, 1f, 1f, 1f);
+        private static readonly Vector4 DefaultHsvg = new Vector4(0f, 1f, 1f, 1f);
 
         private static readonly string[] MainBakeInputProperties =
         {

@@ -9,7 +9,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// filtered equivalent of sampling the source. Point-filtered sources are
     /// resampled with nearest neighbor to preserve exact texel values.
     /// </summary>
-    public interface ITextureResizer
+    internal interface ITextureResizer
     {
         /// <summary>
         /// Returns a new readable RGBA32 texture, or null on failure.

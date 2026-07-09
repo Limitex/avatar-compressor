@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Utility for querying texture format properties.
     /// </summary>
-    public static class TextureFormatInfo
+    internal static class TextureFormatInfo
     {
         /// <summary>
         /// Returns true if the given texture format is a block-compressed format

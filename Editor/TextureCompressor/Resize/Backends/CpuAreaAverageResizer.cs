@@ -13,7 +13,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// sampling the source yielded. With forceLinearOutput the re-encode
     /// is skipped and the output is flagged linear instead.
     /// </summary>
-    public class CpuAreaAverageResizer : ITextureResizer
+    internal sealed class CpuAreaAverageResizer : ITextureResizer
     {
         public Texture2D Resize(
             Texture2D source,
@@ -211,7 +211,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             return CreateOutput(result, dstW, dstH, source, outputSRGB);
         }
 
-        public struct AxisPlan
+        internal struct AxisPlan
         {
             public int[] Start;
             public int[] Len;

@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Custom editor for the TextureCompressor component.
     /// </summary>
     [CustomEditor(typeof(TextureCompressor))]
-    public class TextureCompressorEditor : CompressorEditorBase
+    internal sealed class TextureCompressorEditor : CompressorEditorBase
     {
         // Section components (each owns its own search and UI state)
         private FrozenTexturesSection _frozenSection;

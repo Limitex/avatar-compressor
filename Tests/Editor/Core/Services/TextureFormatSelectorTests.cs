@@ -6,7 +6,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class TextureFormatSelectorTests
+    internal class TextureFormatSelectorTests
     {
         #region PredictFormat Desktop Tests
 

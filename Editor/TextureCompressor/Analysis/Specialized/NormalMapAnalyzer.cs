@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Specialized analyzer for Normal Map textures.
     /// Measures normal vector variation instead of color variance.
     /// </summary>
-    public class NormalMapAnalyzer : ITextureComplexityAnalyzer
+    internal sealed class NormalMapAnalyzer : ITextureComplexityAnalyzer
     {
         public TextureComplexityResult Analyze(ProcessedPixelData data)
         {

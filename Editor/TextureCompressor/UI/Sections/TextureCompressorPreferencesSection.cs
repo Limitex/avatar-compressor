@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// Texture Compressor section of the shared Avatar Compressor
     /// preferences window.
     /// </summary>
-    public class TextureCompressorPreferencesSection : IPreferencesSection
+    internal sealed class TextureCompressorPreferencesSection : IPreferencesSection
     {
         private static readonly GUIContent AnalysisBackendContent = new(
             "Analysis Backend",

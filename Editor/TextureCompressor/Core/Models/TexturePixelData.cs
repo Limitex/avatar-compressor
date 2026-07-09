@@ -5,7 +5,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Processed pixel data ready for complexity analysis.
     /// </summary>
-    public struct ProcessedPixelData
+    internal struct ProcessedPixelData
     {
         public Color[] OpaquePixels;
         public float[] Grayscale;

@@ -7,7 +7,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class ResizeParityTests
+    internal class ResizeParityTests
     {
         private const float ChannelTolerance = 0.02f;
 

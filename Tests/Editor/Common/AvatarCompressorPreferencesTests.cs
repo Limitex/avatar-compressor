@@ -5,7 +5,7 @@ using UnityEditor;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class AvatarCompressorPreferencesTests
+    internal class AvatarCompressorPreferencesTests
     {
         private const string EnableLoggingKey = "dev.limitex.avatar-compressor.enableLogging";
 

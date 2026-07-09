@@ -13,7 +13,7 @@ namespace dev.limitex.avatar.compressor.tests
     /// resize (via TextureProcessor) then preprocess (via NormalMapPreprocessor).
     /// </summary>
     [TestFixture]
-    public class NormalMapPreprocessorPipelineTests
+    internal class NormalMapPreprocessorPipelineTests
     {
         private static bool IsSoftwareRenderer =>
             SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null

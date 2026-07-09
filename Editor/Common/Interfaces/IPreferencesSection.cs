@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.editor
     /// parameterless constructor, and are drawn in Title order after the
     /// General section.
     /// </summary>
-    public interface IPreferencesSection
+    internal interface IPreferencesSection
     {
         /// <summary>Bold section header shown in the preferences window.</summary>
         string Title { get; }

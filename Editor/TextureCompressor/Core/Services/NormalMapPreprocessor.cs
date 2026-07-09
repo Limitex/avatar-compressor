@@ -23,12 +23,12 @@ namespace dev.limitex.avatar.compressor.editor.texture
     ///   - Default: Write XY to AG channels (DXTnm format)
     ///   - When preserving alpha: Write XYZ to RGB and keep original A channel
     /// </summary>
-    public class NormalMapPreprocessor
+    internal sealed class NormalMapPreprocessor
     {
         /// <summary>
         /// Source channel layout override for cases where format alone is ambiguous (e.g. BC7).
         /// </summary>
-        public enum SourceLayout
+        internal enum SourceLayout
         {
             Auto,
             RG,

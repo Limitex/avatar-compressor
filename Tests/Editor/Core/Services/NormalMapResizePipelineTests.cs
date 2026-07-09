@@ -11,7 +11,7 @@ namespace dev.limitex.avatar.compressor.tests
     /// without corruption from gamma correction or quantization.
     /// </summary>
     [TestFixture]
-    public class NormalMapResizePipelineTests
+    internal class NormalMapResizePipelineTests
     {
         private static bool IsSoftwareRenderer =>
             SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null

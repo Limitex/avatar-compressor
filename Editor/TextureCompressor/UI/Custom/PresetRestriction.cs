@@ -3,7 +3,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// <summary>
     /// Preset editing restriction levels.
     /// </summary>
-    public enum PresetRestriction
+    internal enum PresetRestriction
     {
         /// <summary>In Assets/ folder and Lock=false. Freely editable.</summary>
         None,
@@ -21,7 +21,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// <summary>
     /// Extension methods for PresetRestriction enum.
     /// </summary>
-    public static class PresetRestrictionExtensions
+    internal static class PresetRestrictionExtensions
     {
         /// <summary>
         /// Returns true if the preset can be edited directly without unlinking.

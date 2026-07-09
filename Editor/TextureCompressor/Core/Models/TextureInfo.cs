@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Categories for texture properties, used to control per-type processing toggles.
     /// </summary>
-    public enum TexturePropertyCategory
+    internal enum TexturePropertyCategory
     {
         Main,
         Normal,
@@ -17,7 +17,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Reason why a texture is skipped from compression.
     /// </summary>
-    public enum SkipReason
+    internal enum SkipReason
     {
         None,
         TooSmall,
@@ -32,7 +32,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Information about a texture and its usage context.
     /// </summary>
-    public class TextureInfo
+    internal sealed class TextureInfo
     {
         public TexturePropertyCategory TextureType { get; set; }
         public bool IsNormalMap { get; set; }
@@ -47,7 +47,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Reference to a texture in a material.
     /// </summary>
-    public class MaterialTextureReference
+    internal sealed class MaterialTextureReference
     {
         public Material Material { get; set; }
         public string PropertyName { get; set; }

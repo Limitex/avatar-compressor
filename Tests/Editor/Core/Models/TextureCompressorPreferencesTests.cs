@@ -5,7 +5,7 @@ using UnityEditor;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class TextureCompressorPreferencesTests
+    internal class TextureCompressorPreferencesTests
     {
         private const string AnalysisBackendKey = "dev.limitex.avatar-compressor.analysisBackend";
         private const string ResizeBackendKey = "dev.limitex.avatar-compressor.resizeBackend";

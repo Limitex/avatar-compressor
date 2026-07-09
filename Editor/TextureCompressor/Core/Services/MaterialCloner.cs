@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// <summary>
     /// Service for cloning materials and updating references.
     /// </summary>
-    public static class MaterialCloner
+    internal static class MaterialCloner
     {
         /// <summary>
         /// Clones materials from the given references and updates Renderer references.

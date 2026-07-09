@@ -8,7 +8,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// <summary>
     /// Draws the settings section (custom settings and advanced settings foldout).
     /// </summary>
-    public static class SettingsSection
+    internal static class SettingsSection
     {
         /// <summary>
         /// Draws custom settings when in Custom preset mode, or advanced settings foldout otherwise.

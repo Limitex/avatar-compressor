@@ -6,7 +6,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// <summary>
     /// Resolves preset locations and determines their editing restrictions.
     /// </summary>
-    public static class PresetLocationResolver
+    internal static class PresetLocationResolver
     {
         private static UnityEditor.PackageManager.PackageInfo _packageInfo;
 

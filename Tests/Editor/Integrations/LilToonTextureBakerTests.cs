@@ -8,7 +8,7 @@ using UnityEngine;
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    public class LilToonTextureBakerTests
+    internal class LilToonTextureBakerTests
     {
         private const string BakeTestShaderName = "Hidden/LAC/Tests/LilToonBake";
         private const string SlotTestShaderName = "Hidden/LAC/Tests/UnusedSlot";

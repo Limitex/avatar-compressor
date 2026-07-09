@@ -44,7 +44,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
     /// not at all, so they need no compensation here.
     /// </para>
     /// </remarks>
-    public sealed class LilToonUnusedSlotOptimizer : IUnusedSlotOptimizer
+    internal sealed class LilToonUnusedSlotOptimizer : IUnusedSlotOptimizer
     {
         private const string TypeName = "lilToon.lilMaterialUtils";
         private const string MethodName = "RemoveUnusedTexture";
