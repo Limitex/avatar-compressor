@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **The package no longer exposes a public C# API** - All runtime and editor types are now `internal` (the package's own editor and test assemblies keep access via `InternalsVisibleTo`), non-inherited classes are `sealed`, and members used only within their declaring class are `private`; components, presets, and the Inspector UI are unaffected
+- **The package no longer exposes a public C# API** - All runtime and editor types are now `internal` (the package's own editor and test assemblies keep access via `InternalsVisibleTo`), non-inherited classes are `sealed`, and members used only within their declaring class are `private`; components, presets, and the Inspector UI are unaffected (**Breaking**)
 
 ### Fixed
 
