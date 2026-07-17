@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.9.0] - 2026-07-17
+
 ### Added
 
 - **lilToon texture baking** - During the NDMF build, bakes lilToon's texture adjustments into the textures themselves so the adjusted texture ships instead of the adjustment inputs plus per-pixel shader work: main-color corrections (hue/saturation/value/gamma, gradation map, adjust mask) and active 2nd/3rd layers into the main texture, the alpha mask into the main texture's alpha channel, and outline tone correction into the outline texture
