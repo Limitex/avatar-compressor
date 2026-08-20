@@ -4,22 +4,22 @@ on:
   push:
     branches:
       - main
-  pull_request_target:
+  pull_request:
   workflow_dispatch:
 
 jobs:
   format:
     name: CSharpier Format Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        uses: actions/checkout@v7
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.x'
 

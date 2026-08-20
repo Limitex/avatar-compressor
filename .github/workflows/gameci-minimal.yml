@@ -22,11 +22,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: ci_checkout
           lfs: true
+          persist-credentials: false
+          allow-unsafe-pr-checkout: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork }}
 
       - name: Prepare project
         run: |
@@ -55,7 +57,7 @@ jobs:
             https://vpm.nadena.dev/vpm.json
 
       - name: Cache Library
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: Library
           key: Library-minimal-${{ hashFiles('Packages/**') }}
@@ -74,8 +76,9 @@ jobs:
           customParameters: -assemblyNames dev.limitex.avatar-compressor.editor.tests
           checkName: Test Results (minimal)
 
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() && steps.gameci.outputs.artifactsPath != '' }}
         with:
           name: Test results (minimal)
           path: ${{ steps.gameci.outputs.artifactsPath }}
+          if-no-files-found: ignore
