@@ -14,7 +14,6 @@ jobs:
     environment: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork && 'external' || '' }}
     permissions:
       contents: read
-      checks: write
 
     steps:
       - name: Checkout repository
@@ -45,11 +44,20 @@ jobs:
             https://lilxyzw.github.io/vpm-repos/vpm.json
       
       - name: Cache Library
+        if: ${{ github.event_name != 'pull_request_target' || !github.event.pull_request.head.repo.fork }}
         uses: actions/cache@v5
         with:
           path: Library
-          key: Library-${{ hashFiles('Packages/**') }}
-          restore-keys: Library-
+          key: Library-full-${{ hashFiles('Packages/**') }}
+          restore-keys: Library-full-
+
+      - name: Restore Library cache (fork PR)
+        if: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork }}
+        uses: actions/cache/restore@v5
+        with:
+          path: Library
+          key: Library-full-${{ hashFiles('Packages/**') }}
+          restore-keys: Library-full-
             
       - name: Run tests
         uses: game-ci/unity-test-runner@v4
@@ -60,10 +68,8 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           testMode: editmode
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+dev.limitex.*
           customParameters: -assemblyNames dev.limitex.avatar-compressor.editor.tests
-          checkName: Test Results
         
       - uses: actions/upload-artifact@v7
         if: ${{ always() && steps.gameci.outputs.artifactsPath != '' }}
