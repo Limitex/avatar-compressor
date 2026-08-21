@@ -9,7 +9,8 @@ namespace dev.limitex.avatar.compressor.tests
     internal class LilToonUnusedSlotOptimizerTests
     {
         // lilToon is optional; both presence states are exercised across two CI runs (gameci.yml pins
-        // it, gameci-minimal.yml installs required deps only). Real-API tests are Assume-guarded, so
+        // it, gameci-minimal.yml installs required deps only). Real-API tests are explicitly ignored
+        // when the optional package is absent, so
         // each state also gets a shader-gated Assert sentinel — a broken bridge fails loudly instead
         // of silently skipping.
 
@@ -26,7 +27,7 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.DoesNotThrow(() => optimizer.ClearUnusedSlots(null, null));
         }
 
-        // Without this, a broken bridge would make every Assume-gated test below skip and leave CI
+        // Without this, a broken bridge would make every availability-gated test below skip and leave CI
         // green. Shader presence is bridge-independent, so an installed-but-unresolved bridge fails here.
         [Test]
         public void IsAvailable_True_WhenLilToonIsInstalled()
@@ -39,7 +40,7 @@ namespace dev.limitex.avatar.compressor.tests
                 Is.True,
                 "lilToon is installed (its shader resolved) but the reflection bridge to "
                     + "lilMaterialUtils.RemoveUnusedTexture did not — likely TypeName/MethodName "
-                    + "drift, a lilToon API change, or a failed VPM resolve. Every Assume-gated "
+                    + "drift, a lilToon API change, or a failed VPM resolve. Every availability-gated "
                     + "real-API test below would otherwise skip silently."
             );
         }
@@ -299,11 +300,19 @@ namespace dev.limitex.avatar.compressor.tests
         private static LilToonUnusedSlotOptimizer CreateInstalledOptimizer()
         {
             var optimizer = new LilToonUnusedSlotOptimizer();
-            Assume.That(
-                optimizer.IsAvailable,
-                Is.True,
-                "lilToon is not installed in this project; skipping the real-API integration check."
-            );
+            if (!optimizer.IsAvailable)
+            {
+                if (Shader.Find("lilToon") == null)
+                    Assert.Ignore(
+                        "lilToon is not installed in this project; skipping the real-API integration check."
+                    );
+
+                Assert.Fail(
+                    "lilToon is installed, but the reflection bridge to "
+                        + "lilMaterialUtils.RemoveUnusedTexture is unavailable."
+                );
+            }
+
             return optimizer;
         }
 
