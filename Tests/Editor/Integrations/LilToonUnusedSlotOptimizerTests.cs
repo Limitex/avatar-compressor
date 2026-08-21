@@ -301,9 +301,18 @@ namespace dev.limitex.avatar.compressor.tests
         {
             var optimizer = new LilToonUnusedSlotOptimizer();
             if (!optimizer.IsAvailable)
-                Assert.Ignore(
-                    "lilToon is not installed in this project; skipping the real-API integration check."
+            {
+                if (Shader.Find("lilToon") == null)
+                    Assert.Ignore(
+                        "lilToon is not installed in this project; skipping the real-API integration check."
+                    );
+
+                Assert.Fail(
+                    "lilToon is installed, but the reflection bridge to "
+                        + "lilMaterialUtils.RemoveUnusedTexture is unavailable."
                 );
+            }
+
             return optimizer;
         }
 

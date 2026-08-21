@@ -45,6 +45,13 @@ jobs:
           }
           EOF
 
+      - name: Resolve VPM packages
+        uses: anatawa12/sh-actions/resolve-vpm-packages@master
+        with:
+          repos: |
+            https://vpm.limitex.dev/
+            https://vpm.nadena.dev/vpm.json
+
       - name: Cache Library
         if: ${{ github.event_name != 'pull_request_target' || !github.event.pull_request.head.repo.fork }}
         uses: actions/cache@v5
@@ -53,23 +60,13 @@ jobs:
           key: Library-minimal-${{ hashFiles('Packages/**') }}
           restore-keys: Library-minimal-
 
-      - name: Restore Library cache (fork PR)
+      - name: Restore Library cache
         if: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork }}
         uses: actions/cache/restore@v5
         with:
           path: Library
           key: Library-minimal-${{ hashFiles('Packages/**') }}
           restore-keys: Library-minimal-
-
-      - name: Setup vrc-get
-        uses: anatawa12/sh-actions/setup-vrc-get@master
-
-      - name: Resolve VPM packages
-        uses: anatawa12/sh-actions/resolve-vpm-packages@master
-        with:
-          repos: |
-            https://vpm.limitex.dev/
-            https://vpm.nadena.dev/vpm.json
 
       - name: Run tests
         uses: game-ci/unity-test-runner@v4
