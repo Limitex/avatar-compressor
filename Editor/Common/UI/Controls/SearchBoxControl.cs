@@ -72,9 +72,9 @@ namespace dev.limitex.avatar.compressor.editor.ui
 
                 EditorGUI.BeginChangeCheck();
                 var fuzzy = EditorGUILayout.ToggleLeft(
-                    "Fuzzy",
+                    AvatarCompressorLocalization.Tr("search.fuzzy"),
                     UseFuzzySearch,
-                    GUILayout.Width(55)
+                    GUILayout.Width(70)
                 );
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -87,7 +87,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
                 if (totalCount >= 0)
                 {
                     GUILayout.Label(
-                        $"Showing {matchedCount} of {totalCount}",
+                        AvatarCompressorLocalization.Tr("search.showing", matchedCount, totalCount),
                         EditorStyles.miniLabel
                     );
                 }
@@ -194,6 +194,20 @@ namespace dev.limitex.avatar.compressor.editor.ui
                 return true;
 
             return MatchesCore(text1) || MatchesCore(text2) || MatchesCore(text3);
+        }
+
+        /// <summary>
+        /// Checks if any of the four provided strings matches the current search.
+        /// </summary>
+        public bool MatchesSearchAny(string text1, string text2, string text3, string text4)
+        {
+            if (!IsSearching)
+                return true;
+
+            return MatchesCore(text1)
+                || MatchesCore(text2)
+                || MatchesCore(text3)
+                || MatchesCore(text4);
         }
 
         /// <summary>

@@ -80,7 +80,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
             else
             {
-                menu.AddDisabledItem(new GUIContent("No presets available"));
+                menu.AddDisabledItem(
+                    new GUIContent(AvatarCompressorLocalization.Tr("preset_menu.none"))
+                );
             }
 
             return menu;
@@ -101,13 +103,22 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 var restriction = PresetLocationResolver.GetRestriction(preset);
                 string suffix = restriction switch
                 {
-                    PresetRestriction.BuiltIn => " (Built-in)",
-                    PresetRestriction.ExternalPackage => " (Package)",
+                    PresetRestriction.BuiltIn => AvatarCompressorLocalization.Tr(
+                        "preset_menu.built_in_suffix"
+                    ),
+                    PresetRestriction.ExternalPackage => AvatarCompressorLocalization.Tr(
+                        "preset_menu.package_suffix"
+                    ),
                     _ => "",
                 };
 
+                string menuPath =
+                    restriction == PresetRestriction.BuiltIn
+                        ? BuiltInPresetLocalization.GetMenuPath(preset)
+                        : preset.MenuPath;
+
                 menu.AddItem(
-                    new GUIContent(preset.MenuPath + suffix),
+                    new GUIContent(menuPath + suffix),
                     isSelected,
                     () => onPresetSelected?.Invoke(presetRef)
                 );

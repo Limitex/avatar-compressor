@@ -53,25 +53,24 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 return;
             }
 
-            string title = "Unlink Preset";
+            string title = AvatarCompressorLocalization.Tr("unlink_dialog.title");
             string reason = restriction switch
             {
-                PresetRestriction.BuiltIn =>
-                    "This preset is a built-in preset and cannot be edited.",
-                PresetRestriction.ExternalPackage =>
-                    "This preset is in a package and cannot be edited.",
-                _ => "This preset is locked and cannot be edited directly.",
+                PresetRestriction.BuiltIn => AvatarCompressorLocalization.Tr(
+                    "unlink_dialog.reason.built_in"
+                ),
+                PresetRestriction.ExternalPackage => AvatarCompressorLocalization.Tr(
+                    "unlink_dialog.reason.package"
+                ),
+                _ => AvatarCompressorLocalization.Tr("unlink_dialog.reason.locked"),
             };
-            string message =
-                $"{reason}\n\n"
-                + "Do you want to unlink and edit the settings manually?\n"
-                + "(Current settings will be preserved)";
+            string message = AvatarCompressorLocalization.Tr("unlink_dialog.message", reason);
 
             bool confirmed = EditorUtility.DisplayDialog(
                 title,
                 message,
-                "Unlink and Edit",
-                "Cancel"
+                AvatarCompressorLocalization.Tr("unlink_dialog.confirm"),
+                AvatarCompressorLocalization.Tr("common.cancel")
             );
 
             if (!confirmed)

@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.editor.texture.ui;
+using nadena.dev.ndmf.localization;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -14,6 +15,21 @@ namespace dev.limitex.avatar.compressor.tests
     [TestFixture]
     internal class PreferencesSectionCreationTests
     {
+        private string _originalLanguage;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _originalLanguage = LanguagePrefs.Language;
+            LanguagePrefs.Language = "en-US";
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            LanguagePrefs.Language = _originalLanguage;
+        }
+
         [Test]
         public void CreateSections_RealSection_IsCreated()
         {

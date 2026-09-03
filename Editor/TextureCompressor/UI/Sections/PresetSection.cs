@@ -16,7 +16,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// </summary>
         public static void Draw(TextureCompressor config)
         {
-            EditorDrawUtils.DrawSectionHeader("Compression Preset");
+            EditorDrawUtils.DrawSectionHeader(AvatarCompressorLocalization.Tr("preset.section"));
 
             DrawPresetButtons(config);
 
@@ -48,8 +48,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.HighQuality,
-                "High Quality",
-                "Highest quality\nMinimal compression",
+                "preset.high_quality",
+                "preset.high_quality.tooltip",
                 PresetColors.HighQuality,
                 buttonWidth
             );
@@ -57,8 +57,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Quality,
-                "Quality",
-                "Good quality\nLight compression",
+                "preset.quality",
+                "preset.quality.tooltip",
                 PresetColors.Quality,
                 buttonWidth
             );
@@ -66,8 +66,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Balanced,
-                "Balanced",
-                "Balance of\nquality and size",
+                "preset.balanced",
+                "preset.balanced.tooltip",
                 PresetColors.Balanced,
                 buttonWidth
             );
@@ -79,8 +79,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Aggressive,
-                "Aggressive",
-                "Smaller file size\nSome quality loss",
+                "preset.aggressive",
+                "preset.aggressive.tooltip",
                 PresetColors.Aggressive,
                 buttonWidth
             );
@@ -88,8 +88,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Maximum,
-                "Maximum",
-                "Smallest size\nNoticeable quality loss",
+                "preset.maximum",
+                "preset.maximum.tooltip",
                 PresetColors.Maximum,
                 buttonWidth
             );
@@ -97,8 +97,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Custom,
-                "Custom",
-                "Manual\nconfiguration",
+                "preset.custom",
+                "preset.custom.tooltip",
                 PresetColors.Custom,
                 buttonWidth
             );
@@ -108,15 +108,23 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         private static void DrawPresetButton(
             TextureCompressor config,
             CompressorPreset preset,
-            string label,
-            string tooltip,
+            string labelKey,
+            string tooltipKey,
             Color color,
             float width
         )
         {
             bool isSelected = config.Preset == preset;
 
-            if (EditorDrawUtils.DrawColoredButton(label, tooltip, color, isSelected, width: width))
+            if (
+                EditorDrawUtils.DrawColoredButton(
+                    AvatarCompressorLocalization.Tr(labelKey),
+                    AvatarCompressorLocalization.Tr(tooltipKey),
+                    color,
+                    isSelected,
+                    width: width
+                )
+            )
             {
                 Undo.RecordObject(config, "Change Compressor Preset");
                 config.ApplyPreset(preset);
@@ -132,49 +140,34 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             switch (preset)
             {
                 case CompressorPreset.HighQuality:
-                    description =
-                        "High Quality Mode: Maximum quality preservation with minimal compression. "
-                        + "Only very simple textures (solid colors) will be slightly compressed. "
-                        + "Best for showcase avatars or when VRAM is not a concern.";
+                    description = AvatarCompressorLocalization.Tr(
+                        "preset.high_quality.description"
+                    );
                     messageType = MessageType.Info;
                     break;
 
                 case CompressorPreset.Quality:
-                    description =
-                        "Quality Mode: Preserves texture detail as much as possible. "
-                        + "Only low-complexity textures (solid colors, simple gradients) will be compressed. "
-                        + "Best for avatars where visual quality is the priority.";
+                    description = AvatarCompressorLocalization.Tr("preset.quality.description");
                     messageType = MessageType.Info;
                     break;
 
                 case CompressorPreset.Balanced:
-                    description =
-                        "Balanced Mode: Good compromise between quality and VRAM savings. "
-                        + "Detailed textures are preserved, while simpler textures are compressed. "
-                        + "Recommended for most use cases.";
+                    description = AvatarCompressorLocalization.Tr("preset.balanced.description");
                     messageType = MessageType.Info;
                     break;
 
                 case CompressorPreset.Aggressive:
-                    description =
-                        "Aggressive Mode: Prioritizes smaller file size over quality. "
-                        + "Most textures will be compressed to some degree. "
-                        + "Good for Quest avatars or when VRAM is limited.";
+                    description = AvatarCompressorLocalization.Tr("preset.aggressive.description");
                     messageType = MessageType.Warning;
                     break;
 
                 case CompressorPreset.Maximum:
-                    description =
-                        "Maximum Compression: Compresses all textures as much as possible. "
-                        + "Significant quality loss may occur. "
-                        + "Use only when file size is critical.";
+                    description = AvatarCompressorLocalization.Tr("preset.maximum.description");
                     messageType = MessageType.Warning;
                     break;
 
                 case CompressorPreset.Custom:
-                    description =
-                        "Custom Mode: Full control over all compression settings. "
-                        + "Configure each parameter manually for fine-tuned results.";
+                    description = AvatarCompressorLocalization.Tr("preset.custom.description");
                     messageType = MessageType.Info;
                     break;
 

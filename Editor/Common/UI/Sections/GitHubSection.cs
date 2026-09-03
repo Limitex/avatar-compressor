@@ -22,7 +22,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
             var savedColor = GUI.color;
             GUI.color = new Color(0.6f, 0.6f, 0.6f);
             EditorGUILayout.LabelField(
-                "Bugs? Ideas? Let us know! Stars appreciated.",
+                AvatarCompressorLocalization.Tr("github.message"),
                 EditorStylesCache.CenteredLabel
             );
             GUI.color = savedColor;
@@ -31,7 +31,10 @@ namespace dev.limitex.avatar.compressor.editor.ui
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            var linkContent = new GUIContent(LinkText, "Open GitHub repository");
+            var linkContent = new GUIContent(
+                LinkText,
+                AvatarCompressorLocalization.Tr("github.open.tooltip")
+            );
             var linkRect = GUILayoutUtility.GetRect(linkContent, EditorStylesCache.LinkStyle);
             var isHovering = linkRect.Contains(Event.current.mousePosition);
 

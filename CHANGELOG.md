@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added NDMF-based editor localization for English, Simplified Chinese, Japanese, and Korean, with shared language switching in inspectors and Preferences.
+
 ## [v0.9.0] - 2026-07-17
 
 ### Added

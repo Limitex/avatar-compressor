@@ -29,7 +29,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 showAdvanced = EditorGUILayout.Foldout(
                     showAdvanced,
-                    "Advanced Settings (Read Only)",
+                    AvatarCompressorLocalization.Tr("settings.advanced_read_only"),
                     true
                 );
                 if (showAdvanced)
@@ -55,8 +55,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config,
                 serializedObject,
                 nameof(TextureCompressor.Strategy),
-                "Strategy",
-                compactMode
+                "settings.strategy",
+                compactMode,
+                "settings.strategy.tooltip"
             );
 
             if (config.Strategy == AnalysisStrategyType.Combined)
@@ -67,21 +68,21 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     config,
                     serializedObject,
                     nameof(TextureCompressor.FastWeight),
-                    "Fast Weight",
+                    "settings.fast_weight",
                     compactMode
                 );
                 DrawPropertyWithModifiedIndicator(
                     config,
                     serializedObject,
                     nameof(TextureCompressor.HighAccuracyWeight),
-                    "High Accuracy Weight",
+                    "settings.high_accuracy_weight",
                     compactMode
                 );
                 DrawPropertyWithModifiedIndicator(
                     config,
                     serializedObject,
                     nameof(TextureCompressor.PerceptualWeight),
-                    "Perceptual Weight",
+                    "settings.perceptual_weight",
                     compactMode
                 );
                 if (!compactMode)
@@ -95,15 +96,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config,
                 serializedObject,
                 nameof(TextureCompressor.HighComplexityThreshold),
-                "High (Keep Detail)",
-                compactMode
+                "settings.high_threshold",
+                compactMode,
+                "settings.high_threshold.tooltip"
             );
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.LowComplexityThreshold),
-                "Low (Compress More)",
-                compactMode
+                "settings.low_threshold",
+                compactMode,
+                "settings.low_threshold.tooltip"
             );
 
             DrawSectionSpacing(compactMode);
@@ -113,46 +116,47 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config,
                 serializedObject,
                 nameof(TextureCompressor.MinDivisor),
-                "Min Divisor",
-                compactMode
+                "settings.min_divisor",
+                compactMode,
+                "settings.min_divisor.tooltip"
             );
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.MaxDivisor),
-                "Max Divisor",
-                compactMode
+                "settings.max_divisor",
+                compactMode,
+                "settings.max_divisor.tooltip"
             );
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.MaxResolution),
-                "Max Resolution",
-                compactMode
+                "settings.max_resolution",
+                compactMode,
+                "settings.max_resolution.tooltip"
             );
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.MinResolution),
-                "Min Resolution",
-                compactMode
+                "settings.min_resolution",
+                compactMode,
+                "settings.min_resolution.tooltip"
             );
 
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.ForcePowerOfTwo),
-                "Force Power of 2",
+                "settings.force_power_of_two",
                 compactMode,
-                "When enabled, dimensions are rounded to nearest power of 2.\n"
-                    + "When disabled, dimensions are rounded to nearest multiple of 4.\n"
-                    + "Note: All output dimensions are always multiples of 4 for DXT/BC compression compatibility."
+                "settings.force_power_of_two.tooltip"
             );
             if (!compactMode)
             {
                 EditorGUILayout.HelpBox(
-                    "Output dimensions are always multiples of 4 for DXT/BC compression compatibility. "
-                        + "Example: 150x150 becomes 152x152.",
+                    AvatarCompressorLocalization.Tr("settings.multiple_of_four.help"),
                     MessageType.Info
                 );
             }
@@ -164,15 +168,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config,
                 serializedObject,
                 nameof(TextureCompressor.MinSourceSize),
-                "Min Source Size",
-                compactMode
+                "settings.min_source_size",
+                compactMode,
+                "settings.min_source_size.tooltip"
             );
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.SkipIfSmallerThan),
-                "Skip If Smaller Than",
-                compactMode
+                "settings.skip_if_smaller",
+                compactMode,
+                "settings.skip_if_smaller.tooltip"
             );
 
             DrawSectionSpacing(compactMode);
@@ -182,17 +188,18 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config,
                 serializedObject,
                 nameof(TextureCompressor.TargetPlatform),
-                "Target Platform",
-                compactMode
+                "settings.target_platform",
+                compactMode,
+                "settings.target_platform.tooltip"
             );
 
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.UseHighQualityFormatForHighComplexity),
-                "High Quality for Complex",
+                "settings.high_quality_complex",
                 compactMode,
-                "Use BC7/ASTC_4x4 for high complexity textures (uses Complexity Threshold)"
+                "settings.high_quality_complex.tooltip"
             );
 
             if (compactMode)
@@ -211,37 +218,48 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             TextureCompressor config,
             SerializedObject serializedObject,
             string propertyName,
-            string label,
+            string labelKey,
             bool compactMode,
-            string tooltip = null
+            string tooltipKey = null
         )
         {
-            if (compactMode)
+            bool isModified = !compactMode && IsFieldModified(config, propertyName);
+            string displayLabel = AvatarCompressorLocalization.Tr(labelKey);
+            if (isModified)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty(propertyName));
+                displayLabel += " *";
+            }
+
+            var originalColor = GUI.contentColor;
+            if (isModified)
+            {
+                GUI.contentColor = EditorStylesCache.ModifiedStatusStyle.normal.textColor;
+            }
+
+            var property = serializedObject.FindProperty(propertyName);
+            var content = new GUIContent(
+                displayLabel,
+                tooltipKey == null ? null : AvatarCompressorLocalization.Tr(tooltipKey)
+            );
+
+            if (propertyName == nameof(TextureCompressor.Strategy))
+            {
+                var currentValue = (AnalysisStrategyType)property.intValue;
+                var newValue = AvatarCompressorLocalization.EnumPopup(content, currentValue);
+                property.intValue = (int)newValue;
+            }
+            else if (propertyName == nameof(TextureCompressor.TargetPlatform))
+            {
+                var currentValue = (CompressionPlatform)property.intValue;
+                var newValue = AvatarCompressorLocalization.EnumPopup(content, currentValue);
+                property.intValue = (int)newValue;
             }
             else
             {
-                bool isModified = IsFieldModified(config, propertyName);
-                string displayLabel = label ?? propertyName;
-                if (isModified)
-                {
-                    displayLabel = displayLabel + " *";
-                }
-
-                var originalColor = GUI.contentColor;
-                if (isModified)
-                {
-                    GUI.contentColor = EditorStylesCache.ModifiedStatusStyle.normal.textColor;
-                }
-
-                EditorGUILayout.PropertyField(
-                    serializedObject.FindProperty(propertyName),
-                    new GUIContent(displayLabel, tooltip)
-                );
-
-                GUI.contentColor = originalColor;
+                EditorGUILayout.PropertyField(property, content);
             }
+
+            GUI.contentColor = originalColor;
         }
 
         private static bool IsFieldModified(TextureCompressor config, string fieldName)

@@ -28,8 +28,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             // Show filtered count in header when searching
             string headerText =
                 isSearching && filteredCount != frozenCount
-                    ? $"Frozen Textures ({filteredCount}/{frozenCount})"
-                    : $"Frozen Textures ({frozenCount})";
+                    ? AvatarCompressorLocalization.Tr(
+                        "frozen.header_filtered",
+                        filteredCount,
+                        frozenCount
+                    )
+                    : AvatarCompressorLocalization.Tr("frozen.header", frozenCount);
 
             _showSection = EditorGUILayout.Foldout(_showSection, headerText, true);
 
@@ -39,7 +43,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (frozenCount == 0)
             {
                 EditorGUILayout.HelpBox(
-                    "No frozen textures. Click 'Freeze' on textures in Preview to add manual overrides.",
+                    AvatarCompressorLocalization.Tr("frozen.empty"),
                     MessageType.Info
                 );
                 return;
@@ -51,7 +55,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             // Show "no results" message when searching with no matches
             if (isSearching && filteredCount == 0)
             {
-                EditorGUILayout.HelpBox("No frozen textures match the search.", MessageType.Info);
+                EditorGUILayout.HelpBox(
+                    AvatarCompressorLocalization.Tr("frozen.no_search_results"),
+                    MessageType.Info
+                );
                 return;
             }
 
@@ -131,7 +138,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 GUILayout.MinWidth(0)
             );
 
-            if (GUILayout.Button("Unfreeze", GUILayout.Width(70)))
+            if (
+                GUILayout.Button(
+                    AvatarCompressorLocalization.Tr("frozen.unfreeze"),
+                    GUILayout.Width(85)
+                )
+            )
             {
                 shouldRemove = true;
             }
@@ -143,13 +155,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 var savedColor = GUI.color;
                 GUI.color = new Color(1f, 0.7f, 0.3f);
-                EditorGUILayout.LabelField("Texture not found", EditorStyles.miniLabel);
+                EditorGUILayout.LabelField(
+                    AvatarCompressorLocalization.Tr("frozen.texture_not_found"),
+                    EditorStyles.miniLabel
+                );
                 GUI.color = savedColor;
             }
 
             // Skip checkbox
             EditorGUI.BeginChangeCheck();
-            bool skip = EditorGUILayout.Toggle("Skip compression", frozen.Skip);
+            bool skip = EditorGUILayout.Toggle(
+                AvatarCompressorLocalization.Tr("frozen.skip_compression"),
+                frozen.Skip
+            );
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(config, "Change Frozen Skip");
@@ -162,7 +180,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             // Divisor selection
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Divisor:", GUILayout.Width(60));
+            EditorGUILayout.LabelField(
+                AvatarCompressorLocalization.Tr("frozen.divisor"),
+                GUILayout.Width(75)
+            );
 
             int[] divisors = { 1, 2, 4, 8, 16 };
             foreach (int div in divisors)
@@ -186,10 +207,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             // Format selection
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Format:", GUILayout.Width(60));
+            EditorGUILayout.LabelField(
+                AvatarCompressorLocalization.Tr("frozen.format"),
+                GUILayout.Width(75)
+            );
 
             EditorGUI.BeginChangeCheck();
-            var newFormat = (FrozenTextureFormat)EditorGUILayout.EnumPopup(frozen.Format);
+            var newFormat = AvatarCompressorLocalization.EnumPopup(GUIContent.none, frozen.Format);
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(config, "Change Frozen Format");
@@ -237,10 +261,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
             EditorGUILayout.HelpBox(
-                "Legacy path-based entries detected. Convert to GUID for better stability.",
+                AvatarCompressorLocalization.Tr("frozen.legacy_paths"),
                 MessageType.Warning
             );
-            if (GUILayout.Button("Convert to GUID", GUILayout.Width(120), GUILayout.Height(38)))
+            if (
+                GUILayout.Button(
+                    AvatarCompressorLocalization.Tr("frozen.convert_to_guid"),
+                    GUILayout.Width(130),
+                    GUILayout.Height(38)
+                )
+            )
             {
                 Undo.RecordObject(config, "Convert Frozen Textures to GUID");
                 int converted = 0;

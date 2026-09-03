@@ -17,11 +17,6 @@ namespace dev.limitex.avatar.compressor.editor
         private const string BasePath = "Preferences/Avatar Compressor";
         private const string EnableLoggingKey = PrefsPrefix + "enableLogging";
 
-        private static readonly GUIContent EnableLoggingContent = new(
-            "Enable Logging",
-            "Output debug logs during build and preview"
-        );
-
         /// <summary>
         /// When true, debug log output is enabled during build and preview.
         /// </summary>
@@ -72,7 +67,18 @@ namespace dev.limitex.avatar.compressor.editor
         {
             var sections = CreateSections(TypeCache.GetTypesDerivedFrom<IPreferencesSection>());
 
-            var keywords = new HashSet<string> { "Avatar", "Compressor", "LAC", "Log", "Debug" };
+            var keywords = new HashSet<string>
+            {
+                "Avatar",
+                "Compressor",
+                "LAC",
+                "Log",
+                "Debug",
+                "Language",
+                "语言",
+                "言語",
+                "언어",
+            };
             foreach (var section in sections)
             {
                 keywords.UnionWith(section.Keywords);
@@ -85,8 +91,20 @@ namespace dev.limitex.avatar.compressor.editor
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.inspectorDefaultMargins);
 
-                    EditorGUILayout.LabelField("General", EditorStyles.boldLabel);
-                    EnableLogging = EditorGUILayout.Toggle(EnableLoggingContent, EnableLogging);
+                    AvatarCompressorLocalization.DrawLanguagePicker();
+                    EditorGUILayout.Space(10);
+
+                    EditorGUILayout.LabelField(
+                        AvatarCompressorLocalization.Tr("preferences.general"),
+                        EditorStyles.boldLabel
+                    );
+                    EnableLogging = EditorGUILayout.Toggle(
+                        AvatarCompressorLocalization.Content(
+                            "preferences.enable_logging",
+                            "preferences.enable_logging.tooltip"
+                        ),
+                        EnableLogging
+                    );
 
                     foreach (var section in sections)
                     {

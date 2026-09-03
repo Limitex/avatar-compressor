@@ -1,4 +1,5 @@
 using dev.limitex.avatar.compressor.editor.texture.ui;
+using nadena.dev.ndmf.localization;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -7,6 +8,21 @@ namespace dev.limitex.avatar.compressor.tests
     [TestFixture]
     internal class TextureFormatUtilsTests
     {
+        private string _originalLanguage;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _originalLanguage = LanguagePrefs.Language;
+            LanguagePrefs.Language = "en-US";
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            LanguagePrefs.Language = _originalLanguage;
+        }
+
         #region GetDisplayName Tests
 
         [Test]

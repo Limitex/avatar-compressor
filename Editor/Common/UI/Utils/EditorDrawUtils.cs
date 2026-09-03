@@ -52,7 +52,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <param name="hiddenCount">Number of hidden items.</param>
         public static void DrawHiddenCount(int hiddenCount)
         {
-            string hiddenText = $"{hiddenCount} hidden";
+            string hiddenText = AvatarCompressorLocalization.Tr("search.hidden", hiddenCount);
             EditorGUILayout.LabelField(hiddenText, EditorStylesCache.HiddenCountStyle);
         }
 

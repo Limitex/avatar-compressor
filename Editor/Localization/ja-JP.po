@@ -1,0 +1,732 @@
+msgid ""
+msgstr ""
+"Language: ja-JP\n"
+
+msgid "common.cancel"
+msgstr "キャンセル"
+
+msgid "common.close"
+msgstr "閉じる"
+
+msgid "common.not_available"
+msgstr "該当なし"
+
+msgid "warning.avatar_root"
+msgstr "このコンポーネントは Avatar ルートの GameObject に配置してください。他の場所でも動作しますが、Avatar ルートへの配置を推奨します。"
+
+msgid "preferences.general"
+msgstr "一般"
+
+msgid "preferences.enable_logging"
+msgstr "ログを有効化"
+
+msgid "preferences.enable_logging.tooltip"
+msgstr "ビルド中およびプレビュー中にデバッグログを出力します"
+
+msgid "preferences.texture_compressor"
+msgstr "テクスチャ圧縮"
+
+msgid "preferences.analysis_backend"
+msgstr "解析バックエンド"
+
+msgid "preferences.analysis_backend.tooltip"
+msgstr "テクスチャの複雑度解析に使用するバックエンドを選択します"
+
+msgid "preferences.analysis_backend.cpu_help"
+msgstr "テクスチャ解析に常に CPU を使用します。GPU の結果が不安定な場合やデバッグに便利です。"
+
+msgid "preferences.analysis_backend.auto_help"
+msgstr "現在は {0} を使用しています。利用可能な場合は GPU コンピュートシェーダーで解析し、それ以外は CPU にフォールバックします。"
+
+msgid "preferences.resize_backend"
+msgstr "リサイズバックエンド"
+
+msgid "preferences.resize_backend.tooltip"
+msgstr "Area Averaging によるテクスチャリサイズのバックエンドを選択します"
+
+msgid "preferences.resize_backend.cpu_help"
+msgstr "Area Averaging リサイズに常に CPU を使用します。GPU の結果が不安定な場合やデバッグに便利です。"
+
+msgid "preferences.resize_backend.auto_help"
+msgstr "現在は {0} を使用しています。利用可能な場合は GPU コンピュートシェーダーで Area Averaging リサイズを行い、それ以外は CPU にフォールバックします。"
+
+msgid "search.fuzzy"
+msgstr "あいまい"
+
+msgid "search.showing"
+msgstr "{1} 件中 {0} 件を表示"
+
+msgid "search.hidden"
+msgstr "{0} 件を非表示"
+
+msgid "thumbnail.highlight.tooltip"
+msgstr "クリックして Project ウィンドウで強調表示"
+
+msgid "github.message"
+msgstr "不具合やアイデアをお知らせください。Star も歓迎です。"
+
+msgid "github.open.tooltip"
+msgstr "GitHub リポジトリを開く"
+
+msgid "preset.section"
+msgstr "圧縮プリセット"
+
+msgid "preset.high_quality"
+msgstr "高品質"
+
+msgid "preset.high_quality.tooltip"
+msgstr "最高品質\n最小限の圧縮"
+
+msgid "preset.high_quality.description"
+msgstr "高品質モード：圧縮を最小限にし、品質を最大限に維持します。単色など非常に単純なテクスチャだけを軽く圧縮します。展示用 Avatar や VRAM を重視しない場合に適しています。"
+
+msgid "preset.quality"
+msgstr "品質優先"
+
+msgid "preset.quality.tooltip"
+msgstr "良好な品質\n軽い圧縮"
+
+msgid "preset.quality.description"
+msgstr "品質優先モード：テクスチャの細部をできる限り維持します。単色や単純なグラデーションなど低複雑度のテクスチャだけを圧縮します。見た目の品質を優先する Avatar に適しています。"
+
+msgid "preset.balanced"
+msgstr "バランス"
+
+msgid "preset.balanced.tooltip"
+msgstr "品質とサイズの\nバランス"
+
+msgid "preset.balanced.description"
+msgstr "バランスモード：品質と VRAM 削減を両立します。詳細なテクスチャを維持し、単純なテクスチャを圧縮します。多くの用途に推奨します。"
+
+msgid "preset.aggressive"
+msgstr "強圧縮"
+
+msgid "preset.aggressive.tooltip"
+msgstr "小さいファイル\n多少の品質低下"
+
+msgid "preset.aggressive.description"
+msgstr "強圧縮モード：品質よりファイルサイズを優先します。ほとんどのテクスチャがある程度圧縮されます。Quest Avatar や VRAM が限られる場合に適しています。"
+
+msgid "preset.maximum"
+msgstr "最大圧縮"
+
+msgid "preset.maximum.tooltip"
+msgstr "最小サイズ\n目立つ品質低下"
+
+msgid "preset.maximum.description"
+msgstr "最大圧縮モード：すべてのテクスチャを可能な限り圧縮します。品質が大きく低下する場合があります。ファイルサイズが最重要の場合のみ使用してください。"
+
+msgid "preset.custom"
+msgstr "カスタム"
+
+msgid "preset.custom.tooltip"
+msgstr "手動\n設定"
+
+msgid "preset.custom.description"
+msgstr "カスタムモード：すべての圧縮設定を完全に制御し、各パラメーターを手動で細かく調整できます。"
+
+msgid "custom.edit_mode"
+msgstr "編集モード"
+
+msgid "custom.edit_mode.tooltip"
+msgstr "圧縮設定を手動で構成します"
+
+msgid "custom.edit_mode_unlink.tooltip"
+msgstr "プリセットのリンクを解除して設定を手動編集します"
+
+msgid "custom.preset_dropdown"
+msgstr "カスタムプリセット ▼"
+
+msgid "custom.preset_dropdown.tooltip"
+msgstr "メニューからカスタムプリセットを選択します"
+
+msgid "custom.use_only"
+msgstr "カスタムプリセット（使用のみ）"
+
+msgid "custom.name_built_in"
+msgstr "{0}（組み込み）"
+
+msgid "custom.name_package"
+msgstr "{0}（パッケージ）"
+
+msgid "custom.lock.built_in"
+msgstr "このプリセットは組み込みです"
+
+msgid "custom.lock.package"
+msgstr "このプリセットはパッケージ内にあります"
+
+msgid "custom.lock.locked"
+msgstr "このプリセットはロックされています"
+
+msgid "custom.lock.uneditable"
+msgstr "このプリセットは編集できません"
+
+msgid "custom.edit"
+msgstr "編集"
+
+msgid "custom.preset"
+msgstr "カスタムプリセット"
+
+msgid "custom.save.tooltip"
+msgstr "現在の設定をプリセットへ保存"
+
+msgid "custom.discard.tooltip"
+msgstr "変更を破棄してプリセットから再読み込み"
+
+msgid "custom.create.tooltip"
+msgstr "現在の設定から新しいプリセットを作成"
+
+msgid "custom.unlink.tooltip"
+msgstr "プリセットのリンクを解除（現在の設定は維持）"
+
+msgid "custom.component_only"
+msgstr "設定はこのコンポーネントだけに保存されています。\n複数の Avatar で再利用するにはプリセットを作成してください。"
+
+msgid "custom.modified"
+msgstr "● 変更あり"
+
+msgid "custom.synced"
+msgstr "✓ 同期済み"
+
+msgid "custom.description"
+msgstr "説明"
+
+msgid "custom.create_dialog.title"
+msgstr "テクスチャ圧縮プリセットを新規作成"
+
+msgid "custom.create_dialog.message"
+msgstr "新しいプリセットの保存先を選択してください"
+
+msgid "unlink_dialog.title"
+msgstr "プリセットのリンク解除"
+
+msgid "unlink_dialog.reason.built_in"
+msgstr "このプリセットは組み込みのため編集できません。"
+
+msgid "unlink_dialog.reason.package"
+msgstr "このプリセットはパッケージ内にあるため編集できません。"
+
+msgid "unlink_dialog.reason.locked"
+msgstr "このプリセットはロックされているため直接編集できません。"
+
+msgid "unlink_dialog.message"
+msgstr "{0}\n\nリンクを解除して設定を手動編集しますか？\n（現在の設定は維持されます）"
+
+msgid "unlink_dialog.confirm"
+msgstr "リンク解除して編集"
+
+msgid "preset_menu.none"
+msgstr "利用可能なプリセットがありません"
+
+msgid "preset_menu.built_in_suffix"
+msgstr "（組み込み）"
+
+msgid "preset_menu.package_suffix"
+msgstr "（パッケージ）"
+
+msgid "preset_menu.built_in_path"
+msgstr "組み込み/{0}"
+
+msgid "built_in_preset.high_quality_plus.name"
+msgstr "高品質+"
+
+msgid "built_in_preset.high_quality_plus.description"
+msgstr "高品質より優れています。最小限の処理で最高品質を維持します。"
+
+msgid "built_in_preset.quality_plus.name"
+msgstr "品質優先+"
+
+msgid "built_in_preset.quality_plus.description"
+msgstr "品質優先より優れています。最小限の圧縮で高品質を維持します。"
+
+msgid "built_in_preset.balanced_plus.name"
+msgstr "バランス+"
+
+msgid "built_in_preset.balanced_plus.description"
+msgstr "バランスより優れています。適度な圧縮で良好な品質を維持します。"
+
+msgid "built_in_preset.aggressive_plus.name"
+msgstr "強圧縮+"
+
+msgid "built_in_preset.aggressive_plus.description"
+msgstr "強圧縮より優れています。効率的な圧縮を保ちながら品質を改善します。"
+
+msgid "built_in_preset.maximum_plus.name"
+msgstr "最大圧縮+"
+
+msgid "built_in_preset.maximum_plus.description"
+msgstr "最大圧縮より優れています。強い圧縮を保ちながら品質を少し高めます。"
+
+msgid "summary.current_settings"
+msgstr "現在の設定概要"
+
+msgid "summary.settings"
+msgstr "設定概要"
+
+msgid "summary.strategy"
+msgstr "方式：{0}"
+
+msgid "summary.divisor_range"
+msgstr "縮小率の範囲：{0}x - {1}x"
+
+msgid "summary.resolution_range"
+msgstr "解像度の範囲：{0}px - {1}px"
+
+msgid "summary.complexity_thresholds"
+msgstr "複雑度しきい値：{0:P0} - {1:P0}"
+
+msgid "settings.advanced_read_only"
+msgstr "詳細設定（読み取り専用）"
+
+msgid "settings.analysis_strategy"
+msgstr "解析方式"
+
+msgid "settings.combined_weights"
+msgstr "組み合わせ方式の重み"
+
+msgid "settings.complexity_thresholds"
+msgstr "複雑度しきい値"
+
+msgid "settings.resolution"
+msgstr "解像度設定"
+
+msgid "settings.size_filters"
+msgstr "サイズフィルター"
+
+msgid "settings.compression_format"
+msgstr "圧縮形式"
+
+msgid "settings.strategy"
+msgstr "方式"
+
+msgid "settings.strategy.tooltip"
+msgstr "複雑度の解析方法"
+
+msgid "settings.fast_weight"
+msgstr "高速解析の重み"
+
+msgid "settings.high_accuracy_weight"
+msgstr "高精度解析の重み"
+
+msgid "settings.perceptual_weight"
+msgstr "知覚解析の重み"
+
+msgid "settings.high_threshold"
+msgstr "高（細部を維持）"
+
+msgid "settings.high_threshold.tooltip"
+msgstr "この値より複雑なテクスチャには最小限の圧縮を使用します"
+
+msgid "settings.low_threshold"
+msgstr "低（より強く圧縮）"
+
+msgid "settings.low_threshold.tooltip"
+msgstr "この値より単純なテクスチャには最大限の圧縮を使用します"
+
+msgid "settings.min_divisor"
+msgstr "最小縮小率"
+
+msgid "settings.min_divisor.tooltip"
+msgstr "解像度の最小縮小率（1 = 縮小なし）"
+
+msgid "settings.max_divisor"
+msgstr "最大縮小率"
+
+msgid "settings.max_divisor.tooltip"
+msgstr "解像度の最大縮小率"
+
+msgid "settings.max_resolution"
+msgstr "最大解像度"
+
+msgid "settings.max_resolution.tooltip"
+msgstr "出力の最大解像度"
+
+msgid "settings.min_resolution"
+msgstr "最小解像度"
+
+msgid "settings.min_resolution.tooltip"
+msgstr "出力の最小解像度"
+
+msgid "settings.force_power_of_two"
+msgstr "2 の累乗に固定"
+
+msgid "settings.force_power_of_two.tooltip"
+msgstr "有効時は最も近い 2 の累乗に丸めます。\n無効時は最も近い 4 の倍数に丸めます。\nDXT/BC 互換性のため、出力寸法は常に 4 の倍数です。"
+
+msgid "settings.multiple_of_four.help"
+msgstr "DXT/BC 圧縮との互換性のため、出力寸法は常に 4 の倍数です。例：150x150 は 152x152 になります。"
+
+msgid "settings.min_source_size"
+msgstr "最小ソースサイズ"
+
+msgid "settings.min_source_size.tooltip"
+msgstr "このサイズより大きいテクスチャだけを処理します"
+
+msgid "settings.skip_if_smaller"
+msgstr "これ以下ならスキップ"
+
+msgid "settings.skip_if_smaller.tooltip"
+msgstr "このサイズ以下のテクスチャをスキップします"
+
+msgid "settings.target_platform"
+msgstr "対象プラットフォーム"
+
+msgid "settings.target_platform.tooltip"
+msgstr "圧縮形式を選ぶ対象プラットフォーム（自動ではビルドターゲットから検出）"
+
+msgid "settings.high_quality_complex"
+msgstr "複雑なテクスチャを高品質化"
+
+msgid "settings.high_quality_complex.tooltip"
+msgstr "複雑度の高いテクスチャに BC7/ASTC_4x4 を使用します（複雑度しきい値を使用）"
+
+msgid "filters.exclusions"
+msgstr "除外"
+
+msgid "filters.liltoon_optimizations"
+msgstr "lilToon 最適化"
+
+msgid "filters.bake_liltoon"
+msgstr "色調整をテクスチャへベイク"
+
+msgid "filters.bake_liltoon.tooltip"
+msgstr "ビルド時に色相、彩度、グラデーション、有効な第 2/3 レイヤーと Alpha Mask をメインテクスチャへ、色調補正をアウトラインテクスチャへベイクします。アニメーション入力、凍結済み、アニメーション参照中、除外済みのテクスチャはベイクされません。色はランタイムの色調として残ります。lilToon が必要です。"
+
+msgid "filters.remove_unused"
+msgstr "未使用テクスチャスロットを削除"
+
+msgid "filters.remove_unused.tooltip"
+msgstr "機能トグルがオフでアニメーションされていない lilToon スロットを消去し、参照されなくなったテクスチャをアップロードから除外します。凍結済みまたはアニメーション参照中のテクスチャは削除されません。除外フィルターはここには適用されません。"
+
+msgid "filters.texture_filters"
+msgstr "テクスチャフィルター"
+
+msgid "filters.main_textures"
+msgstr "メインテクスチャ"
+
+msgid "filters.main_textures.tooltip"
+msgstr "メインテクスチャ（_MainTex、_BaseMap など）を処理します"
+
+msgid "filters.normal_maps"
+msgstr "ノーマルマップ"
+
+msgid "filters.normal_maps.tooltip"
+msgstr "ノーマルマップを処理します"
+
+msgid "filters.emission_maps"
+msgstr "発光マップ"
+
+msgid "filters.emission_maps.tooltip"
+msgstr "発光テクスチャを処理します"
+
+msgid "filters.other_textures"
+msgstr "その他のテクスチャ"
+
+msgid "filters.other_textures.tooltip"
+msgstr "その他のテクスチャ（メタリック、粗さなど）を処理します"
+
+msgid "filters.skip_unknown_uncompressed"
+msgstr "不明なプロパティの非圧縮テクスチャをスキップ"
+
+msgid "filters.skip_unknown_uncompressed.tooltip"
+msgstr "不明なシェーダープロパティには Mask や LUT などの非表示データが含まれ、圧縮で破損する可能性があります。"
+
+msgid "filters.textures"
+msgstr "テクスチャ"
+
+msgid "filters.textures_count"
+msgstr "テクスチャ（{0}）"
+
+msgid "filters.excluded_textures.empty"
+msgstr "ここに追加したテクスチャは圧縮から除外されます。"
+
+msgid "filters.add_texture"
+msgstr "+ テクスチャを追加"
+
+msgid "filters.paths"
+msgstr "パス"
+
+msgid "filters.paths_count"
+msgstr "パス（{0}）"
+
+msgid "filters.excluded_paths.empty"
+msgstr "一覧の接頭辞で始まるパスのテクスチャはスキップされます。"
+
+msgid "filters.add_path"
+msgstr "+ パスを追加..."
+
+msgid "filters.path_not_found"
+msgstr "  ⚠ パスが見つかりません"
+
+msgid "filters.empty_path"
+msgstr "空のパス"
+
+msgid "filters.path_preset_added"
+msgstr "{0}（追加済み）"
+
+msgid "frozen.header"
+msgstr "凍結テクスチャ（{0}）"
+
+msgid "frozen.header_filtered"
+msgstr "凍結テクスチャ（{0}/{1}）"
+
+msgid "frozen.empty"
+msgstr "凍結テクスチャはありません。プレビューのテクスチャで「凍結」をクリックすると手動設定を追加できます。"
+
+msgid "frozen.no_search_results"
+msgstr "検索に一致する凍結テクスチャはありません。"
+
+msgid "frozen.unfreeze"
+msgstr "凍結解除"
+
+msgid "frozen.texture_not_found"
+msgstr "テクスチャが見つかりません"
+
+msgid "frozen.skip_compression"
+msgstr "圧縮をスキップ"
+
+msgid "frozen.divisor"
+msgstr "縮小率："
+
+msgid "frozen.format"
+msgstr "形式："
+
+msgid "frozen.legacy_paths"
+msgstr "旧形式のパス項目を検出しました。安定性向上のため GUID に変換してください。"
+
+msgid "frozen.convert_to_guid"
+msgstr "GUID に変換"
+
+msgid "preview.generate"
+msgstr "圧縮結果をプレビュー"
+
+msgid "preview.outdated"
+msgstr "プレビューが古くなっています。生成後に設定または対象オブジェクトが変更されました。「圧縮結果をプレビュー」をクリックして更新してください。"
+
+msgid "preview.no_textures"
+msgstr "現在のフィルター設定に一致するテクスチャがありません。"
+
+msgid "preview.header_filtered"
+msgstr "プレビュー（{1} 件中 {0} 件を表示）"
+
+msgid "preview.header_filtered_frozen"
+msgstr "プレビュー（{1} 件中 {0} 件を表示、{2} 件を凍結）"
+
+msgid "preview.header_summary"
+msgstr "プレビュー（{0} 件を圧縮、{1} 件をスキップ）"
+
+msgid "preview.header_summary_frozen"
+msgstr "プレビュー（{0} 件を圧縮、{1} 件を凍結、{2} 件をスキップ）"
+
+msgid "preview.original"
+msgstr "元のサイズ："
+
+msgid "preview.after"
+msgstr "圧縮後："
+
+msgid "preview.savings"
+msgstr "削減量："
+
+msgid "preview.build_only_both"
+msgstr "未使用テクスチャスロットの削除と lilToon テクスチャのベイクは NDMF ビルド時のみ実行され、このプレビューには反映されません。実際のビルドサイズは表示された推定値と異なる場合があります。"
+
+msgid "preview.build_only_unused"
+msgstr "未使用テクスチャスロットの削除は NDMF ビルド時のみ実行され、このプレビューには反映されません。実際のビルドサイズは表示された推定値と異なる場合があります。"
+
+msgid "preview.build_only_bake"
+msgstr "lilToon テクスチャのベイクは NDMF ビルド時のみ実行され、このプレビューには反映されません。実際のビルドサイズは表示された推定値と異なる場合があります。"
+
+msgid "preview.no_search_results"
+msgstr "検索に一致するテクスチャはありません。"
+
+msgid "preview.to_compress"
+msgstr "圧縮するテクスチャ"
+
+msgid "preview.frozen_manual"
+msgstr "凍結テクスチャ（手動設定）"
+
+msgid "preview.skipped_textures"
+msgstr "スキップしたテクスチャ"
+
+msgid "preview.close"
+msgstr "プレビューを閉じる"
+
+msgid "preview.freeze"
+msgstr "凍結"
+
+msgid "preview.complexity"
+msgstr "複雑度："
+
+msgid "preview.size"
+msgstr "サイズ："
+
+msgid "preview.manual_suffix"
+msgstr "（手動）"
+
+msgid "preview.resized"
+msgstr "{0}x{1} → {2}x{3}（÷{4}）{5}"
+
+msgid "preview.unchanged"
+msgstr "{0}x{1}（変更なし）{2}"
+
+msgid "preview.format"
+msgstr "形式："
+
+msgid "preview.reason"
+msgstr "理由："
+
+msgid "format_info.dxt1"
+msgstr "4 bpp、RGB のみ、最速"
+
+msgid "format_info.dxt5"
+msgstr "8 bpp、RGBA、良好な品質"
+
+msgid "format_info.bc5"
+msgstr "8 bpp、ノーマルマップ"
+
+msgid "format_info.bc7"
+msgstr "8 bpp、最高品質"
+
+msgid "format_info.astc_4x4"
+msgstr "8 bpp、最高品質"
+
+msgid "format_info.astc_6x6"
+msgstr "3.56 bpp、バランス"
+
+msgid "format_info.astc_8x8"
+msgstr "2 bpp、最高効率"
+
+msgid "preset_asset.settings"
+msgstr "プリセット設定"
+
+msgid "preset_asset.lock"
+msgstr "ロック"
+
+msgid "preset_asset.description"
+msgstr "説明"
+
+msgid "preset_asset.menu"
+msgstr "メニュー"
+
+msgid "preset_asset.menu_path"
+msgstr "メニューパス"
+
+msgid "preset_asset.menu_path.tooltip"
+msgstr "カスタムプリセットメニュー内のパスです。空の場合はメニューに表示されません。"
+
+msgid "preset_asset.menu_order"
+msgstr "メニュー順"
+
+msgid "preset_asset.menu_order.tooltip"
+msgstr "メニューでの表示順です。小さい値ほど先に表示されます。"
+
+msgid "enum.CompressorPreset.HighQuality"
+msgstr "高品質"
+
+msgid "enum.CompressorPreset.Quality"
+msgstr "品質優先"
+
+msgid "enum.CompressorPreset.Balanced"
+msgstr "バランス"
+
+msgid "enum.CompressorPreset.Aggressive"
+msgstr "強圧縮"
+
+msgid "enum.CompressorPreset.Maximum"
+msgstr "最大圧縮"
+
+msgid "enum.CompressorPreset.Custom"
+msgstr "カスタム"
+
+msgid "enum.AnalysisStrategyType.Fast"
+msgstr "高速"
+
+msgid "enum.AnalysisStrategyType.HighAccuracy"
+msgstr "高精度"
+
+msgid "enum.AnalysisStrategyType.Perceptual"
+msgstr "知覚"
+
+msgid "enum.AnalysisStrategyType.Combined"
+msgstr "組み合わせ"
+
+msgid "enum.CompressionPlatform.Auto"
+msgstr "自動"
+
+msgid "enum.CompressionPlatform.Desktop"
+msgstr "デスクトップ"
+
+msgid "enum.CompressionPlatform.Mobile"
+msgstr "モバイル"
+
+msgid "enum.FrozenTextureFormat.Auto"
+msgstr "自動"
+
+msgid "enum.FrozenTextureFormat.DXT1"
+msgstr "DXT1"
+
+msgid "enum.FrozenTextureFormat.DXT5"
+msgstr "DXT5"
+
+msgid "enum.FrozenTextureFormat.BC5"
+msgstr "BC5"
+
+msgid "enum.FrozenTextureFormat.BC7"
+msgstr "BC7"
+
+msgid "enum.FrozenTextureFormat.ASTC_4x4"
+msgstr "ASTC 4x4"
+
+msgid "enum.FrozenTextureFormat.ASTC_6x6"
+msgstr "ASTC 6x6"
+
+msgid "enum.FrozenTextureFormat.ASTC_8x8"
+msgstr "ASTC 8x8"
+
+msgid "enum.AnalysisBackendPreference.Auto"
+msgstr "自動"
+
+msgid "enum.AnalysisBackendPreference.CPU"
+msgstr "ソフトウェア"
+
+msgid "enum.ResizeBackendPreference.Auto"
+msgstr "自動"
+
+msgid "enum.ResizeBackendPreference.CPU"
+msgstr "ソフトウェア"
+
+msgid "enum.TexturePropertyCategory.Main"
+msgstr "メイン"
+
+msgid "enum.TexturePropertyCategory.Normal"
+msgstr "ノーマル"
+
+msgid "enum.TexturePropertyCategory.Emission"
+msgstr "発光"
+
+msgid "enum.TexturePropertyCategory.Other"
+msgstr "その他"
+
+msgid "enum.SkipReason.None"
+msgstr "スキップ"
+
+msgid "enum.SkipReason.TooSmall"
+msgstr "小さすぎます"
+
+msgid "enum.SkipReason.FilteredByType"
+msgstr "種類フィルターの対象外"
+
+msgid "enum.SkipReason.FrozenSkip"
+msgstr "ユーザー設定で凍結・スキップ"
+
+msgid "enum.SkipReason.RuntimeGenerated"
+msgstr "ランタイム生成"
+
+msgid "enum.SkipReason.ExcludedPath"
+msgstr "パスで除外"
+
+msgid "enum.SkipReason.ExcludedTexture"
+msgstr "除外テクスチャ"
+
+msgid "enum.SkipReason.UnknownUncompressedProperty"
+msgstr "不明なプロパティの非圧縮テクスチャ（データ保護を参照）"

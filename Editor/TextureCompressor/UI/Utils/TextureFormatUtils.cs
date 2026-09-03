@@ -1,3 +1,4 @@
+using dev.limitex.avatar.compressor.editor;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture.ui
@@ -32,13 +33,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             return format switch
             {
-                TextureFormat.DXT1 => "4 bpp, RGB only, fastest",
-                TextureFormat.DXT5 => "8 bpp, RGBA, good quality",
-                TextureFormat.BC5 => "8 bpp, normal maps",
-                TextureFormat.BC7 => "8 bpp, highest quality",
-                TextureFormat.ASTC_4x4 => "8 bpp, highest quality",
-                TextureFormat.ASTC_6x6 => "3.56 bpp, balanced",
-                TextureFormat.ASTC_8x8 => "2 bpp, most efficient",
+                TextureFormat.DXT1 => AvatarCompressorLocalization.Tr("format_info.dxt1"),
+                TextureFormat.DXT5 => AvatarCompressorLocalization.Tr("format_info.dxt5"),
+                TextureFormat.BC5 => AvatarCompressorLocalization.Tr("format_info.bc5"),
+                TextureFormat.BC7 => AvatarCompressorLocalization.Tr("format_info.bc7"),
+                TextureFormat.ASTC_4x4 => AvatarCompressorLocalization.Tr("format_info.astc_4x4"),
+                TextureFormat.ASTC_6x6 => AvatarCompressorLocalization.Tr("format_info.astc_6x6"),
+                TextureFormat.ASTC_8x8 => AvatarCompressorLocalization.Tr("format_info.astc_8x8"),
                 _ => "",
             };
         }

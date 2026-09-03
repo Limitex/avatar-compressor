@@ -20,6 +20,9 @@ namespace dev.limitex.avatar.compressor.editor
         {
             serializedObject.Update();
 
+            AvatarCompressorLocalization.DrawLanguagePicker();
+            EditorGUILayout.Space(8);
+
             DrawAvatarRootWarningIfNeeded();
 
             DrawInspectorContent();
@@ -48,8 +51,7 @@ namespace dev.limitex.avatar.compressor.editor
             if (!RuntimeUtil.IsAvatarRoot(component.transform))
             {
                 EditorGUILayout.HelpBox(
-                    "This component should be placed on the avatar root GameObject. "
-                        + "While it will still work, placing it on the avatar root is recommended.",
+                    AvatarCompressorLocalization.Tr("warning.avatar_root"),
                     MessageType.Warning
                 );
                 EditorGUILayout.Space(5);

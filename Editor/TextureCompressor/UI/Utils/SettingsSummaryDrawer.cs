@@ -14,20 +14,40 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// </summary>
         /// <param name="config">The compressor configuration.</param>
         /// <param name="title">Optional title for the summary section.</param>
-        public static void Draw(TextureCompressor config, string title = "Current Settings Summary")
+        public static void Draw(TextureCompressor config, string title = null)
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(
+                title ?? AvatarCompressorLocalization.Tr("summary.current_settings"),
+                EditorStyles.boldLabel
+            );
 
-            EditorGUILayout.LabelField($"Strategy: {config.Strategy}");
             EditorGUILayout.LabelField(
-                $"Divisor Range: {config.MinDivisor}x - {config.MaxDivisor}x"
+                AvatarCompressorLocalization.Tr(
+                    "summary.strategy",
+                    AvatarCompressorLocalization.EnumValue(config.Strategy)
+                )
             );
             EditorGUILayout.LabelField(
-                $"Resolution Range: {config.MinResolution}px - {config.MaxResolution}px"
+                AvatarCompressorLocalization.Tr(
+                    "summary.divisor_range",
+                    config.MinDivisor,
+                    config.MaxDivisor
+                )
             );
             EditorGUILayout.LabelField(
-                $"Complexity Thresholds: {config.LowComplexityThreshold:P0} - {config.HighComplexityThreshold:P0}"
+                AvatarCompressorLocalization.Tr(
+                    "summary.resolution_range",
+                    config.MinResolution,
+                    config.MaxResolution
+                )
+            );
+            EditorGUILayout.LabelField(
+                AvatarCompressorLocalization.Tr(
+                    "summary.complexity_thresholds",
+                    config.LowComplexityThreshold,
+                    config.HighComplexityThreshold
+                )
             );
 
             EditorGUILayout.EndVertical();
