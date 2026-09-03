@@ -81,12 +81,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         )
         {
             string tooltip = restriction.RequiresUnlink()
-                ? AvatarCompressorLocalization.Tr("custom.edit_mode_unlink.tooltip")
-                : AvatarCompressorLocalization.Tr("custom.edit_mode.tooltip");
+                ? AvatarCompressorLocalization.Tr(
+                    "TextureCompressor:prop:customEditModeUnlink:tooltip"
+                )
+                : AvatarCompressorLocalization.Tr("TextureCompressor:prop:customEditMode:tooltip");
 
             if (
                 EditorDrawUtils.DrawColoredButton(
-                    AvatarCompressorLocalization.Tr("custom.edit_mode"),
+                    AvatarCompressorLocalization.Tr("TextureCompressor:prop:customEditMode"),
                     tooltip,
                     PresetColors.EditMode,
                     isEditable,
@@ -105,11 +107,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             float buttonWidth
         )
         {
-            string presetLabel = AvatarCompressorLocalization.Tr("custom.preset_dropdown");
+            string presetLabel = AvatarCompressorLocalization.Tr(
+                "TextureCompressor:prop:customPreset"
+            );
 
             bool clicked = EditorDrawUtils.DrawColoredButton(
                 presetLabel,
-                AvatarCompressorLocalization.Tr("custom.preset_dropdown.tooltip"),
+                AvatarCompressorLocalization.Tr("TextureCompressor:prop:customPreset:tooltip"),
                 PresetColors.CustomPreset,
                 !isEditable,
                 height: 24f,
@@ -175,7 +179,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-            EditorDrawUtils.DrawSectionHeader(AvatarCompressorLocalization.Tr("custom.use_only"));
+            EditorDrawUtils.DrawSectionHeader(
+                AvatarCompressorLocalization.Tr("TextureCompressor:label:customUseOnly")
+            );
             EditorGUILayout.Space(4);
 
             EditorGUILayout.BeginHorizontal();
@@ -183,7 +189,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 EditorGUILayout.LabelField(
                     AvatarCompressorLocalization.Tr(
-                        "custom.name_built_in",
+                        "TextureCompressor:message:customNameBuiltIn",
                         BuiltInPresetLocalization.GetDisplayName(config.CustomPresetAsset)
                     ),
                     EditorStyles.boldLabel
@@ -193,7 +199,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 EditorGUILayout.LabelField(
                     AvatarCompressorLocalization.Tr(
-                        "custom.name_package",
+                        "TextureCompressor:message:customNamePackage",
                         config.CustomPresetAsset.name
                     ),
                     EditorStyles.boldLabel
@@ -216,22 +222,24 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 lockIcon.tooltip = restriction switch
                 {
                     PresetRestriction.BuiltIn => AvatarCompressorLocalization.Tr(
-                        "custom.lock.built_in"
+                        "TextureCompressor:message:customLockBuiltIn"
                     ),
                     PresetRestriction.ExternalPackage => AvatarCompressorLocalization.Tr(
-                        "custom.lock.package"
+                        "TextureCompressor:message:customLockPackage"
                     ),
                     PresetRestriction.Locked => AvatarCompressorLocalization.Tr(
-                        "custom.lock.locked"
+                        "TextureCompressor:message:customLockLocked"
                     ),
-                    _ => AvatarCompressorLocalization.Tr("custom.lock.uneditable"),
+                    _ => AvatarCompressorLocalization.Tr(
+                        "TextureCompressor:message:customLockUneditable"
+                    ),
                 };
                 GUILayout.Label(lockIcon, GUILayout.Width(18), GUILayout.Height(18));
             }
 
             if (
                 GUILayout.Button(
-                    AvatarCompressorLocalization.Tr("custom.edit"),
+                    AvatarCompressorLocalization.Tr("TextureCompressor:button:editCustomPreset"),
                     GUILayout.Width(60)
                 )
             )
@@ -254,7 +262,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-            EditorDrawUtils.DrawSectionHeader(AvatarCompressorLocalization.Tr("custom.preset"));
+            EditorDrawUtils.DrawSectionHeader(
+                AvatarCompressorLocalization.Tr("TextureCompressor:label:customPreset")
+            );
             EditorGUILayout.Space(4);
             DrawPresetField(
                 config,
@@ -316,7 +326,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     GUILayout.Button(
                         new GUIContent(
                             "\u2193",
-                            AvatarCompressorLocalization.Tr("custom.save.tooltip")
+                            AvatarCompressorLocalization.Tr(
+                                "TextureCompressor:button:saveCustomPreset:tooltip"
+                            )
                         ),
                         GUILayout.Width(24),
                         GUILayout.Height(18)
@@ -330,7 +342,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     GUILayout.Button(
                         new GUIContent(
                             "\u21A9",
-                            AvatarCompressorLocalization.Tr("custom.discard.tooltip")
+                            AvatarCompressorLocalization.Tr(
+                                "TextureCompressor:button:discardCustomPreset:tooltip"
+                            )
                         ),
                         GUILayout.Width(24),
                         GUILayout.Height(18)
@@ -343,7 +357,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             if (
                 GUILayout.Button(
-                    new GUIContent("+", AvatarCompressorLocalization.Tr("custom.create.tooltip")),
+                    new GUIContent(
+                        "+",
+                        AvatarCompressorLocalization.Tr(
+                            "TextureCompressor:button:createCustomPreset:tooltip"
+                        )
+                    ),
                     GUILayout.Width(24),
                     GUILayout.Height(18)
                 )
@@ -358,7 +377,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     GUILayout.Button(
                         new GUIContent(
                             "\u2715",
-                            AvatarCompressorLocalization.Tr("custom.unlink.tooltip")
+                            AvatarCompressorLocalization.Tr(
+                                "TextureCompressor:button:unlinkCustomPreset:tooltip"
+                            )
                         ),
                         GUILayout.Width(24),
                         GUILayout.Height(18)
@@ -375,7 +396,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (!hasPresetAsset)
             {
                 EditorGUILayout.HelpBox(
-                    AvatarCompressorLocalization.Tr("custom.component_only"),
+                    AvatarCompressorLocalization.Tr(
+                        "TextureCompressor:message:customComponentOnly"
+                    ),
                     MessageType.Info
                 );
                 return;
@@ -384,14 +407,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (isModified)
             {
                 EditorGUILayout.LabelField(
-                    AvatarCompressorLocalization.Tr("custom.modified"),
+                    AvatarCompressorLocalization.Tr("TextureCompressor:message:customModified"),
                     EditorStylesCache.ModifiedStatusStyle
                 );
             }
             else
             {
                 EditorGUILayout.LabelField(
-                    AvatarCompressorLocalization.Tr("custom.synced"),
+                    AvatarCompressorLocalization.Tr("TextureCompressor:message:customSynced"),
                     EditorStylesCache.SyncedStatusStyle
                 );
             }
@@ -405,14 +428,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                 EditorGUILayout.LabelField(
-                    AvatarCompressorLocalization.Tr("custom.description"),
+                    AvatarCompressorLocalization.Tr("TextureCompressor:prop:customDescription"),
                     EditorStyles.boldLabel
                 );
                 EditorGUILayout.LabelField(description, EditorStyles.wordWrappedLabel);
                 EditorGUILayout.EndVertical();
             }
 
-            SettingsSummaryDrawer.Draw(config, AvatarCompressorLocalization.Tr("summary.settings"));
+            SettingsSummaryDrawer.Draw(
+                config,
+                AvatarCompressorLocalization.Tr("TextureCompressor:label:settings")
+            );
         }
 
         #endregion
@@ -496,10 +522,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             string defaultName = "NewTextureCompressorPreset";
             string path = EditorUtility.SaveFilePanelInProject(
-                AvatarCompressorLocalization.Tr("custom.create_dialog.title"),
+                AvatarCompressorLocalization.Tr("TextureCompressor:dialog:createPresetTitle"),
                 defaultName,
                 PresetFileExtension,
-                AvatarCompressorLocalization.Tr("custom.create_dialog.message"),
+                AvatarCompressorLocalization.Tr("TextureCompressor:dialog:createPresetMessage"),
                 DefaultPresetFolder
             );
 

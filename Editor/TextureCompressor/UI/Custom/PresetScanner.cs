@@ -81,7 +81,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             else
             {
                 menu.AddDisabledItem(
-                    new GUIContent(AvatarCompressorLocalization.Tr("preset_menu.none"))
+                    new GUIContent(AvatarCompressorLocalization.Tr("TextureCompressor:menu:none"))
                 );
             }
 
@@ -104,10 +104,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 string suffix = restriction switch
                 {
                     PresetRestriction.BuiltIn => AvatarCompressorLocalization.Tr(
-                        "preset_menu.built_in_suffix"
+                        "TextureCompressor:menu:builtInSuffix"
                     ),
                     PresetRestriction.ExternalPackage => AvatarCompressorLocalization.Tr(
-                        "preset_menu.package_suffix"
+                        "TextureCompressor:menu:packageSuffix"
                     ),
                     _ => "",
                 };

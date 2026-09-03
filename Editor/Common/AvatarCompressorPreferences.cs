@@ -7,7 +7,7 @@ namespace dev.limitex.avatar.compressor.editor
 {
     /// <summary>
     /// Shared editor preferences for Avatar Compressor.
-    /// Hosts the General section and draws the sections contributed by
+    /// Hosts the General and Language sections and draws sections contributed by
     /// features through IPreferencesSection.
     /// Accessible via Edit > Preferences > Avatar Compressor.
     /// </summary>
@@ -76,6 +76,7 @@ namespace dev.limitex.avatar.compressor.editor
                 "Debug",
                 "Language",
                 "语言",
+                "語言",
                 "言語",
                 "언어",
             };
@@ -91,20 +92,24 @@ namespace dev.limitex.avatar.compressor.editor
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.inspectorDefaultMargins);
 
-                    AvatarCompressorLocalization.DrawLanguagePicker();
-                    EditorGUILayout.Space(10);
-
                     EditorGUILayout.LabelField(
-                        AvatarCompressorLocalization.Tr("preferences.general"),
+                        AvatarCompressorLocalization.Tr("Common:label:general"),
                         EditorStyles.boldLabel
                     );
                     EnableLogging = EditorGUILayout.Toggle(
                         AvatarCompressorLocalization.Content(
-                            "preferences.enable_logging",
-                            "preferences.enable_logging.tooltip"
+                            "Common:prop:enableLogging",
+                            "Common:prop:enableLogging:tooltip"
                         ),
                         EnableLogging
                     );
+
+                    EditorGUILayout.Space(10);
+                    EditorGUILayout.LabelField(
+                        AvatarCompressorLocalization.Tr("Common:label:language"),
+                        EditorStyles.boldLabel
+                    );
+                    AvatarCompressorLocalization.DrawLanguagePicker();
 
                     foreach (var section in sections)
                     {

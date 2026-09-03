@@ -18,7 +18,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             showSection = EditorGUILayout.Foldout(
                 showSection,
-                AvatarCompressorLocalization.Tr("filters.exclusions"),
+                AvatarCompressorLocalization.Tr("TextureCompressor:label:exclusions"),
                 true
             );
             if (!showSection)
@@ -37,7 +37,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             showSection = EditorGUILayout.Foldout(
                 showSection,
-                AvatarCompressorLocalization.Tr("filters.liltoon_optimizations"),
+                AvatarCompressorLocalization.Tr("TextureCompressor:label:liltoonOptimizations"),
                 true
             );
             if (!showSection)
@@ -47,16 +47,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             bool bake = EditorGUILayout.ToggleLeft(
                 new GUIContent(
-                    AvatarCompressorLocalization.Tr("filters.bake_liltoon"),
-                    AvatarCompressorLocalization.Tr("filters.bake_liltoon.tooltip")
+                    AvatarCompressorLocalization.Tr("TextureCompressor:prop:bakeLiltoon"),
+                    AvatarCompressorLocalization.Tr("TextureCompressor:prop:bakeLiltoon:tooltip")
                 ),
                 config.BakeLilToonTextures
             );
 
             bool detect = EditorGUILayout.ToggleLeft(
                 new GUIContent(
-                    AvatarCompressorLocalization.Tr("filters.remove_unused"),
-                    AvatarCompressorLocalization.Tr("filters.remove_unused.tooltip")
+                    AvatarCompressorLocalization.Tr("TextureCompressor:prop:removeUnused"),
+                    AvatarCompressorLocalization.Tr("TextureCompressor:prop:removeUnused:tooltip")
                 ),
                 config.DetectUnusedTextures
             );
@@ -78,7 +78,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             showSection = EditorGUILayout.Foldout(
                 showSection,
-                AvatarCompressorLocalization.Tr("filters.texture_filters"),
+                AvatarCompressorLocalization.Tr("TextureCompressor:label:textureFilters"),
                 true
             );
             if (!showSection)
@@ -88,29 +88,29 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             bool main = EditorGUILayout.ToggleLeft(
                 AvatarCompressorLocalization.Content(
-                    "filters.main_textures",
-                    "filters.main_textures.tooltip"
+                    "TextureCompressor:prop:mainTextures",
+                    "TextureCompressor:prop:mainTextures:tooltip"
                 ),
                 config.ProcessMainTextures
             );
             bool normal = EditorGUILayout.ToggleLeft(
                 AvatarCompressorLocalization.Content(
-                    "filters.normal_maps",
-                    "filters.normal_maps.tooltip"
+                    "TextureCompressor:prop:normalMaps",
+                    "TextureCompressor:prop:normalMaps:tooltip"
                 ),
                 config.ProcessNormalMaps
             );
             bool emission = EditorGUILayout.ToggleLeft(
                 AvatarCompressorLocalization.Content(
-                    "filters.emission_maps",
-                    "filters.emission_maps.tooltip"
+                    "TextureCompressor:prop:emissionMaps",
+                    "TextureCompressor:prop:emissionMaps:tooltip"
                 ),
                 config.ProcessEmissionMaps
             );
             bool other = EditorGUILayout.ToggleLeft(
                 AvatarCompressorLocalization.Content(
-                    "filters.other_textures",
-                    "filters.other_textures.tooltip"
+                    "TextureCompressor:prop:otherTextures",
+                    "TextureCompressor:prop:otherTextures:tooltip"
                 ),
                 config.ProcessOtherTextures
             );
@@ -134,8 +134,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 EditorGUI.BeginChangeCheck();
                 bool skipUnknownUncompressed = EditorGUILayout.ToggleLeft(
                     AvatarCompressorLocalization.Content(
-                        "filters.skip_unknown_uncompressed",
-                        "filters.skip_unknown_uncompressed.tooltip"
+                        "TextureCompressor:prop:skipUnknownUncompressed",
+                        "TextureCompressor:prop:skipUnknownUncompressed:tooltip"
                     ),
                     config.SkipUnknownUncompressedTextures
                 );
@@ -158,8 +158,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             int count = config.ExcludedTextures.Count;
             string label =
                 count > 0
-                    ? AvatarCompressorLocalization.Tr("filters.textures_count", count)
-                    : AvatarCompressorLocalization.Tr("filters.textures");
+                    ? AvatarCompressorLocalization.Tr(
+                        "TextureCompressor:message:texturesCount",
+                        count
+                    )
+                    : AvatarCompressorLocalization.Tr("TextureCompressor:label:excludedTextures");
             EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
 
             ExclusionListDrawer.DrawContent(
@@ -168,8 +171,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 drawItemField: current =>
                     (Texture2D)EditorGUILayout.ObjectField(current, typeof(Texture2D), false),
                 sectionLabel: "Excluded Textures",
-                emptyHelpText: AvatarCompressorLocalization.Tr("filters.excluded_textures.empty"),
-                addButtonLabel: AvatarCompressorLocalization.Tr("filters.add_texture"),
+                emptyHelpText: AvatarCompressorLocalization.Tr(
+                    "TextureCompressor:message:excludedTexturesEmpty"
+                ),
+                addButtonLabel: AvatarCompressorLocalization.Tr(
+                    "TextureCompressor:button:addTexture"
+                ),
                 validateChange: (newValue, index, list) =>
                 {
                     if (
@@ -197,8 +204,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             int count = config.ExcludedPaths.Count;
             string label =
                 count > 0
-                    ? AvatarCompressorLocalization.Tr("filters.paths_count", count)
-                    : AvatarCompressorLocalization.Tr("filters.paths");
+                    ? AvatarCompressorLocalization.Tr("TextureCompressor:message:pathsCount", count)
+                    : AvatarCompressorLocalization.Tr("TextureCompressor:label:excludedPaths");
             EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
 
             ExclusionListDrawer.DrawContent(
@@ -206,8 +213,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.ExcludedPaths,
                 drawItemField: current => EditorGUILayout.TextField(current),
                 sectionLabel: "Path Exclusions",
-                emptyHelpText: AvatarCompressorLocalization.Tr("filters.excluded_paths.empty"),
-                addButtonLabel: AvatarCompressorLocalization.Tr("filters.add_path"),
+                emptyHelpText: AvatarCompressorLocalization.Tr(
+                    "TextureCompressor:message:excludedPathsEmpty"
+                ),
+                addButtonLabel: AvatarCompressorLocalization.Tr("TextureCompressor:button:addPath"),
                 onAdd: ShowAddPathMenu,
                 drawItemExtra: (item, _) =>
                 {
@@ -216,7 +225,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         var savedColor = GUI.color;
                         GUI.color = new Color(1f, 0.7f, 0.3f);
                         EditorGUILayout.LabelField(
-                            AvatarCompressorLocalization.Tr("filters.path_not_found"),
+                            AvatarCompressorLocalization.Tr(
+                                "TextureCompressor:message:pathNotFound"
+                            ),
                             EditorStyles.miniLabel
                         );
                         GUI.color = savedColor;
@@ -230,7 +241,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             var menu = new GenericMenu();
 
             menu.AddItem(
-                new GUIContent(AvatarCompressorLocalization.Tr("filters.empty_path")),
+                new GUIContent(AvatarCompressorLocalization.Tr("TextureCompressor:menu:emptyPath")),
                 false,
                 () =>
                 {
@@ -252,7 +263,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         menu.AddDisabledItem(
                             new GUIContent(
                                 AvatarCompressorLocalization.Tr(
-                                    "filters.path_preset_added",
+                                    "TextureCompressor:menu:pathPresetAdded",
                                     preset.Label
                                 )
                             )

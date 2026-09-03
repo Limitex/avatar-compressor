@@ -19,13 +19,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
             var preset = (CustomTextureCompressorPreset)target;
 
-            DrawHeader("preset_asset.settings");
-            DrawProperty(nameof(CustomTextureCompressorPreset.Lock), "preset_asset.lock");
+            DrawHeader("TextureCompressor:label:presetSettings");
+            DrawProperty(
+                nameof(CustomTextureCompressorPreset.Lock),
+                "TextureCompressor:prop:presetLock"
+            );
 
             if (BuiltInPresetLocalization.IsBuiltIn(preset))
             {
                 EditorGUILayout.LabelField(
-                    AvatarCompressorLocalization.Tr("preset_asset.description"),
+                    AvatarCompressorLocalization.Tr("TextureCompressor:prop:presetDescription"),
                     EditorStyles.miniLabel
                 );
                 EditorGUILayout.LabelField(
@@ -37,20 +40,20 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 DrawProperty(
                     nameof(CustomTextureCompressorPreset.Description),
-                    "preset_asset.description"
+                    "TextureCompressor:prop:presetDescription"
                 );
             }
 
             EditorGUILayout.Space(8);
-            DrawHeader("preset_asset.menu");
+            DrawHeader("TextureCompressor:label:presetMenu");
             if (BuiltInPresetLocalization.IsBuiltIn(preset))
             {
                 using (new EditorGUI.DisabledScope(true))
                 {
                     EditorGUILayout.TextField(
                         AvatarCompressorLocalization.Content(
-                            "preset_asset.menu_path",
-                            "preset_asset.menu_path.tooltip"
+                            "TextureCompressor:prop:presetMenuPath",
+                            "TextureCompressor:prop:presetMenuPath:tooltip"
                         ),
                         BuiltInPresetLocalization.GetMenuPath(preset)
                     );
@@ -60,96 +63,99 @@ namespace dev.limitex.avatar.compressor.editor.texture
             {
                 DrawProperty(
                     nameof(CustomTextureCompressorPreset.MenuPath),
-                    "preset_asset.menu_path",
-                    "preset_asset.menu_path.tooltip"
+                    "TextureCompressor:prop:presetMenuPath",
+                    "TextureCompressor:prop:presetMenuPath:tooltip"
                 );
             }
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.MenuOrder),
-                "preset_asset.menu_order",
-                "preset_asset.menu_order.tooltip"
+                "TextureCompressor:prop:presetMenuOrder",
+                "TextureCompressor:prop:presetMenuOrder:tooltip"
             );
 
             EditorGUILayout.Space(8);
-            DrawHeader("settings.analysis_strategy");
+            DrawHeader("TextureCompressor:label:analysisStrategy");
             DrawEnumProperty<AnalysisStrategyType>(
                 nameof(CustomTextureCompressorPreset.Strategy),
-                "settings.strategy",
-                "settings.strategy.tooltip"
+                "TextureCompressor:prop:strategy",
+                "TextureCompressor:prop:strategy:tooltip"
             );
 
-            DrawHeader("settings.combined_weights");
-            DrawProperty(nameof(CustomTextureCompressorPreset.FastWeight), "settings.fast_weight");
+            DrawHeader("TextureCompressor:label:combinedWeights");
+            DrawProperty(
+                nameof(CustomTextureCompressorPreset.FastWeight),
+                "TextureCompressor:prop:fastWeight"
+            );
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.HighAccuracyWeight),
-                "settings.high_accuracy_weight"
+                "TextureCompressor:prop:highAccuracyWeight"
             );
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.PerceptualWeight),
-                "settings.perceptual_weight"
+                "TextureCompressor:prop:perceptualWeight"
             );
 
-            DrawHeader("settings.complexity_thresholds");
+            DrawHeader("TextureCompressor:label:complexityThresholds");
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.HighComplexityThreshold),
-                "settings.high_threshold",
-                "settings.high_threshold.tooltip"
+                "TextureCompressor:prop:highThreshold",
+                "TextureCompressor:prop:highThreshold:tooltip"
             );
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.LowComplexityThreshold),
-                "settings.low_threshold",
-                "settings.low_threshold.tooltip"
+                "TextureCompressor:prop:lowThreshold",
+                "TextureCompressor:prop:lowThreshold:tooltip"
             );
 
-            DrawHeader("settings.resolution");
+            DrawHeader("TextureCompressor:label:resolution");
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.MinDivisor),
-                "settings.min_divisor",
-                "settings.min_divisor.tooltip"
+                "TextureCompressor:prop:minDivisor",
+                "TextureCompressor:prop:minDivisor:tooltip"
             );
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.MaxDivisor),
-                "settings.max_divisor",
-                "settings.max_divisor.tooltip"
+                "TextureCompressor:prop:maxDivisor",
+                "TextureCompressor:prop:maxDivisor:tooltip"
             );
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.MaxResolution),
-                "settings.max_resolution",
-                "settings.max_resolution.tooltip"
+                "TextureCompressor:prop:maxResolution",
+                "TextureCompressor:prop:maxResolution:tooltip"
             );
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.MinResolution),
-                "settings.min_resolution",
-                "settings.min_resolution.tooltip"
+                "TextureCompressor:prop:minResolution",
+                "TextureCompressor:prop:minResolution:tooltip"
             );
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.ForcePowerOfTwo),
-                "settings.force_power_of_two",
-                "settings.force_power_of_two.tooltip"
+                "TextureCompressor:prop:forcePowerOfTwo",
+                "TextureCompressor:prop:forcePowerOfTwo:tooltip"
             );
 
-            DrawHeader("settings.size_filters");
+            DrawHeader("TextureCompressor:label:sizeFilters");
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.MinSourceSize),
-                "settings.min_source_size",
-                "settings.min_source_size.tooltip"
+                "TextureCompressor:prop:minSourceSize",
+                "TextureCompressor:prop:minSourceSize:tooltip"
             );
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.SkipIfSmallerThan),
-                "settings.skip_if_smaller",
-                "settings.skip_if_smaller.tooltip"
+                "TextureCompressor:prop:skipIfSmaller",
+                "TextureCompressor:prop:skipIfSmaller:tooltip"
             );
 
-            DrawHeader("settings.compression_format");
+            DrawHeader("TextureCompressor:label:compressionFormat");
             DrawEnumProperty<CompressionPlatform>(
                 nameof(CustomTextureCompressorPreset.TargetPlatform),
-                "settings.target_platform",
-                "settings.target_platform.tooltip"
+                "TextureCompressor:prop:targetPlatform",
+                "TextureCompressor:prop:targetPlatform:tooltip"
             );
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.UseHighQualityFormatForHighComplexity),
-                "settings.high_quality_complex",
-                "settings.high_quality_complex.tooltip"
+                "TextureCompressor:prop:highQualityComplex",
+                "TextureCompressor:prop:highQualityComplex:tooltip"
             );
 
             serializedObject.ApplyModifiedProperties();

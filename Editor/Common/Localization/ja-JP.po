@@ -2,731 +2,734 @@ msgid ""
 msgstr ""
 "Language: ja-JP\n"
 
-msgid "common.cancel"
+msgid "Common:label:cancel"
 msgstr "キャンセル"
 
-msgid "common.close"
+msgid "Common:label:close"
 msgstr "閉じる"
 
-msgid "common.not_available"
+msgid "Common:label:notAvailable"
 msgstr "該当なし"
 
-msgid "warning.avatar_root"
+msgid "Common:message:avatarRootWarning"
 msgstr "このコンポーネントは Avatar ルートの GameObject に配置してください。他の場所でも動作しますが、Avatar ルートへの配置を推奨します。"
 
-msgid "preferences.general"
+msgid "Common:label:general"
 msgstr "一般"
 
-msgid "preferences.enable_logging"
+msgid "Common:label:language"
+msgstr "言語"
+
+msgid "Common:prop:enableLogging"
 msgstr "ログを有効化"
 
-msgid "preferences.enable_logging.tooltip"
+msgid "Common:prop:enableLogging:tooltip"
 msgstr "ビルド中およびプレビュー中にデバッグログを出力します"
 
-msgid "preferences.texture_compressor"
+msgid "TextureCompressor:label:preferences"
 msgstr "テクスチャ圧縮"
 
-msgid "preferences.analysis_backend"
+msgid "TextureCompressor:prop:analysisBackend"
 msgstr "解析バックエンド"
 
-msgid "preferences.analysis_backend.tooltip"
+msgid "TextureCompressor:prop:analysisBackend:tooltip"
 msgstr "テクスチャの複雑度解析に使用するバックエンドを選択します"
 
-msgid "preferences.analysis_backend.cpu_help"
+msgid "TextureCompressor:message:analysisBackendCpuHelp"
 msgstr "テクスチャ解析に常に CPU を使用します。GPU の結果が不安定な場合やデバッグに便利です。"
 
-msgid "preferences.analysis_backend.auto_help"
+msgid "TextureCompressor:message:analysisBackendAutoHelp"
 msgstr "現在は {0} を使用しています。利用可能な場合は GPU コンピュートシェーダーで解析し、それ以外は CPU にフォールバックします。"
 
-msgid "preferences.resize_backend"
+msgid "TextureCompressor:prop:resizeBackend"
 msgstr "リサイズバックエンド"
 
-msgid "preferences.resize_backend.tooltip"
+msgid "TextureCompressor:prop:resizeBackend:tooltip"
 msgstr "Area Averaging によるテクスチャリサイズのバックエンドを選択します"
 
-msgid "preferences.resize_backend.cpu_help"
+msgid "TextureCompressor:message:resizeBackendCpuHelp"
 msgstr "Area Averaging リサイズに常に CPU を使用します。GPU の結果が不安定な場合やデバッグに便利です。"
 
-msgid "preferences.resize_backend.auto_help"
+msgid "TextureCompressor:message:resizeBackendAutoHelp"
 msgstr "現在は {0} を使用しています。利用可能な場合は GPU コンピュートシェーダーで Area Averaging リサイズを行い、それ以外は CPU にフォールバックします。"
 
-msgid "search.fuzzy"
+msgid "Common:prop:fuzzySearch"
 msgstr "あいまい"
 
-msgid "search.showing"
+msgid "Common:message:searchShowing"
 msgstr "{1} 件中 {0} 件を表示"
 
-msgid "search.hidden"
+msgid "Common:message:searchHidden"
 msgstr "{0} 件を非表示"
 
-msgid "thumbnail.highlight.tooltip"
+msgid "Common:label:thumbnailHighlight:tooltip"
 msgstr "クリックして Project ウィンドウで強調表示"
 
-msgid "github.message"
+msgid "Common:message:githubFeedback"
 msgstr "不具合やアイデアをお知らせください。Star も歓迎です。"
 
-msgid "github.open.tooltip"
+msgid "Common:button:openGitHub:tooltip"
 msgstr "GitHub リポジトリを開く"
 
-msgid "preset.section"
+msgid "TextureCompressor:label:preset"
 msgstr "圧縮プリセット"
 
-msgid "preset.high_quality"
+msgid "TextureCompressor:label:presetHighQuality"
 msgstr "高品質"
 
-msgid "preset.high_quality.tooltip"
+msgid "TextureCompressor:label:presetHighQuality:tooltip"
 msgstr "最高品質\n最小限の圧縮"
 
-msgid "preset.high_quality.description"
+msgid "TextureCompressor:message:presetHighQualityDescription"
 msgstr "高品質モード：圧縮を最小限にし、品質を最大限に維持します。単色など非常に単純なテクスチャだけを軽く圧縮します。展示用 Avatar や VRAM を重視しない場合に適しています。"
 
-msgid "preset.quality"
+msgid "TextureCompressor:label:presetQuality"
 msgstr "品質優先"
 
-msgid "preset.quality.tooltip"
+msgid "TextureCompressor:label:presetQuality:tooltip"
 msgstr "良好な品質\n軽い圧縮"
 
-msgid "preset.quality.description"
+msgid "TextureCompressor:message:presetQualityDescription"
 msgstr "品質優先モード：テクスチャの細部をできる限り維持します。単色や単純なグラデーションなど低複雑度のテクスチャだけを圧縮します。見た目の品質を優先する Avatar に適しています。"
 
-msgid "preset.balanced"
+msgid "TextureCompressor:label:presetBalanced"
 msgstr "バランス"
 
-msgid "preset.balanced.tooltip"
+msgid "TextureCompressor:label:presetBalanced:tooltip"
 msgstr "品質とサイズの\nバランス"
 
-msgid "preset.balanced.description"
+msgid "TextureCompressor:message:presetBalancedDescription"
 msgstr "バランスモード：品質と VRAM 削減を両立します。詳細なテクスチャを維持し、単純なテクスチャを圧縮します。多くの用途に推奨します。"
 
-msgid "preset.aggressive"
+msgid "TextureCompressor:label:presetAggressive"
 msgstr "強圧縮"
 
-msgid "preset.aggressive.tooltip"
+msgid "TextureCompressor:label:presetAggressive:tooltip"
 msgstr "小さいファイル\n多少の品質低下"
 
-msgid "preset.aggressive.description"
+msgid "TextureCompressor:message:presetAggressiveDescription"
 msgstr "強圧縮モード：品質よりファイルサイズを優先します。ほとんどのテクスチャがある程度圧縮されます。Quest Avatar や VRAM が限られる場合に適しています。"
 
-msgid "preset.maximum"
+msgid "TextureCompressor:label:presetMaximum"
 msgstr "最大圧縮"
 
-msgid "preset.maximum.tooltip"
+msgid "TextureCompressor:label:presetMaximum:tooltip"
 msgstr "最小サイズ\n目立つ品質低下"
 
-msgid "preset.maximum.description"
+msgid "TextureCompressor:message:presetMaximumDescription"
 msgstr "最大圧縮モード：すべてのテクスチャを可能な限り圧縮します。品質が大きく低下する場合があります。ファイルサイズが最重要の場合のみ使用してください。"
 
-msgid "preset.custom"
+msgid "TextureCompressor:label:presetCustom"
 msgstr "カスタム"
 
-msgid "preset.custom.tooltip"
+msgid "TextureCompressor:label:presetCustom:tooltip"
 msgstr "手動\n設定"
 
-msgid "preset.custom.description"
+msgid "TextureCompressor:message:presetCustomDescription"
 msgstr "カスタムモード：すべての圧縮設定を完全に制御し、各パラメーターを手動で細かく調整できます。"
 
-msgid "custom.edit_mode"
+msgid "TextureCompressor:prop:customEditMode"
 msgstr "編集モード"
 
-msgid "custom.edit_mode.tooltip"
+msgid "TextureCompressor:prop:customEditMode:tooltip"
 msgstr "圧縮設定を手動で構成します"
 
-msgid "custom.edit_mode_unlink.tooltip"
+msgid "TextureCompressor:prop:customEditModeUnlink:tooltip"
 msgstr "プリセットのリンクを解除して設定を手動編集します"
 
-msgid "custom.preset_dropdown"
+msgid "TextureCompressor:prop:customPreset"
 msgstr "カスタムプリセット ▼"
 
-msgid "custom.preset_dropdown.tooltip"
+msgid "TextureCompressor:prop:customPreset:tooltip"
 msgstr "メニューからカスタムプリセットを選択します"
 
-msgid "custom.use_only"
+msgid "TextureCompressor:label:customUseOnly"
 msgstr "カスタムプリセット（使用のみ）"
 
-msgid "custom.name_built_in"
+msgid "TextureCompressor:message:customNameBuiltIn"
 msgstr "{0}（組み込み）"
 
-msgid "custom.name_package"
+msgid "TextureCompressor:message:customNamePackage"
 msgstr "{0}（パッケージ）"
 
-msgid "custom.lock.built_in"
+msgid "TextureCompressor:message:customLockBuiltIn"
 msgstr "このプリセットは組み込みです"
 
-msgid "custom.lock.package"
+msgid "TextureCompressor:message:customLockPackage"
 msgstr "このプリセットはパッケージ内にあります"
 
-msgid "custom.lock.locked"
+msgid "TextureCompressor:message:customLockLocked"
 msgstr "このプリセットはロックされています"
 
-msgid "custom.lock.uneditable"
+msgid "TextureCompressor:message:customLockUneditable"
 msgstr "このプリセットは編集できません"
 
-msgid "custom.edit"
+msgid "TextureCompressor:button:editCustomPreset"
 msgstr "編集"
 
-msgid "custom.preset"
+msgid "TextureCompressor:label:customPreset"
 msgstr "カスタムプリセット"
 
-msgid "custom.save.tooltip"
+msgid "TextureCompressor:button:saveCustomPreset:tooltip"
 msgstr "現在の設定をプリセットへ保存"
 
-msgid "custom.discard.tooltip"
+msgid "TextureCompressor:button:discardCustomPreset:tooltip"
 msgstr "変更を破棄してプリセットから再読み込み"
 
-msgid "custom.create.tooltip"
+msgid "TextureCompressor:button:createCustomPreset:tooltip"
 msgstr "現在の設定から新しいプリセットを作成"
 
-msgid "custom.unlink.tooltip"
+msgid "TextureCompressor:button:unlinkCustomPreset:tooltip"
 msgstr "プリセットのリンクを解除（現在の設定は維持）"
 
-msgid "custom.component_only"
+msgid "TextureCompressor:message:customComponentOnly"
 msgstr "設定はこのコンポーネントだけに保存されています。\n複数の Avatar で再利用するにはプリセットを作成してください。"
 
-msgid "custom.modified"
+msgid "TextureCompressor:message:customModified"
 msgstr "● 変更あり"
 
-msgid "custom.synced"
+msgid "TextureCompressor:message:customSynced"
 msgstr "✓ 同期済み"
 
-msgid "custom.description"
+msgid "TextureCompressor:prop:customDescription"
 msgstr "説明"
 
-msgid "custom.create_dialog.title"
+msgid "TextureCompressor:dialog:createPresetTitle"
 msgstr "テクスチャ圧縮プリセットを新規作成"
 
-msgid "custom.create_dialog.message"
+msgid "TextureCompressor:dialog:createPresetMessage"
 msgstr "新しいプリセットの保存先を選択してください"
 
-msgid "unlink_dialog.title"
+msgid "TextureCompressor:dialog:unlinkPresetTitle"
 msgstr "プリセットのリンク解除"
 
-msgid "unlink_dialog.reason.built_in"
+msgid "TextureCompressor:dialog:unlinkPresetReasonBuiltIn"
 msgstr "このプリセットは組み込みのため編集できません。"
 
-msgid "unlink_dialog.reason.package"
+msgid "TextureCompressor:dialog:unlinkPresetReasonPackage"
 msgstr "このプリセットはパッケージ内にあるため編集できません。"
 
-msgid "unlink_dialog.reason.locked"
+msgid "TextureCompressor:dialog:unlinkPresetReasonLocked"
 msgstr "このプリセットはロックされているため直接編集できません。"
 
-msgid "unlink_dialog.message"
+msgid "TextureCompressor:dialog:unlinkPresetMessage"
 msgstr "{0}\n\nリンクを解除して設定を手動編集しますか？\n（現在の設定は維持されます）"
 
-msgid "unlink_dialog.confirm"
+msgid "TextureCompressor:dialog:unlinkPresetConfirm"
 msgstr "リンク解除して編集"
 
-msgid "preset_menu.none"
+msgid "TextureCompressor:menu:none"
 msgstr "利用可能なプリセットがありません"
 
-msgid "preset_menu.built_in_suffix"
+msgid "TextureCompressor:menu:builtInSuffix"
 msgstr "（組み込み）"
 
-msgid "preset_menu.package_suffix"
+msgid "TextureCompressor:menu:packageSuffix"
 msgstr "（パッケージ）"
 
-msgid "preset_menu.built_in_path"
+msgid "TextureCompressor:menu:builtInPath"
 msgstr "組み込み/{0}"
 
-msgid "built_in_preset.high_quality_plus.name"
+msgid "TextureCompressor:label:builtInPresetHighQualityPlus"
 msgstr "高品質+"
 
-msgid "built_in_preset.high_quality_plus.description"
+msgid "TextureCompressor:message:builtInPresetHighQualityPlusDescription"
 msgstr "高品質より優れています。最小限の処理で最高品質を維持します。"
 
-msgid "built_in_preset.quality_plus.name"
+msgid "TextureCompressor:label:builtInPresetQualityPlus"
 msgstr "品質優先+"
 
-msgid "built_in_preset.quality_plus.description"
+msgid "TextureCompressor:message:builtInPresetQualityPlusDescription"
 msgstr "品質優先より優れています。最小限の圧縮で高品質を維持します。"
 
-msgid "built_in_preset.balanced_plus.name"
+msgid "TextureCompressor:label:builtInPresetBalancedPlus"
 msgstr "バランス+"
 
-msgid "built_in_preset.balanced_plus.description"
+msgid "TextureCompressor:message:builtInPresetBalancedPlusDescription"
 msgstr "バランスより優れています。適度な圧縮で良好な品質を維持します。"
 
-msgid "built_in_preset.aggressive_plus.name"
+msgid "TextureCompressor:label:builtInPresetAggressivePlus"
 msgstr "強圧縮+"
 
-msgid "built_in_preset.aggressive_plus.description"
+msgid "TextureCompressor:message:builtInPresetAggressivePlusDescription"
 msgstr "強圧縮より優れています。効率的な圧縮を保ちながら品質を改善します。"
 
-msgid "built_in_preset.maximum_plus.name"
+msgid "TextureCompressor:label:builtInPresetMaximumPlus"
 msgstr "最大圧縮+"
 
-msgid "built_in_preset.maximum_plus.description"
+msgid "TextureCompressor:message:builtInPresetMaximumPlusDescription"
 msgstr "最大圧縮より優れています。強い圧縮を保ちながら品質を少し高めます。"
 
-msgid "summary.current_settings"
+msgid "TextureCompressor:label:currentSettings"
 msgstr "現在の設定概要"
 
-msgid "summary.settings"
+msgid "TextureCompressor:label:settings"
 msgstr "設定概要"
 
-msgid "summary.strategy"
+msgid "TextureCompressor:message:summaryStrategy"
 msgstr "方式：{0}"
 
-msgid "summary.divisor_range"
+msgid "TextureCompressor:message:summaryDivisorRange"
 msgstr "縮小率の範囲：{0}x - {1}x"
 
-msgid "summary.resolution_range"
+msgid "TextureCompressor:message:summaryResolutionRange"
 msgstr "解像度の範囲：{0}px - {1}px"
 
-msgid "summary.complexity_thresholds"
+msgid "TextureCompressor:message:summaryComplexityThresholds"
 msgstr "複雑度しきい値：{0:P0} - {1:P0}"
 
-msgid "settings.advanced_read_only"
+msgid "TextureCompressor:message:advancedReadOnly"
 msgstr "詳細設定（読み取り専用）"
 
-msgid "settings.analysis_strategy"
+msgid "TextureCompressor:label:analysisStrategy"
 msgstr "解析方式"
 
-msgid "settings.combined_weights"
+msgid "TextureCompressor:label:combinedWeights"
 msgstr "組み合わせ方式の重み"
 
-msgid "settings.complexity_thresholds"
+msgid "TextureCompressor:label:complexityThresholds"
 msgstr "複雑度しきい値"
 
-msgid "settings.resolution"
+msgid "TextureCompressor:label:resolution"
 msgstr "解像度設定"
 
-msgid "settings.size_filters"
+msgid "TextureCompressor:label:sizeFilters"
 msgstr "サイズフィルター"
 
-msgid "settings.compression_format"
+msgid "TextureCompressor:label:compressionFormat"
 msgstr "圧縮形式"
 
-msgid "settings.strategy"
+msgid "TextureCompressor:prop:strategy"
 msgstr "方式"
 
-msgid "settings.strategy.tooltip"
+msgid "TextureCompressor:prop:strategy:tooltip"
 msgstr "複雑度の解析方法"
 
-msgid "settings.fast_weight"
+msgid "TextureCompressor:prop:fastWeight"
 msgstr "高速解析の重み"
 
-msgid "settings.high_accuracy_weight"
+msgid "TextureCompressor:prop:highAccuracyWeight"
 msgstr "高精度解析の重み"
 
-msgid "settings.perceptual_weight"
+msgid "TextureCompressor:prop:perceptualWeight"
 msgstr "知覚解析の重み"
 
-msgid "settings.high_threshold"
+msgid "TextureCompressor:prop:highThreshold"
 msgstr "高（細部を維持）"
 
-msgid "settings.high_threshold.tooltip"
+msgid "TextureCompressor:prop:highThreshold:tooltip"
 msgstr "この値より複雑なテクスチャには最小限の圧縮を使用します"
 
-msgid "settings.low_threshold"
+msgid "TextureCompressor:prop:lowThreshold"
 msgstr "低（より強く圧縮）"
 
-msgid "settings.low_threshold.tooltip"
+msgid "TextureCompressor:prop:lowThreshold:tooltip"
 msgstr "この値より単純なテクスチャには最大限の圧縮を使用します"
 
-msgid "settings.min_divisor"
+msgid "TextureCompressor:prop:minDivisor"
 msgstr "最小縮小率"
 
-msgid "settings.min_divisor.tooltip"
+msgid "TextureCompressor:prop:minDivisor:tooltip"
 msgstr "解像度の最小縮小率（1 = 縮小なし）"
 
-msgid "settings.max_divisor"
+msgid "TextureCompressor:prop:maxDivisor"
 msgstr "最大縮小率"
 
-msgid "settings.max_divisor.tooltip"
+msgid "TextureCompressor:prop:maxDivisor:tooltip"
 msgstr "解像度の最大縮小率"
 
-msgid "settings.max_resolution"
+msgid "TextureCompressor:prop:maxResolution"
 msgstr "最大解像度"
 
-msgid "settings.max_resolution.tooltip"
+msgid "TextureCompressor:prop:maxResolution:tooltip"
 msgstr "出力の最大解像度"
 
-msgid "settings.min_resolution"
+msgid "TextureCompressor:prop:minResolution"
 msgstr "最小解像度"
 
-msgid "settings.min_resolution.tooltip"
+msgid "TextureCompressor:prop:minResolution:tooltip"
 msgstr "出力の最小解像度"
 
-msgid "settings.force_power_of_two"
+msgid "TextureCompressor:prop:forcePowerOfTwo"
 msgstr "2 の累乗に固定"
 
-msgid "settings.force_power_of_two.tooltip"
+msgid "TextureCompressor:prop:forcePowerOfTwo:tooltip"
 msgstr "有効時は最も近い 2 の累乗に丸めます。\n無効時は最も近い 4 の倍数に丸めます。\nDXT/BC 互換性のため、出力寸法は常に 4 の倍数です。"
 
-msgid "settings.multiple_of_four.help"
+msgid "TextureCompressor:message:multipleOfFourHelp"
 msgstr "DXT/BC 圧縮との互換性のため、出力寸法は常に 4 の倍数です。例：150x150 は 152x152 になります。"
 
-msgid "settings.min_source_size"
+msgid "TextureCompressor:prop:minSourceSize"
 msgstr "最小ソースサイズ"
 
-msgid "settings.min_source_size.tooltip"
+msgid "TextureCompressor:prop:minSourceSize:tooltip"
 msgstr "このサイズより大きいテクスチャだけを処理します"
 
-msgid "settings.skip_if_smaller"
+msgid "TextureCompressor:prop:skipIfSmaller"
 msgstr "これ以下ならスキップ"
 
-msgid "settings.skip_if_smaller.tooltip"
+msgid "TextureCompressor:prop:skipIfSmaller:tooltip"
 msgstr "このサイズ以下のテクスチャをスキップします"
 
-msgid "settings.target_platform"
+msgid "TextureCompressor:prop:targetPlatform"
 msgstr "対象プラットフォーム"
 
-msgid "settings.target_platform.tooltip"
+msgid "TextureCompressor:prop:targetPlatform:tooltip"
 msgstr "圧縮形式を選ぶ対象プラットフォーム（自動ではビルドターゲットから検出）"
 
-msgid "settings.high_quality_complex"
+msgid "TextureCompressor:prop:highQualityComplex"
 msgstr "複雑なテクスチャを高品質化"
 
-msgid "settings.high_quality_complex.tooltip"
+msgid "TextureCompressor:prop:highQualityComplex:tooltip"
 msgstr "複雑度の高いテクスチャに BC7/ASTC_4x4 を使用します（複雑度しきい値を使用）"
 
-msgid "filters.exclusions"
+msgid "TextureCompressor:label:exclusions"
 msgstr "除外"
 
-msgid "filters.liltoon_optimizations"
+msgid "TextureCompressor:label:liltoonOptimizations"
 msgstr "lilToon 最適化"
 
-msgid "filters.bake_liltoon"
+msgid "TextureCompressor:prop:bakeLiltoon"
 msgstr "色調整をテクスチャへベイク"
 
-msgid "filters.bake_liltoon.tooltip"
+msgid "TextureCompressor:prop:bakeLiltoon:tooltip"
 msgstr "ビルド時に色相、彩度、グラデーション、有効な第 2/3 レイヤーと Alpha Mask をメインテクスチャへ、色調補正をアウトラインテクスチャへベイクします。アニメーション入力、凍結済み、アニメーション参照中、除外済みのテクスチャはベイクされません。色はランタイムの色調として残ります。lilToon が必要です。"
 
-msgid "filters.remove_unused"
+msgid "TextureCompressor:prop:removeUnused"
 msgstr "未使用テクスチャスロットを削除"
 
-msgid "filters.remove_unused.tooltip"
+msgid "TextureCompressor:prop:removeUnused:tooltip"
 msgstr "機能トグルがオフでアニメーションされていない lilToon スロットを消去し、参照されなくなったテクスチャをアップロードから除外します。凍結済みまたはアニメーション参照中のテクスチャは削除されません。除外フィルターはここには適用されません。"
 
-msgid "filters.texture_filters"
+msgid "TextureCompressor:label:textureFilters"
 msgstr "テクスチャフィルター"
 
-msgid "filters.main_textures"
+msgid "TextureCompressor:prop:mainTextures"
 msgstr "メインテクスチャ"
 
-msgid "filters.main_textures.tooltip"
+msgid "TextureCompressor:prop:mainTextures:tooltip"
 msgstr "メインテクスチャ（_MainTex、_BaseMap など）を処理します"
 
-msgid "filters.normal_maps"
+msgid "TextureCompressor:prop:normalMaps"
 msgstr "ノーマルマップ"
 
-msgid "filters.normal_maps.tooltip"
+msgid "TextureCompressor:prop:normalMaps:tooltip"
 msgstr "ノーマルマップを処理します"
 
-msgid "filters.emission_maps"
+msgid "TextureCompressor:prop:emissionMaps"
 msgstr "発光マップ"
 
-msgid "filters.emission_maps.tooltip"
+msgid "TextureCompressor:prop:emissionMaps:tooltip"
 msgstr "発光テクスチャを処理します"
 
-msgid "filters.other_textures"
+msgid "TextureCompressor:prop:otherTextures"
 msgstr "その他のテクスチャ"
 
-msgid "filters.other_textures.tooltip"
+msgid "TextureCompressor:prop:otherTextures:tooltip"
 msgstr "その他のテクスチャ（メタリック、粗さなど）を処理します"
 
-msgid "filters.skip_unknown_uncompressed"
+msgid "TextureCompressor:prop:skipUnknownUncompressed"
 msgstr "不明なプロパティの非圧縮テクスチャをスキップ"
 
-msgid "filters.skip_unknown_uncompressed.tooltip"
+msgid "TextureCompressor:prop:skipUnknownUncompressed:tooltip"
 msgstr "不明なシェーダープロパティには Mask や LUT などの非表示データが含まれ、圧縮で破損する可能性があります。"
 
-msgid "filters.textures"
+msgid "TextureCompressor:label:excludedTextures"
 msgstr "テクスチャ"
 
-msgid "filters.textures_count"
+msgid "TextureCompressor:message:texturesCount"
 msgstr "テクスチャ（{0}）"
 
-msgid "filters.excluded_textures.empty"
+msgid "TextureCompressor:message:excludedTexturesEmpty"
 msgstr "ここに追加したテクスチャは圧縮から除外されます。"
 
-msgid "filters.add_texture"
+msgid "TextureCompressor:button:addTexture"
 msgstr "+ テクスチャを追加"
 
-msgid "filters.paths"
+msgid "TextureCompressor:label:excludedPaths"
 msgstr "パス"
 
-msgid "filters.paths_count"
+msgid "TextureCompressor:message:pathsCount"
 msgstr "パス（{0}）"
 
-msgid "filters.excluded_paths.empty"
+msgid "TextureCompressor:message:excludedPathsEmpty"
 msgstr "一覧の接頭辞で始まるパスのテクスチャはスキップされます。"
 
-msgid "filters.add_path"
+msgid "TextureCompressor:button:addPath"
 msgstr "+ パスを追加..."
 
-msgid "filters.path_not_found"
+msgid "TextureCompressor:message:pathNotFound"
 msgstr "  ⚠ パスが見つかりません"
 
-msgid "filters.empty_path"
+msgid "TextureCompressor:menu:emptyPath"
 msgstr "空のパス"
 
-msgid "filters.path_preset_added"
+msgid "TextureCompressor:menu:pathPresetAdded"
 msgstr "{0}（追加済み）"
 
-msgid "frozen.header"
+msgid "TextureCompressor:label:frozenTextures"
 msgstr "凍結テクスチャ（{0}）"
 
-msgid "frozen.header_filtered"
+msgid "TextureCompressor:label:frozenTexturesFiltered"
 msgstr "凍結テクスチャ（{0}/{1}）"
 
-msgid "frozen.empty"
+msgid "TextureCompressor:message:frozenEmpty"
 msgstr "凍結テクスチャはありません。プレビューのテクスチャで「凍結」をクリックすると手動設定を追加できます。"
 
-msgid "frozen.no_search_results"
+msgid "TextureCompressor:message:frozenNoSearchResults"
 msgstr "検索に一致する凍結テクスチャはありません。"
 
-msgid "frozen.unfreeze"
+msgid "TextureCompressor:button:unfreeze"
 msgstr "凍結解除"
 
-msgid "frozen.texture_not_found"
+msgid "TextureCompressor:message:frozenTextureNotFound"
 msgstr "テクスチャが見つかりません"
 
-msgid "frozen.skip_compression"
+msgid "TextureCompressor:prop:frozenSkipCompression"
 msgstr "圧縮をスキップ"
 
-msgid "frozen.divisor"
+msgid "TextureCompressor:prop:frozenDivisor"
 msgstr "縮小率："
 
-msgid "frozen.format"
+msgid "TextureCompressor:prop:frozenFormat"
 msgstr "形式："
 
-msgid "frozen.legacy_paths"
+msgid "TextureCompressor:message:frozenLegacyPaths"
 msgstr "旧形式のパス項目を検出しました。安定性向上のため GUID に変換してください。"
 
-msgid "frozen.convert_to_guid"
+msgid "TextureCompressor:button:convertToGuid"
 msgstr "GUID に変換"
 
-msgid "preview.generate"
+msgid "TextureCompressor:button:previewGenerate"
 msgstr "圧縮結果をプレビュー"
 
-msgid "preview.outdated"
+msgid "TextureCompressor:message:previewOutdated"
 msgstr "プレビューが古くなっています。生成後に設定または対象オブジェクトが変更されました。「圧縮結果をプレビュー」をクリックして更新してください。"
 
-msgid "preview.no_textures"
+msgid "TextureCompressor:message:previewNoTextures"
 msgstr "現在のフィルター設定に一致するテクスチャがありません。"
 
-msgid "preview.header_filtered"
+msgid "TextureCompressor:message:previewHeaderFiltered"
 msgstr "プレビュー（{1} 件中 {0} 件を表示）"
 
-msgid "preview.header_filtered_frozen"
+msgid "TextureCompressor:message:previewHeaderFilteredFrozen"
 msgstr "プレビュー（{1} 件中 {0} 件を表示、{2} 件を凍結）"
 
-msgid "preview.header_summary"
+msgid "TextureCompressor:message:previewHeaderSummary"
 msgstr "プレビュー（{0} 件を圧縮、{1} 件をスキップ）"
 
-msgid "preview.header_summary_frozen"
+msgid "TextureCompressor:message:previewHeaderSummaryFrozen"
 msgstr "プレビュー（{0} 件を圧縮、{1} 件を凍結、{2} 件をスキップ）"
 
-msgid "preview.original"
+msgid "TextureCompressor:label:previewOriginal"
 msgstr "元のサイズ："
 
-msgid "preview.after"
+msgid "TextureCompressor:label:previewAfter"
 msgstr "圧縮後："
 
-msgid "preview.savings"
+msgid "TextureCompressor:label:previewSavings"
 msgstr "削減量："
 
-msgid "preview.build_only_both"
+msgid "TextureCompressor:message:previewBuildOnlyBoth"
 msgstr "未使用テクスチャスロットの削除と lilToon テクスチャのベイクは NDMF ビルド時のみ実行され、このプレビューには反映されません。実際のビルドサイズは表示された推定値と異なる場合があります。"
 
-msgid "preview.build_only_unused"
+msgid "TextureCompressor:message:previewBuildOnlyUnused"
 msgstr "未使用テクスチャスロットの削除は NDMF ビルド時のみ実行され、このプレビューには反映されません。実際のビルドサイズは表示された推定値と異なる場合があります。"
 
-msgid "preview.build_only_bake"
+msgid "TextureCompressor:message:previewBuildOnlyBake"
 msgstr "lilToon テクスチャのベイクは NDMF ビルド時のみ実行され、このプレビューには反映されません。実際のビルドサイズは表示された推定値と異なる場合があります。"
 
-msgid "preview.no_search_results"
+msgid "TextureCompressor:message:previewNoSearchResults"
 msgstr "検索に一致するテクスチャはありません。"
 
-msgid "preview.to_compress"
+msgid "TextureCompressor:label:previewToCompress"
 msgstr "圧縮するテクスチャ"
 
-msgid "preview.frozen_manual"
+msgid "TextureCompressor:label:previewFrozenManual"
 msgstr "凍結テクスチャ（手動設定）"
 
-msgid "preview.skipped_textures"
+msgid "TextureCompressor:label:previewSkippedTextures"
 msgstr "スキップしたテクスチャ"
 
-msgid "preview.close"
+msgid "TextureCompressor:button:previewClose"
 msgstr "プレビューを閉じる"
 
-msgid "preview.freeze"
+msgid "TextureCompressor:button:previewFreeze"
 msgstr "凍結"
 
-msgid "preview.complexity"
+msgid "TextureCompressor:label:previewComplexity"
 msgstr "複雑度："
 
-msgid "preview.size"
+msgid "TextureCompressor:label:previewSize"
 msgstr "サイズ："
 
-msgid "preview.manual_suffix"
+msgid "TextureCompressor:label:previewManualSuffix"
 msgstr "（手動）"
 
-msgid "preview.resized"
+msgid "TextureCompressor:message:previewResized"
 msgstr "{0}x{1} → {2}x{3}（÷{4}）{5}"
 
-msgid "preview.unchanged"
+msgid "TextureCompressor:message:previewUnchanged"
 msgstr "{0}x{1}（変更なし）{2}"
 
-msgid "preview.format"
+msgid "TextureCompressor:label:previewFormat"
 msgstr "形式："
 
-msgid "preview.reason"
+msgid "TextureCompressor:label:previewReason"
 msgstr "理由："
 
-msgid "format_info.dxt1"
+msgid "TextureCompressor:format:dxt1"
 msgstr "4 bpp、RGB のみ、最速"
 
-msgid "format_info.dxt5"
+msgid "TextureCompressor:format:dxt5"
 msgstr "8 bpp、RGBA、良好な品質"
 
-msgid "format_info.bc5"
+msgid "TextureCompressor:format:bc5"
 msgstr "8 bpp、ノーマルマップ"
 
-msgid "format_info.bc7"
+msgid "TextureCompressor:format:bc7"
 msgstr "8 bpp、最高品質"
 
-msgid "format_info.astc_4x4"
+msgid "TextureCompressor:format:astc4x4"
 msgstr "8 bpp、最高品質"
 
-msgid "format_info.astc_6x6"
+msgid "TextureCompressor:format:astc6x6"
 msgstr "3.56 bpp、バランス"
 
-msgid "format_info.astc_8x8"
+msgid "TextureCompressor:format:astc8x8"
 msgstr "2 bpp、最高効率"
 
-msgid "preset_asset.settings"
+msgid "TextureCompressor:label:presetSettings"
 msgstr "プリセット設定"
 
-msgid "preset_asset.lock"
+msgid "TextureCompressor:prop:presetLock"
 msgstr "ロック"
 
-msgid "preset_asset.description"
+msgid "TextureCompressor:prop:presetDescription"
 msgstr "説明"
 
-msgid "preset_asset.menu"
+msgid "TextureCompressor:label:presetMenu"
 msgstr "メニュー"
 
-msgid "preset_asset.menu_path"
+msgid "TextureCompressor:prop:presetMenuPath"
 msgstr "メニューパス"
 
-msgid "preset_asset.menu_path.tooltip"
+msgid "TextureCompressor:prop:presetMenuPath:tooltip"
 msgstr "カスタムプリセットメニュー内のパスです。空の場合はメニューに表示されません。"
 
-msgid "preset_asset.menu_order"
+msgid "TextureCompressor:prop:presetMenuOrder"
 msgstr "メニュー順"
 
-msgid "preset_asset.menu_order.tooltip"
+msgid "TextureCompressor:prop:presetMenuOrder:tooltip"
 msgstr "メニューでの表示順です。小さい値ほど先に表示されます。"
 
-msgid "enum.CompressorPreset.HighQuality"
+msgid "TextureCompressor:enum:compressorPresetHighQuality"
 msgstr "高品質"
 
-msgid "enum.CompressorPreset.Quality"
+msgid "TextureCompressor:enum:compressorPresetQuality"
 msgstr "品質優先"
 
-msgid "enum.CompressorPreset.Balanced"
+msgid "TextureCompressor:enum:compressorPresetBalanced"
 msgstr "バランス"
 
-msgid "enum.CompressorPreset.Aggressive"
+msgid "TextureCompressor:enum:compressorPresetAggressive"
 msgstr "強圧縮"
 
-msgid "enum.CompressorPreset.Maximum"
+msgid "TextureCompressor:enum:compressorPresetMaximum"
 msgstr "最大圧縮"
 
-msgid "enum.CompressorPreset.Custom"
+msgid "TextureCompressor:enum:compressorPresetCustom"
 msgstr "カスタム"
 
-msgid "enum.AnalysisStrategyType.Fast"
+msgid "TextureCompressor:enum:analysisStrategyTypeFast"
 msgstr "高速"
 
-msgid "enum.AnalysisStrategyType.HighAccuracy"
+msgid "TextureCompressor:enum:analysisStrategyTypeHighAccuracy"
 msgstr "高精度"
 
-msgid "enum.AnalysisStrategyType.Perceptual"
+msgid "TextureCompressor:enum:analysisStrategyTypePerceptual"
 msgstr "知覚"
 
-msgid "enum.AnalysisStrategyType.Combined"
+msgid "TextureCompressor:enum:analysisStrategyTypeCombined"
 msgstr "組み合わせ"
 
-msgid "enum.CompressionPlatform.Auto"
+msgid "TextureCompressor:enum:compressionPlatformAuto"
 msgstr "自動"
 
-msgid "enum.CompressionPlatform.Desktop"
+msgid "TextureCompressor:enum:compressionPlatformDesktop"
 msgstr "デスクトップ"
 
-msgid "enum.CompressionPlatform.Mobile"
+msgid "TextureCompressor:enum:compressionPlatformMobile"
 msgstr "モバイル"
 
-msgid "enum.FrozenTextureFormat.Auto"
+msgid "TextureCompressor:enum:frozenTextureFormatAuto"
 msgstr "自動"
 
-msgid "enum.FrozenTextureFormat.DXT1"
+msgid "TextureCompressor:enum:frozenTextureFormatDXT1"
 msgstr "DXT1"
 
-msgid "enum.FrozenTextureFormat.DXT5"
+msgid "TextureCompressor:enum:frozenTextureFormatDXT5"
 msgstr "DXT5"
 
-msgid "enum.FrozenTextureFormat.BC5"
+msgid "TextureCompressor:enum:frozenTextureFormatBC5"
 msgstr "BC5"
 
-msgid "enum.FrozenTextureFormat.BC7"
+msgid "TextureCompressor:enum:frozenTextureFormatBC7"
 msgstr "BC7"
 
-msgid "enum.FrozenTextureFormat.ASTC_4x4"
+msgid "TextureCompressor:enum:frozenTextureFormatASTC4x4"
 msgstr "ASTC 4x4"
 
-msgid "enum.FrozenTextureFormat.ASTC_6x6"
+msgid "TextureCompressor:enum:frozenTextureFormatASTC6x6"
 msgstr "ASTC 6x6"
 
-msgid "enum.FrozenTextureFormat.ASTC_8x8"
+msgid "TextureCompressor:enum:frozenTextureFormatASTC8x8"
 msgstr "ASTC 8x8"
 
-msgid "enum.AnalysisBackendPreference.Auto"
+msgid "TextureCompressor:enum:analysisBackendPreferenceAuto"
 msgstr "自動"
 
-msgid "enum.AnalysisBackendPreference.CPU"
+msgid "TextureCompressor:enum:analysisBackendPreferenceCPU"
 msgstr "ソフトウェア"
 
-msgid "enum.ResizeBackendPreference.Auto"
+msgid "TextureCompressor:enum:resizeBackendPreferenceAuto"
 msgstr "自動"
 
-msgid "enum.ResizeBackendPreference.CPU"
+msgid "TextureCompressor:enum:resizeBackendPreferenceCPU"
 msgstr "ソフトウェア"
 
-msgid "enum.TexturePropertyCategory.Main"
+msgid "TextureCompressor:enum:texturePropertyCategoryMain"
 msgstr "メイン"
 
-msgid "enum.TexturePropertyCategory.Normal"
+msgid "TextureCompressor:enum:texturePropertyCategoryNormal"
 msgstr "ノーマル"
 
-msgid "enum.TexturePropertyCategory.Emission"
+msgid "TextureCompressor:enum:texturePropertyCategoryEmission"
 msgstr "発光"
 
-msgid "enum.TexturePropertyCategory.Other"
+msgid "TextureCompressor:enum:texturePropertyCategoryOther"
 msgstr "その他"
 
-msgid "enum.SkipReason.None"
+msgid "TextureCompressor:enum:skipReasonNone"
 msgstr "スキップ"
 
-msgid "enum.SkipReason.TooSmall"
+msgid "TextureCompressor:enum:skipReasonTooSmall"
 msgstr "小さすぎます"
 
-msgid "enum.SkipReason.FilteredByType"
+msgid "TextureCompressor:enum:skipReasonFilteredByType"
 msgstr "種類フィルターの対象外"
 
-msgid "enum.SkipReason.FrozenSkip"
+msgid "TextureCompressor:enum:skipReasonFrozenSkip"
 msgstr "ユーザー設定で凍結・スキップ"
 
-msgid "enum.SkipReason.RuntimeGenerated"
+msgid "TextureCompressor:enum:skipReasonRuntimeGenerated"
 msgstr "ランタイム生成"
 
-msgid "enum.SkipReason.ExcludedPath"
+msgid "TextureCompressor:enum:skipReasonExcludedPath"
 msgstr "パスで除外"
 
-msgid "enum.SkipReason.ExcludedTexture"
+msgid "TextureCompressor:enum:skipReasonExcludedTexture"
 msgstr "除外テクスチャ"
 
-msgid "enum.SkipReason.UnknownUncompressedProperty"
+msgid "TextureCompressor:enum:skipReasonUnknownUncompressedProperty"
 msgstr "不明なプロパティの非圧縮テクスチャ（データ保護を参照）"

@@ -29,7 +29,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 showAdvanced = EditorGUILayout.Foldout(
                     showAdvanced,
-                    AvatarCompressorLocalization.Tr("settings.advanced_read_only"),
+                    AvatarCompressorLocalization.Tr("TextureCompressor:message:advancedReadOnly"),
                     true
                 );
                 if (showAdvanced)
@@ -55,9 +55,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config,
                 serializedObject,
                 nameof(TextureCompressor.Strategy),
-                "settings.strategy",
+                "TextureCompressor:prop:strategy",
                 compactMode,
-                "settings.strategy.tooltip"
+                "TextureCompressor:prop:strategy:tooltip"
             );
 
             if (config.Strategy == AnalysisStrategyType.Combined)
@@ -68,21 +68,21 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     config,
                     serializedObject,
                     nameof(TextureCompressor.FastWeight),
-                    "settings.fast_weight",
+                    "TextureCompressor:prop:fastWeight",
                     compactMode
                 );
                 DrawPropertyWithModifiedIndicator(
                     config,
                     serializedObject,
                     nameof(TextureCompressor.HighAccuracyWeight),
-                    "settings.high_accuracy_weight",
+                    "TextureCompressor:prop:highAccuracyWeight",
                     compactMode
                 );
                 DrawPropertyWithModifiedIndicator(
                     config,
                     serializedObject,
                     nameof(TextureCompressor.PerceptualWeight),
-                    "settings.perceptual_weight",
+                    "TextureCompressor:prop:perceptualWeight",
                     compactMode
                 );
                 if (!compactMode)
@@ -96,17 +96,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config,
                 serializedObject,
                 nameof(TextureCompressor.HighComplexityThreshold),
-                "settings.high_threshold",
+                "TextureCompressor:prop:highThreshold",
                 compactMode,
-                "settings.high_threshold.tooltip"
+                "TextureCompressor:prop:highThreshold:tooltip"
             );
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.LowComplexityThreshold),
-                "settings.low_threshold",
+                "TextureCompressor:prop:lowThreshold",
                 compactMode,
-                "settings.low_threshold.tooltip"
+                "TextureCompressor:prop:lowThreshold:tooltip"
             );
 
             DrawSectionSpacing(compactMode);
@@ -116,47 +116,47 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config,
                 serializedObject,
                 nameof(TextureCompressor.MinDivisor),
-                "settings.min_divisor",
+                "TextureCompressor:prop:minDivisor",
                 compactMode,
-                "settings.min_divisor.tooltip"
+                "TextureCompressor:prop:minDivisor:tooltip"
             );
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.MaxDivisor),
-                "settings.max_divisor",
+                "TextureCompressor:prop:maxDivisor",
                 compactMode,
-                "settings.max_divisor.tooltip"
+                "TextureCompressor:prop:maxDivisor:tooltip"
             );
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.MaxResolution),
-                "settings.max_resolution",
+                "TextureCompressor:prop:maxResolution",
                 compactMode,
-                "settings.max_resolution.tooltip"
+                "TextureCompressor:prop:maxResolution:tooltip"
             );
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.MinResolution),
-                "settings.min_resolution",
+                "TextureCompressor:prop:minResolution",
                 compactMode,
-                "settings.min_resolution.tooltip"
+                "TextureCompressor:prop:minResolution:tooltip"
             );
 
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.ForcePowerOfTwo),
-                "settings.force_power_of_two",
+                "TextureCompressor:prop:forcePowerOfTwo",
                 compactMode,
-                "settings.force_power_of_two.tooltip"
+                "TextureCompressor:prop:forcePowerOfTwo:tooltip"
             );
             if (!compactMode)
             {
                 EditorGUILayout.HelpBox(
-                    AvatarCompressorLocalization.Tr("settings.multiple_of_four.help"),
+                    AvatarCompressorLocalization.Tr("TextureCompressor:message:multipleOfFourHelp"),
                     MessageType.Info
                 );
             }
@@ -168,17 +168,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config,
                 serializedObject,
                 nameof(TextureCompressor.MinSourceSize),
-                "settings.min_source_size",
+                "TextureCompressor:prop:minSourceSize",
                 compactMode,
-                "settings.min_source_size.tooltip"
+                "TextureCompressor:prop:minSourceSize:tooltip"
             );
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.SkipIfSmallerThan),
-                "settings.skip_if_smaller",
+                "TextureCompressor:prop:skipIfSmaller",
                 compactMode,
-                "settings.skip_if_smaller.tooltip"
+                "TextureCompressor:prop:skipIfSmaller:tooltip"
             );
 
             DrawSectionSpacing(compactMode);
@@ -188,18 +188,18 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config,
                 serializedObject,
                 nameof(TextureCompressor.TargetPlatform),
-                "settings.target_platform",
+                "TextureCompressor:prop:targetPlatform",
                 compactMode,
-                "settings.target_platform.tooltip"
+                "TextureCompressor:prop:targetPlatform:tooltip"
             );
 
             DrawPropertyWithModifiedIndicator(
                 config,
                 serializedObject,
                 nameof(TextureCompressor.UseHighQualityFormatForHighComplexity),
-                "settings.high_quality_complex",
+                "TextureCompressor:prop:highQualityComplex",
                 compactMode,
-                "settings.high_quality_complex.tooltip"
+                "TextureCompressor:prop:highQualityComplex:tooltip"
             );
 
             if (compactMode)

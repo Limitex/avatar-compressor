@@ -1,0 +1,735 @@
+msgid ""
+msgstr ""
+"Language: zh-Hans\n"
+
+msgid "Common:label:cancel"
+msgstr "取消"
+
+msgid "Common:label:close"
+msgstr "关闭"
+
+msgid "Common:label:notAvailable"
+msgstr "不可用"
+
+msgid "Common:message:avatarRootWarning"
+msgstr "此组件应放置在 Avatar 根 GameObject 上。放在其他位置仍可工作，但建议放置在 Avatar 根对象上。"
+
+msgid "Common:label:general"
+msgstr "常规"
+
+msgid "Common:label:language"
+msgstr "语言"
+
+msgid "Common:prop:enableLogging"
+msgstr "启用日志"
+
+msgid "Common:prop:enableLogging:tooltip"
+msgstr "在构建和预览期间输出调试日志"
+
+msgid "TextureCompressor:label:preferences"
+msgstr "纹理压缩器"
+
+msgid "TextureCompressor:prop:analysisBackend"
+msgstr "分析后端"
+
+msgid "TextureCompressor:prop:analysisBackend:tooltip"
+msgstr "选择用于纹理复杂度分析的后端"
+
+msgid "TextureCompressor:message:analysisBackendCpuHelp"
+msgstr "始终使用 CPU 分析纹理。适用于 GPU 结果不稳定或调试场景。"
+
+msgid "TextureCompressor:message:analysisBackendAutoHelp"
+msgstr "当前使用 {0}。可用时通过 GPU 计算着色器分析纹理，否则回退到 CPU。"
+
+msgid "TextureCompressor:prop:resizeBackend"
+msgstr "缩放后端"
+
+msgid "TextureCompressor:prop:resizeBackend:tooltip"
+msgstr "选择用于区域平均纹理缩放的后端"
+
+msgid "TextureCompressor:message:resizeBackendCpuHelp"
+msgstr "始终使用 CPU 进行区域平均缩放。适用于 GPU 结果不稳定或调试场景。"
+
+msgid "TextureCompressor:message:resizeBackendAutoHelp"
+msgstr "当前使用 {0}。可用时通过 GPU 计算着色器进行区域平均缩放，否则回退到 CPU。"
+
+msgid "Common:prop:fuzzySearch"
+msgstr "模糊"
+
+msgid "Common:message:searchShowing"
+msgstr "显示 {0}/{1}"
+
+msgid "Common:message:searchHidden"
+msgstr "已隐藏 {0} 项"
+
+msgid "Common:label:thumbnailHighlight:tooltip"
+msgstr "点击可在 Project 窗口中定位"
+
+msgid "Common:message:githubFeedback"
+msgstr "发现问题或有新想法？欢迎反馈，也感谢点 Star。"
+
+msgid "Common:button:openGitHub:tooltip"
+msgstr "打开 GitHub 仓库"
+
+msgid "TextureCompressor:label:preset"
+msgstr "压缩预设"
+
+msgid "TextureCompressor:label:presetHighQuality"
+msgstr "高质量"
+
+msgid "TextureCompressor:label:presetHighQuality:tooltip"
+msgstr "最高质量\n最低压缩"
+
+msgid "TextureCompressor:message:presetHighQualityDescription"
+msgstr "高质量模式：以最少压缩最大限度保留质量。仅会轻微压缩非常简单的纹理（如纯色）。适合展示用 Avatar，或不必担心 VRAM 的场景。"
+
+msgid "TextureCompressor:label:presetQuality"
+msgstr "质量优先"
+
+msgid "TextureCompressor:label:presetQuality:tooltip"
+msgstr "良好质量\n轻度压缩"
+
+msgid "TextureCompressor:message:presetQualityDescription"
+msgstr "质量优先模式：尽可能保留纹理细节。仅压缩低复杂度纹理（如纯色、简单渐变）。适合视觉质量优先的 Avatar。"
+
+msgid "TextureCompressor:label:presetBalanced"
+msgstr "均衡"
+
+msgid "TextureCompressor:label:presetBalanced:tooltip"
+msgstr "兼顾质量\n与文件大小"
+
+msgid "TextureCompressor:message:presetBalancedDescription"
+msgstr "均衡模式：兼顾质量和 VRAM 节省。保留细节丰富的纹理，同时压缩较简单的纹理。推荐大多数场景使用。"
+
+msgid "TextureCompressor:label:presetAggressive"
+msgstr "强力压缩"
+
+msgid "TextureCompressor:label:presetAggressive:tooltip"
+msgstr "更小文件\n部分质量损失"
+
+msgid "TextureCompressor:message:presetAggressiveDescription"
+msgstr "强力压缩模式：文件大小优先于质量。大多数纹理都会受到一定程度的压缩。适合 Quest Avatar 或 VRAM 有限的场景。"
+
+msgid "TextureCompressor:label:presetMaximum"
+msgstr "最大压缩"
+
+msgid "TextureCompressor:label:presetMaximum:tooltip"
+msgstr "最小文件\n明显质量损失"
+
+msgid "TextureCompressor:message:presetMaximumDescription"
+msgstr "最大压缩模式：尽可能压缩所有纹理，可能造成明显质量损失。仅在文件大小至关重要时使用。"
+
+msgid "TextureCompressor:label:presetCustom"
+msgstr "自定义"
+
+msgid "TextureCompressor:label:presetCustom:tooltip"
+msgstr "手动\n配置"
+
+msgid "TextureCompressor:message:presetCustomDescription"
+msgstr "自定义模式：完全控制所有压缩设置，可手动配置各项参数以精细调整结果。"
+
+msgid "TextureCompressor:prop:customEditMode"
+msgstr "编辑模式"
+
+msgid "TextureCompressor:prop:customEditMode:tooltip"
+msgstr "手动配置压缩设置"
+
+msgid "TextureCompressor:prop:customEditModeUnlink:tooltip"
+msgstr "取消关联预设并手动编辑设置"
+
+msgid "TextureCompressor:prop:customPreset"
+msgstr "自定义预设 ▼"
+
+msgid "TextureCompressor:prop:customPreset:tooltip"
+msgstr "从菜单中选择自定义预设"
+
+msgid "TextureCompressor:label:customUseOnly"
+msgstr "自定义预设（仅使用）"
+
+msgid "TextureCompressor:message:customNameBuiltIn"
+msgstr "{0}（内置）"
+
+msgid "TextureCompressor:message:customNamePackage"
+msgstr "{0}（包）"
+
+msgid "TextureCompressor:message:customLockBuiltIn"
+msgstr "这是内置预设"
+
+msgid "TextureCompressor:message:customLockPackage"
+msgstr "此预设位于包中"
+
+msgid "TextureCompressor:message:customLockLocked"
+msgstr "此预设已锁定"
+
+msgid "TextureCompressor:message:customLockUneditable"
+msgstr "此预设无法编辑"
+
+msgid "TextureCompressor:button:editCustomPreset"
+msgstr "编辑"
+
+msgid "TextureCompressor:label:customPreset"
+msgstr "自定义预设"
+
+msgid "TextureCompressor:button:saveCustomPreset:tooltip"
+msgstr "将当前设置保存到预设"
+
+msgid "TextureCompressor:button:discardCustomPreset:tooltip"
+msgstr "放弃更改并重新加载预设"
+
+msgid "TextureCompressor:button:createCustomPreset:tooltip"
+msgstr "根据当前设置创建新预设"
+
+msgid "TextureCompressor:button:unlinkCustomPreset:tooltip"
+msgstr "取消关联预设（保留当前设置）"
+
+msgid "TextureCompressor:message:customComponentOnly"
+msgstr "设置仅保存在此组件中。\n创建预设可供多个 Avatar 重复使用。"
+
+msgid "TextureCompressor:message:customModified"
+msgstr "● 已修改"
+
+msgid "TextureCompressor:message:customSynced"
+msgstr "✓ 已同步"
+
+msgid "TextureCompressor:prop:customDescription"
+msgstr "说明"
+
+msgid "TextureCompressor:dialog:createPresetTitle"
+msgstr "新建纹理压缩预设"
+
+msgid "TextureCompressor:dialog:createPresetMessage"
+msgstr "选择新预设的保存位置"
+
+msgid "TextureCompressor:dialog:unlinkPresetTitle"
+msgstr "取消关联预设"
+
+msgid "TextureCompressor:dialog:unlinkPresetReasonBuiltIn"
+msgstr "此预设为内置预设，无法编辑。"
+
+msgid "TextureCompressor:dialog:unlinkPresetReasonPackage"
+msgstr "此预设位于包中，无法编辑。"
+
+msgid "TextureCompressor:dialog:unlinkPresetReasonLocked"
+msgstr "此预设已锁定，无法直接编辑。"
+
+msgid "TextureCompressor:dialog:unlinkPresetMessage"
+msgstr "{0}\n\n是否取消关联并手动编辑设置？\n（当前设置会被保留）"
+
+msgid "TextureCompressor:dialog:unlinkPresetConfirm"
+msgstr "取消关联并编辑"
+
+msgid "TextureCompressor:menu:none"
+msgstr "没有可用预设"
+
+msgid "TextureCompressor:menu:builtInSuffix"
+msgstr "（内置）"
+
+msgid "TextureCompressor:menu:packageSuffix"
+msgstr "（包）"
+
+msgid "TextureCompressor:menu:builtInPath"
+msgstr "内置/{0}"
+
+msgid "TextureCompressor:label:builtInPresetHighQualityPlus"
+msgstr "高质量+"
+
+msgid "TextureCompressor:message:builtInPresetHighQualityPlusDescription"
+msgstr "优于高质量预设。以最少处理提供最高质量。"
+
+msgid "TextureCompressor:label:builtInPresetQualityPlus"
+msgstr "质量优先+"
+
+msgid "TextureCompressor:message:builtInPresetQualityPlusDescription"
+msgstr "优于质量优先预设。以最少压缩提供高质量。"
+
+msgid "TextureCompressor:label:builtInPresetBalancedPlus"
+msgstr "均衡+"
+
+msgid "TextureCompressor:message:builtInPresetBalancedPlusDescription"
+msgstr "优于均衡预设。以适度压缩保持良好质量。"
+
+msgid "TextureCompressor:label:builtInPresetAggressivePlus"
+msgstr "强力压缩+"
+
+msgid "TextureCompressor:message:builtInPresetAggressivePlusDescription"
+msgstr "优于强力压缩预设。在保持高效压缩的同时改善质量。"
+
+msgid "TextureCompressor:label:builtInPresetMaximumPlus"
+msgstr "最大压缩+"
+
+msgid "TextureCompressor:message:builtInPresetMaximumPlusDescription"
+msgstr "优于最大压缩预设。保持强力压缩并略微提高质量。"
+
+msgid "TextureCompressor:label:currentSettings"
+msgstr "当前设置摘要"
+
+msgid "TextureCompressor:label:settings"
+msgstr "设置摘要"
+
+msgid "TextureCompressor:message:summaryStrategy"
+msgstr "策略：{0}"
+
+msgid "TextureCompressor:message:summaryDivisorRange"
+msgstr "缩小倍数范围：{0}x - {1}x"
+
+msgid "TextureCompressor:message:summaryResolutionRange"
+msgstr "分辨率范围：{0}px - {1}px"
+
+msgid "TextureCompressor:message:summaryComplexityThresholds"
+msgstr "复杂度阈值：{0:P0} - {1:P0}"
+
+msgid "TextureCompressor:message:advancedReadOnly"
+msgstr "高级设置（只读）"
+
+msgid "TextureCompressor:label:analysisStrategy"
+msgstr "分析策略"
+
+msgid "TextureCompressor:label:combinedWeights"
+msgstr "组合策略权重"
+
+msgid "TextureCompressor:label:complexityThresholds"
+msgstr "复杂度阈值"
+
+msgid "TextureCompressor:label:resolution"
+msgstr "分辨率设置"
+
+msgid "TextureCompressor:label:sizeFilters"
+msgstr "尺寸过滤器"
+
+msgid "TextureCompressor:label:compressionFormat"
+msgstr "压缩格式"
+
+msgid "TextureCompressor:prop:strategy"
+msgstr "策略"
+
+msgid "TextureCompressor:prop:strategy:tooltip"
+msgstr "复杂度分析方法"
+
+msgid "TextureCompressor:prop:fastWeight"
+msgstr "快速分析权重"
+
+msgid "TextureCompressor:prop:highAccuracyWeight"
+msgstr "高精度权重"
+
+msgid "TextureCompressor:prop:perceptualWeight"
+msgstr "感知分析权重"
+
+msgid "TextureCompressor:prop:highThreshold"
+msgstr "高（保留细节）"
+
+msgid "TextureCompressor:prop:highThreshold:tooltip"
+msgstr "复杂度高于此值的纹理将使用最少压缩"
+
+msgid "TextureCompressor:prop:lowThreshold"
+msgstr "低（加强压缩）"
+
+msgid "TextureCompressor:prop:lowThreshold:tooltip"
+msgstr "复杂度低于此值的纹理将使用最大压缩"
+
+msgid "TextureCompressor:prop:minDivisor"
+msgstr "最小缩小倍数"
+
+msgid "TextureCompressor:prop:minDivisor:tooltip"
+msgstr "最小分辨率缩小倍数（1 = 不缩小）"
+
+msgid "TextureCompressor:prop:maxDivisor"
+msgstr "最大缩小倍数"
+
+msgid "TextureCompressor:prop:maxDivisor:tooltip"
+msgstr "最大分辨率缩小倍数"
+
+msgid "TextureCompressor:prop:maxResolution"
+msgstr "最大分辨率"
+
+msgid "TextureCompressor:prop:maxResolution:tooltip"
+msgstr "最大输出分辨率"
+
+msgid "TextureCompressor:prop:minResolution"
+msgstr "最小分辨率"
+
+msgid "TextureCompressor:prop:minResolution:tooltip"
+msgstr "最小输出分辨率"
+
+msgid "TextureCompressor:prop:forcePowerOfTwo"
+msgstr "强制为 2 的幂"
+
+msgid "TextureCompressor:prop:forcePowerOfTwo:tooltip"
+msgstr "启用时，尺寸会舍入到最接近的 2 的幂。\n禁用时，尺寸会舍入到最接近的 4 的倍数。\n为兼容 DXT/BC，所有输出尺寸始终是 4 的倍数。"
+
+msgid "TextureCompressor:message:multipleOfFourHelp"
+msgstr "为兼容 DXT/BC 压缩，输出尺寸始终是 4 的倍数。例如：150x150 会变为 152x152。"
+
+msgid "TextureCompressor:prop:minSourceSize"
+msgstr "最小源尺寸"
+
+msgid "TextureCompressor:prop:minSourceSize:tooltip"
+msgstr "仅处理大于此尺寸的纹理"
+
+msgid "TextureCompressor:prop:skipIfSmaller"
+msgstr "小于此值时跳过"
+
+msgid "TextureCompressor:prop:skipIfSmaller:tooltip"
+msgstr "跳过小于或等于此尺寸的纹理"
+
+msgid "TextureCompressor:prop:targetPlatform"
+msgstr "目标平台"
+
+msgid "TextureCompressor:prop:targetPlatform:tooltip"
+msgstr "选择压缩格式的目标平台（自动模式会从构建目标检测）"
+
+msgid "TextureCompressor:prop:highQualityComplex"
+msgstr "复杂纹理使用高质量"
+
+msgid "TextureCompressor:prop:highQualityComplex:tooltip"
+msgstr "复杂度高的纹理使用 BC7/ASTC_4x4（依据复杂度阈值）"
+
+msgid "TextureCompressor:label:exclusions"
+msgstr "排除项"
+
+msgid "TextureCompressor:label:liltoonOptimizations"
+msgstr "lilToon 优化"
+
+msgid "TextureCompressor:prop:bakeLiltoon"
+msgstr "将颜色调整烘焙进纹理"
+
+msgid "TextureCompressor:prop:bakeLiltoon:tooltip"
+msgstr "构建时将色相、饱和度、渐变、启用的第 2/3 层和 Alpha Mask 烘焙进主纹理，并将色调校正烘焙进描边纹理。动画驱动的输入、冻结或被动画引用的纹理不会被烘焙或消耗；排除纹理不会被烘焙；颜色仍作为运行时色调。需要 lilToon。"
+
+msgid "TextureCompressor:prop:removeUnused"
+msgstr "移除未使用的纹理槽"
+
+msgid "TextureCompressor:prop:removeUnused:tooltip"
+msgstr "清除功能开关关闭且未被动画驱动的 lilToon 纹理槽，使不再被引用的纹理不参与上传。冻结或被动画引用的纹理不会移除。此处不应用排除过滤器。"
+
+msgid "TextureCompressor:label:textureFilters"
+msgstr "纹理过滤器"
+
+msgid "TextureCompressor:prop:mainTextures"
+msgstr "主纹理"
+
+msgid "TextureCompressor:prop:mainTextures:tooltip"
+msgstr "处理主纹理（_MainTex、_BaseMap 等）"
+
+msgid "TextureCompressor:prop:normalMaps"
+msgstr "法线贴图"
+
+msgid "TextureCompressor:prop:normalMaps:tooltip"
+msgstr "处理法线贴图"
+
+msgid "TextureCompressor:prop:emissionMaps"
+msgstr "自发光贴图"
+
+msgid "TextureCompressor:prop:emissionMaps:tooltip"
+msgstr "处理自发光纹理"
+
+msgid "TextureCompressor:prop:otherTextures"
+msgstr "其他纹理"
+
+msgid "TextureCompressor:prop:otherTextures:tooltip"
+msgstr "处理其他纹理（金属度、粗糙度等）"
+
+msgid "TextureCompressor:prop:skipUnknownUncompressed"
+msgstr "跳过未知属性上的未压缩纹理"
+
+msgid "TextureCompressor:prop:skipUnknownUncompressed:tooltip"
+msgstr "未知着色器属性可能包含 Mask 或 LUT 等非视觉数据，压缩可能会损坏这些数据。"
+
+msgid "TextureCompressor:label:excludedTextures"
+msgstr "纹理"
+
+msgid "TextureCompressor:message:texturesCount"
+msgstr "纹理（{0}）"
+
+msgid "TextureCompressor:message:excludedTexturesEmpty"
+msgstr "添加到这里的纹理将被排除在压缩之外。"
+
+msgid "TextureCompressor:button:addTexture"
+msgstr "+ 添加纹理"
+
+msgid "TextureCompressor:label:excludedPaths"
+msgstr "路径"
+
+msgid "TextureCompressor:message:pathsCount"
+msgstr "路径（{0}）"
+
+msgid "TextureCompressor:message:excludedPathsEmpty"
+msgstr "以所列前缀开头的纹理路径将被跳过。"
+
+msgid "TextureCompressor:button:addPath"
+msgstr "+ 添加路径..."
+
+msgid "TextureCompressor:message:pathNotFound"
+msgstr "  ⚠ 未找到路径"
+
+msgid "TextureCompressor:menu:emptyPath"
+msgstr "空路径"
+
+msgid "TextureCompressor:menu:pathPresetAdded"
+msgstr "{0}（已添加）"
+
+msgid "TextureCompressor:label:frozenTextures"
+msgstr "冻结纹理（{0}）"
+
+msgid "TextureCompressor:label:frozenTexturesFiltered"
+msgstr "冻结纹理（{0}/{1}）"
+
+msgid "TextureCompressor:message:frozenEmpty"
+msgstr "没有冻结纹理。可在预览中点击“冻结”以添加手动覆盖。"
+
+msgid "TextureCompressor:message:frozenNoSearchResults"
+msgstr "没有与搜索匹配的冻结纹理。"
+
+msgid "TextureCompressor:button:unfreeze"
+msgstr "取消冻结"
+
+msgid "TextureCompressor:message:frozenTextureNotFound"
+msgstr "未找到纹理"
+
+msgid "TextureCompressor:prop:frozenSkipCompression"
+msgstr "跳过压缩"
+
+msgid "TextureCompressor:prop:frozenDivisor"
+msgstr "缩小倍数："
+
+msgid "TextureCompressor:prop:frozenFormat"
+msgstr "格式："
+
+msgid "TextureCompressor:message:frozenLegacyPaths"
+msgstr "检测到旧版路径条目。转换为 GUID 可提高稳定性。"
+
+msgid "TextureCompressor:button:convertToGuid"
+msgstr "转换为 GUID"
+
+msgid "TextureCompressor:button:previewGenerate"
+msgstr "预览压缩结果"
+
+msgid "TextureCompressor:message:previewOutdated"
+msgstr "预览已过期。生成预览后设置或目标对象发生了变化。点击“预览压缩结果”刷新。"
+
+msgid "TextureCompressor:message:previewNoTextures"
+msgstr "没有找到符合当前过滤设置的纹理。"
+
+msgid "TextureCompressor:message:previewHeaderFiltered"
+msgstr "预览（显示 {0}/{1}）"
+
+msgid "TextureCompressor:message:previewHeaderFilteredFrozen"
+msgstr "预览（显示 {0}/{1}，冻结 {2}）"
+
+msgid "TextureCompressor:message:previewHeaderSummary"
+msgstr "预览（压缩 {0}，跳过 {1}）"
+
+msgid "TextureCompressor:message:previewHeaderSummaryFrozen"
+msgstr "预览（压缩 {0}，冻结 {1}，跳过 {2}）"
+
+msgid "TextureCompressor:label:previewOriginal"
+msgstr "原始："
+
+msgid "TextureCompressor:label:previewAfter"
+msgstr "压缩后："
+
+msgid "TextureCompressor:label:previewSavings"
+msgstr "节省："
+
+msgid "TextureCompressor:message:previewBuildOnlyBoth"
+msgstr "移除未使用纹理槽和 lilToon 纹理烘焙仅在 NDMF 构建期间运行，不会体现在此预览中，因此实际构建大小可能与估算不同。"
+
+msgid "TextureCompressor:message:previewBuildOnlyUnused"
+msgstr "移除未使用纹理槽仅在 NDMF 构建期间运行，不会体现在此预览中，因此实际构建大小可能与估算不同。"
+
+msgid "TextureCompressor:message:previewBuildOnlyBake"
+msgstr "lilToon 纹理烘焙仅在 NDMF 构建期间运行，不会体现在此预览中，因此实际构建大小可能与估算不同。"
+
+msgid "TextureCompressor:message:previewNoSearchResults"
+msgstr "没有纹理与搜索匹配。"
+
+msgid "TextureCompressor:label:previewToCompress"
+msgstr "待压缩纹理"
+
+msgid "TextureCompressor:label:previewFrozenManual"
+msgstr "冻结纹理（手动覆盖）"
+
+msgid "TextureCompressor:label:previewSkippedTextures"
+msgstr "已跳过纹理"
+
+msgid "TextureCompressor:button:previewClose"
+msgstr "关闭预览"
+
+msgid "TextureCompressor:button:previewFreeze"
+msgstr "冻结"
+
+msgid "TextureCompressor:label:previewComplexity"
+msgstr "复杂度："
+
+msgid "TextureCompressor:label:previewSize"
+msgstr "尺寸："
+
+msgid "TextureCompressor:label:previewManualSuffix"
+msgstr "（手动）"
+
+msgid "TextureCompressor:message:previewResized"
+msgstr "{0}x{1} → {2}x{3}（÷{4}）{5}"
+
+msgid "TextureCompressor:message:previewUnchanged"
+msgstr "{0}x{1}（不变）{2}"
+
+msgid "TextureCompressor:label:previewFormat"
+msgstr "格式："
+
+msgid "TextureCompressor:label:previewReason"
+msgstr "原因："
+
+msgid "TextureCompressor:format:dxt1"
+msgstr "4 bpp，仅 RGB，最快"
+
+msgid "TextureCompressor:format:dxt5"
+msgstr "8 bpp，RGBA，质量良好"
+
+msgid "TextureCompressor:format:bc5"
+msgstr "8 bpp，法线贴图"
+
+msgid "TextureCompressor:format:bc7"
+msgstr "8 bpp，最高质量"
+
+msgid "TextureCompressor:format:astc4x4"
+msgstr "8 bpp，最高质量"
+
+msgid "TextureCompressor:format:astc6x6"
+msgstr "3.56 bpp，均衡"
+
+msgid "TextureCompressor:format:astc8x8"
+msgstr "2 bpp，最高效率"
+
+msgid "TextureCompressor:label:presetSettings"
+msgstr "预设设置"
+
+msgid "TextureCompressor:prop:presetLock"
+msgstr "锁定"
+
+msgid "TextureCompressor:prop:presetDescription"
+msgstr "说明"
+
+msgid "TextureCompressor:label:presetMenu"
+msgstr "菜单"
+
+msgid "TextureCompressor:prop:presetMenuPath"
+msgstr "菜单路径"
+
+msgid "TextureCompressor:prop:presetMenuPath:tooltip"
+msgstr "自定义预设菜单中的路径。留空则不在菜单中显示。"
+
+msgid "TextureCompressor:prop:presetMenuOrder"
+msgstr "菜单顺序"
+
+msgid "TextureCompressor:prop:presetMenuOrder:tooltip"
+msgstr "菜单中的显示顺序。数值越小越靠前。"
+
+msgid "TextureCompressor:enum:compressorPresetHighQuality"
+msgstr "高质量"
+
+msgid "TextureCompressor:enum:compressorPresetQuality"
+msgstr "质量优先"
+
+msgid "TextureCompressor:enum:compressorPresetBalanced"
+msgstr "均衡"
+
+msgid "TextureCompressor:enum:compressorPresetAggressive"
+msgstr "强力压缩"
+
+msgid "TextureCompressor:enum:compressorPresetMaximum"
+msgstr "最大压缩"
+
+msgid "TextureCompressor:enum:compressorPresetCustom"
+msgstr "自定义"
+
+msgid "TextureCompressor:enum:analysisStrategyTypeFast"
+msgstr "快速"
+
+msgid "TextureCompressor:enum:analysisStrategyTypeHighAccuracy"
+msgstr "高精度"
+
+msgid "TextureCompressor:enum:analysisStrategyTypePerceptual"
+msgstr "感知"
+
+msgid "TextureCompressor:enum:analysisStrategyTypeCombined"
+msgstr "组合"
+
+msgid "TextureCompressor:enum:compressionPlatformAuto"
+msgstr "自动"
+
+msgid "TextureCompressor:enum:compressionPlatformDesktop"
+msgstr "桌面端"
+
+msgid "TextureCompressor:enum:compressionPlatformMobile"
+msgstr "移动端"
+
+msgid "TextureCompressor:enum:frozenTextureFormatAuto"
+msgstr "自动"
+
+msgid "TextureCompressor:enum:frozenTextureFormatDXT1"
+msgstr "DXT1"
+
+msgid "TextureCompressor:enum:frozenTextureFormatDXT5"
+msgstr "DXT5"
+
+msgid "TextureCompressor:enum:frozenTextureFormatBC5"
+msgstr "BC5"
+
+msgid "TextureCompressor:enum:frozenTextureFormatBC7"
+msgstr "BC7"
+
+msgid "TextureCompressor:enum:frozenTextureFormatASTC4x4"
+msgstr "ASTC 4x4"
+
+msgid "TextureCompressor:enum:frozenTextureFormatASTC6x6"
+msgstr "ASTC 6x6"
+
+msgid "TextureCompressor:enum:frozenTextureFormatASTC8x8"
+msgstr "ASTC 8x8"
+
+msgid "TextureCompressor:enum:analysisBackendPreferenceAuto"
+msgstr "自动"
+
+msgid "TextureCompressor:enum:analysisBackendPreferenceCPU"
+msgstr "软件"
+
+msgid "TextureCompressor:enum:resizeBackendPreferenceAuto"
+msgstr "自动"
+
+msgid "TextureCompressor:enum:resizeBackendPreferenceCPU"
+msgstr "软件"
+
+msgid "TextureCompressor:enum:texturePropertyCategoryMain"
+msgstr "主纹理"
+
+msgid "TextureCompressor:enum:texturePropertyCategoryNormal"
+msgstr "法线"
+
+msgid "TextureCompressor:enum:texturePropertyCategoryEmission"
+msgstr "自发光"
+
+msgid "TextureCompressor:enum:texturePropertyCategoryOther"
+msgstr "其他"
+
+msgid "TextureCompressor:enum:skipReasonNone"
+msgstr "已跳过"
+
+msgid "TextureCompressor:enum:skipReasonTooSmall"
+msgstr "尺寸过小"
+
+msgid "TextureCompressor:enum:skipReasonFilteredByType"
+msgstr "按类型过滤"
+
+msgid "TextureCompressor:enum:skipReasonFrozenSkip"
+msgstr "用户冻结并跳过"
+
+msgid "TextureCompressor:enum:skipReasonRuntimeGenerated"
+msgstr "运行时生成"
+
+msgid "TextureCompressor:enum:skipReasonExcludedPath"
+msgstr "路径已排除"
+
+msgid "TextureCompressor:enum:skipReasonExcludedTexture"
+msgstr "纹理已排除"
+
+msgid "TextureCompressor:enum:skipReasonUnknownUncompressedProperty"
+msgstr "未知属性上的未压缩纹理（参见数据保护）"

@@ -16,7 +16,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         /// </summary>
         public static void Draw(TextureCompressor config)
         {
-            EditorDrawUtils.DrawSectionHeader(AvatarCompressorLocalization.Tr("preset.section"));
+            EditorDrawUtils.DrawSectionHeader(
+                AvatarCompressorLocalization.Tr("TextureCompressor:label:preset")
+            );
 
             DrawPresetButtons(config);
 
@@ -48,8 +50,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.HighQuality,
-                "preset.high_quality",
-                "preset.high_quality.tooltip",
+                "TextureCompressor:label:presetHighQuality",
+                "TextureCompressor:label:presetHighQuality:tooltip",
                 PresetColors.HighQuality,
                 buttonWidth
             );
@@ -57,8 +59,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Quality,
-                "preset.quality",
-                "preset.quality.tooltip",
+                "TextureCompressor:label:presetQuality",
+                "TextureCompressor:label:presetQuality:tooltip",
                 PresetColors.Quality,
                 buttonWidth
             );
@@ -66,8 +68,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Balanced,
-                "preset.balanced",
-                "preset.balanced.tooltip",
+                "TextureCompressor:label:presetBalanced",
+                "TextureCompressor:label:presetBalanced:tooltip",
                 PresetColors.Balanced,
                 buttonWidth
             );
@@ -79,8 +81,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Aggressive,
-                "preset.aggressive",
-                "preset.aggressive.tooltip",
+                "TextureCompressor:label:presetAggressive",
+                "TextureCompressor:label:presetAggressive:tooltip",
                 PresetColors.Aggressive,
                 buttonWidth
             );
@@ -88,8 +90,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Maximum,
-                "preset.maximum",
-                "preset.maximum.tooltip",
+                "TextureCompressor:label:presetMaximum",
+                "TextureCompressor:label:presetMaximum:tooltip",
                 PresetColors.Maximum,
                 buttonWidth
             );
@@ -97,8 +99,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Custom,
-                "preset.custom",
-                "preset.custom.tooltip",
+                "TextureCompressor:label:presetCustom",
+                "TextureCompressor:label:presetCustom:tooltip",
                 PresetColors.Custom,
                 buttonWidth
             );
@@ -141,33 +143,43 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 case CompressorPreset.HighQuality:
                     description = AvatarCompressorLocalization.Tr(
-                        "preset.high_quality.description"
+                        "TextureCompressor:message:presetHighQualityDescription"
                     );
                     messageType = MessageType.Info;
                     break;
 
                 case CompressorPreset.Quality:
-                    description = AvatarCompressorLocalization.Tr("preset.quality.description");
+                    description = AvatarCompressorLocalization.Tr(
+                        "TextureCompressor:message:presetQualityDescription"
+                    );
                     messageType = MessageType.Info;
                     break;
 
                 case CompressorPreset.Balanced:
-                    description = AvatarCompressorLocalization.Tr("preset.balanced.description");
+                    description = AvatarCompressorLocalization.Tr(
+                        "TextureCompressor:message:presetBalancedDescription"
+                    );
                     messageType = MessageType.Info;
                     break;
 
                 case CompressorPreset.Aggressive:
-                    description = AvatarCompressorLocalization.Tr("preset.aggressive.description");
+                    description = AvatarCompressorLocalization.Tr(
+                        "TextureCompressor:message:presetAggressiveDescription"
+                    );
                     messageType = MessageType.Warning;
                     break;
 
                 case CompressorPreset.Maximum:
-                    description = AvatarCompressorLocalization.Tr("preset.maximum.description");
+                    description = AvatarCompressorLocalization.Tr(
+                        "TextureCompressor:message:presetMaximumDescription"
+                    );
                     messageType = MessageType.Warning;
                     break;
 
                 case CompressorPreset.Custom:
-                    description = AvatarCompressorLocalization.Tr("preset.custom.description");
+                    description = AvatarCompressorLocalization.Tr(
+                        "TextureCompressor:message:presetCustomDescription"
+                    );
                     messageType = MessageType.Info;
                     break;
 

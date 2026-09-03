@@ -10,7 +10,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     /// </summary>
     internal sealed class TextureCompressorPreferencesSection : IPreferencesSection
     {
-        public string Title => AvatarCompressorLocalization.Tr("preferences.texture_compressor");
+        public string Title =>
+            AvatarCompressorLocalization.Tr("TextureCompressor:label:preferences");
 
         public IEnumerable<string> Keywords =>
             new[] { "Texture", "Analysis", "Resize", "Backend", "GPU", "CPU", "Software" };
@@ -29,8 +30,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUI.BeginChangeCheck();
             var analysisBackend = AvatarCompressorLocalization.EnumPopup(
                 AvatarCompressorLocalization.Content(
-                    "preferences.analysis_backend",
-                    "preferences.analysis_backend.tooltip"
+                    "TextureCompressor:prop:analysisBackend",
+                    "TextureCompressor:prop:analysisBackend:tooltip"
                 ),
                 TextureCompressorPreferences.AnalysisBackend
             );
@@ -44,8 +45,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawBackendHelpBox(
                 analysisBackend == AnalysisBackendPreference.CPU,
                 _analysisName,
-                "preferences.analysis_backend.cpu_help",
-                "preferences.analysis_backend.auto_help"
+                "TextureCompressor:message:analysisBackendCpuHelp",
+                "TextureCompressor:message:analysisBackendAutoHelp"
             );
 
             EditorGUILayout.Space(4);
@@ -53,8 +54,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUI.BeginChangeCheck();
             var resizeBackend = AvatarCompressorLocalization.EnumPopup(
                 AvatarCompressorLocalization.Content(
-                    "preferences.resize_backend",
-                    "preferences.resize_backend.tooltip"
+                    "TextureCompressor:prop:resizeBackend",
+                    "TextureCompressor:prop:resizeBackend:tooltip"
                 ),
                 TextureCompressorPreferences.ResizeBackend
             );
@@ -68,8 +69,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawBackendHelpBox(
                 resizeBackend == ResizeBackendPreference.CPU,
                 _resizeName,
-                "preferences.resize_backend.cpu_help",
-                "preferences.resize_backend.auto_help"
+                "TextureCompressor:message:resizeBackendCpuHelp",
+                "TextureCompressor:message:resizeBackendAutoHelp"
             );
         }
 

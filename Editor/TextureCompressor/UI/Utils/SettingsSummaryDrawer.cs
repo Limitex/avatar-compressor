@@ -18,33 +18,33 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.LabelField(
-                title ?? AvatarCompressorLocalization.Tr("summary.current_settings"),
+                title ?? AvatarCompressorLocalization.Tr("TextureCompressor:label:currentSettings"),
                 EditorStyles.boldLabel
             );
 
             EditorGUILayout.LabelField(
                 AvatarCompressorLocalization.Tr(
-                    "summary.strategy",
+                    "TextureCompressor:message:summaryStrategy",
                     AvatarCompressorLocalization.EnumValue(config.Strategy)
                 )
             );
             EditorGUILayout.LabelField(
                 AvatarCompressorLocalization.Tr(
-                    "summary.divisor_range",
+                    "TextureCompressor:message:summaryDivisorRange",
                     config.MinDivisor,
                     config.MaxDivisor
                 )
             );
             EditorGUILayout.LabelField(
                 AvatarCompressorLocalization.Tr(
-                    "summary.resolution_range",
+                    "TextureCompressor:message:summaryResolutionRange",
                     config.MinResolution,
                     config.MaxResolution
                 )
             );
             EditorGUILayout.LabelField(
                 AvatarCompressorLocalization.Tr(
-                    "summary.complexity_thresholds",
+                    "TextureCompressor:message:summaryComplexityThresholds",
                     config.LowComplexityThreshold,
                     config.HighComplexityThreshold
                 )

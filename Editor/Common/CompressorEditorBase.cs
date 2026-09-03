@@ -51,7 +51,7 @@ namespace dev.limitex.avatar.compressor.editor
             if (!RuntimeUtil.IsAvatarRoot(component.transform))
             {
                 EditorGUILayout.HelpBox(
-                    AvatarCompressorLocalization.Tr("warning.avatar_root"),
+                    AvatarCompressorLocalization.Tr("Common:message:avatarRootWarning"),
                     MessageType.Warning
                 );
                 EditorGUILayout.Space(5);

@@ -53,24 +53,31 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 return;
             }
 
-            string title = AvatarCompressorLocalization.Tr("unlink_dialog.title");
+            string title = AvatarCompressorLocalization.Tr(
+                "TextureCompressor:dialog:unlinkPresetTitle"
+            );
             string reason = restriction switch
             {
                 PresetRestriction.BuiltIn => AvatarCompressorLocalization.Tr(
-                    "unlink_dialog.reason.built_in"
+                    "TextureCompressor:dialog:unlinkPresetReasonBuiltIn"
                 ),
                 PresetRestriction.ExternalPackage => AvatarCompressorLocalization.Tr(
-                    "unlink_dialog.reason.package"
+                    "TextureCompressor:dialog:unlinkPresetReasonPackage"
                 ),
-                _ => AvatarCompressorLocalization.Tr("unlink_dialog.reason.locked"),
+                _ => AvatarCompressorLocalization.Tr(
+                    "TextureCompressor:dialog:unlinkPresetReasonLocked"
+                ),
             };
-            string message = AvatarCompressorLocalization.Tr("unlink_dialog.message", reason);
+            string message = AvatarCompressorLocalization.Tr(
+                "TextureCompressor:dialog:unlinkPresetMessage",
+                reason
+            );
 
             bool confirmed = EditorUtility.DisplayDialog(
                 title,
                 message,
-                AvatarCompressorLocalization.Tr("unlink_dialog.confirm"),
-                AvatarCompressorLocalization.Tr("common.cancel")
+                AvatarCompressorLocalization.Tr("TextureCompressor:dialog:unlinkPresetConfirm"),
+                AvatarCompressorLocalization.Tr("Common:label:cancel")
             );
 
             if (!confirmed)

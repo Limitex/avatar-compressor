@@ -1,0 +1,736 @@
+msgid ""
+msgstr ""
+"Language: en-US\n"
+"X-Crowdin-SourceKey: msgstr\n"
+
+msgid "Common:label:cancel"
+msgstr "Cancel"
+
+msgid "Common:label:close"
+msgstr "Close"
+
+msgid "Common:label:notAvailable"
+msgstr "N/A"
+
+msgid "Common:message:avatarRootWarning"
+msgstr "This component should be placed on the avatar root GameObject. While it will still work, placing it on the avatar root is recommended."
+
+msgid "Common:label:general"
+msgstr "General"
+
+msgid "Common:label:language"
+msgstr "Language"
+
+msgid "Common:prop:enableLogging"
+msgstr "Enable Logging"
+
+msgid "Common:prop:enableLogging:tooltip"
+msgstr "Output debug logs during build and preview"
+
+msgid "TextureCompressor:label:preferences"
+msgstr "Texture Compressor"
+
+msgid "TextureCompressor:prop:analysisBackend"
+msgstr "Analysis Backend"
+
+msgid "TextureCompressor:prop:analysisBackend:tooltip"
+msgstr "Select the backend used for texture complexity analysis"
+
+msgid "TextureCompressor:message:analysisBackendCpuHelp"
+msgstr "Always uses CPU for texture analysis. Useful when GPU results are unstable or for debugging."
+
+msgid "TextureCompressor:message:analysisBackendAutoHelp"
+msgstr "Currently using {0}. Uses GPU compute shaders for texture analysis when available, otherwise falls back to CPU."
+
+msgid "TextureCompressor:prop:resizeBackend"
+msgstr "Resize Backend"
+
+msgid "TextureCompressor:prop:resizeBackend:tooltip"
+msgstr "Select the backend used for Area Averaging texture resize"
+
+msgid "TextureCompressor:message:resizeBackendCpuHelp"
+msgstr "Always uses CPU for Area Averaging resize. Useful when GPU results are unstable or for debugging."
+
+msgid "TextureCompressor:message:resizeBackendAutoHelp"
+msgstr "Currently using {0}. Uses GPU compute shaders for Area Averaging resize when available, otherwise falls back to CPU."
+
+msgid "Common:prop:fuzzySearch"
+msgstr "Fuzzy"
+
+msgid "Common:message:searchShowing"
+msgstr "Showing {0} of {1}"
+
+msgid "Common:message:searchHidden"
+msgstr "{0} hidden"
+
+msgid "Common:label:thumbnailHighlight:tooltip"
+msgstr "Click to highlight in Project"
+
+msgid "Common:message:githubFeedback"
+msgstr "Bugs? Ideas? Let us know! Stars appreciated."
+
+msgid "Common:button:openGitHub:tooltip"
+msgstr "Open GitHub repository"
+
+msgid "TextureCompressor:label:preset"
+msgstr "Compression Preset"
+
+msgid "TextureCompressor:label:presetHighQuality"
+msgstr "High Quality"
+
+msgid "TextureCompressor:label:presetHighQuality:tooltip"
+msgstr "Highest quality\nMinimal compression"
+
+msgid "TextureCompressor:message:presetHighQualityDescription"
+msgstr "High Quality Mode: Maximum quality preservation with minimal compression. Only very simple textures (solid colors) will be slightly compressed. Best for showcase avatars or when VRAM is not a concern."
+
+msgid "TextureCompressor:label:presetQuality"
+msgstr "Quality"
+
+msgid "TextureCompressor:label:presetQuality:tooltip"
+msgstr "Good quality\nLight compression"
+
+msgid "TextureCompressor:message:presetQualityDescription"
+msgstr "Quality Mode: Preserves texture detail as much as possible. Only low-complexity textures (solid colors, simple gradients) will be compressed. Best for avatars where visual quality is the priority."
+
+msgid "TextureCompressor:label:presetBalanced"
+msgstr "Balanced"
+
+msgid "TextureCompressor:label:presetBalanced:tooltip"
+msgstr "Balance of\nquality and size"
+
+msgid "TextureCompressor:message:presetBalancedDescription"
+msgstr "Balanced Mode: Good compromise between quality and VRAM savings. Detailed textures are preserved, while simpler textures are compressed. Recommended for most use cases."
+
+msgid "TextureCompressor:label:presetAggressive"
+msgstr "Aggressive"
+
+msgid "TextureCompressor:label:presetAggressive:tooltip"
+msgstr "Smaller file size\nSome quality loss"
+
+msgid "TextureCompressor:message:presetAggressiveDescription"
+msgstr "Aggressive Mode: Prioritizes smaller file size over quality. Most textures will be compressed to some degree. Good for Quest avatars or when VRAM is limited."
+
+msgid "TextureCompressor:label:presetMaximum"
+msgstr "Maximum"
+
+msgid "TextureCompressor:label:presetMaximum:tooltip"
+msgstr "Smallest size\nNoticeable quality loss"
+
+msgid "TextureCompressor:message:presetMaximumDescription"
+msgstr "Maximum Compression: Compresses all textures as much as possible. Significant quality loss may occur. Use only when file size is critical."
+
+msgid "TextureCompressor:label:presetCustom"
+msgstr "Custom"
+
+msgid "TextureCompressor:label:presetCustom:tooltip"
+msgstr "Manual\nconfiguration"
+
+msgid "TextureCompressor:message:presetCustomDescription"
+msgstr "Custom Mode: Full control over all compression settings. Configure each parameter manually for fine-tuned results."
+
+msgid "TextureCompressor:prop:customEditMode"
+msgstr "Edit Mode"
+
+msgid "TextureCompressor:prop:customEditMode:tooltip"
+msgstr "Manually configure compression settings"
+
+msgid "TextureCompressor:prop:customEditModeUnlink:tooltip"
+msgstr "Unlink preset and edit settings manually"
+
+msgid "TextureCompressor:prop:customPreset"
+msgstr "Custom Preset ▼"
+
+msgid "TextureCompressor:prop:customPreset:tooltip"
+msgstr "Select a custom preset from the menu"
+
+msgid "TextureCompressor:label:customUseOnly"
+msgstr "Custom Preset (Use Only)"
+
+msgid "TextureCompressor:message:customNameBuiltIn"
+msgstr "{0} (Built-in)"
+
+msgid "TextureCompressor:message:customNamePackage"
+msgstr "{0} (Package)"
+
+msgid "TextureCompressor:message:customLockBuiltIn"
+msgstr "This preset is built-in"
+
+msgid "TextureCompressor:message:customLockPackage"
+msgstr "This preset is in a package"
+
+msgid "TextureCompressor:message:customLockLocked"
+msgstr "This preset is locked"
+
+msgid "TextureCompressor:message:customLockUneditable"
+msgstr "This preset cannot be edited"
+
+msgid "TextureCompressor:button:editCustomPreset"
+msgstr "Edit"
+
+msgid "TextureCompressor:label:customPreset"
+msgstr "Custom Preset"
+
+msgid "TextureCompressor:button:saveCustomPreset:tooltip"
+msgstr "Save current settings to preset"
+
+msgid "TextureCompressor:button:discardCustomPreset:tooltip"
+msgstr "Discard changes and reload from preset"
+
+msgid "TextureCompressor:button:createCustomPreset:tooltip"
+msgstr "Create new preset from current settings"
+
+msgid "TextureCompressor:button:unlinkCustomPreset:tooltip"
+msgstr "Unlink preset (keep current settings)"
+
+msgid "TextureCompressor:message:customComponentOnly"
+msgstr "Settings are stored in this component only.\nCreate a preset to reuse across avatars."
+
+msgid "TextureCompressor:message:customModified"
+msgstr "● Modified"
+
+msgid "TextureCompressor:message:customSynced"
+msgstr "✓ Synced"
+
+msgid "TextureCompressor:prop:customDescription"
+msgstr "Description"
+
+msgid "TextureCompressor:dialog:createPresetTitle"
+msgstr "Create New Texture Compressor Preset"
+
+msgid "TextureCompressor:dialog:createPresetMessage"
+msgstr "Choose a location to save the new preset"
+
+msgid "TextureCompressor:dialog:unlinkPresetTitle"
+msgstr "Unlink Preset"
+
+msgid "TextureCompressor:dialog:unlinkPresetReasonBuiltIn"
+msgstr "This preset is a built-in preset and cannot be edited."
+
+msgid "TextureCompressor:dialog:unlinkPresetReasonPackage"
+msgstr "This preset is in a package and cannot be edited."
+
+msgid "TextureCompressor:dialog:unlinkPresetReasonLocked"
+msgstr "This preset is locked and cannot be edited directly."
+
+msgid "TextureCompressor:dialog:unlinkPresetMessage"
+msgstr "{0}\n\nDo you want to unlink and edit the settings manually?\n(Current settings will be preserved)"
+
+msgid "TextureCompressor:dialog:unlinkPresetConfirm"
+msgstr "Unlink and Edit"
+
+msgid "TextureCompressor:menu:none"
+msgstr "No presets available"
+
+msgid "TextureCompressor:menu:builtInSuffix"
+msgstr " (Built-in)"
+
+msgid "TextureCompressor:menu:packageSuffix"
+msgstr " (Package)"
+
+msgid "TextureCompressor:menu:builtInPath"
+msgstr "Built-in/{0}"
+
+msgid "TextureCompressor:label:builtInPresetHighQualityPlus"
+msgstr "High Quality+"
+
+msgid "TextureCompressor:message:builtInPresetHighQualityPlusDescription"
+msgstr "Better than High Quality. Maximum quality with minimal processing."
+
+msgid "TextureCompressor:label:builtInPresetQualityPlus"
+msgstr "Quality+"
+
+msgid "TextureCompressor:message:builtInPresetQualityPlusDescription"
+msgstr "Better than Quality. High quality with minimal compression."
+
+msgid "TextureCompressor:label:builtInPresetBalancedPlus"
+msgstr "Balanced+"
+
+msgid "TextureCompressor:message:builtInPresetBalancedPlusDescription"
+msgstr "Better than Balanced. Good quality with moderate compression."
+
+msgid "TextureCompressor:label:builtInPresetAggressivePlus"
+msgstr "Aggressive+"
+
+msgid "TextureCompressor:message:builtInPresetAggressivePlusDescription"
+msgstr "Better than Aggressive. Improved quality while maintaining efficient compression."
+
+msgid "TextureCompressor:label:builtInPresetMaximumPlus"
+msgstr "Maximum+"
+
+msgid "TextureCompressor:message:builtInPresetMaximumPlusDescription"
+msgstr "Better than Maximum. Strong compression with slightly higher quality."
+
+msgid "TextureCompressor:label:currentSettings"
+msgstr "Current Settings Summary"
+
+msgid "TextureCompressor:label:settings"
+msgstr "Settings Summary"
+
+msgid "TextureCompressor:message:summaryStrategy"
+msgstr "Strategy: {0}"
+
+msgid "TextureCompressor:message:summaryDivisorRange"
+msgstr "Divisor Range: {0}x - {1}x"
+
+msgid "TextureCompressor:message:summaryResolutionRange"
+msgstr "Resolution Range: {0}px - {1}px"
+
+msgid "TextureCompressor:message:summaryComplexityThresholds"
+msgstr "Complexity Thresholds: {0:P0} - {1:P0}"
+
+msgid "TextureCompressor:message:advancedReadOnly"
+msgstr "Advanced Settings (Read Only)"
+
+msgid "TextureCompressor:label:analysisStrategy"
+msgstr "Analysis Strategy"
+
+msgid "TextureCompressor:label:combinedWeights"
+msgstr "Combined Strategy Weights"
+
+msgid "TextureCompressor:label:complexityThresholds"
+msgstr "Complexity Thresholds"
+
+msgid "TextureCompressor:label:resolution"
+msgstr "Resolution Settings"
+
+msgid "TextureCompressor:label:sizeFilters"
+msgstr "Size Filters"
+
+msgid "TextureCompressor:label:compressionFormat"
+msgstr "Compression Format"
+
+msgid "TextureCompressor:prop:strategy"
+msgstr "Strategy"
+
+msgid "TextureCompressor:prop:strategy:tooltip"
+msgstr "Complexity analysis method"
+
+msgid "TextureCompressor:prop:fastWeight"
+msgstr "Fast Weight"
+
+msgid "TextureCompressor:prop:highAccuracyWeight"
+msgstr "High Accuracy Weight"
+
+msgid "TextureCompressor:prop:perceptualWeight"
+msgstr "Perceptual Weight"
+
+msgid "TextureCompressor:prop:highThreshold"
+msgstr "High (Keep Detail)"
+
+msgid "TextureCompressor:prop:highThreshold:tooltip"
+msgstr "Textures with complexity above this will use minimal compression"
+
+msgid "TextureCompressor:prop:lowThreshold"
+msgstr "Low (Compress More)"
+
+msgid "TextureCompressor:prop:lowThreshold:tooltip"
+msgstr "Textures with complexity below this will use maximum compression"
+
+msgid "TextureCompressor:prop:minDivisor"
+msgstr "Min Divisor"
+
+msgid "TextureCompressor:prop:minDivisor:tooltip"
+msgstr "Minimum resolution divisor (1 = no reduction)"
+
+msgid "TextureCompressor:prop:maxDivisor"
+msgstr "Max Divisor"
+
+msgid "TextureCompressor:prop:maxDivisor:tooltip"
+msgstr "Maximum resolution divisor"
+
+msgid "TextureCompressor:prop:maxResolution"
+msgstr "Max Resolution"
+
+msgid "TextureCompressor:prop:maxResolution:tooltip"
+msgstr "Maximum output resolution"
+
+msgid "TextureCompressor:prop:minResolution"
+msgstr "Min Resolution"
+
+msgid "TextureCompressor:prop:minResolution:tooltip"
+msgstr "Minimum output resolution"
+
+msgid "TextureCompressor:prop:forcePowerOfTwo"
+msgstr "Force Power of 2"
+
+msgid "TextureCompressor:prop:forcePowerOfTwo:tooltip"
+msgstr "When enabled, dimensions are rounded to the nearest power of 2.\nWhen disabled, dimensions are rounded to the nearest multiple of 4.\nAll output dimensions remain multiples of 4 for DXT/BC compatibility."
+
+msgid "TextureCompressor:message:multipleOfFourHelp"
+msgstr "Output dimensions are always multiples of 4 for DXT/BC compression compatibility. Example: 150x150 becomes 152x152."
+
+msgid "TextureCompressor:prop:minSourceSize"
+msgstr "Min Source Size"
+
+msgid "TextureCompressor:prop:minSourceSize:tooltip"
+msgstr "Only process textures larger than this size"
+
+msgid "TextureCompressor:prop:skipIfSmaller"
+msgstr "Skip If Smaller Than"
+
+msgid "TextureCompressor:prop:skipIfSmaller:tooltip"
+msgstr "Skip textures smaller than or equal to this size"
+
+msgid "TextureCompressor:prop:targetPlatform"
+msgstr "Target Platform"
+
+msgid "TextureCompressor:prop:targetPlatform:tooltip"
+msgstr "Target platform for compression format selection (Auto detects from build target)"
+
+msgid "TextureCompressor:prop:highQualityComplex"
+msgstr "High Quality for Complex"
+
+msgid "TextureCompressor:prop:highQualityComplex:tooltip"
+msgstr "Use BC7/ASTC_4x4 for high complexity textures (uses Complexity Threshold)"
+
+msgid "TextureCompressor:label:exclusions"
+msgstr "Exclusions"
+
+msgid "TextureCompressor:label:liltoonOptimizations"
+msgstr "lilToon Optimizations"
+
+msgid "TextureCompressor:prop:bakeLiltoon"
+msgstr "Bake color adjustments into textures"
+
+msgid "TextureCompressor:prop:bakeLiltoon:tooltip"
+msgstr "Bakes hue/saturation/gradation, active 2nd/3rd layers and the alpha mask into the main texture, and tone correction into the outline texture, at build time. Bakes with animated inputs are skipped; frozen and animation-referenced textures are never baked or consumed; excluded textures are never baked; colors remain runtime tints. Requires lilToon."
+
+msgid "TextureCompressor:prop:removeUnused"
+msgstr "Remove unused texture slots"
+
+msgid "TextureCompressor:prop:removeUnused:tooltip"
+msgstr "Clears lilToon slots whose feature toggle is off and not animated, dropping textures that become unreferenced from the upload. Frozen and animation-referenced textures are never removed. Exclusion filters do not apply here."
+
+msgid "TextureCompressor:label:textureFilters"
+msgstr "Texture Filters"
+
+msgid "TextureCompressor:prop:mainTextures"
+msgstr "Main Textures"
+
+msgid "TextureCompressor:prop:mainTextures:tooltip"
+msgstr "Process main textures (_MainTex, _BaseMap, etc.)"
+
+msgid "TextureCompressor:prop:normalMaps"
+msgstr "Normal Maps"
+
+msgid "TextureCompressor:prop:normalMaps:tooltip"
+msgstr "Process normal maps"
+
+msgid "TextureCompressor:prop:emissionMaps"
+msgstr "Emission Maps"
+
+msgid "TextureCompressor:prop:emissionMaps:tooltip"
+msgstr "Process emission textures"
+
+msgid "TextureCompressor:prop:otherTextures"
+msgstr "Other Textures"
+
+msgid "TextureCompressor:prop:otherTextures:tooltip"
+msgstr "Process other textures (metallic, roughness, etc.)"
+
+msgid "TextureCompressor:prop:skipUnknownUncompressed"
+msgstr "Skip uncompressed textures on unknown properties"
+
+msgid "TextureCompressor:prop:skipUnknownUncompressed:tooltip"
+msgstr "Unknown shader properties may contain non-visual data such as masks or LUTs that compression could corrupt."
+
+msgid "TextureCompressor:label:excludedTextures"
+msgstr "Textures"
+
+msgid "TextureCompressor:message:texturesCount"
+msgstr "Textures ({0})"
+
+msgid "TextureCompressor:message:excludedTexturesEmpty"
+msgstr "Textures added here will be excluded from compression."
+
+msgid "TextureCompressor:button:addTexture"
+msgstr "+ Add Texture"
+
+msgid "TextureCompressor:label:excludedPaths"
+msgstr "Paths"
+
+msgid "TextureCompressor:message:pathsCount"
+msgstr "Paths ({0})"
+
+msgid "TextureCompressor:message:excludedPathsEmpty"
+msgstr "Textures with paths starting with listed prefixes will be skipped."
+
+msgid "TextureCompressor:button:addPath"
+msgstr "+ Add Path..."
+
+msgid "TextureCompressor:message:pathNotFound"
+msgstr "  ⚠ Path not found"
+
+msgid "TextureCompressor:menu:emptyPath"
+msgstr "Empty"
+
+msgid "TextureCompressor:menu:pathPresetAdded"
+msgstr "{0} (added)"
+
+msgid "TextureCompressor:label:frozenTextures"
+msgstr "Frozen Textures ({0})"
+
+msgid "TextureCompressor:label:frozenTexturesFiltered"
+msgstr "Frozen Textures ({0}/{1})"
+
+msgid "TextureCompressor:message:frozenEmpty"
+msgstr "No frozen textures. Click 'Freeze' on textures in Preview to add manual overrides."
+
+msgid "TextureCompressor:message:frozenNoSearchResults"
+msgstr "No frozen textures match the search."
+
+msgid "TextureCompressor:button:unfreeze"
+msgstr "Unfreeze"
+
+msgid "TextureCompressor:message:frozenTextureNotFound"
+msgstr "Texture not found"
+
+msgid "TextureCompressor:prop:frozenSkipCompression"
+msgstr "Skip compression"
+
+msgid "TextureCompressor:prop:frozenDivisor"
+msgstr "Divisor:"
+
+msgid "TextureCompressor:prop:frozenFormat"
+msgstr "Format:"
+
+msgid "TextureCompressor:message:frozenLegacyPaths"
+msgstr "Legacy path-based entries detected. Convert to GUID for better stability."
+
+msgid "TextureCompressor:button:convertToGuid"
+msgstr "Convert to GUID"
+
+msgid "TextureCompressor:button:previewGenerate"
+msgstr "Preview Compression Results"
+
+msgid "TextureCompressor:message:previewOutdated"
+msgstr "Preview is outdated. Settings or target object have changed since it was generated. Click 'Preview Compression Results' to refresh."
+
+msgid "TextureCompressor:message:previewNoTextures"
+msgstr "No textures found matching the current filter settings."
+
+msgid "TextureCompressor:message:previewHeaderFiltered"
+msgstr "Preview ({0}/{1} shown)"
+
+msgid "TextureCompressor:message:previewHeaderFilteredFrozen"
+msgstr "Preview ({0}/{1} shown, {2} frozen)"
+
+msgid "TextureCompressor:message:previewHeaderSummary"
+msgstr "Preview ({0} to compress, {1} skipped)"
+
+msgid "TextureCompressor:message:previewHeaderSummaryFrozen"
+msgstr "Preview ({0} to compress, {1} frozen, {2} skipped)"
+
+msgid "TextureCompressor:label:previewOriginal"
+msgstr "Original:"
+
+msgid "TextureCompressor:label:previewAfter"
+msgstr "After:"
+
+msgid "TextureCompressor:label:previewSavings"
+msgstr "Savings:"
+
+msgid "TextureCompressor:message:previewBuildOnlyBoth"
+msgstr "Unused texture slot removal and lilToon texture baking run only during the NDMF build and are not reflected in this preview, so actual build sizes may differ from the estimate shown."
+
+msgid "TextureCompressor:message:previewBuildOnlyUnused"
+msgstr "Unused texture slot removal runs only during the NDMF build and is not reflected in this preview, so actual build sizes may differ from the estimate shown."
+
+msgid "TextureCompressor:message:previewBuildOnlyBake"
+msgstr "lilToon texture baking runs only during the NDMF build and is not reflected in this preview, so actual build sizes may differ from the estimate shown."
+
+msgid "TextureCompressor:message:previewNoSearchResults"
+msgstr "No textures match the search."
+
+msgid "TextureCompressor:label:previewToCompress"
+msgstr "Textures to Compress"
+
+msgid "TextureCompressor:label:previewFrozenManual"
+msgstr "Frozen Textures (Manual Override)"
+
+msgid "TextureCompressor:label:previewSkippedTextures"
+msgstr "Skipped Textures"
+
+msgid "TextureCompressor:button:previewClose"
+msgstr "Close Preview"
+
+msgid "TextureCompressor:button:previewFreeze"
+msgstr "Freeze"
+
+msgid "TextureCompressor:label:previewComplexity"
+msgstr "Complexity:"
+
+msgid "TextureCompressor:label:previewSize"
+msgstr "Size:"
+
+msgid "TextureCompressor:label:previewManualSuffix"
+msgstr " (manual)"
+
+msgid "TextureCompressor:message:previewResized"
+msgstr "{0}x{1} → {2}x{3} (÷{4}){5}"
+
+msgid "TextureCompressor:message:previewUnchanged"
+msgstr "{0}x{1} (unchanged){2}"
+
+msgid "TextureCompressor:label:previewFormat"
+msgstr "Format:"
+
+msgid "TextureCompressor:label:previewReason"
+msgstr "Reason:"
+
+msgid "TextureCompressor:format:dxt1"
+msgstr "4 bpp, RGB only, fastest"
+
+msgid "TextureCompressor:format:dxt5"
+msgstr "8 bpp, RGBA, good quality"
+
+msgid "TextureCompressor:format:bc5"
+msgstr "8 bpp, normal maps"
+
+msgid "TextureCompressor:format:bc7"
+msgstr "8 bpp, highest quality"
+
+msgid "TextureCompressor:format:astc4x4"
+msgstr "8 bpp, highest quality"
+
+msgid "TextureCompressor:format:astc6x6"
+msgstr "3.56 bpp, balanced"
+
+msgid "TextureCompressor:format:astc8x8"
+msgstr "2 bpp, most efficient"
+
+msgid "TextureCompressor:label:presetSettings"
+msgstr "Preset Settings"
+
+msgid "TextureCompressor:prop:presetLock"
+msgstr "Lock"
+
+msgid "TextureCompressor:prop:presetDescription"
+msgstr "Description"
+
+msgid "TextureCompressor:label:presetMenu"
+msgstr "Menu"
+
+msgid "TextureCompressor:prop:presetMenuPath"
+msgstr "Menu Path"
+
+msgid "TextureCompressor:prop:presetMenuPath:tooltip"
+msgstr "Path in the Custom preset menu. Empty means it is not shown in the menu."
+
+msgid "TextureCompressor:prop:presetMenuOrder"
+msgstr "Menu Order"
+
+msgid "TextureCompressor:prop:presetMenuOrder:tooltip"
+msgstr "Display order in the menu. Lower values appear first."
+
+msgid "TextureCompressor:enum:compressorPresetHighQuality"
+msgstr "High Quality"
+
+msgid "TextureCompressor:enum:compressorPresetQuality"
+msgstr "Quality"
+
+msgid "TextureCompressor:enum:compressorPresetBalanced"
+msgstr "Balanced"
+
+msgid "TextureCompressor:enum:compressorPresetAggressive"
+msgstr "Aggressive"
+
+msgid "TextureCompressor:enum:compressorPresetMaximum"
+msgstr "Maximum"
+
+msgid "TextureCompressor:enum:compressorPresetCustom"
+msgstr "Custom"
+
+msgid "TextureCompressor:enum:analysisStrategyTypeFast"
+msgstr "Fast"
+
+msgid "TextureCompressor:enum:analysisStrategyTypeHighAccuracy"
+msgstr "High Accuracy"
+
+msgid "TextureCompressor:enum:analysisStrategyTypePerceptual"
+msgstr "Perceptual"
+
+msgid "TextureCompressor:enum:analysisStrategyTypeCombined"
+msgstr "Combined"
+
+msgid "TextureCompressor:enum:compressionPlatformAuto"
+msgstr "Auto"
+
+msgid "TextureCompressor:enum:compressionPlatformDesktop"
+msgstr "Desktop"
+
+msgid "TextureCompressor:enum:compressionPlatformMobile"
+msgstr "Mobile"
+
+msgid "TextureCompressor:enum:frozenTextureFormatAuto"
+msgstr "Auto"
+
+msgid "TextureCompressor:enum:frozenTextureFormatDXT1"
+msgstr "DXT1"
+
+msgid "TextureCompressor:enum:frozenTextureFormatDXT5"
+msgstr "DXT5"
+
+msgid "TextureCompressor:enum:frozenTextureFormatBC5"
+msgstr "BC5"
+
+msgid "TextureCompressor:enum:frozenTextureFormatBC7"
+msgstr "BC7"
+
+msgid "TextureCompressor:enum:frozenTextureFormatASTC4x4"
+msgstr "ASTC 4x4"
+
+msgid "TextureCompressor:enum:frozenTextureFormatASTC6x6"
+msgstr "ASTC 6x6"
+
+msgid "TextureCompressor:enum:frozenTextureFormatASTC8x8"
+msgstr "ASTC 8x8"
+
+msgid "TextureCompressor:enum:analysisBackendPreferenceAuto"
+msgstr "Auto"
+
+msgid "TextureCompressor:enum:analysisBackendPreferenceCPU"
+msgstr "Software"
+
+msgid "TextureCompressor:enum:resizeBackendPreferenceAuto"
+msgstr "Auto"
+
+msgid "TextureCompressor:enum:resizeBackendPreferenceCPU"
+msgstr "Software"
+
+msgid "TextureCompressor:enum:texturePropertyCategoryMain"
+msgstr "Main"
+
+msgid "TextureCompressor:enum:texturePropertyCategoryNormal"
+msgstr "Normal"
+
+msgid "TextureCompressor:enum:texturePropertyCategoryEmission"
+msgstr "Emission"
+
+msgid "TextureCompressor:enum:texturePropertyCategoryOther"
+msgstr "Other"
+
+msgid "TextureCompressor:enum:skipReasonNone"
+msgstr "Skipped"
+
+msgid "TextureCompressor:enum:skipReasonTooSmall"
+msgstr "Too small"
+
+msgid "TextureCompressor:enum:skipReasonFilteredByType"
+msgstr "Filtered by type"
+
+msgid "TextureCompressor:enum:skipReasonFrozenSkip"
+msgstr "User frozen (skipped)"
+
+msgid "TextureCompressor:enum:skipReasonRuntimeGenerated"
+msgstr "Runtime generated"
+
+msgid "TextureCompressor:enum:skipReasonExcludedPath"
+msgstr "Excluded by path"
+
+msgid "TextureCompressor:enum:skipReasonExcludedTexture"
+msgstr "Excluded texture"
+
+msgid "TextureCompressor:enum:skipReasonUnknownUncompressedProperty"
+msgstr "Uncompressed on unknown property (see Data Protection)"

@@ -16,7 +16,16 @@ namespace dev.limitex.avatar.compressor.tests
     internal sealed class AvatarCompressorLocalizationTests
     {
         private const string LocalizationFolder =
-            "Packages/dev.limitex.avatar-compressor/Editor/Localization/";
+            "Packages/dev.limitex.avatar-compressor/Editor/Common/Localization";
+
+        private static readonly string[] BundledLocales =
+        {
+            "en-US",
+            "zh-Hans",
+            "zh-Hant",
+            "ja-JP",
+            "ko-KR",
+        };
 
         private string _originalLanguage;
 
@@ -33,27 +42,38 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void LocalizationAssets_AllFourLocalesLoad()
+        public void LocalizationAssets_DiscoversAllPoFilesAndIncludesBundledLocales()
         {
             var assets = AvatarCompressorLocalization.LoadLocalizationAssets();
+            var poPaths = AssetDatabase
+                .FindAssets(string.Empty, new[] { LocalizationFolder })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Where(path => path.EndsWith(".po", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
 
-            Assert.AreEqual(4, assets.Count);
-            CollectionAssert.AreEquivalent(
-                AvatarCompressorLocalization.SupportedLanguages.Select(language =>
-                    language.ToLowerInvariant()
-                ),
+            CollectionAssert.AreEquivalent(poPaths, assets.Select(AssetDatabase.GetAssetPath));
+            CollectionAssert.IsSubsetOf(
+                BundledLocales.Select(language => language.ToLowerInvariant()),
                 assets.Select(asset => asset.localeIsoCode.ToLowerInvariant())
+            );
+            Assert.AreEqual(
+                assets.Count,
+                assets
+                    .Select(asset => asset.localeIsoCode)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Count()
             );
         }
 
         [Test]
         public void LocalizationFiles_HaveMatchingKeysAndFormatPlaceholders()
         {
-            var english = ReadMessages("en-US");
+            var english = ReadMessages(LocalizationFolder + "/en-US.po");
 
-            foreach (string language in AvatarCompressorLocalization.SupportedLanguages)
+            foreach (var asset in AvatarCompressorLocalization.LoadLocalizationAssets())
             {
-                var localized = ReadMessages(language);
+                string language = asset.localeIsoCode;
+                var localized = ReadMessages(AssetDatabase.GetAssetPath(asset));
                 CollectionAssert.AreEquivalent(
                     english.Keys,
                     localized.Keys,
@@ -72,15 +92,35 @@ namespace dev.limitex.avatar.compressor.tests
             }
         }
 
+        [Test]
+        public void LocalizationKeys_FollowScopeKindNameConvention()
+        {
+            foreach (string key in ReadMessages(LocalizationFolder + "/en-US.po").Keys)
+            {
+                StringAssert.IsMatch(
+                    @"^(Common|TextureCompressor):[a-z][A-Za-z0-9]*:[a-z][A-Za-z0-9]*(?::tooltip)?$",
+                    key
+                );
+            }
+        }
+
+        [Test]
+        public void EnglishSource_UsesMsgstrForCrowdinSourceText()
+        {
+            string english = File.ReadAllText(LocalizationFolder + "/en-US.po");
+            StringAssert.Contains("\"X-Crowdin-SourceKey: msgstr\\n\"", english);
+        }
+
         [TestCase("en-US", "General")]
         [TestCase("zh-Hans", "常规")]
+        [TestCase("zh-Hant", "一般")]
         [TestCase("ja-JP", "一般")]
         [TestCase("ko-KR", "일반")]
         public void LanguagePrefs_SelectsRequestedLocalization(string language, string expected)
         {
             LanguagePrefs.Language = language;
 
-            Assert.AreEqual(expected, AvatarCompressorLocalization.Tr("preferences.general"));
+            Assert.AreEqual(expected, AvatarCompressorLocalization.Tr("Common:label:general"));
         }
 
         [Test]
@@ -126,9 +166,8 @@ namespace dev.limitex.avatar.compressor.tests
             }
         }
 
-        private static Dictionary<string, string> ReadMessages(string language)
+        private static Dictionary<string, string> ReadMessages(string path)
         {
-            string path = LocalizationFolder + language + ".po";
             var messages = new Dictionary<string, string>(StringComparer.Ordinal);
             string currentId = null;
 

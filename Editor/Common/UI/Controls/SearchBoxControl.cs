@@ -72,7 +72,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
 
                 EditorGUI.BeginChangeCheck();
                 var fuzzy = EditorGUILayout.ToggleLeft(
-                    AvatarCompressorLocalization.Tr("search.fuzzy"),
+                    AvatarCompressorLocalization.Tr("Common:prop:fuzzySearch"),
                     UseFuzzySearch,
                     GUILayout.Width(70)
                 );
@@ -87,7 +87,11 @@ namespace dev.limitex.avatar.compressor.editor.ui
                 if (totalCount >= 0)
                 {
                     GUILayout.Label(
-                        AvatarCompressorLocalization.Tr("search.showing", matchedCount, totalCount),
+                        AvatarCompressorLocalization.Tr(
+                            "Common:message:searchShowing",
+                            matchedCount,
+                            totalCount
+                        ),
                         EditorStyles.miniLabel
                     );
                 }

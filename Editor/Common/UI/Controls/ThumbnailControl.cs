@@ -22,7 +22,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
             var preview = texture != null ? AssetPreview.GetAssetPreview(texture) : null;
             var thumbnailContent = new GUIContent(
                 preview ?? Texture2D.whiteTexture,
-                AvatarCompressorLocalization.Tr("thumbnail.highlight.tooltip")
+                AvatarCompressorLocalization.Tr("Common:label:thumbnailHighlight:tooltip")
             );
             var thumbnailStyle = new GUIStyle(GUI.skin.label)
             {

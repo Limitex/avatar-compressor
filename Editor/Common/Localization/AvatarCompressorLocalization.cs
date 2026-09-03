@@ -15,15 +15,7 @@ namespace dev.limitex.avatar.compressor.editor
     internal static class AvatarCompressorLocalization
     {
         private const string LocalizationFolder =
-            "Packages/dev.limitex.avatar-compressor/Editor/Localization/";
-
-        internal static readonly string[] SupportedLanguages =
-        {
-            "en-US",
-            "zh-Hans",
-            "ja-JP",
-            "ko-KR",
-        };
+            "Packages/dev.limitex.avatar-compressor/Editor/Common/Localization";
 
         internal static readonly Localizer Localizer = new Localizer(
             "en-US",
@@ -48,7 +40,9 @@ namespace dev.limitex.avatar.compressor.editor
         internal static string EnumValue<T>(T value)
             where T : struct, Enum
         {
-            return Tr($"enum.{typeof(T).Name}.{value}");
+            string name = (typeof(T).Name + value).Replace("_", string.Empty);
+            string keyName = char.ToLowerInvariant(name[0]) + name.Substring(1);
+            return Tr($"TextureCompressor:enum:{keyName}");
         }
 
         internal static T EnumPopup<T>(GUIContent label, T value)
@@ -63,19 +57,19 @@ namespace dev.limitex.avatar.compressor.editor
 
         internal static void DrawLanguagePicker()
         {
-            // Accessing Localizer first ensures all four LAC locales are registered globally.
+            // Accessing Localizer first ensures all LAC locales are registered globally.
             _ = Localizer;
             LanguageSwitcher.DrawImmediate();
         }
 
         internal static List<LocalizationAsset> LoadLocalizationAssets()
         {
-            return SupportedLanguages
-                .Select(language =>
-                    AssetDatabase.LoadAssetAtPath<LocalizationAsset>(
-                        LocalizationFolder + language + ".po"
-                    )
-                )
+            return AssetDatabase
+                .FindAssets("t:LocalizationAsset", new[] { LocalizationFolder })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Where(path => path.EndsWith(".po", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .Select(AssetDatabase.LoadAssetAtPath<LocalizationAsset>)
                 .Where(asset => asset != null)
                 .ToList();
         }
