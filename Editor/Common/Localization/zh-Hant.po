@@ -9,10 +9,10 @@ msgid "Common:label:close"
 msgstr "關閉"
 
 msgid "Common:label:notAvailable"
-msgstr "不可用"
+msgstr "N/A"
 
 msgid "Common:message:avatarRootWarning"
-msgstr "此元件應放置在 Avatar 根 GameObject 上。放在其他位置仍可工作，但建議放置在 Avatar 根物件上。"
+msgstr "此元件應放置在 Avatar 根 GameObject 上。放在其他位置仍可運作，但建議放置在 Avatar 根物件上。"
 
 msgid "Common:label:general"
 msgstr "一般"
@@ -24,7 +24,7 @@ msgid "Common:prop:enableLogging"
 msgstr "啟用日誌"
 
 msgid "Common:prop:enableLogging:tooltip"
-msgstr "在構建和預覽期間輸出除錯日誌"
+msgstr "在建置和預覽期間輸出除錯日誌"
 
 msgid "TextureCompressor:label:preferences"
 msgstr "紋理壓縮器"
@@ -36,10 +36,10 @@ msgid "TextureCompressor:prop:analysisBackend:tooltip"
 msgstr "選擇用於紋理複雜度分析的後端"
 
 msgid "TextureCompressor:message:analysisBackendCpuHelp"
-msgstr "始終使用 CPU 分析紋理。適用於 GPU 結果不穩定或除錯場景。"
+msgstr "一律使用 CPU 分析紋理。適合 GPU 結果不穩定或除錯時使用。"
 
 msgid "TextureCompressor:message:analysisBackendAutoHelp"
-msgstr "當前使用 {0}。可用時透過 GPU 計算著色器分析紋理，否則回退到 CPU。"
+msgstr "目前使用 {0}。若可用，會透過 GPU 計算著色器分析紋理，否則改用 CPU。"
 
 msgid "TextureCompressor:prop:resizeBackend"
 msgstr "縮放後端"
@@ -48,10 +48,10 @@ msgid "TextureCompressor:prop:resizeBackend:tooltip"
 msgstr "選擇用於區域平均紋理縮放的後端"
 
 msgid "TextureCompressor:message:resizeBackendCpuHelp"
-msgstr "始終使用 CPU 進行區域平均縮放。適用於 GPU 結果不穩定或除錯場景。"
+msgstr "一律使用 CPU 進行區域平均縮放。適合 GPU 結果不穩定或除錯時使用。"
 
 msgid "TextureCompressor:message:resizeBackendAutoHelp"
-msgstr "當前使用 {0}。可用時透過 GPU 計算著色器進行區域平均縮放，否則回退到 CPU。"
+msgstr "目前使用 {0}。若可用，會透過 GPU 計算著色器進行區域平均縮放，否則改用 CPU。"
 
 msgid "Common:prop:fuzzySearch"
 msgstr "模糊"
@@ -63,82 +63,82 @@ msgid "Common:message:searchHidden"
 msgstr "已隱藏 {0} 項"
 
 msgid "Common:label:thumbnailHighlight:tooltip"
-msgstr "點選可在 Project 視窗中定位"
+msgstr "點擊可在 Project 視窗中定位"
 
 msgid "Common:message:githubFeedback"
-msgstr "發現問題或有新想法？歡迎反饋，也感謝點 Star。"
+msgstr "發現問題或有新想法？歡迎回饋，也感謝點 Star。"
 
 msgid "Common:button:openGitHub:tooltip"
-msgstr "開啟 GitHub 倉庫"
+msgstr "開啟 GitHub 儲存庫"
 
 msgid "TextureCompressor:label:preset"
 msgstr "壓縮預設"
 
 msgid "TextureCompressor:label:presetHighQuality:tooltip"
-msgstr "最高質量\n最低壓縮"
+msgstr "最高品質\n最低壓縮"
 
 msgid "TextureCompressor:message:presetHighQualityDescription"
-msgstr "高質量模式：以最少壓縮最大限度保留質量。僅會輕微壓縮非常簡單的紋理（如純色）。適合展示用 Avatar，或不必擔心 VRAM 的場景。"
+msgstr "高品質模式：以最少壓縮盡可能保留品質。僅會輕微壓縮非常簡單的紋理（如純色）。適合展示用 Avatar，或不必擔心 VRAM 的情況。"
 
 msgid "TextureCompressor:label:presetQuality:tooltip"
-msgstr "良好質量\n輕度壓縮"
+msgstr "良好品質\n輕度壓縮"
 
 msgid "TextureCompressor:message:presetQualityDescription"
-msgstr "質量優先模式：儘可能保留紋理細節。僅壓縮低複雜度紋理（如純色、簡單漸變）。適合視覺質量優先的 Avatar。"
+msgstr "品質優先模式：盡可能保留紋理細節。僅壓縮低複雜度紋理（如純色、簡單漸層）。適合重視視覺品質的 Avatar。"
 
 msgid "TextureCompressor:label:presetBalanced:tooltip"
-msgstr "兼顧質量\n與檔案大小"
+msgstr "兼顧品質\n與檔案大小"
 
 msgid "TextureCompressor:message:presetBalancedDescription"
-msgstr "均衡模式：兼顧質量和 VRAM 節省。保留細節豐富的紋理，同時壓縮較簡單的紋理。推薦大多數場景使用。"
+msgstr "均衡模式：在品質與節省 VRAM 之間取得良好平衡。保留細節豐富的紋理，同時壓縮較簡單的紋理。建議大多數情況使用。"
 
 msgid "TextureCompressor:label:presetAggressive:tooltip"
-msgstr "更小檔案\n部分質量損失"
+msgstr "更小檔案\n部分品質損失"
 
 msgid "TextureCompressor:message:presetAggressiveDescription"
-msgstr "強力壓縮模式：檔案大小優先於質量。大多數紋理都會受到一定程度的壓縮。適合 Quest Avatar 或 VRAM 有限的場景。"
+msgstr "強力壓縮模式：檔案大小優先於品質。大多數紋理都會受到一定程度的壓縮。適合 Quest Avatar 或 VRAM 有限的情況。"
 
 msgid "TextureCompressor:label:presetMaximum:tooltip"
-msgstr "最小檔案\n明顯質量損失"
+msgstr "最小檔案\n明顯品質損失"
 
 msgid "TextureCompressor:message:presetMaximumDescription"
-msgstr "最大壓縮模式：儘可能壓縮所有紋理，可能造成明顯質量損失。僅在檔案大小至關重要時使用。"
+msgstr "最大壓縮模式：盡可能壓縮所有紋理，可能造成明顯品質損失。僅在檔案大小至關重要時使用。"
 
 msgid "TextureCompressor:label:presetCustom:tooltip"
-msgstr "手動\n配置"
+msgstr "手動\n設定"
 
 msgid "TextureCompressor:message:presetCustomDescription"
-msgstr "自定義模式：完全控制所有壓縮設定，可手動配置各項引數以精細調整結果。"
+msgstr "自訂模式：完整控制所有壓縮設定，可手動設定各項參數以精細調整結果。"
 
 msgid "TextureCompressor:prop:customEditMode"
 msgstr "編輯模式"
 
 msgid "TextureCompressor:prop:customEditMode:tooltip"
-msgstr "手動配置壓縮設定"
+msgstr "手動調整壓縮設定"
 
 msgid "TextureCompressor:prop:customEditModeUnlink:tooltip"
-msgstr "取消關聯預設並手動編輯設定"
+msgstr "解除預設連結並手動編輯設定"
 
 msgid "TextureCompressor:prop:customPreset"
-msgstr "自定義預設 ▼"
+msgstr "自訂預設 ▼"
 
 msgid "TextureCompressor:prop:customPreset:tooltip"
-msgstr "從選單中選擇自定義預設"
+msgstr "從選單中選擇自訂預設"
 
 msgid "TextureCompressor:label:customUseOnly"
-msgstr "自定義預設（僅使用）"
+msgstr "自訂預設（僅使用）"
 
 msgid "TextureCompressor:message:customNameBuiltIn"
 msgstr "{0}（內建）"
 
 msgid "TextureCompressor:message:customNamePackage"
-msgstr "{0}（包）"
+msgstr "{0}（套件）"
 
 msgid "TextureCompressor:message:customLockBuiltIn"
 msgstr "這是內建預設"
 
 msgid "TextureCompressor:message:customLockPackage"
-msgstr "此預設位於包中"
+msgstr "此預設位於套件中"
 
 msgid "TextureCompressor:message:customLockLocked"
 msgstr "此預設已鎖定"
@@ -150,19 +150,19 @@ msgid "TextureCompressor:button:editCustomPreset"
 msgstr "編輯"
 
 msgid "TextureCompressor:label:customPreset"
-msgstr "自定義預設"
+msgstr "自訂預設"
 
 msgid "TextureCompressor:button:saveCustomPreset:tooltip"
-msgstr "將當前設定儲存到預設"
+msgstr "將目前設定儲存至預設"
 
 msgid "TextureCompressor:button:discardCustomPreset:tooltip"
-msgstr "放棄更改並重新載入預設"
+msgstr "捨棄變更並重新載入預設"
 
 msgid "TextureCompressor:button:createCustomPreset:tooltip"
-msgstr "根據當前設定建立新預設"
+msgstr "根據目前設定建立新預設"
 
 msgid "TextureCompressor:button:unlinkCustomPreset:tooltip"
-msgstr "取消關聯預設（保留當前設定）"
+msgstr "解除預設連結（保留目前設定）"
 
 msgid "TextureCompressor:message:customComponentOnly"
 msgstr "設定僅儲存在此元件中。\n建立預設可供多個 Avatar 重複使用。"
@@ -177,28 +177,28 @@ msgid "TextureCompressor:prop:customDescription"
 msgstr "說明"
 
 msgid "TextureCompressor:dialog:createPresetTitle"
-msgstr "新建紋理壓縮預設"
+msgstr "建立新的紋理壓縮預設"
 
 msgid "TextureCompressor:dialog:createPresetMessage"
 msgstr "選擇新預設的儲存位置"
 
 msgid "TextureCompressor:dialog:unlinkPresetTitle"
-msgstr "取消關聯預設"
+msgstr "解除預設連結"
 
 msgid "TextureCompressor:dialog:unlinkPresetReasonBuiltIn"
 msgstr "此預設為內建預設，無法編輯。"
 
 msgid "TextureCompressor:dialog:unlinkPresetReasonPackage"
-msgstr "此預設位於包中，無法編輯。"
+msgstr "此預設位於套件中，無法編輯。"
 
 msgid "TextureCompressor:dialog:unlinkPresetReasonLocked"
 msgstr "此預設已鎖定，無法直接編輯。"
 
 msgid "TextureCompressor:dialog:unlinkPresetMessage"
-msgstr "{0}\n\n是否取消關聯並手動編輯設定？\n（當前設定會被保留）"
+msgstr "{0}\n\n是否解除連結並手動編輯設定？\n（目前設定會保留）"
 
 msgid "TextureCompressor:dialog:unlinkPresetConfirm"
-msgstr "取消關聯並編輯"
+msgstr "解除連結並編輯"
 
 msgid "TextureCompressor:menu:none"
 msgstr "沒有可用預設"
@@ -207,28 +207,28 @@ msgid "TextureCompressor:menu:builtInSuffix"
 msgstr "（內建）"
 
 msgid "TextureCompressor:menu:packageSuffix"
-msgstr "（包）"
+msgstr "（套件）"
 
 msgid "TextureCompressor:menu:builtInPath"
 msgstr "內建/{0}"
 
 msgid "TextureCompressor:message:builtInPresetHighQualityPlusDescription"
-msgstr "優於高質量預設。以最少處理提供最高質量。"
+msgstr "優於高品質預設。以最少處理提供最高品質。"
 
 msgid "TextureCompressor:message:builtInPresetQualityPlusDescription"
-msgstr "優於質量優先預設。以最少壓縮提供高質量。"
+msgstr "優於品質優先預設。以最少壓縮提供高品質。"
 
 msgid "TextureCompressor:message:builtInPresetBalancedPlusDescription"
-msgstr "優於均衡預設。以適度壓縮保持良好質量。"
+msgstr "優於均衡預設。以適度壓縮保持良好品質。"
 
 msgid "TextureCompressor:message:builtInPresetAggressivePlusDescription"
-msgstr "優於強力壓縮預設。在保持高效壓縮的同時改善質量。"
+msgstr "優於強力壓縮預設。在維持高效率壓縮的同時改善品質。"
 
 msgid "TextureCompressor:message:builtInPresetMaximumPlusDescription"
-msgstr "優於最大壓縮預設。保持強力壓縮並略微提高質量。"
+msgstr "優於最大壓縮預設。維持強力壓縮並略微提高品質。"
 
 msgid "TextureCompressor:label:currentSettings"
-msgstr "當前設定摘要"
+msgstr "目前設定摘要"
 
 msgid "TextureCompressor:label:settings"
 msgstr "設定摘要"
@@ -243,10 +243,10 @@ msgid "TextureCompressor:message:summaryResolutionRange"
 msgstr "解析度範圍：{0}px - {1}px"
 
 msgid "TextureCompressor:message:summaryComplexityThresholds"
-msgstr "複雜度閾值：{0:P0} - {1:P0}"
+msgstr "複雜度臨界值：{0:P0} - {1:P0}"
 
 msgid "TextureCompressor:message:advancedReadOnly"
-msgstr "高階設定（只讀）"
+msgstr "高階設定（唯讀）"
 
 msgid "TextureCompressor:label:analysisStrategy"
 msgstr "分析策略"
@@ -255,13 +255,13 @@ msgid "TextureCompressor:label:combinedWeights"
 msgstr "組合策略權重"
 
 msgid "TextureCompressor:label:complexityThresholds"
-msgstr "複雜度閾值"
+msgstr "複雜度臨界值"
 
 msgid "TextureCompressor:label:resolution"
 msgstr "解析度設定"
 
 msgid "TextureCompressor:label:sizeFilters"
-msgstr "尺寸過濾器"
+msgstr "尺寸篩選器"
 
 msgid "TextureCompressor:label:compressionFormat"
 msgstr "壓縮格式"
@@ -318,37 +318,37 @@ msgid "TextureCompressor:prop:minResolution:tooltip"
 msgstr "最小輸出解析度"
 
 msgid "TextureCompressor:prop:forcePowerOfTwo"
-msgstr "強制為 2 的冪"
+msgstr "強制使用 2 的冪次"
 
 msgid "TextureCompressor:prop:forcePowerOfTwo:tooltip"
-msgstr "啟用時，尺寸會舍入到最接近的 2 的冪。\n禁用時，尺寸會舍入到最接近的 4 的倍數。\n為相容 DXT/BC，所有輸出尺寸始終是 4 的倍數。"
+msgstr "啟用時，尺寸會四捨五入至最接近的 2 的冪次。\n停用時，尺寸會四捨五入至最接近的 4 的倍數。\n為了與 DXT/BC 相容，所有輸出尺寸一律為 4 的倍數。"
 
 msgid "TextureCompressor:message:multipleOfFourHelp"
-msgstr "為相容 DXT/BC 壓縮，輸出尺寸始終是 4 的倍數。例如：150x150 會變為 152x152。"
+msgstr "為了與 DXT/BC 壓縮相容，輸出尺寸一律為 4 的倍數。例如：150x150 會變成 152x152。"
 
 msgid "TextureCompressor:prop:minSourceSize"
-msgstr "最小源尺寸"
+msgstr "最小來源尺寸"
 
 msgid "TextureCompressor:prop:minSourceSize:tooltip"
 msgstr "僅處理大於此尺寸的紋理"
 
 msgid "TextureCompressor:prop:skipIfSmaller"
-msgstr "小於此值時跳過"
+msgstr "小於此值時略過"
 
 msgid "TextureCompressor:prop:skipIfSmaller:tooltip"
-msgstr "跳過小於或等於此尺寸的紋理"
+msgstr "略過小於或等於此尺寸的紋理"
 
 msgid "TextureCompressor:prop:targetPlatform"
-msgstr "目標平臺"
+msgstr "目標平台"
 
 msgid "TextureCompressor:prop:targetPlatform:tooltip"
-msgstr "選擇壓縮格式的目標平臺（自動模式會從構建目標檢測）"
+msgstr "選擇壓縮格式的目標平台（自動模式會從建置目標偵測）"
 
 msgid "TextureCompressor:prop:highQualityComplex"
-msgstr "複雜紋理使用高質量"
+msgstr "複雜紋理使用高品質"
 
 msgid "TextureCompressor:prop:highQualityComplex:tooltip"
-msgstr "複雜度高的紋理使用 BC7/ASTC_4x4（依據複雜度閾值）"
+msgstr "複雜度高的紋理使用 BC7/ASTC_4x4（依據複雜度臨界值）"
 
 msgid "TextureCompressor:label:exclusions"
 msgstr "排除項"
@@ -357,19 +357,19 @@ msgid "TextureCompressor:label:liltoonOptimizations"
 msgstr "lilToon 最佳化"
 
 msgid "TextureCompressor:prop:bakeLiltoon"
-msgstr "將顏色調整烘焙進紋理"
+msgstr "將色彩調整烘焙至紋理"
 
 msgid "TextureCompressor:prop:bakeLiltoon:tooltip"
-msgstr "構建時將色相、飽和度、漸變、啟用的第 2/3 層和 Alpha Mask 烘焙進主紋理，並將色調校正烘焙進描邊紋理。動畫驅動的輸入、凍結或被動畫引用的紋理不會被烘焙或消耗；排除紋理不會被烘焙；顏色仍作為執行時色調。需要 lilToon。"
+msgstr "建置時將色相、飽和度、漸層、啟用的第 2/3 層和 Alpha Mask 烘焙至主紋理，並將色調校正烘焙至描邊紋理。動畫驅動的輸入、凍結或被動畫引用的紋理不會被烘焙或消耗；排除的紋理不會被烘焙；色彩仍作為執行階段色調。需要 lilToon。"
 
 msgid "TextureCompressor:prop:removeUnused"
 msgstr "移除未使用的紋理槽"
 
 msgid "TextureCompressor:prop:removeUnused:tooltip"
-msgstr "清除功能開關關閉且未被動畫驅動的 lilToon 紋理槽，使不再被引用的紋理不參與上傳。凍結或被動畫引用的紋理不會移除。此處不應用排除過濾器。"
+msgstr "清除功能已關閉且未受動畫驅動的 lilToon 紋理槽，避免上傳不再被引用的紋理。凍結或被動畫引用的紋理不會移除。排除篩選器不適用於此處。"
 
 msgid "TextureCompressor:label:textureFilters"
-msgstr "紋理過濾器"
+msgstr "紋理篩選器"
 
 msgid "TextureCompressor:prop:mainTextures"
 msgstr "主紋理"
@@ -396,7 +396,7 @@ msgid "TextureCompressor:prop:otherTextures:tooltip"
 msgstr "處理其他紋理（金屬度、粗糙度等）"
 
 msgid "TextureCompressor:prop:skipUnknownUncompressed"
-msgstr "跳過未知屬性上的未壓縮紋理"
+msgstr "略過未知屬性中的未壓縮紋理"
 
 msgid "TextureCompressor:prop:skipUnknownUncompressed:tooltip"
 msgstr "未知著色器屬性可能包含 Mask 或 LUT 等非視覺資料，壓縮可能會損壞這些資料。"
@@ -408,7 +408,7 @@ msgid "TextureCompressor:message:texturesCount"
 msgstr "紋理（{0}）"
 
 msgid "TextureCompressor:message:excludedTexturesEmpty"
-msgstr "新增到這裡的紋理將被排除在壓縮之外。"
+msgstr "新增至此處的紋理將不會進行壓縮。"
 
 msgid "TextureCompressor:button:addTexture"
 msgstr "+ 新增紋理"
@@ -420,13 +420,13 @@ msgid "TextureCompressor:message:pathsCount"
 msgstr "路徑（{0}）"
 
 msgid "TextureCompressor:message:excludedPathsEmpty"
-msgstr "以所列字首開頭的紋理路徑將被跳過。"
+msgstr "以所列前綴開頭的紋理路徑將被略過。"
 
 msgid "TextureCompressor:button:addPath"
 msgstr "+ 新增路徑..."
 
 msgid "TextureCompressor:message:pathNotFound"
-msgstr "  ⚠ 未找到路徑"
+msgstr "  ⚠ 找不到路徑"
 
 msgid "TextureCompressor:menu:emptyPath"
 msgstr "空路徑"
@@ -441,19 +441,19 @@ msgid "TextureCompressor:label:frozenTexturesFiltered"
 msgstr "凍結紋理（{0}/{1}）"
 
 msgid "TextureCompressor:message:frozenEmpty"
-msgstr "沒有凍結紋理。可在預覽中點選“凍結”以新增手動覆蓋。"
+msgstr "沒有凍結紋理。可在預覽中點擊「凍結」以新增手動覆寫。"
 
 msgid "TextureCompressor:message:frozenNoSearchResults"
-msgstr "沒有與搜尋匹配的凍結紋理。"
+msgstr "沒有符合搜尋條件的凍結紋理。"
 
 msgid "TextureCompressor:button:unfreeze"
 msgstr "取消凍結"
 
 msgid "TextureCompressor:message:frozenTextureNotFound"
-msgstr "未找到紋理"
+msgstr "找不到紋理"
 
 msgid "TextureCompressor:prop:frozenSkipCompression"
-msgstr "跳過壓縮"
+msgstr "略過壓縮"
 
 msgid "TextureCompressor:prop:frozenDivisor"
 msgstr "縮小倍數："
@@ -462,7 +462,7 @@ msgid "TextureCompressor:prop:frozenFormat"
 msgstr "格式："
 
 msgid "TextureCompressor:message:frozenLegacyPaths"
-msgstr "檢測到舊版路徑條目。轉換為 GUID 可提高穩定性。"
+msgstr "偵測到舊版路徑項目。轉換為 GUID 可提升穩定性。"
 
 msgid "TextureCompressor:button:convertToGuid"
 msgstr "轉換為 GUID"
@@ -471,10 +471,10 @@ msgid "TextureCompressor:button:previewGenerate"
 msgstr "預覽壓縮結果"
 
 msgid "TextureCompressor:message:previewOutdated"
-msgstr "預覽已過期。生成預覽後設定或目標物件發生了變化。點選“預覽壓縮結果”重新整理。"
+msgstr "預覽已過期。產生預覽後，設定或目標物件已變更。點擊「預覽壓縮結果」以更新。"
 
 msgid "TextureCompressor:message:previewNoTextures"
-msgstr "沒有找到符合當前過濾設定的紋理。"
+msgstr "找不到符合目前篩選設定的紋理。"
 
 msgid "TextureCompressor:message:previewHeaderFiltered"
 msgstr "預覽（顯示 {0}/{1}）"
@@ -483,10 +483,10 @@ msgid "TextureCompressor:message:previewHeaderFilteredFrozen"
 msgstr "預覽（顯示 {0}/{1}，凍結 {2}）"
 
 msgid "TextureCompressor:message:previewHeaderSummary"
-msgstr "預覽（壓縮 {0}，跳過 {1}）"
+msgstr "預覽（壓縮 {0}，略過 {1}）"
 
 msgid "TextureCompressor:message:previewHeaderSummaryFrozen"
-msgstr "預覽（壓縮 {0}，凍結 {1}，跳過 {2}）"
+msgstr "預覽（壓縮 {0}，凍結 {1}，略過 {2}）"
 
 msgid "TextureCompressor:label:previewOriginal"
 msgstr "原始："
@@ -498,25 +498,25 @@ msgid "TextureCompressor:label:previewSavings"
 msgstr "節省："
 
 msgid "TextureCompressor:message:previewBuildOnlyBoth"
-msgstr "移除未使用紋理槽和 lilToon 紋理烘焙僅在 NDMF 構建期間執行，不會體現在此預覽中，因此實際構建大小可能與估算不同。"
+msgstr "移除未使用的紋理槽和 lilToon 紋理烘焙僅在 NDMF 建置期間執行，不會反映在此預覽中，因此實際建置大小可能與顯示的估算值不同。"
 
 msgid "TextureCompressor:message:previewBuildOnlyUnused"
-msgstr "移除未使用紋理槽僅在 NDMF 構建期間執行，不會體現在此預覽中，因此實際構建大小可能與估算不同。"
+msgstr "移除未使用的紋理槽僅在 NDMF 建置期間執行，不會反映在此預覽中，因此實際建置大小可能與顯示的估算值不同。"
 
 msgid "TextureCompressor:message:previewBuildOnlyBake"
-msgstr "lilToon 紋理烘焙僅在 NDMF 構建期間執行，不會體現在此預覽中，因此實際構建大小可能與估算不同。"
+msgstr "lilToon 紋理烘焙僅在 NDMF 建置期間執行，不會反映在此預覽中，因此實際建置大小可能與顯示的估算值不同。"
 
 msgid "TextureCompressor:message:previewNoSearchResults"
-msgstr "沒有紋理與搜尋匹配。"
+msgstr "沒有符合搜尋條件的紋理。"
 
 msgid "TextureCompressor:label:previewToCompress"
 msgstr "待壓縮紋理"
 
 msgid "TextureCompressor:label:previewFrozenManual"
-msgstr "凍結紋理（手動覆蓋）"
+msgstr "凍結紋理（手動覆寫）"
 
 msgid "TextureCompressor:label:previewSkippedTextures"
-msgstr "已跳過紋理"
+msgstr "已略過紋理"
 
 msgid "TextureCompressor:button:previewClose"
 msgstr "關閉預覽"
@@ -549,16 +549,16 @@ msgid "TextureCompressor:format:dxt1"
 msgstr "4 bpp，僅 RGB，最快"
 
 msgid "TextureCompressor:format:dxt5"
-msgstr "8 bpp，RGBA，質量良好"
+msgstr "8 bpp，RGBA，品質良好"
 
 msgid "TextureCompressor:format:bc5"
 msgstr "8 bpp，法線貼圖"
 
 msgid "TextureCompressor:format:bc7"
-msgstr "8 bpp，最高質量"
+msgstr "8 bpp，最高品質"
 
 msgid "TextureCompressor:format:astc4x4"
-msgstr "8 bpp，最高質量"
+msgstr "8 bpp，最高品質"
 
 msgid "TextureCompressor:format:astc6x6"
 msgstr "3.56 bpp，均衡"
@@ -582,13 +582,13 @@ msgid "TextureCompressor:prop:presetMenuPath"
 msgstr "選單路徑"
 
 msgid "TextureCompressor:prop:presetMenuPath:tooltip"
-msgstr "自定義預設選單中的路徑。留空則不在選單中顯示。"
+msgstr "自訂預設選單中的路徑。留空則不會顯示在選單中。"
 
 msgid "TextureCompressor:prop:presetMenuOrder"
 msgstr "選單順序"
 
 msgid "TextureCompressor:prop:presetMenuOrder:tooltip"
-msgstr "選單中的顯示順序。數值越小越靠前。"
+msgstr "選單中的顯示順序。數值越小，顯示位置越前面。"
 
 msgid "TextureCompressor:enum:analysisStrategyTypeFast"
 msgstr "快速"
@@ -606,10 +606,10 @@ msgid "TextureCompressor:enum:compressionPlatformAuto"
 msgstr "自動"
 
 msgid "TextureCompressor:enum:compressionPlatformDesktop"
-msgstr "桌面端"
+msgstr "桌面平台"
 
 msgid "TextureCompressor:enum:compressionPlatformMobile"
-msgstr "移動端"
+msgstr "行動平台"
 
 msgid "TextureCompressor:enum:frozenTextureFormatAuto"
 msgstr "自動"
@@ -660,19 +660,19 @@ msgid "TextureCompressor:enum:texturePropertyCategoryOther"
 msgstr "其他"
 
 msgid "TextureCompressor:enum:skipReasonNone"
-msgstr "已跳過"
+msgstr "已略過"
 
 msgid "TextureCompressor:enum:skipReasonTooSmall"
 msgstr "尺寸過小"
 
 msgid "TextureCompressor:enum:skipReasonFilteredByType"
-msgstr "按型別過濾"
+msgstr "依類型篩選"
 
 msgid "TextureCompressor:enum:skipReasonFrozenSkip"
-msgstr "使用者凍結並跳過"
+msgstr "使用者凍結（已略過）"
 
 msgid "TextureCompressor:enum:skipReasonRuntimeGenerated"
-msgstr "執行時生成"
+msgstr "執行階段產生"
 
 msgid "TextureCompressor:enum:skipReasonExcludedPath"
 msgstr "路徑已排除"

@@ -9,7 +9,7 @@ msgid "Common:label:close"
 msgstr "关闭"
 
 msgid "Common:label:notAvailable"
-msgstr "不可用"
+msgstr "N/A"
 
 msgid "Common:message:avatarRootWarning"
 msgstr "此组件应放置在 Avatar 根 GameObject 上。放在其他位置仍可工作，但建议放置在 Avatar 根对象上。"

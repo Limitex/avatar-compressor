@@ -9,7 +9,7 @@ msgid "Common:label:close"
 msgstr "닫기"
 
 msgid "Common:label:notAvailable"
-msgstr "해당 없음"
+msgstr "N/A"
 
 msgid "Common:message:avatarRootWarning"
 msgstr "이 컴포넌트는 Avatar 루트 GameObject에 배치해야 합니다. 다른 위치에서도 작동하지만 Avatar 루트에 배치하는 것을 권장합니다."

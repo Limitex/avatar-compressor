@@ -9,7 +9,7 @@ msgid "Common:label:close"
 msgstr "閉じる"
 
 msgid "Common:label:notAvailable"
-msgstr "該当なし"
+msgstr "N/A"
 
 msgid "Common:message:avatarRootWarning"
 msgstr "このコンポーネントは Avatar ルートの GameObject に配置してください。他の場所でも動作しますが、Avatar ルートへの配置を推奨します。"

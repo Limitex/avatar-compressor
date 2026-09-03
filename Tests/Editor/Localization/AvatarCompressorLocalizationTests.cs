@@ -123,6 +123,14 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(expected, AvatarCompressorLocalization.Tr("Common:label:general"));
         }
 
+        [TestCaseSource(nameof(BundledLocales))]
+        public void NotAvailableMarker_RemainsLanguageIndependent(string language)
+        {
+            LanguagePrefs.Language = language;
+
+            Assert.AreEqual("N/A", AvatarCompressorLocalization.Tr("Common:label:notAvailable"));
+        }
+
         [Test]
         public void EnumMappings_CoverEveryDisplayedValue()
         {
