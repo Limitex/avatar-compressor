@@ -28,9 +28,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         internal static string GetDisplayName(CustomTextureCompressorPreset preset)
         {
-            return TryGetPresetKey(preset, out var key)
-                ? AvatarCompressorLocalization.Tr($"TextureCompressor:label:builtInPreset{key}")
-                : preset.name;
+            return TryGetPresetKey(preset, out var key) ? GetEnglishDisplayName(key) : preset.name;
         }
 
         internal static string GetDescription(CustomTextureCompressorPreset preset)
@@ -49,8 +47,21 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             return AvatarCompressorLocalization.Tr(
                 "TextureCompressor:menu:builtInPath",
-                AvatarCompressorLocalization.Tr($"TextureCompressor:label:builtInPreset{key}")
+                GetEnglishDisplayName(key)
             );
+        }
+
+        private static string GetEnglishDisplayName(string key)
+        {
+            return key switch
+            {
+                "HighQualityPlus" => "High Quality+",
+                "QualityPlus" => "Quality+",
+                "BalancedPlus" => "Balanced+",
+                "AggressivePlus" => "Aggressive+",
+                "MaximumPlus" => "Maximum+",
+                _ => key,
+            };
         }
 
         private static bool TryGetPresetKey(

@@ -187,12 +187,10 @@ namespace dev.limitex.avatar.compressor.editor.texture
             where T : struct, System.Enum
         {
             var property = serializedObject.FindProperty(propertyName);
-            var currentValue = (T)System.Enum.ToObject(typeof(T), property.intValue);
-            var newValue = AvatarCompressorLocalization.EnumPopup(
-                AvatarCompressorLocalization.Content(labelKey, tooltipKey),
-                currentValue
+            AvatarCompressorLocalization.DrawEnumProperty<T>(
+                property,
+                AvatarCompressorLocalization.Content(labelKey, tooltipKey)
             );
-            property.intValue = System.Convert.ToInt32(newValue);
         }
     }
 }

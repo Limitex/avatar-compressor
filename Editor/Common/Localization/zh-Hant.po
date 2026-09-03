@@ -74,17 +74,11 @@ msgstr "開啟 GitHub 倉庫"
 msgid "TextureCompressor:label:preset"
 msgstr "壓縮預設"
 
-msgid "TextureCompressor:label:presetHighQuality"
-msgstr "高質量"
-
 msgid "TextureCompressor:label:presetHighQuality:tooltip"
 msgstr "最高質量\n最低壓縮"
 
 msgid "TextureCompressor:message:presetHighQualityDescription"
 msgstr "高質量模式：以最少壓縮最大限度保留質量。僅會輕微壓縮非常簡單的紋理（如純色）。適合展示用 Avatar，或不必擔心 VRAM 的場景。"
-
-msgid "TextureCompressor:label:presetQuality"
-msgstr "質量優先"
 
 msgid "TextureCompressor:label:presetQuality:tooltip"
 msgstr "良好質量\n輕度壓縮"
@@ -92,17 +86,11 @@ msgstr "良好質量\n輕度壓縮"
 msgid "TextureCompressor:message:presetQualityDescription"
 msgstr "質量優先模式：儘可能保留紋理細節。僅壓縮低複雜度紋理（如純色、簡單漸變）。適合視覺質量優先的 Avatar。"
 
-msgid "TextureCompressor:label:presetBalanced"
-msgstr "均衡"
-
 msgid "TextureCompressor:label:presetBalanced:tooltip"
 msgstr "兼顧質量\n與檔案大小"
 
 msgid "TextureCompressor:message:presetBalancedDescription"
 msgstr "均衡模式：兼顧質量和 VRAM 節省。保留細節豐富的紋理，同時壓縮較簡單的紋理。推薦大多數場景使用。"
-
-msgid "TextureCompressor:label:presetAggressive"
-msgstr "強力壓縮"
 
 msgid "TextureCompressor:label:presetAggressive:tooltip"
 msgstr "更小檔案\n部分質量損失"
@@ -110,17 +98,11 @@ msgstr "更小檔案\n部分質量損失"
 msgid "TextureCompressor:message:presetAggressiveDescription"
 msgstr "強力壓縮模式：檔案大小優先於質量。大多數紋理都會受到一定程度的壓縮。適合 Quest Avatar 或 VRAM 有限的場景。"
 
-msgid "TextureCompressor:label:presetMaximum"
-msgstr "最大壓縮"
-
 msgid "TextureCompressor:label:presetMaximum:tooltip"
 msgstr "最小檔案\n明顯質量損失"
 
 msgid "TextureCompressor:message:presetMaximumDescription"
 msgstr "最大壓縮模式：儘可能壓縮所有紋理，可能造成明顯質量損失。僅在檔案大小至關重要時使用。"
-
-msgid "TextureCompressor:label:presetCustom"
-msgstr "自定義"
 
 msgid "TextureCompressor:label:presetCustom:tooltip"
 msgstr "手動\n配置"
@@ -230,32 +212,17 @@ msgstr "（包）"
 msgid "TextureCompressor:menu:builtInPath"
 msgstr "內建/{0}"
 
-msgid "TextureCompressor:label:builtInPresetHighQualityPlus"
-msgstr "高質量+"
-
 msgid "TextureCompressor:message:builtInPresetHighQualityPlusDescription"
 msgstr "優於高質量預設。以最少處理提供最高質量。"
-
-msgid "TextureCompressor:label:builtInPresetQualityPlus"
-msgstr "質量優先+"
 
 msgid "TextureCompressor:message:builtInPresetQualityPlusDescription"
 msgstr "優於質量優先預設。以最少壓縮提供高質量。"
 
-msgid "TextureCompressor:label:builtInPresetBalancedPlus"
-msgstr "均衡+"
-
 msgid "TextureCompressor:message:builtInPresetBalancedPlusDescription"
 msgstr "優於均衡預設。以適度壓縮保持良好質量。"
 
-msgid "TextureCompressor:label:builtInPresetAggressivePlus"
-msgstr "強力壓縮+"
-
 msgid "TextureCompressor:message:builtInPresetAggressivePlusDescription"
 msgstr "優於強力壓縮預設。在保持高效壓縮的同時改善質量。"
-
-msgid "TextureCompressor:label:builtInPresetMaximumPlus"
-msgstr "最大壓縮+"
 
 msgid "TextureCompressor:message:builtInPresetMaximumPlusDescription"
 msgstr "優於最大壓縮預設。保持強力壓縮並略微提高質量。"
@@ -622,24 +589,6 @@ msgstr "選單順序"
 
 msgid "TextureCompressor:prop:presetMenuOrder:tooltip"
 msgstr "選單中的顯示順序。數值越小越靠前。"
-
-msgid "TextureCompressor:enum:compressorPresetHighQuality"
-msgstr "高質量"
-
-msgid "TextureCompressor:enum:compressorPresetQuality"
-msgstr "質量優先"
-
-msgid "TextureCompressor:enum:compressorPresetBalanced"
-msgstr "均衡"
-
-msgid "TextureCompressor:enum:compressorPresetAggressive"
-msgstr "強力壓縮"
-
-msgid "TextureCompressor:enum:compressorPresetMaximum"
-msgstr "最大壓縮"
-
-msgid "TextureCompressor:enum:compressorPresetCustom"
-msgstr "自定義"
 
 msgid "TextureCompressor:enum:analysisStrategyTypeFast"
 msgstr "快速"

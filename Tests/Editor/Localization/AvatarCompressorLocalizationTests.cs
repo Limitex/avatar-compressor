@@ -128,7 +128,6 @@ namespace dev.limitex.avatar.compressor.tests
         {
             LanguagePrefs.Language = "en-US";
 
-            AssertEnumLocalized<CompressorPreset>();
             AssertEnumLocalized<AnalysisStrategyType>();
             AssertEnumLocalized<CompressionPlatform>();
             AssertEnumLocalized<FrozenTextureFormat>();
@@ -138,8 +137,25 @@ namespace dev.limitex.avatar.compressor.tests
             AssertEnumLocalized<SkipReason>();
         }
 
+        [TestCase("5239a248c3cecc8438149fd847e07082", "High Quality+")]
+        [TestCase("1de212fc9c0e5db45889f9b52723b1d9", "Quality+")]
+        [TestCase("dc3ad49e6d7ef4f429bb5967cf64b644", "Balanced+")]
+        [TestCase("738122bf69ebfef46a329e3c46e09e60", "Aggressive+")]
+        [TestCase("7881623902e2305439c564a23f41f40c", "Maximum+")]
+        public void BuiltInPreset_KeepsDisplayNameEnglish(string presetGuid, string expectedName)
+        {
+            string presetPath = AssetDatabase.GUIDToAssetPath(presetGuid);
+            var preset = AssetDatabase.LoadAssetAtPath<CustomTextureCompressorPreset>(presetPath);
+            Assert.IsNotNull(preset);
+
+            LanguagePrefs.Language = "zh-Hans";
+
+            Assert.AreEqual(expectedName, BuiltInPresetLocalization.GetDisplayName(preset));
+            Assert.AreEqual("内置/" + expectedName, BuiltInPresetLocalization.GetMenuPath(preset));
+        }
+
         [Test]
-        public void BuiltInPreset_LocalizesDisplayWithoutChangingSerializedText()
+        public void BuiltInPreset_LocalizesDescriptionWithoutChangingSerializedText()
         {
             const string presetGuid = "5239a248c3cecc8438149fd847e07082";
             string presetPath = AssetDatabase.GUIDToAssetPath(presetGuid);
@@ -149,8 +165,27 @@ namespace dev.limitex.avatar.compressor.tests
             string serializedDescription = preset.Description;
             LanguagePrefs.Language = "zh-Hans";
 
-            Assert.AreEqual("高质量+", BuiltInPresetLocalization.GetDisplayName(preset));
+            Assert.AreNotEqual(
+                serializedDescription,
+                BuiltInPresetLocalization.GetDescription(preset)
+            );
             Assert.AreEqual(serializedDescription, preset.Description);
+        }
+
+        [TestCase(CompressorPreset.HighQuality, "High Quality")]
+        [TestCase(CompressorPreset.Quality, "Quality")]
+        [TestCase(CompressorPreset.Balanced, "Balanced")]
+        [TestCase(CompressorPreset.Aggressive, "Aggressive")]
+        [TestCase(CompressorPreset.Maximum, "Maximum")]
+        [TestCase(CompressorPreset.Custom, "Custom")]
+        public void StandardPreset_KeepsDisplayNameEnglish(
+            CompressorPreset preset,
+            string expectedName
+        )
+        {
+            LanguagePrefs.Language = "zh-Hans";
+
+            Assert.AreEqual(expectedName, PresetSection.GetPresetDisplayName(preset));
         }
 
         private static void AssertEnumLocalized<T>()

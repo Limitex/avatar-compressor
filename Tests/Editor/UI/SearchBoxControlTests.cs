@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor.ui;
+using nadena.dev.ndmf.localization;
 using NUnit.Framework;
 
 namespace dev.limitex.avatar.compressor.tests
@@ -8,11 +9,20 @@ namespace dev.limitex.avatar.compressor.tests
     internal class SearchBoxControlTests
     {
         private SearchBoxControl _searchBox;
+        private string _originalLanguage;
 
         [SetUp]
         public void SetUp()
         {
+            _originalLanguage = LanguagePrefs.Language;
+            LanguagePrefs.Language = "en-US";
             _searchBox = new SearchBoxControl();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            LanguagePrefs.Language = _originalLanguage;
         }
 
         #region Constructor Tests
@@ -299,6 +309,29 @@ namespace dev.limitex.avatar.compressor.tests
             items.Add("test2");
             search.CountMatches(items, predicate);
 
+            Assert.That(callCount, Is.GreaterThan(firstCallCount));
+        }
+
+        [Test]
+        public void CountMatches_CacheInvalidatedByLanguageChange()
+        {
+            var search = new SearchBoxControl("test");
+            var items = new List<string> { "first", "second" };
+            int callCount = 0;
+            System.Func<string, bool> predicate = _ =>
+            {
+                callCount++;
+                return true;
+            };
+
+            int englishCount = search.CountMatches(items, predicate);
+            int firstCallCount = callCount;
+
+            LanguagePrefs.Language = "ja-JP";
+            int japaneseCount = search.CountMatches(items, predicate);
+
+            Assert.That(englishCount, Is.EqualTo(2));
+            Assert.That(japaneseCount, Is.EqualTo(2));
             Assert.That(callCount, Is.GreaterThan(firstCallCount));
         }
 

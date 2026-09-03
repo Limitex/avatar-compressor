@@ -50,7 +50,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.HighQuality,
-                "TextureCompressor:label:presetHighQuality",
                 "TextureCompressor:label:presetHighQuality:tooltip",
                 PresetColors.HighQuality,
                 buttonWidth
@@ -59,7 +58,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Quality,
-                "TextureCompressor:label:presetQuality",
                 "TextureCompressor:label:presetQuality:tooltip",
                 PresetColors.Quality,
                 buttonWidth
@@ -68,7 +66,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Balanced,
-                "TextureCompressor:label:presetBalanced",
                 "TextureCompressor:label:presetBalanced:tooltip",
                 PresetColors.Balanced,
                 buttonWidth
@@ -81,7 +78,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Aggressive,
-                "TextureCompressor:label:presetAggressive",
                 "TextureCompressor:label:presetAggressive:tooltip",
                 PresetColors.Aggressive,
                 buttonWidth
@@ -90,7 +86,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Maximum,
-                "TextureCompressor:label:presetMaximum",
                 "TextureCompressor:label:presetMaximum:tooltip",
                 PresetColors.Maximum,
                 buttonWidth
@@ -99,7 +94,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             DrawPresetButton(
                 config,
                 CompressorPreset.Custom,
-                "TextureCompressor:label:presetCustom",
                 "TextureCompressor:label:presetCustom:tooltip",
                 PresetColors.Custom,
                 buttonWidth
@@ -110,7 +104,6 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         private static void DrawPresetButton(
             TextureCompressor config,
             CompressorPreset preset,
-            string labelKey,
             string tooltipKey,
             Color color,
             float width
@@ -120,7 +113,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             if (
                 EditorDrawUtils.DrawColoredButton(
-                    AvatarCompressorLocalization.Tr(labelKey),
+                    GetPresetDisplayName(preset),
                     AvatarCompressorLocalization.Tr(tooltipKey),
                     color,
                     isSelected,
@@ -132,6 +125,20 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.ApplyPreset(preset);
                 EditorUtility.SetDirty(config);
             }
+        }
+
+        internal static string GetPresetDisplayName(CompressorPreset preset)
+        {
+            return preset switch
+            {
+                CompressorPreset.HighQuality => "High Quality",
+                CompressorPreset.Quality => "Quality",
+                CompressorPreset.Balanced => "Balanced",
+                CompressorPreset.Aggressive => "Aggressive",
+                CompressorPreset.Maximum => "Maximum",
+                CompressorPreset.Custom => "Custom",
+                _ => preset.ToString(),
+            };
         }
 
         private static void DrawPresetDescription(CompressorPreset preset)

@@ -74,17 +74,11 @@ msgstr "GitHub 저장소 열기"
 msgid "TextureCompressor:label:preset"
 msgstr "압축 프리셋"
 
-msgid "TextureCompressor:label:presetHighQuality"
-msgstr "고품질"
-
 msgid "TextureCompressor:label:presetHighQuality:tooltip"
 msgstr "최고 품질\n최소 압축"
 
 msgid "TextureCompressor:message:presetHighQualityDescription"
 msgstr "고품질 모드: 압축을 최소화하여 품질을 최대한 보존합니다. 단색처럼 매우 단순한 텍스처만 약간 압축합니다. 전시용 Avatar 또는 VRAM이 중요하지 않은 경우에 적합합니다."
-
-msgid "TextureCompressor:label:presetQuality"
-msgstr "품질 우선"
 
 msgid "TextureCompressor:label:presetQuality:tooltip"
 msgstr "좋은 품질\n가벼운 압축"
@@ -92,17 +86,11 @@ msgstr "좋은 품질\n가벼운 압축"
 msgid "TextureCompressor:message:presetQualityDescription"
 msgstr "품질 우선 모드: 텍스처 디테일을 최대한 보존합니다. 단색이나 단순한 그라데이션처럼 복잡도가 낮은 텍스처만 압축합니다. 시각적 품질이 우선인 Avatar에 적합합니다."
 
-msgid "TextureCompressor:label:presetBalanced"
-msgstr "균형"
-
 msgid "TextureCompressor:label:presetBalanced:tooltip"
 msgstr "품질과 크기의\n균형"
 
 msgid "TextureCompressor:message:presetBalancedDescription"
 msgstr "균형 모드: 품질과 VRAM 절약 사이의 균형을 제공합니다. 디테일이 많은 텍스처는 유지하고 단순한 텍스처는 압축합니다. 대부분의 용도에 권장합니다."
-
-msgid "TextureCompressor:label:presetAggressive"
-msgstr "강한 압축"
 
 msgid "TextureCompressor:label:presetAggressive:tooltip"
 msgstr "더 작은 파일\n일부 품질 저하"
@@ -110,17 +98,11 @@ msgstr "더 작은 파일\n일부 품질 저하"
 msgid "TextureCompressor:message:presetAggressiveDescription"
 msgstr "강한 압축 모드: 품질보다 작은 파일 크기를 우선합니다. 대부분의 텍스처가 어느 정도 압축됩니다. Quest Avatar 또는 VRAM이 제한된 경우에 적합합니다."
 
-msgid "TextureCompressor:label:presetMaximum"
-msgstr "최대 압축"
-
 msgid "TextureCompressor:label:presetMaximum:tooltip"
 msgstr "가장 작은 크기\n뚜렷한 품질 저하"
 
 msgid "TextureCompressor:message:presetMaximumDescription"
 msgstr "최대 압축 모드: 모든 텍스처를 가능한 한 많이 압축합니다. 품질이 크게 저하될 수 있으므로 파일 크기가 매우 중요할 때만 사용하세요."
-
-msgid "TextureCompressor:label:presetCustom"
-msgstr "사용자 지정"
 
 msgid "TextureCompressor:label:presetCustom:tooltip"
 msgstr "수동\n설정"
@@ -230,32 +212,17 @@ msgstr "(패키지)"
 msgid "TextureCompressor:menu:builtInPath"
 msgstr "내장/{0}"
 
-msgid "TextureCompressor:label:builtInPresetHighQualityPlus"
-msgstr "고품질+"
-
 msgid "TextureCompressor:message:builtInPresetHighQualityPlusDescription"
 msgstr "고품질보다 개선된 프리셋입니다. 최소한의 처리로 최고 품질을 유지합니다."
-
-msgid "TextureCompressor:label:builtInPresetQualityPlus"
-msgstr "품질 우선+"
 
 msgid "TextureCompressor:message:builtInPresetQualityPlusDescription"
 msgstr "품질 우선보다 개선된 프리셋입니다. 최소한의 압축으로 높은 품질을 유지합니다."
 
-msgid "TextureCompressor:label:builtInPresetBalancedPlus"
-msgstr "균형+"
-
 msgid "TextureCompressor:message:builtInPresetBalancedPlusDescription"
 msgstr "균형보다 개선된 프리셋입니다. 적당한 압축으로 좋은 품질을 유지합니다."
 
-msgid "TextureCompressor:label:builtInPresetAggressivePlus"
-msgstr "강한 압축+"
-
 msgid "TextureCompressor:message:builtInPresetAggressivePlusDescription"
 msgstr "강한 압축보다 개선된 프리셋입니다. 효율적인 압축을 유지하면서 품질을 높입니다."
-
-msgid "TextureCompressor:label:builtInPresetMaximumPlus"
-msgstr "최대 압축+"
 
 msgid "TextureCompressor:message:builtInPresetMaximumPlusDescription"
 msgstr "최대 압축보다 개선된 프리셋입니다. 강한 압축을 유지하면서 품질을 조금 높입니다."
@@ -622,24 +589,6 @@ msgstr "메뉴 순서"
 
 msgid "TextureCompressor:prop:presetMenuOrder:tooltip"
 msgstr "메뉴의 표시 순서입니다. 값이 낮을수록 먼저 표시됩니다."
-
-msgid "TextureCompressor:enum:compressorPresetHighQuality"
-msgstr "고품질"
-
-msgid "TextureCompressor:enum:compressorPresetQuality"
-msgstr "품질 우선"
-
-msgid "TextureCompressor:enum:compressorPresetBalanced"
-msgstr "균형"
-
-msgid "TextureCompressor:enum:compressorPresetAggressive"
-msgstr "강한 압축"
-
-msgid "TextureCompressor:enum:compressorPresetMaximum"
-msgstr "최대 압축"
-
-msgid "TextureCompressor:enum:compressorPresetCustom"
-msgstr "사용자 지정"
 
 msgid "TextureCompressor:enum:analysisStrategyTypeFast"
 msgstr "빠름"

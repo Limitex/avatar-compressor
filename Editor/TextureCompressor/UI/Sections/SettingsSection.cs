@@ -244,15 +244,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             if (propertyName == nameof(TextureCompressor.Strategy))
             {
-                var currentValue = (AnalysisStrategyType)property.intValue;
-                var newValue = AvatarCompressorLocalization.EnumPopup(content, currentValue);
-                property.intValue = (int)newValue;
+                AvatarCompressorLocalization.DrawEnumProperty<AnalysisStrategyType>(
+                    property,
+                    content
+                );
             }
             else if (propertyName == nameof(TextureCompressor.TargetPlatform))
             {
-                var currentValue = (CompressionPlatform)property.intValue;
-                var newValue = AvatarCompressorLocalization.EnumPopup(content, currentValue);
-                property.intValue = (int)newValue;
+                AvatarCompressorLocalization.DrawEnumProperty<CompressionPlatform>(
+                    property,
+                    content
+                );
             }
             else
             {

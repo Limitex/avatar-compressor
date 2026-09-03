@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor;
+using nadena.dev.ndmf.localization;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -37,6 +38,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
         private object _cachedSourceRef;
         private int _cachedSourceCount;
         private object _cachedPredicate;
+        private string _cachedLanguage;
 
         /// <summary>
         /// Creates a new SearchBoxControl with optional initial state.
@@ -105,7 +107,8 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <summary>
         /// Returns the number of items matching the current search, with caching.
         /// When not searching, returns <c>items.Count</c> without invoking the predicate.
-        /// The cache is keyed on (SearchText, UseFuzzySearch, collection reference, items.Count, predicate)
+        /// The cache is keyed on (SearchText, UseFuzzySearch, collection reference, items.Count,
+        /// predicate, active language)
         /// and is automatically invalidated when any of these change.
         /// </summary>
         /// <param name="items">Source collection.</param>
@@ -115,12 +118,15 @@ namespace dev.limitex.avatar.compressor.editor.ui
             if (!IsSearching)
                 return items.Count;
 
+            string activeLanguage = LanguagePrefs.Language;
+
             if (
                 SearchText == _cachedCountSearchText
                 && UseFuzzySearch == _cachedCountUseFuzzy
                 && ReferenceEquals(items, _cachedSourceRef)
                 && items.Count == _cachedSourceCount
                 && Equals(predicate, _cachedPredicate)
+                && activeLanguage == _cachedLanguage
             )
             {
                 return _cachedCount;
@@ -139,6 +145,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
             _cachedSourceRef = items;
             _cachedSourceCount = items.Count;
             _cachedPredicate = predicate;
+            _cachedLanguage = activeLanguage;
             return count;
         }
 
@@ -152,6 +159,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
             _cachedCountSearchText = null;
             _cachedSourceRef = null;
             _cachedPredicate = null;
+            _cachedLanguage = null;
         }
 
         /// <summary>

@@ -75,17 +75,11 @@ msgstr "Open GitHub repository"
 msgid "TextureCompressor:label:preset"
 msgstr "Compression Preset"
 
-msgid "TextureCompressor:label:presetHighQuality"
-msgstr "High Quality"
-
 msgid "TextureCompressor:label:presetHighQuality:tooltip"
 msgstr "Highest quality\nMinimal compression"
 
 msgid "TextureCompressor:message:presetHighQualityDescription"
 msgstr "High Quality Mode: Maximum quality preservation with minimal compression. Only very simple textures (solid colors) will be slightly compressed. Best for showcase avatars or when VRAM is not a concern."
-
-msgid "TextureCompressor:label:presetQuality"
-msgstr "Quality"
 
 msgid "TextureCompressor:label:presetQuality:tooltip"
 msgstr "Good quality\nLight compression"
@@ -93,17 +87,11 @@ msgstr "Good quality\nLight compression"
 msgid "TextureCompressor:message:presetQualityDescription"
 msgstr "Quality Mode: Preserves texture detail as much as possible. Only low-complexity textures (solid colors, simple gradients) will be compressed. Best for avatars where visual quality is the priority."
 
-msgid "TextureCompressor:label:presetBalanced"
-msgstr "Balanced"
-
 msgid "TextureCompressor:label:presetBalanced:tooltip"
 msgstr "Balance of\nquality and size"
 
 msgid "TextureCompressor:message:presetBalancedDescription"
 msgstr "Balanced Mode: Good compromise between quality and VRAM savings. Detailed textures are preserved, while simpler textures are compressed. Recommended for most use cases."
-
-msgid "TextureCompressor:label:presetAggressive"
-msgstr "Aggressive"
 
 msgid "TextureCompressor:label:presetAggressive:tooltip"
 msgstr "Smaller file size\nSome quality loss"
@@ -111,17 +99,11 @@ msgstr "Smaller file size\nSome quality loss"
 msgid "TextureCompressor:message:presetAggressiveDescription"
 msgstr "Aggressive Mode: Prioritizes smaller file size over quality. Most textures will be compressed to some degree. Good for Quest avatars or when VRAM is limited."
 
-msgid "TextureCompressor:label:presetMaximum"
-msgstr "Maximum"
-
 msgid "TextureCompressor:label:presetMaximum:tooltip"
 msgstr "Smallest size\nNoticeable quality loss"
 
 msgid "TextureCompressor:message:presetMaximumDescription"
 msgstr "Maximum Compression: Compresses all textures as much as possible. Significant quality loss may occur. Use only when file size is critical."
-
-msgid "TextureCompressor:label:presetCustom"
-msgstr "Custom"
 
 msgid "TextureCompressor:label:presetCustom:tooltip"
 msgstr "Manual\nconfiguration"
@@ -231,32 +213,17 @@ msgstr " (Package)"
 msgid "TextureCompressor:menu:builtInPath"
 msgstr "Built-in/{0}"
 
-msgid "TextureCompressor:label:builtInPresetHighQualityPlus"
-msgstr "High Quality+"
-
 msgid "TextureCompressor:message:builtInPresetHighQualityPlusDescription"
 msgstr "Better than High Quality. Maximum quality with minimal processing."
-
-msgid "TextureCompressor:label:builtInPresetQualityPlus"
-msgstr "Quality+"
 
 msgid "TextureCompressor:message:builtInPresetQualityPlusDescription"
 msgstr "Better than Quality. High quality with minimal compression."
 
-msgid "TextureCompressor:label:builtInPresetBalancedPlus"
-msgstr "Balanced+"
-
 msgid "TextureCompressor:message:builtInPresetBalancedPlusDescription"
 msgstr "Better than Balanced. Good quality with moderate compression."
 
-msgid "TextureCompressor:label:builtInPresetAggressivePlus"
-msgstr "Aggressive+"
-
 msgid "TextureCompressor:message:builtInPresetAggressivePlusDescription"
 msgstr "Better than Aggressive. Improved quality while maintaining efficient compression."
-
-msgid "TextureCompressor:label:builtInPresetMaximumPlus"
-msgstr "Maximum+"
 
 msgid "TextureCompressor:message:builtInPresetMaximumPlusDescription"
 msgstr "Better than Maximum. Strong compression with slightly higher quality."
@@ -623,24 +590,6 @@ msgstr "Menu Order"
 
 msgid "TextureCompressor:prop:presetMenuOrder:tooltip"
 msgstr "Display order in the menu. Lower values appear first."
-
-msgid "TextureCompressor:enum:compressorPresetHighQuality"
-msgstr "High Quality"
-
-msgid "TextureCompressor:enum:compressorPresetQuality"
-msgstr "Quality"
-
-msgid "TextureCompressor:enum:compressorPresetBalanced"
-msgstr "Balanced"
-
-msgid "TextureCompressor:enum:compressorPresetAggressive"
-msgstr "Aggressive"
-
-msgid "TextureCompressor:enum:compressorPresetMaximum"
-msgstr "Maximum"
-
-msgid "TextureCompressor:enum:compressorPresetCustom"
-msgstr "Custom"
 
 msgid "TextureCompressor:enum:analysisStrategyTypeFast"
 msgstr "Fast"

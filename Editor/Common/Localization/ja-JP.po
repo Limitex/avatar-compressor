@@ -74,17 +74,11 @@ msgstr "GitHub リポジトリを開く"
 msgid "TextureCompressor:label:preset"
 msgstr "圧縮プリセット"
 
-msgid "TextureCompressor:label:presetHighQuality"
-msgstr "高品質"
-
 msgid "TextureCompressor:label:presetHighQuality:tooltip"
 msgstr "最高品質\n最小限の圧縮"
 
 msgid "TextureCompressor:message:presetHighQualityDescription"
 msgstr "高品質モード：圧縮を最小限にし、品質を最大限に維持します。単色など非常に単純なテクスチャだけを軽く圧縮します。展示用 Avatar や VRAM を重視しない場合に適しています。"
-
-msgid "TextureCompressor:label:presetQuality"
-msgstr "品質優先"
 
 msgid "TextureCompressor:label:presetQuality:tooltip"
 msgstr "良好な品質\n軽い圧縮"
@@ -92,17 +86,11 @@ msgstr "良好な品質\n軽い圧縮"
 msgid "TextureCompressor:message:presetQualityDescription"
 msgstr "品質優先モード：テクスチャの細部をできる限り維持します。単色や単純なグラデーションなど低複雑度のテクスチャだけを圧縮します。見た目の品質を優先する Avatar に適しています。"
 
-msgid "TextureCompressor:label:presetBalanced"
-msgstr "バランス"
-
 msgid "TextureCompressor:label:presetBalanced:tooltip"
 msgstr "品質とサイズの\nバランス"
 
 msgid "TextureCompressor:message:presetBalancedDescription"
 msgstr "バランスモード：品質と VRAM 削減を両立します。詳細なテクスチャを維持し、単純なテクスチャを圧縮します。多くの用途に推奨します。"
-
-msgid "TextureCompressor:label:presetAggressive"
-msgstr "強圧縮"
 
 msgid "TextureCompressor:label:presetAggressive:tooltip"
 msgstr "小さいファイル\n多少の品質低下"
@@ -110,17 +98,11 @@ msgstr "小さいファイル\n多少の品質低下"
 msgid "TextureCompressor:message:presetAggressiveDescription"
 msgstr "強圧縮モード：品質よりファイルサイズを優先します。ほとんどのテクスチャがある程度圧縮されます。Quest Avatar や VRAM が限られる場合に適しています。"
 
-msgid "TextureCompressor:label:presetMaximum"
-msgstr "最大圧縮"
-
 msgid "TextureCompressor:label:presetMaximum:tooltip"
 msgstr "最小サイズ\n目立つ品質低下"
 
 msgid "TextureCompressor:message:presetMaximumDescription"
 msgstr "最大圧縮モード：すべてのテクスチャを可能な限り圧縮します。品質が大きく低下する場合があります。ファイルサイズが最重要の場合のみ使用してください。"
-
-msgid "TextureCompressor:label:presetCustom"
-msgstr "カスタム"
 
 msgid "TextureCompressor:label:presetCustom:tooltip"
 msgstr "手動\n設定"
@@ -230,32 +212,17 @@ msgstr "（パッケージ）"
 msgid "TextureCompressor:menu:builtInPath"
 msgstr "組み込み/{0}"
 
-msgid "TextureCompressor:label:builtInPresetHighQualityPlus"
-msgstr "高品質+"
-
 msgid "TextureCompressor:message:builtInPresetHighQualityPlusDescription"
 msgstr "高品質より優れています。最小限の処理で最高品質を維持します。"
-
-msgid "TextureCompressor:label:builtInPresetQualityPlus"
-msgstr "品質優先+"
 
 msgid "TextureCompressor:message:builtInPresetQualityPlusDescription"
 msgstr "品質優先より優れています。最小限の圧縮で高品質を維持します。"
 
-msgid "TextureCompressor:label:builtInPresetBalancedPlus"
-msgstr "バランス+"
-
 msgid "TextureCompressor:message:builtInPresetBalancedPlusDescription"
 msgstr "バランスより優れています。適度な圧縮で良好な品質を維持します。"
 
-msgid "TextureCompressor:label:builtInPresetAggressivePlus"
-msgstr "強圧縮+"
-
 msgid "TextureCompressor:message:builtInPresetAggressivePlusDescription"
 msgstr "強圧縮より優れています。効率的な圧縮を保ちながら品質を改善します。"
-
-msgid "TextureCompressor:label:builtInPresetMaximumPlus"
-msgstr "最大圧縮+"
 
 msgid "TextureCompressor:message:builtInPresetMaximumPlusDescription"
 msgstr "最大圧縮より優れています。強い圧縮を保ちながら品質を少し高めます。"
@@ -622,24 +589,6 @@ msgstr "メニュー順"
 
 msgid "TextureCompressor:prop:presetMenuOrder:tooltip"
 msgstr "メニューでの表示順です。小さい値ほど先に表示されます。"
-
-msgid "TextureCompressor:enum:compressorPresetHighQuality"
-msgstr "高品質"
-
-msgid "TextureCompressor:enum:compressorPresetQuality"
-msgstr "品質優先"
-
-msgid "TextureCompressor:enum:compressorPresetBalanced"
-msgstr "バランス"
-
-msgid "TextureCompressor:enum:compressorPresetAggressive"
-msgstr "強圧縮"
-
-msgid "TextureCompressor:enum:compressorPresetMaximum"
-msgstr "最大圧縮"
-
-msgid "TextureCompressor:enum:compressorPresetCustom"
-msgstr "カスタム"
 
 msgid "TextureCompressor:enum:analysisStrategyTypeFast"
 msgstr "高速"

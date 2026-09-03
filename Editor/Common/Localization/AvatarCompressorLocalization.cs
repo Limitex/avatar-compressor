@@ -55,6 +55,37 @@ namespace dev.limitex.avatar.compressor.editor
             return newIndex >= 0 && newIndex < values.Length ? values[newIndex] : value;
         }
 
+        internal static void DrawEnumProperty<T>(SerializedProperty property, GUIContent label)
+            where T : struct, Enum
+        {
+            var position = EditorGUILayout.GetControlRect();
+            label = EditorGUI.BeginProperty(position, label, property);
+
+            bool previousShowMixedValue = EditorGUI.showMixedValue;
+            EditorGUI.showMixedValue = property.hasMultipleDifferentValues;
+            EditorGUI.BeginChangeCheck();
+
+            var currentValue = (T)Enum.ToObject(typeof(T), property.intValue);
+            var newValue = EnumPopup(position, label, currentValue);
+            if (EditorGUI.EndChangeCheck())
+            {
+                property.intValue = Convert.ToInt32(newValue);
+            }
+
+            EditorGUI.showMixedValue = previousShowMixedValue;
+            EditorGUI.EndProperty();
+        }
+
+        private static T EnumPopup<T>(Rect position, GUIContent label, T value)
+            where T : struct, Enum
+        {
+            var values = (T[])Enum.GetValues(typeof(T));
+            var displayNames = values.Select(value => new GUIContent(EnumValue(value))).ToArray();
+            int currentIndex = Array.IndexOf(values, value);
+            int newIndex = EditorGUI.Popup(position, label, currentIndex, displayNames);
+            return newIndex >= 0 && newIndex < values.Length ? values[newIndex] : value;
+        }
+
         internal static void DrawLanguagePicker()
         {
             // Accessing Localizer first ensures all LAC locales are registered globally.
