@@ -190,7 +190,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 EditorGUILayout.LabelField(
                     AvatarCompressorLocalization.Tr(
                         "TextureCompressor:message:customNameBuiltIn",
-                        BuiltInPresetLocalization.GetDisplayName(config.CustomPresetAsset)
+                        config.CustomPresetAsset.name
                     ),
                     EditorStyles.boldLabel
                 );
@@ -423,7 +423,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         private static void DrawPresetSummary(TextureCompressor config)
         {
             // Called only from DrawUseOnlyPanel where CustomPresetAsset is guaranteed non-null
-            string description = BuiltInPresetLocalization.GetDescription(config.CustomPresetAsset);
+            string description = config.CustomPresetAsset.Description;
             if (!string.IsNullOrEmpty(description))
             {
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);

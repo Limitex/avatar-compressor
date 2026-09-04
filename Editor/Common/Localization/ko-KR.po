@@ -209,24 +209,6 @@ msgstr "(내장)"
 msgid "TextureCompressor:menu:packageSuffix"
 msgstr "(패키지)"
 
-msgid "TextureCompressor:menu:builtInPath"
-msgstr "내장/{0}"
-
-msgid "TextureCompressor:message:builtInPresetHighQualityPlusDescription"
-msgstr "고품질보다 개선된 프리셋입니다. 최소한의 처리로 최고 품질을 유지합니다."
-
-msgid "TextureCompressor:message:builtInPresetQualityPlusDescription"
-msgstr "품질 우선보다 개선된 프리셋입니다. 최소한의 압축으로 높은 품질을 유지합니다."
-
-msgid "TextureCompressor:message:builtInPresetBalancedPlusDescription"
-msgstr "균형보다 개선된 프리셋입니다. 적당한 압축으로 좋은 품질을 유지합니다."
-
-msgid "TextureCompressor:message:builtInPresetAggressivePlusDescription"
-msgstr "강한 압축보다 개선된 프리셋입니다. 효율적인 압축을 유지하면서 품질을 높입니다."
-
-msgid "TextureCompressor:message:builtInPresetMaximumPlusDescription"
-msgstr "최대 압축보다 개선된 프리셋입니다. 강한 압축을 유지하면서 품질을 조금 높입니다."
-
 msgid "TextureCompressor:label:currentSettings"
 msgstr "현재 설정 요약"
 
@@ -572,8 +554,14 @@ msgstr "프리셋 설정"
 msgid "TextureCompressor:prop:presetLock"
 msgstr "잠금"
 
+msgid "TextureCompressor:prop:presetLock:tooltip"
+msgstr "선택했을 때 편집할 수 없도록 이 프리셋을 잠급니다."
+
 msgid "TextureCompressor:prop:presetDescription"
 msgstr "설명"
+
+msgid "TextureCompressor:prop:presetDescription:tooltip"
+msgstr "이 프리셋을 선택했을 때 표시할 설명입니다."
 
 msgid "TextureCompressor:label:presetMenu"
 msgstr "메뉴"

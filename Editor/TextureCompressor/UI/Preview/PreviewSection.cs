@@ -314,7 +314,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.LabelField(
-                AvatarCompressorLocalization.EnumValue(data.TextureType),
+                AvatarCompressorLocalization.EnumValue("TextureCompressor", data.TextureType),
                 EditorStylesCache.CenteredBoldLabel,
                 GUILayout.Width(45)
             );
@@ -500,7 +500,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 AvatarCompressorLocalization.Tr("TextureCompressor:label:previewReason"),
                 GUILayout.Width(85)
             );
-            string reasonText = AvatarCompressorLocalization.EnumValue(data.SkipReason);
+            string reasonText = AvatarCompressorLocalization.EnumValue(
+                "TextureCompressor",
+                data.SkipReason
+            );
             EditorGUILayout.LabelField(reasonText, EditorStyles.miniLabel);
             EditorGUILayout.EndHorizontal();
         }
@@ -514,7 +517,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 textureName,
                 assetPath,
                 data.TextureType.ToString(),
-                AvatarCompressorLocalization.EnumValue(data.TextureType)
+                AvatarCompressorLocalization.EnumValue("TextureCompressor", data.TextureType)
             );
         }
     }

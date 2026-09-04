@@ -1,4 +1,3 @@
-using dev.limitex.avatar.compressor.editor.texture.ui;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,6 +7,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
     /// Localized inspector for custom texture compressor preset assets.
     /// </summary>
     [CustomEditor(typeof(CustomTextureCompressorPreset))]
+    [CanEditMultipleObjects]
     internal sealed class CustomTextureCompressorPresetEditor : Editor
     {
         public override void OnInspectorGUI()
@@ -17,56 +17,25 @@ namespace dev.limitex.avatar.compressor.editor.texture
             AvatarCompressorLocalization.DrawLanguagePicker();
             EditorGUILayout.Space(8);
 
-            var preset = (CustomTextureCompressorPreset)target;
-
             DrawHeader("TextureCompressor:label:presetSettings");
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.Lock),
-                "TextureCompressor:prop:presetLock"
+                "TextureCompressor:prop:presetLock",
+                "TextureCompressor:prop:presetLock:tooltip"
             );
-
-            if (BuiltInPresetLocalization.IsBuiltIn(preset))
-            {
-                EditorGUILayout.LabelField(
-                    AvatarCompressorLocalization.Tr("TextureCompressor:prop:presetDescription"),
-                    EditorStyles.miniLabel
-                );
-                EditorGUILayout.LabelField(
-                    BuiltInPresetLocalization.GetDescription(preset),
-                    EditorStyles.wordWrappedLabel
-                );
-            }
-            else
-            {
-                DrawProperty(
-                    nameof(CustomTextureCompressorPreset.Description),
-                    "TextureCompressor:prop:presetDescription"
-                );
-            }
+            DrawProperty(
+                nameof(CustomTextureCompressorPreset.Description),
+                "TextureCompressor:prop:presetDescription",
+                "TextureCompressor:prop:presetDescription:tooltip"
+            );
 
             EditorGUILayout.Space(8);
             DrawHeader("TextureCompressor:label:presetMenu");
-            if (BuiltInPresetLocalization.IsBuiltIn(preset))
-            {
-                using (new EditorGUI.DisabledScope(true))
-                {
-                    EditorGUILayout.TextField(
-                        AvatarCompressorLocalization.Content(
-                            "TextureCompressor:prop:presetMenuPath",
-                            "TextureCompressor:prop:presetMenuPath:tooltip"
-                        ),
-                        BuiltInPresetLocalization.GetMenuPath(preset)
-                    );
-                }
-            }
-            else
-            {
-                DrawProperty(
-                    nameof(CustomTextureCompressorPreset.MenuPath),
-                    "TextureCompressor:prop:presetMenuPath",
-                    "TextureCompressor:prop:presetMenuPath:tooltip"
-                );
-            }
+            DrawProperty(
+                nameof(CustomTextureCompressorPreset.MenuPath),
+                "TextureCompressor:prop:presetMenuPath",
+                "TextureCompressor:prop:presetMenuPath:tooltip"
+            );
             DrawProperty(
                 nameof(CustomTextureCompressorPreset.MenuOrder),
                 "TextureCompressor:prop:presetMenuOrder",
@@ -188,6 +157,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
         {
             var property = serializedObject.FindProperty(propertyName);
             AvatarCompressorLocalization.DrawEnumProperty<T>(
+                "TextureCompressor",
                 property,
                 AvatarCompressorLocalization.Content(labelKey, tooltipKey)
             );

@@ -12,7 +12,7 @@ namespace dev.limitex.avatar.compressor
     )]
     internal sealed class CustomTextureCompressorPreset : ScriptableObject
     {
-        [Header("Preset Settings")]
+        // Section headers are drawn by the localized custom editor.
         [Tooltip("Lock this preset to prevent editing when selected")]
         public bool Lock = false;
 
@@ -20,7 +20,6 @@ namespace dev.limitex.avatar.compressor
         [TextArea(2, 4)]
         public string Description = "";
 
-        [Header("Menu")]
         [Tooltip(
             "Path in the Custom preset menu (e.g., 'Quest' or 'PC/High Detail'). Empty = not shown in menu."
         )]
@@ -29,11 +28,9 @@ namespace dev.limitex.avatar.compressor
         [Tooltip("Display order in the menu. Lower values appear first.")]
         public int MenuOrder = 1000;
 
-        [Header("Analysis Strategy")]
         [Tooltip("Complexity analysis method")]
         public AnalysisStrategyType Strategy = AnalysisStrategyType.Combined;
 
-        [Header("Combined Strategy Weights")]
         [Range(0f, 1f)]
         public float FastWeight = 0.3f;
 
@@ -43,7 +40,6 @@ namespace dev.limitex.avatar.compressor
         [Range(0f, 1f)]
         public float PerceptualWeight = 0.2f;
 
-        [Header("Complexity Thresholds")]
         [Tooltip("Textures with complexity above this will use minimal compression")]
         [Range(0f, 1f)]
         public float HighComplexityThreshold = 0.7f;
@@ -52,7 +48,6 @@ namespace dev.limitex.avatar.compressor
         [Range(0f, 1f)]
         public float LowComplexityThreshold = 0.2f;
 
-        [Header("Resolution Settings")]
         [Tooltip("Minimum resolution divisor (1 = no reduction)")]
         [Range(1, 4)]
         public int MinDivisor = 1;
@@ -70,14 +65,12 @@ namespace dev.limitex.avatar.compressor
         [Tooltip("Force output to power of 2 dimensions")]
         public bool ForcePowerOfTwo = true;
 
-        [Header("Size Filters")]
         [Tooltip("Only process textures larger than this size")]
         public int MinSourceSize = 256;
 
         [Tooltip("Skip textures smaller than or equal to this size")]
         public int SkipIfSmallerThan = 128;
 
-        [Header("Compression Format")]
         [Tooltip(
             "Target platform for compression format selection (Auto detects from build target)"
         )]

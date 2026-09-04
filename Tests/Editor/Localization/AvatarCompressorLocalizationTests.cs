@@ -9,6 +9,7 @@ using dev.limitex.avatar.compressor.editor.texture.ui;
 using nadena.dev.ndmf.localization;
 using NUnit.Framework;
 using UnityEditor;
+using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.tests
 {
@@ -145,39 +146,22 @@ namespace dev.limitex.avatar.compressor.tests
             AssertEnumLocalized<SkipReason>();
         }
 
-        [TestCase("5239a248c3cecc8438149fd847e07082", "High Quality+")]
-        [TestCase("1de212fc9c0e5db45889f9b52723b1d9", "Quality+")]
-        [TestCase("dc3ad49e6d7ef4f429bb5967cf64b644", "Balanced+")]
-        [TestCase("738122bf69ebfef46a329e3c46e09e60", "Aggressive+")]
-        [TestCase("7881623902e2305439c564a23f41f40c", "Maximum+")]
-        public void BuiltInPreset_KeepsDisplayNameEnglish(string presetGuid, string expectedName)
-        {
-            string presetPath = AssetDatabase.GUIDToAssetPath(presetGuid);
-            var preset = AssetDatabase.LoadAssetAtPath<CustomTextureCompressorPreset>(presetPath);
-            Assert.IsNotNull(preset);
-
-            LanguagePrefs.Language = "zh-Hans";
-
-            Assert.AreEqual(expectedName, BuiltInPresetLocalization.GetDisplayName(preset));
-            Assert.AreEqual("内置/" + expectedName, BuiltInPresetLocalization.GetMenuPath(preset));
-        }
-
         [Test]
-        public void BuiltInPreset_LocalizesDescriptionWithoutChangingSerializedText()
+        public void CustomPresetInspector_PreservesMultiObjectEditingWithoutHeaderDecorators()
         {
-            const string presetGuid = "5239a248c3cecc8438149fd847e07082";
-            string presetPath = AssetDatabase.GUIDToAssetPath(presetGuid);
-            var preset = AssetDatabase.LoadAssetAtPath<CustomTextureCompressorPreset>(presetPath);
-            Assert.IsNotNull(preset);
-
-            string serializedDescription = preset.Description;
-            LanguagePrefs.Language = "zh-Hans";
-
-            Assert.AreNotEqual(
-                serializedDescription,
-                BuiltInPresetLocalization.GetDescription(preset)
+            Assert.IsTrue(
+                Attribute.IsDefined(
+                    typeof(CustomTextureCompressorPresetEditor),
+                    typeof(CanEditMultipleObjects)
+                )
             );
-            Assert.AreEqual(serializedDescription, preset.Description);
+
+            string[] fieldsWithHeaderDecorators = typeof(CustomTextureCompressorPreset)
+                .GetFields()
+                .Where(field => Attribute.IsDefined(field, typeof(HeaderAttribute)))
+                .Select(field => field.Name)
+                .ToArray();
+            CollectionAssert.IsEmpty(fieldsWithHeaderDecorators);
         }
 
         [TestCase(CompressorPreset.HighQuality, "High Quality")]
@@ -201,7 +185,10 @@ namespace dev.limitex.avatar.compressor.tests
         {
             foreach (T value in Enum.GetValues(typeof(T)))
             {
-                string localized = AvatarCompressorLocalization.EnumValue(value);
+                string localized = AvatarCompressorLocalization.EnumValue(
+                    "TextureCompressor",
+                    value
+                );
                 Assert.IsFalse(
                     localized.StartsWith("<", StringComparison.Ordinal),
                     $"Missing localization for {typeof(T).Name}.{value}."

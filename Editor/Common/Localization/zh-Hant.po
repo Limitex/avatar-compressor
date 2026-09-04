@@ -209,24 +209,6 @@ msgstr "（內建）"
 msgid "TextureCompressor:menu:packageSuffix"
 msgstr "（套件）"
 
-msgid "TextureCompressor:menu:builtInPath"
-msgstr "內建/{0}"
-
-msgid "TextureCompressor:message:builtInPresetHighQualityPlusDescription"
-msgstr "優於高品質預設。以最少處理提供最高品質。"
-
-msgid "TextureCompressor:message:builtInPresetQualityPlusDescription"
-msgstr "優於品質優先預設。以最少壓縮提供高品質。"
-
-msgid "TextureCompressor:message:builtInPresetBalancedPlusDescription"
-msgstr "優於均衡預設。以適度壓縮保持良好品質。"
-
-msgid "TextureCompressor:message:builtInPresetAggressivePlusDescription"
-msgstr "優於強力壓縮預設。在維持高效率壓縮的同時改善品質。"
-
-msgid "TextureCompressor:message:builtInPresetMaximumPlusDescription"
-msgstr "優於最大壓縮預設。維持強力壓縮並略微提高品質。"
-
 msgid "TextureCompressor:label:currentSettings"
 msgstr "目前設定摘要"
 
@@ -572,8 +554,14 @@ msgstr "預設設定"
 msgid "TextureCompressor:prop:presetLock"
 msgstr "鎖定"
 
+msgid "TextureCompressor:prop:presetLock:tooltip"
+msgstr "鎖定此預設，避免選取後被編輯。"
+
 msgid "TextureCompressor:prop:presetDescription"
 msgstr "說明"
+
+msgid "TextureCompressor:prop:presetDescription:tooltip"
+msgstr "選取此預設時顯示的說明。"
 
 msgid "TextureCompressor:label:presetMenu"
 msgstr "選單"

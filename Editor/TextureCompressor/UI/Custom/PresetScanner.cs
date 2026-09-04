@@ -112,13 +112,8 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     _ => "",
                 };
 
-                string menuPath =
-                    restriction == PresetRestriction.BuiltIn
-                        ? BuiltInPresetLocalization.GetMenuPath(preset)
-                        : preset.MenuPath;
-
                 menu.AddItem(
-                    new GUIContent(menuPath + suffix),
+                    new GUIContent(preset.MenuPath + suffix),
                     isSelected,
                     () => onPresetSelected?.Invoke(presetRef)
                 );

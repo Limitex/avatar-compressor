@@ -245,6 +245,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             if (propertyName == nameof(TextureCompressor.Strategy))
             {
                 AvatarCompressorLocalization.DrawEnumProperty<AnalysisStrategyType>(
+                    "TextureCompressor",
                     property,
                     content
                 );
@@ -252,6 +253,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             else if (propertyName == nameof(TextureCompressor.TargetPlatform))
             {
                 AvatarCompressorLocalization.DrawEnumProperty<CompressionPlatform>(
+                    "TextureCompressor",
                     property,
                     content
                 );

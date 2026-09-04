@@ -37,25 +37,29 @@ namespace dev.limitex.avatar.compressor.editor
             return new GUIContent(Tr(labelKey), tooltipKey == null ? null : Tr(tooltipKey));
         }
 
-        internal static string EnumValue<T>(T value)
+        internal static string EnumValue<T>(string scope, T value)
             where T : struct, Enum
         {
             string name = (typeof(T).Name + value).Replace("_", string.Empty);
             string keyName = char.ToLowerInvariant(name[0]) + name.Substring(1);
-            return Tr($"TextureCompressor:enum:{keyName}");
+            return Tr($"{scope}:enum:{keyName}");
         }
 
-        internal static T EnumPopup<T>(GUIContent label, T value)
+        internal static T EnumPopup<T>(string scope, GUIContent label, T value)
             where T : struct, Enum
         {
             var values = (T[])Enum.GetValues(typeof(T));
-            var displayNames = values.Select(EnumValue).ToArray();
+            var displayNames = values.Select(value => EnumValue(scope, value)).ToArray();
             int currentIndex = Array.IndexOf(values, value);
             int newIndex = EditorGUILayout.Popup(label, currentIndex, displayNames);
             return newIndex >= 0 && newIndex < values.Length ? values[newIndex] : value;
         }
 
-        internal static void DrawEnumProperty<T>(SerializedProperty property, GUIContent label)
+        internal static void DrawEnumProperty<T>(
+            string scope,
+            SerializedProperty property,
+            GUIContent label
+        )
             where T : struct, Enum
         {
             var position = EditorGUILayout.GetControlRect();
@@ -66,7 +70,7 @@ namespace dev.limitex.avatar.compressor.editor
             EditorGUI.BeginChangeCheck();
 
             var currentValue = (T)Enum.ToObject(typeof(T), property.intValue);
-            var newValue = EnumPopup(position, label, currentValue);
+            var newValue = EnumPopup(scope, position, label, currentValue);
             if (EditorGUI.EndChangeCheck())
             {
                 property.intValue = Convert.ToInt32(newValue);
@@ -76,11 +80,13 @@ namespace dev.limitex.avatar.compressor.editor
             EditorGUI.EndProperty();
         }
 
-        private static T EnumPopup<T>(Rect position, GUIContent label, T value)
+        private static T EnumPopup<T>(string scope, Rect position, GUIContent label, T value)
             where T : struct, Enum
         {
             var values = (T[])Enum.GetValues(typeof(T));
-            var displayNames = values.Select(value => new GUIContent(EnumValue(value))).ToArray();
+            var displayNames = values
+                .Select(value => new GUIContent(EnumValue(scope, value)))
+                .ToArray();
             int currentIndex = Array.IndexOf(values, value);
             int newIndex = EditorGUI.Popup(position, label, currentIndex, displayNames);
             return newIndex >= 0 && newIndex < values.Length ? values[newIndex] : value;

@@ -210,24 +210,6 @@ msgstr " (Built-in)"
 msgid "TextureCompressor:menu:packageSuffix"
 msgstr " (Package)"
 
-msgid "TextureCompressor:menu:builtInPath"
-msgstr "Built-in/{0}"
-
-msgid "TextureCompressor:message:builtInPresetHighQualityPlusDescription"
-msgstr "Better than High Quality. Maximum quality with minimal processing."
-
-msgid "TextureCompressor:message:builtInPresetQualityPlusDescription"
-msgstr "Better than Quality. High quality with minimal compression."
-
-msgid "TextureCompressor:message:builtInPresetBalancedPlusDescription"
-msgstr "Better than Balanced. Good quality with moderate compression."
-
-msgid "TextureCompressor:message:builtInPresetAggressivePlusDescription"
-msgstr "Better than Aggressive. Improved quality while maintaining efficient compression."
-
-msgid "TextureCompressor:message:builtInPresetMaximumPlusDescription"
-msgstr "Better than Maximum. Strong compression with slightly higher quality."
-
 msgid "TextureCompressor:label:currentSettings"
 msgstr "Current Settings Summary"
 
@@ -573,8 +555,14 @@ msgstr "Preset Settings"
 msgid "TextureCompressor:prop:presetLock"
 msgstr "Lock"
 
+msgid "TextureCompressor:prop:presetLock:tooltip"
+msgstr "Lock this preset to prevent editing when selected."
+
 msgid "TextureCompressor:prop:presetDescription"
 msgstr "Description"
+
+msgid "TextureCompressor:prop:presetDescription:tooltip"
+msgstr "Description shown when this preset is selected."
 
 msgid "TextureCompressor:label:presetMenu"
 msgstr "Menu"

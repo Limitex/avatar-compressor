@@ -220,7 +220,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             );
 
             EditorGUI.BeginChangeCheck();
-            var newFormat = AvatarCompressorLocalization.EnumPopup(GUIContent.none, frozen.Format);
+            var newFormat = AvatarCompressorLocalization.EnumPopup(
+                "TextureCompressor",
+                GUIContent.none,
+                frozen.Format
+            );
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(config, "Change Frozen Format");

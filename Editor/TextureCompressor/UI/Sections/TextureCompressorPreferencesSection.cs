@@ -29,6 +29,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             // Change checks keep EditorPrefs writes off the repaint path.
             EditorGUI.BeginChangeCheck();
             var analysisBackend = AvatarCompressorLocalization.EnumPopup(
+                "TextureCompressor",
                 AvatarCompressorLocalization.Content(
                     "TextureCompressor:prop:analysisBackend",
                     "TextureCompressor:prop:analysisBackend:tooltip"
@@ -53,6 +54,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             EditorGUI.BeginChangeCheck();
             var resizeBackend = AvatarCompressorLocalization.EnumPopup(
+                "TextureCompressor",
                 AvatarCompressorLocalization.Content(
                     "TextureCompressor:prop:resizeBackend",
                     "TextureCompressor:prop:resizeBackend:tooltip"

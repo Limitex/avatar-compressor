@@ -209,24 +209,6 @@ msgstr "（組み込み）"
 msgid "TextureCompressor:menu:packageSuffix"
 msgstr "（パッケージ）"
 
-msgid "TextureCompressor:menu:builtInPath"
-msgstr "組み込み/{0}"
-
-msgid "TextureCompressor:message:builtInPresetHighQualityPlusDescription"
-msgstr "高品質より優れています。最小限の処理で最高品質を維持します。"
-
-msgid "TextureCompressor:message:builtInPresetQualityPlusDescription"
-msgstr "品質優先より優れています。最小限の圧縮で高品質を維持します。"
-
-msgid "TextureCompressor:message:builtInPresetBalancedPlusDescription"
-msgstr "バランスより優れています。適度な圧縮で良好な品質を維持します。"
-
-msgid "TextureCompressor:message:builtInPresetAggressivePlusDescription"
-msgstr "強圧縮より優れています。効率的な圧縮を保ちながら品質を改善します。"
-
-msgid "TextureCompressor:message:builtInPresetMaximumPlusDescription"
-msgstr "最大圧縮より優れています。強い圧縮を保ちながら品質を少し高めます。"
-
 msgid "TextureCompressor:label:currentSettings"
 msgstr "現在の設定概要"
 
@@ -572,8 +554,14 @@ msgstr "プリセット設定"
 msgid "TextureCompressor:prop:presetLock"
 msgstr "ロック"
 
+msgid "TextureCompressor:prop:presetLock:tooltip"
+msgstr "選択時に編集できないよう、このプリセットをロックします。"
+
 msgid "TextureCompressor:prop:presetDescription"
 msgstr "説明"
+
+msgid "TextureCompressor:prop:presetDescription:tooltip"
+msgstr "このプリセットを選択したときに表示する説明です。"
 
 msgid "TextureCompressor:label:presetMenu"
 msgstr "メニュー"
