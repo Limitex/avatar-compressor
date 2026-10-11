@@ -1,0 +1,80 @@
+name: Translation Sync
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - Editor/Common/Localization/en-US.po
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: crowdin-sync-${{ github.ref }}
+  queue: max
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  upload-sources:
+    name: Upload source strings
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Upload en-US.po
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: true
+          upload_translations: false
+          download_translations: false
+        env:
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+
+  download-translations:
+    name: Open translation pull request
+    if: github.ref == 'refs/heads/main' && github.event_name != 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Download translations from Crowdin
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: true
+          upload_translations: false
+          download_translations: true
+          push_translations: false
+          create_pull_request: false
+        env:
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+
+      - name: Create or update translation pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          # Use a PAT so PR checks run without manual approval.
+          token: ${{ secrets.CROWDIN_GITHUB_TOKEN }}
+          branch: l10n/crowdin
+          base: main
+          title: 'chore: update translations from Crowdin'
+          commit-message: 'chore: update translations from Crowdin'
+          body: 'Updates bundled translations from Crowdin.'
+          add-paths: |
+            Editor/Common/Localization/*.po
+            :(exclude)Editor/Common/Localization/en-US.po

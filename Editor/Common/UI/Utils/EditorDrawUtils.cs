@@ -9,6 +9,11 @@ namespace dev.limitex.avatar.compressor.editor.ui
     internal static class EditorDrawUtils
     {
         /// <summary>
+        /// Language-independent marker for unavailable values.
+        /// </summary>
+        public const string NotAvailableText = "N/A";
+
+        /// <summary>
         /// Draws a section header with bold label.
         /// </summary>
         public static void DrawSectionHeader(string label)

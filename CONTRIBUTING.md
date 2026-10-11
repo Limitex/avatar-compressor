@@ -59,6 +59,23 @@ CI will automatically check formatting with `dotnet csharpier check .`.
 - **NDMF tracking:** Always call `ObjectRegistry.RegisterReplacedObject()` when replacing assets
 - **NDMF extensions:** Use `WithRequiredExtensions` to declare required extension contexts (e.g., `AnimatorServicesContext`)
 
+## Localization
+
+Editor UI strings live in `Editor/Common/Localization/`. Edit source text in `en-US.po` and translate other locales on Crowdin.
+
+- **UI strings:** Use `AvatarCompressorLocalization` and shared localized UI controls.
+- **Keys:** Follow `Scope:kind:name`, appending `:tooltip` for tooltips. Keep keys stable unless their meaning changes.
+- **Translations:** Preserve placeholders such as `{0}` and leave untranslated entries empty.
+- **New locales:** Add a locale-named `.po` file (e.g., `zh-Hans.po`) and its `.meta`, then update [crowdin.yml](crowdin.yml).
+
+The [translation workflow](.github/workflows/translations.yml) uploads source changes and opens translation PRs. Run it from `main`.
+
+### Crowdin Setup (Maintainers)
+
+1. Set repository secrets `CROWDIN_PROJECT_ID`, `CROWDIN_PERSONAL_TOKEN`, and `CROWDIN_GITHUB_TOKEN`. The GitHub token requires Contents and Pull requests read/write permissions.
+2. Match target languages to `crowdin.yml`. Enable *Skip untranslated strings*; disable *Skip untranslated files* and *Export only approved*.
+3. Import existing translations with `crowdin upload translations` before the first export.
+
 ## Running Tests
 
 Window > General > Test Runner > EditMode > Run All
@@ -91,3 +108,5 @@ Examples:
 4. **Add tests** for new functionality
 5. **Update `CHANGELOG.md`** under `[Unreleased]` section following [Keep a Changelog](https://keepachangelog.com/) format
 6. Submit PR
+
+PRs changing only files under `Editor/Common/Localization/` do not require a CHANGELOG entry.

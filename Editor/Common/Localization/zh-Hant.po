@@ -1,5 +1,8 @@
 msgid ""
 msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Language: zh-Hant\n"
 
 msgid "Common:label:cancel"
@@ -7,9 +10,6 @@ msgstr "取消"
 
 msgid "Common:label:close"
 msgstr "關閉"
-
-msgid "Common:label:notAvailable"
-msgstr "N/A"
 
 msgid "Common:message:avatarRootWarning"
 msgstr "此元件應放置在 Avatar 根 GameObject 上。放在其他位置仍可運作，但建議放置在 Avatar 根物件上。"
@@ -312,7 +312,7 @@ msgid "TextureCompressor:prop:minSourceSize"
 msgstr "最小來源尺寸"
 
 msgid "TextureCompressor:prop:minSourceSize:tooltip"
-msgstr "僅處理大於此尺寸的紋理"
+msgstr "處理長邊尺寸大於或等於此值的紋理"
 
 msgid "TextureCompressor:prop:skipIfSmaller"
 msgstr "小於此值時略過"
@@ -669,4 +669,4 @@ msgid "TextureCompressor:enum:skipReasonExcludedTexture"
 msgstr "紋理已排除"
 
 msgid "TextureCompressor:enum:skipReasonUnknownUncompressedProperty"
-msgstr "未知屬性上的未壓縮紋理（參見資料保護）"
+msgstr "未知屬性上的未壓縮紋理"

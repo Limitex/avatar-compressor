@@ -14,10 +14,16 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
     {
         private readonly PreviewGenerator _generator = new PreviewGenerator();
         private readonly SearchBoxControl _searchBox = new();
+        private readonly PreviewSearch _search;
         private TexturePreviewData[] _previewData;
         private int _previewSettingsHash;
         private bool _showPreview;
         private Vector2 _scrollPosition;
+
+        internal PreviewSection()
+        {
+            _search = new PreviewSearch(_searchBox);
+        }
 
         /// <summary>
         /// Draws the preview section.
@@ -95,7 +101,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             bool isSearching = _searchBox.IsSearching;
             int totalCount = _previewData.Length;
-            int filteredCount = _searchBox.CountMatches(_previewData, MatchesPreviewSearch);
+            int filteredCount = _search.CountMatches(_previewData);
 
             // Build header text
             string headerText;
@@ -150,7 +156,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(
                 AvatarCompressorLocalization.Tr("TextureCompressor:label:previewOriginal"),
-                GUILayout.Width(75)
+                GUILayout.Width(80)
             );
             EditorGUILayout.LabelField(
                 MemoryCalculator.FormatBytes(totalOriginal),
@@ -161,7 +167,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(
                 AvatarCompressorLocalization.Tr("TextureCompressor:label:previewAfter"),
-                GUILayout.Width(75)
+                GUILayout.Width(80)
             );
             EditorGUILayout.LabelField(
                 MemoryCalculator.FormatBytes(totalAfter),
@@ -172,7 +178,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(
                 AvatarCompressorLocalization.Tr("TextureCompressor:label:previewSavings"),
-                GUILayout.Width(75)
+                GUILayout.Width(80)
             );
             Color originalColor = GUI.color;
             GUI.color = Color.green;
@@ -221,6 +227,20 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     GUILayout.MaxHeight(300)
                 );
 
+                float thumbnailColumnWidth = 45f;
+                foreach (
+                    TexturePropertyCategory category in System.Enum.GetValues(
+                        typeof(TexturePropertyCategory)
+                    )
+                )
+                {
+                    var label = new GUIContent(TextureCompressorEnumLabels.Text(category));
+                    thumbnailColumnWidth = Mathf.Max(
+                        thumbnailColumnWidth,
+                        Mathf.Ceil(EditorStylesCache.CenteredBoldLabel.CalcSize(label).x)
+                    );
+                }
+
                 bool hasDrawnProcessedHeader = false;
                 bool hasDrawnFrozenHeader = false;
                 bool hasDrawnSkippedHeader = false;
@@ -230,7 +250,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                     var data = _previewData[i];
 
                     // Skip items that don't match search
-                    if (isSearching && !MatchesPreviewSearch(data))
+                    if (isSearching && !_search.Matches(data))
                         continue;
 
                     // Section headers
@@ -269,7 +289,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                         hasDrawnSkippedHeader = true;
                     }
 
-                    DrawPreviewEntry(config, data);
+                    DrawPreviewEntry(config, data, thumbnailColumnWidth);
                 }
 
                 EditorGUILayout.EndScrollView();
@@ -294,7 +314,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             }
         }
 
-        private void DrawPreviewEntry(TextureCompressor config, TexturePreviewData data)
+        private void DrawPreviewEntry(
+            TextureCompressor config,
+            TexturePreviewData data,
+            float thumbnailColumnWidth
+        )
         {
             bool isSkipped = !data.IsProcessed;
             bool frozenStateChanged = data.IsFrozen != config.IsFrozen(data.Guid);
@@ -306,17 +330,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
-            EditorGUILayout.BeginVertical(GUILayout.Width(45));
+            EditorGUILayout.BeginVertical(GUILayout.Width(thumbnailColumnWidth));
             EditorGUILayout.Space(2);
-            EditorGUILayout.BeginHorizontal(GUILayout.Width(45));
+            EditorGUILayout.BeginHorizontal(GUILayout.Width(thumbnailColumnWidth));
             GUILayout.FlexibleSpace();
             ThumbnailControl.DrawClickable(data.Texture);
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.LabelField(
-                AvatarCompressorLocalization.EnumValue("TextureCompressor", data.TextureType),
+                TextureCompressorEnumLabels.Text(data.TextureType),
                 EditorStylesCache.CenteredBoldLabel,
-                GUILayout.Width(45)
+                GUILayout.Width(thumbnailColumnWidth)
             );
             EditorGUILayout.EndVertical();
 
@@ -478,7 +502,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             else
             {
                 EditorGUILayout.LabelField(
-                    AvatarCompressorLocalization.Tr("Common:label:notAvailable"),
+                    EditorDrawUtils.NotAvailableText,
                     EditorStyles.miniLabel
                 );
             }
@@ -500,25 +524,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 AvatarCompressorLocalization.Tr("TextureCompressor:label:previewReason"),
                 GUILayout.Width(85)
             );
-            string reasonText = AvatarCompressorLocalization.EnumValue(
-                "TextureCompressor",
-                data.SkipReason
-            );
+            string reasonText = TextureCompressorEnumLabels.Text(data.SkipReason);
             EditorGUILayout.LabelField(reasonText, EditorStyles.miniLabel);
             EditorGUILayout.EndHorizontal();
-        }
-
-        private bool MatchesPreviewSearch(TexturePreviewData data)
-        {
-            string assetPath = GuidPathCache.GetPath(data.Guid);
-            string textureName = data.Texture != null ? data.Texture.name : "";
-
-            return _searchBox.MatchesSearchAny(
-                textureName,
-                assetPath,
-                data.TextureType.ToString(),
-                AvatarCompressorLocalization.EnumValue("TextureCompressor", data.TextureType)
-            );
         }
     }
 }

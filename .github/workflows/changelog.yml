@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   check-changelog:
     name: Check CHANGELOG updated
@@ -14,11 +17,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Check CHANGELOG.md has been modified
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "^CHANGELOG.md$"; then
-            echo "CHANGELOG.md has been updated"
+          changes=$(git diff --name-only --no-renames "origin/$BASE_REF...HEAD" -- . ':(exclude)Editor/Common/Localization')
+
+          if [[ -z "$changes" ]] || grep -Fxq 'CHANGELOG.md' <<< "$changes"; then
+            echo "Changelog check passed"
           else
             echo "::error::CHANGELOG.md has not been updated. Please add a changelog entry for your changes."
             exit 1

@@ -27,7 +27,7 @@ namespace dev.limitex.avatar.compressor
         /// <summary>
         /// GUID of the texture asset (stable identifier that survives renames/moves).
         /// </summary>
-        // TODO: Remove [FormerlySerializedAs] after users have migrated from TexturePath to TextureGuid
+        // Preserve values from older scenes and prefabs so their paths can be migrated.
         [FormerlySerializedAs("TexturePath")]
         public string TextureGuid;
 

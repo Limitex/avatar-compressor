@@ -13,6 +13,16 @@ namespace dev.limitex.avatar.compressor.editor
     {
         protected bool _showAdvancedSettings;
 
+        protected virtual void OnEnable()
+        {
+            AvatarCompressorLocalization.Changed += Repaint;
+        }
+
+        protected virtual void OnDisable()
+        {
+            AvatarCompressorLocalization.Changed -= Repaint;
+        }
+
         /// <summary>
         /// Main inspector GUI entry point. Implements common structure for all compressor editors.
         /// </summary>
@@ -20,8 +30,11 @@ namespace dev.limitex.avatar.compressor.editor
         {
             serializedObject.Update();
 
-            AvatarCompressorLocalization.DrawLanguagePicker();
-            EditorGUILayout.Space(8);
+            if (AvatarCompressorPreferences.ShowLanguagePickerInInspector)
+            {
+                AvatarCompressorLocalization.DrawLanguagePicker();
+                EditorGUILayout.Space(8);
+            }
 
             DrawAvatarRootWarningIfNeeded();
 

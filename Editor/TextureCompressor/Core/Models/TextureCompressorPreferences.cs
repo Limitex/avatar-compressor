@@ -1,5 +1,4 @@
 using UnityEditor;
-using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
 {
@@ -12,7 +11,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         Auto,
 
         /// <summary>Always use CPU backend.</summary>
-        [InspectorName("Software")]
         CPU,
     }
 
@@ -25,7 +23,6 @@ namespace dev.limitex.avatar.compressor.editor.texture
         Auto,
 
         /// <summary>Always use CPU backend.</summary>
-        [InspectorName("Software")]
         CPU,
     }
 

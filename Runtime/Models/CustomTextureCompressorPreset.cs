@@ -12,23 +12,15 @@ namespace dev.limitex.avatar.compressor
     )]
     internal sealed class CustomTextureCompressorPreset : ScriptableObject
     {
-        // Section headers are drawn by the localized custom editor.
-        [Tooltip("Lock this preset to prevent editing when selected")]
         public bool Lock = false;
 
-        [Tooltip("Description shown when this preset is selected")]
         [TextArea(2, 4)]
         public string Description = "";
 
-        [Tooltip(
-            "Path in the Custom preset menu (e.g., 'Quest' or 'PC/High Detail'). Empty = not shown in menu."
-        )]
         public string MenuPath = "";
 
-        [Tooltip("Display order in the menu. Lower values appear first.")]
         public int MenuOrder = 1000;
 
-        [Tooltip("Complexity analysis method")]
         public AnalysisStrategyType Strategy = AnalysisStrategyType.Combined;
 
         [Range(0f, 1f)]
@@ -40,43 +32,30 @@ namespace dev.limitex.avatar.compressor
         [Range(0f, 1f)]
         public float PerceptualWeight = 0.2f;
 
-        [Tooltip("Textures with complexity above this will use minimal compression")]
         [Range(0f, 1f)]
         public float HighComplexityThreshold = 0.7f;
 
-        [Tooltip("Textures with complexity below this will use maximum compression")]
         [Range(0f, 1f)]
         public float LowComplexityThreshold = 0.2f;
 
-        [Tooltip("Minimum resolution divisor (1 = no reduction)")]
         [Range(1, 4)]
         public int MinDivisor = 1;
 
-        [Tooltip("Maximum resolution divisor")]
         [Range(2, 16)]
         public int MaxDivisor = 8;
 
-        [Tooltip("Maximum output resolution")]
         public int MaxResolution = 2048;
 
-        [Tooltip("Minimum output resolution")]
         public int MinResolution = 64;
 
-        [Tooltip("Force output to power of 2 dimensions")]
         public bool ForcePowerOfTwo = true;
 
-        [Tooltip("Only process textures larger than this size")]
         public int MinSourceSize = 256;
 
-        [Tooltip("Skip textures smaller than or equal to this size")]
         public int SkipIfSmallerThan = 128;
 
-        [Tooltip(
-            "Target platform for compression format selection (Auto detects from build target)"
-        )]
         public CompressionPlatform TargetPlatform = CompressionPlatform.Auto;
 
-        [Tooltip("Use BC7/ASTC_4x4 format for high complexity textures (highest quality)")]
         public bool UseHighQualityFormatForHighComplexity = true;
 
         /// <summary>

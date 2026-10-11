@@ -1,244 +1,205 @@
-using System;
-using System.Collections.Generic;
+using System.Collections;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using dev.limitex.avatar.compressor.editor;
-using dev.limitex.avatar.compressor.editor.texture;
-using dev.limitex.avatar.compressor.editor.texture.ui;
 using nadena.dev.ndmf.localization;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
+using static dev.limitex.avatar.compressor.tests.LocalizationTestCatalog;
 
 namespace dev.limitex.avatar.compressor.tests
 {
     [TestFixture]
-    internal sealed class AvatarCompressorLocalizationTests
+    internal sealed class AvatarCompressorLocalizationTests : LocalizationTestBase
     {
-        private const string LocalizationFolder =
-            "Packages/dev.limitex.avatar-compressor/Editor/Common/Localization";
-
-        private static readonly string[] BundledLocales =
+        [Test]
+        public void LoadLocalizations_TakesLanguageFromFileNameAndIncludesBundledLocales()
         {
-            "en-US",
-            "zh-Hans",
-            "zh-Hant",
-            "ja-JP",
-            "ko-KR",
-        };
+            string[] languages = AvatarCompressorLocalization
+                .LoadLocalizations()
+                .Select(entry => entry.Language)
+                .ToArray();
+            string[] fileNames = PoPaths().Select(Path.GetFileNameWithoutExtension).ToArray();
 
-        private string _originalLanguage;
-
-        [SetUp]
-        public void SetUp()
-        {
-            _originalLanguage = LanguagePrefs.Language;
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            LanguagePrefs.Language = _originalLanguage;
+            CollectionAssert.AreEquivalent(fileNames, languages);
+            CollectionAssert.IsSubsetOf(BundledLocales, languages);
+            CollectionAssert.AllItemsAreUnique(
+                languages.Select(language => language.ToLowerInvariant()).ToArray()
+            );
+            foreach (string language in languages)
+            {
+                Assert.DoesNotThrow(
+                    () => CultureInfo.GetCultureInfo(language),
+                    $"'{language}' is not a culture name."
+                );
+            }
         }
 
         [Test]
-        public void LocalizationAssets_DiscoversAllPoFilesAndIncludesBundledLocales()
+        public void LoadLocalizations_SkipsFilesWithoutUniqueCultureNames()
         {
-            var assets = AvatarCompressorLocalization.LoadLocalizationAssets();
-            var poPaths = AssetDatabase
-                .FindAssets(string.Empty, new[] { LocalizationFolder })
-                .Select(AssetDatabase.GUIDToAssetPath)
-                .Where(path => path.EndsWith(".po", StringComparison.OrdinalIgnoreCase))
-                .ToArray();
+            string valid = CreateTempPo("fr-FR.po", "msgid \"k\"\nmsgstr \"v\"\n");
+            string invalid = CreateTempPo("not a culture.po", "msgid \"k\"\nmsgstr \"v\"\n");
 
-            CollectionAssert.AreEquivalent(poPaths, assets.Select(AssetDatabase.GetAssetPath));
-            CollectionAssert.IsSubsetOf(
-                BundledLocales.Select(language => language.ToLowerInvariant()),
-                assets.Select(asset => asset.localeIsoCode.ToLowerInvariant())
+            try
+            {
+                LogAssert.Expect(LogType.Warning, new Regex("not a culture name"));
+                LogAssert.Expect(LogType.Warning, new Regex("already provides this locale"));
+
+                var loaded = AvatarCompressorLocalization.LoadLocalizations(
+                    new[] { invalid, valid, valid }
+                );
+
+                Assert.AreEqual(1, loaded.Count);
+                Assert.AreEqual("fr-FR", loaded[0].Language);
+                Assert.AreEqual("v", loaded[0].Lookup("k"));
+            }
+            finally
+            {
+                DeleteTempAsset(valid);
+                DeleteTempAsset(invalid);
+            }
+        }
+
+        [Test]
+        public void LoadLocalizations_ImportsCrowdinExportedHeader()
+        {
+            string path = CreateTempPo(
+                "pt-BR.po",
+                "msgid \"k\"\nmsgstr \"v\"\n",
+                "\"Language: pt_BR\\n\"\n"
+                    + "\"Plural-Forms: nplurals=2; plural=(n > 1);\\n\"\n"
+                    + "\"X-Crowdin-Project: avatar-compressor\\n\"\n"
+                    + "\"X-Crowdin-Language: pt-BR\\n\"\n"
+                    + "\"PO-Revision-Date: 2026-09-23 00:00\\n\"\n"
             );
+
+            try
+            {
+                var loaded = AvatarCompressorLocalization.LoadLocalizations(new[] { path });
+
+                Assert.AreEqual(1, loaded.Count);
+                Assert.AreEqual("pt-BR", loaded[0].Language);
+                Assert.AreEqual("v", loaded[0].Lookup("k"));
+            }
+            finally
+            {
+                DeleteTempAsset(path);
+            }
+        }
+
+        [Test]
+        public void CreateLookup_EmptyOrMissingTranslation_ReturnsNull()
+        {
+            string path = CreateTempPo(
+                "lac_localization_lookup.po",
+                "msgid \"translated\"\nmsgstr \"value\"\n\nmsgid \"untranslated\"\nmsgstr \"\"\n"
+            );
+
+            try
+            {
+                var lookup = AvatarCompressorLocalization.CreateLookup(
+                    AssetDatabase.LoadAssetAtPath<LocalizationAsset>(path)
+                );
+
+                Assert.IsNotNull(lookup);
+                Assert.AreEqual("value", lookup("translated"));
+                Assert.IsNull(lookup("untranslated"));
+                Assert.IsNull(lookup("missing"));
+            }
+            finally
+            {
+                DeleteTempAsset(path);
+            }
+        }
+
+        [Test]
+        public void CreateLookup_DeletedAsset_ReturnsNull()
+        {
+            string path = CreateTempPo(
+                "lac_localization_deleted.po",
+                "msgid \"k\"\nmsgstr \"v\"\n"
+            );
+            var lookup = AvatarCompressorLocalization.CreateLookup(
+                AssetDatabase.LoadAssetAtPath<LocalizationAsset>(path)
+            );
+            Assert.AreEqual("v", lookup("k"));
+
+            DeleteTempAsset(path);
+
+            Assert.IsNull(lookup("k"));
+        }
+
+        [UnityTest]
+        public IEnumerator Translations_ReturnsTextFromEveryLocaleThatTranslatesKey()
+        {
+            var english = Track(new TemporaryCatalog("en-US"));
+            var korean = Track(new TemporaryCatalog("ko-KR"));
+            var japanese = Track(new TemporaryCatalog("ja-JP"));
+            english.Import("English test text");
+            korean.Import("Korean test text");
+            japanese.Import("");
+            yield return WaitForEditorCallbacks();
+
+            LanguagePrefs.Language = "ja-JP";
+            CollectionAssert.AreEquivalent(
+                new[] { "English test text", "Korean test text" },
+                AvatarCompressorLocalization.Translations(TemporaryCatalog.Key).ToArray()
+            );
+        }
+
+        [UnityTest]
+        public IEnumerator LanguagePrefs_SelectsTranslationFromMatchingFile()
+        {
+            foreach (string language in BundledLocales)
+            {
+                var catalog = Track(new TemporaryCatalog(language));
+                catalog.Import("Test translation for " + language);
+            }
+            yield return WaitForEditorCallbacks();
+
+            // Every locale has a distinct controlled value; always using English
+            // cannot pass, even when the shipped translations are incomplete.
+            foreach (string language in BundledLocales)
+            {
+                LanguagePrefs.Language = language;
+                Assert.AreEqual(
+                    "Test translation for " + language,
+                    AvatarCompressorLocalization.Tr(TemporaryCatalog.Key)
+                );
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator Tr_FormatsArguments()
+        {
+            var catalog = Track(new TemporaryCatalog());
+            catalog.Import("Test items: {0}");
+            LanguagePrefs.Language = catalog.Language;
+            yield return WaitForTranslation(TemporaryCatalog.Key, "Test items: {0}");
+
             Assert.AreEqual(
-                assets.Count,
-                assets
-                    .Select(asset => asset.localeIsoCode)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .Count()
+                "Test items: 3",
+                AvatarCompressorLocalization.Tr(TemporaryCatalog.Key, 3)
             );
         }
 
-        [Test]
-        public void LocalizationFiles_HaveMatchingKeysAndFormatPlaceholders()
+        [UnityTest]
+        public IEnumerator Tr_TooFewFormatArguments_ReturnsMissingKeyPlaceholder()
         {
-            var english = ReadMessages(LocalizationFolder + "/en-US.po");
+            var catalog = Track(new TemporaryCatalog());
+            catalog.Import("Test range: {0} to {1}");
+            LanguagePrefs.Language = catalog.Language;
+            yield return WaitForTranslation(TemporaryCatalog.Key, "Test range: {0} to {1}");
 
-            foreach (var asset in AvatarCompressorLocalization.LoadLocalizationAssets())
-            {
-                string language = asset.localeIsoCode;
-                var localized = ReadMessages(AssetDatabase.GetAssetPath(asset));
-                CollectionAssert.AreEquivalent(
-                    english.Keys,
-                    localized.Keys,
-                    $"Locale {language} has a different key set."
-                );
-
-                foreach (string key in english.Keys)
-                {
-                    Assert.IsNotEmpty(localized[key], $"Locale {language} has an empty '{key}'.");
-                    CollectionAssert.AreEquivalent(
-                        GetPlaceholders(english[key]),
-                        GetPlaceholders(localized[key]),
-                        $"Locale {language}, key '{key}' has different format placeholders."
-                    );
-                }
-            }
-        }
-
-        [Test]
-        public void LocalizationKeys_FollowScopeKindNameConvention()
-        {
-            foreach (string key in ReadMessages(LocalizationFolder + "/en-US.po").Keys)
-            {
-                StringAssert.IsMatch(
-                    @"^(Common|TextureCompressor):[a-z][A-Za-z0-9]*:[a-z][A-Za-z0-9]*(?::tooltip)?$",
-                    key
-                );
-            }
-        }
-
-        [Test]
-        public void EnglishSource_UsesMsgstrForCrowdinSourceText()
-        {
-            string english = File.ReadAllText(LocalizationFolder + "/en-US.po");
-            StringAssert.Contains("\"X-Crowdin-SourceKey: msgstr\\n\"", english);
-        }
-
-        [TestCase("en-US", "General")]
-        [TestCase("zh-Hans", "常规")]
-        [TestCase("zh-Hant", "一般")]
-        [TestCase("ja-JP", "一般")]
-        [TestCase("ko-KR", "일반")]
-        public void LanguagePrefs_SelectsRequestedLocalization(string language, string expected)
-        {
-            LanguagePrefs.Language = language;
-
-            Assert.AreEqual(expected, AvatarCompressorLocalization.Tr("Common:label:general"));
-        }
-
-        [TestCaseSource(nameof(BundledLocales))]
-        public void NotAvailableMarker_RemainsLanguageIndependent(string language)
-        {
-            LanguagePrefs.Language = language;
-
-            Assert.AreEqual("N/A", AvatarCompressorLocalization.Tr("Common:label:notAvailable"));
-        }
-
-        [Test]
-        public void EnumMappings_CoverEveryDisplayedValue()
-        {
-            LanguagePrefs.Language = "en-US";
-
-            AssertEnumLocalized<AnalysisStrategyType>();
-            AssertEnumLocalized<CompressionPlatform>();
-            AssertEnumLocalized<FrozenTextureFormat>();
-            AssertEnumLocalized<AnalysisBackendPreference>();
-            AssertEnumLocalized<ResizeBackendPreference>();
-            AssertEnumLocalized<TexturePropertyCategory>();
-            AssertEnumLocalized<SkipReason>();
-        }
-
-        [Test]
-        public void CustomPresetInspector_PreservesMultiObjectEditingWithoutHeaderDecorators()
-        {
-            Assert.IsTrue(
-                Attribute.IsDefined(
-                    typeof(CustomTextureCompressorPresetEditor),
-                    typeof(CanEditMultipleObjects)
-                )
+            Assert.AreEqual(
+                $"<{TemporaryCatalog.Key}>",
+                AvatarCompressorLocalization.Tr(TemporaryCatalog.Key, 1)
             );
-
-            string[] fieldsWithHeaderDecorators = typeof(CustomTextureCompressorPreset)
-                .GetFields()
-                .Where(field => Attribute.IsDefined(field, typeof(HeaderAttribute)))
-                .Select(field => field.Name)
-                .ToArray();
-            CollectionAssert.IsEmpty(fieldsWithHeaderDecorators);
-        }
-
-        [TestCase(CompressorPreset.HighQuality, "High Quality")]
-        [TestCase(CompressorPreset.Quality, "Quality")]
-        [TestCase(CompressorPreset.Balanced, "Balanced")]
-        [TestCase(CompressorPreset.Aggressive, "Aggressive")]
-        [TestCase(CompressorPreset.Maximum, "Maximum")]
-        [TestCase(CompressorPreset.Custom, "Custom")]
-        public void StandardPreset_KeepsDisplayNameEnglish(
-            CompressorPreset preset,
-            string expectedName
-        )
-        {
-            LanguagePrefs.Language = "zh-Hans";
-
-            Assert.AreEqual(expectedName, PresetSection.GetPresetDisplayName(preset));
-        }
-
-        private static void AssertEnumLocalized<T>()
-            where T : struct, Enum
-        {
-            foreach (T value in Enum.GetValues(typeof(T)))
-            {
-                string localized = AvatarCompressorLocalization.EnumValue(
-                    "TextureCompressor",
-                    value
-                );
-                Assert.IsFalse(
-                    localized.StartsWith("<", StringComparison.Ordinal),
-                    $"Missing localization for {typeof(T).Name}.{value}."
-                );
-            }
-        }
-
-        private static Dictionary<string, string> ReadMessages(string path)
-        {
-            var messages = new Dictionary<string, string>(StringComparer.Ordinal);
-            string currentId = null;
-
-            foreach (string line in File.ReadAllLines(path))
-            {
-                if (line.StartsWith("msgid \"", StringComparison.Ordinal))
-                {
-                    currentId = ReadQuotedValue(line);
-                }
-                else if (
-                    currentId != null
-                    && currentId.Length > 0
-                    && line.StartsWith("msgstr \"", StringComparison.Ordinal)
-                )
-                {
-                    Assert.IsFalse(
-                        messages.ContainsKey(currentId),
-                        $"Duplicate key '{currentId}'."
-                    );
-                    messages.Add(currentId, ReadQuotedValue(line));
-                    currentId = null;
-                }
-            }
-
-            return messages;
-        }
-
-        private static string ReadQuotedValue(string line)
-        {
-            int firstQuote = line.IndexOf('"');
-            return line.Substring(firstQuote + 1, line.Length - firstQuote - 2);
-        }
-
-        private static string[] GetPlaceholders(string value)
-        {
-            return Regex
-                .Matches(value, @"\{\d+(?::[^}]*)?\}")
-                .Cast<Match>()
-                .Select(match => match.Value)
-                .OrderBy(placeholder => placeholder, StringComparer.Ordinal)
-                .ToArray();
         }
     }
 }

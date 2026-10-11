@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added NDMF-based editor localization for English, Simplified Chinese, Traditional Chinese, Japanese, and Korean, with shared language switching in inspectors and Preferences.
+- Added a Preferences option to show or hide Editor Languages in compressor and custom preset inspectors (shown by default).
+- **Crowdin translation sync** - Upload English source changes from `main` and create or update translation pull requests weekly or on demand
+  - Pull requests limited to `Editor/Common/Localization/` do not require a changelog entry
+- **Live translation updates** - Apply language changes and translation catalog updates to open compressor inspectors, custom preset inspectors, and Preferences
+  - Preview search results and counts follow the current translations, and texture type labels size to fit translated text
+
+### Fixed
+
+- Preserve Git metadata when preparing the CI Unity project so GameCI can detect the repository before running tests.
+- Use Unity account credentials for Personal license activation in both GameCI workflows instead of passing a license file.
 
 ## [v0.9.0] - 2026-07-17
 

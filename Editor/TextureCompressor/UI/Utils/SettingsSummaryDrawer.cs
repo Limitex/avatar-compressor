@@ -25,7 +25,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.LabelField(
                 AvatarCompressorLocalization.Tr(
                     "TextureCompressor:message:summaryStrategy",
-                    AvatarCompressorLocalization.EnumValue("TextureCompressor", config.Strategy)
+                    TextureCompressorEnumLabels.Text(config.Strategy)
                 )
             );
             EditorGUILayout.LabelField(

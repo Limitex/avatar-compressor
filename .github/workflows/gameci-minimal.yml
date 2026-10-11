@@ -18,6 +18,7 @@ jobs:
     environment: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork && 'external' || '' }}
     permissions:
       contents: read
+      checks: write
 
     steps:
       - name: Checkout repository
@@ -34,6 +35,7 @@ jobs:
           mv ci_checkout/.github/unity/unity-2022.3.22f1/* . && \
           mkdir -p Packages/dev.limitex.avatar-compressor && \
           mv ci_checkout/* Packages/dev.limitex.avatar-compressor/ && \
+          mv ci_checkout/.git .git && \
           rm -rf ci_checkout
 
       - name: Exclude optional integration packages
@@ -72,7 +74,6 @@ jobs:
         uses: game-ci/unity-test-runner@v4
         id: gameci
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
