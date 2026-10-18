@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added NDMF-based editor localization for English, Simplified Chinese, Traditional Chinese, Japanese, and Korean, with shared language switching in inspectors and Preferences.
 
+### Fixed
+
+- Fix GameCI project setup, Unity license activation, and test reporting.
+
 ## [v0.9.0] - 2026-07-17
 
 ### Added
