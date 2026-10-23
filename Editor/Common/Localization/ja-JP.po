@@ -344,6 +344,12 @@ msgstr "色調整をテクスチャへベイク"
 msgid "TextureCompressor:prop:bakeLiltoon:tooltip"
 msgstr "ビルド時に色相、彩度、グラデーション、有効な第 2/3 レイヤーと Alpha Mask をメインテクスチャへ、色調補正をアウトラインテクスチャへベイクします。アニメーション入力、凍結済み、アニメーション参照中、除外済みのテクスチャはベイクされません。色はランタイムの色調として残ります。lilToon が必要です。"
 
+msgid "TextureCompressor:prop:reuseBakedMainForOutline"
+msgstr "ベイク済みメインテクスチャを輪郭に再利用"
+
+msgid "TextureCompressor:prop:reuseBakedMainForOutline:tooltip"
+msgstr "メインと輪郭が元々同じテクスチャを使用していた場合のみ、最終ベイク済みメインテクスチャを輪郭に再利用します。輪郭の色や透明度が変わる場合があります。専用の輪郭テクスチャと保護されたテクスチャは変更しません。"
+
 msgid "TextureCompressor:prop:removeUnused"
 msgstr "未使用テクスチャスロットを削除"
 

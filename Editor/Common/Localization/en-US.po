@@ -351,6 +351,12 @@ msgstr "Bake color adjustments into textures"
 msgid "TextureCompressor:prop:bakeLiltoon:tooltip"
 msgstr "Bakes hue/saturation/gradation, active 2nd/3rd layers and the alpha mask into the main texture, and tone correction into the outline texture, at build time. Bakes with animated inputs are skipped; frozen and animation-referenced textures are never baked or consumed; excluded textures are never baked; colors remain runtime tints. Requires lilToon."
 
+msgid "TextureCompressor:prop:reuseBakedMainForOutline"
+msgstr "Reuse baked main texture for outlines"
+
+msgid "TextureCompressor:prop:reuseBakedMainForOutline:tooltip"
+msgstr "Reuses the final baked main texture for outlines only when both originally shared the same texture. This can change outline colors and transparency. Separate outline textures and protected textures are left unchanged."
+
 msgid "TextureCompressor:prop:removeUnused"
 msgstr "Remove unused texture slots"
 

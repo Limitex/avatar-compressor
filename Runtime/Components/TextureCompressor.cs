@@ -55,6 +55,8 @@ namespace dev.limitex.avatar.compressor
 
         public bool BakeLilToonTextures = true;
 
+        public bool ReuseBakedMainTextureForOutline = false;
+
         public int MinSourceSize = 256;
 
         public int SkipIfSmallerThan = 128;

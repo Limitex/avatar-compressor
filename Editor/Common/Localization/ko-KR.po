@@ -344,6 +344,12 @@ msgstr "색상 조정을 텍스처에 베이크"
 msgid "TextureCompressor:prop:bakeLiltoon:tooltip"
 msgstr "빌드 시 색조, 채도, 그라데이션, 활성화된 2/3 레이어와 Alpha Mask를 메인 텍스처에, 톤 보정을 외곽선 텍스처에 베이크합니다. 애니메이션 입력, 동결되거나 애니메이션에서 참조하는 텍스처 및 제외 텍스처는 베이크하지 않습니다. 색상은 런타임 틴트로 유지됩니다. lilToon이 필요합니다."
 
+msgid "TextureCompressor:prop:reuseBakedMainForOutline"
+msgstr "베이크된 메인 텍스처를 윤곽선에 재사용"
+
+msgid "TextureCompressor:prop:reuseBakedMainForOutline:tooltip"
+msgstr "메인과 윤곽선이 원래 같은 텍스처를 사용한 경우에만 최종 베이크된 메인 텍스처를 윤곽선에 재사용합니다. 윤곽선의 색상과 투명도가 달라질 수 있습니다. 별도의 윤곽선 텍스처와 보호된 텍스처는 변경하지 않습니다."
+
 msgid "TextureCompressor:prop:removeUnused"
 msgstr "사용하지 않는 텍스처 슬롯 제거"
 

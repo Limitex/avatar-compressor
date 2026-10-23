@@ -344,6 +344,12 @@ msgstr "将颜色调整烘焙进纹理"
 msgid "TextureCompressor:prop:bakeLiltoon:tooltip"
 msgstr "构建时将色相、饱和度、渐变、启用的第 2/3 层和 Alpha Mask 烘焙进主纹理，并将色调校正烘焙进描边纹理。动画驱动的输入、冻结或被动画引用的纹理不会被烘焙或消耗；排除纹理不会被烘焙；颜色仍作为运行时色调。需要 lilToon。"
 
+msgid "TextureCompressor:prop:reuseBakedMainForOutline"
+msgstr "描边复用烘焙后的主纹理"
+
+msgid "TextureCompressor:prop:reuseBakedMainForOutline:tooltip"
+msgstr "仅当主色与描边原本使用同一张纹理时，让描边复用最终烘焙的主纹理。这可能改变描边颜色和透明度。专用描边纹理和受保护纹理保持不变。"
+
 msgid "TextureCompressor:prop:removeUnused"
 msgstr "移除未使用的纹理槽"
 
