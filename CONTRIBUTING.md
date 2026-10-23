@@ -70,12 +70,6 @@ Editor UI strings live in `Editor/Common/Localization/`. Edit source text in `en
 
 The [translation workflow](.github/workflows/translations.yml) uploads source changes and opens translation PRs. Run it from `main`.
 
-### Crowdin Setup (Maintainers)
-
-1. Set repository secrets `CROWDIN_PROJECT_ID`, `CROWDIN_PERSONAL_TOKEN`, and `CROWDIN_GITHUB_TOKEN`. The GitHub token requires Contents and Pull requests read/write permissions.
-2. Match target languages to `crowdin.yml`. Enable *Skip untranslated strings*; disable *Skip untranslated files* and *Export only approved*.
-3. Import existing translations with `crowdin upload translations` before the first export.
-
 ## Running Tests
 
 Window > General > Test Runner > EditMode > Run All

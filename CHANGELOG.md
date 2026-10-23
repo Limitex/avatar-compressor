@@ -17,10 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Live translation updates** - Apply language changes and translation catalog updates to open compressor inspectors, custom preset inspectors, and Preferences
   - Preview search results and counts follow the current translations, and texture type labels size to fit translated text
 
-### Fixed
+### Changed
 
-- Preserve Git metadata when preparing the CI Unity project so GameCI can detect the repository before running tests.
-- Use Unity account credentials for Personal license activation in both GameCI workflows instead of passing a license file.
+- The documentation homepage showcases available components only.
 
 ### Fixed
 

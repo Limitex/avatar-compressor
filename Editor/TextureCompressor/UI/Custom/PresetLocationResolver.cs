@@ -36,7 +36,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
 
         /// <summary>
         /// Checks if the preset is a built-in preset (located within this package).
-        /// Returns false if running outside of a package context (e.g., during development).
+        /// Returns false if running outside of a package context.
         /// </summary>
         private static bool IsBuiltInPreset(string assetPath)
         {

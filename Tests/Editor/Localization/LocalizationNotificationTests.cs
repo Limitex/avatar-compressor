@@ -156,8 +156,7 @@ namespace dev.limitex.avatar.compressor.tests
 
         private static int SubscriptionCount(Action callback)
         {
-            // Inspect our own event at the Unity boundary: counting a test wrapper
-            // can pass when it never calls Repaint. No production test hooks needed.
+            // Count direct Repaint subscriptions on the localization event.
             var field = typeof(AvatarCompressorLocalization).GetField(
                 nameof(AvatarCompressorLocalization.Changed),
                 BindingFlags.Static | BindingFlags.NonPublic
