@@ -17,10 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Live translation updates** - Apply language changes and translation catalog updates to open compressor inspectors, custom preset inspectors, and Preferences
   - Preview search results and counts follow the current translations, and texture type labels size to fit translated text
 
-### Changed
-
-- The documentation homepage showcases available components only.
-
 ### Fixed
 
 - Fix GameCI project setup, Unity license activation, and test reporting.
