@@ -5,6 +5,7 @@
 [![GitHub Downloads (latest)](https://img.shields.io/github/downloads/limitex/avatar-compressor/latest/total?label=downloads%40latest)](https://github.com/limitex/avatar-compressor/releases/latest)
 [![GitHub Downloads (total)](https://img.shields.io/github/downloads/limitex/avatar-compressor/total?label=downloads%40total)](https://github.com/limitex/avatar-compressor/releases)
 [![GitHub Actions](https://img.shields.io/github/actions/workflow/status/limitex/avatar-compressor/gameci.yml?label=tests)](https://github.com/limitex/avatar-compressor/actions)
+[![Crowdin](https://badges.crowdin.net/avatar-compressor/localized.svg)](https://crowdin.com/project/avatar-compressor)
 
 A non-destructive avatar optimization utility for VRChat. Create lightweight avatars that more players can see.
 
@@ -54,6 +55,10 @@ Add optimization components to your avatar's root GameObject, configure settings
 ## Recommended
 
 For best results, we recommend using this tool together with [Avatar Optimizer (AAO)](https://vpm.anatawa12.com/avatar-optimizer/). Avatar Optimizer provides additional optimization features such as mesh merging, bone reduction, and more. LAC runs before Avatar Optimizer in the build pipeline, ensuring optimal texture compression before other optimizations are applied.
+
+## Help Translate
+
+Help translate LAC's Unity editor interface on [Crowdin](https://translate.lac.limitex.dev). You can add new translations or improve existing ones.
 
 ## License
 
