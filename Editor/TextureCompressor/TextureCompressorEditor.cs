@@ -19,8 +19,9 @@ namespace dev.limitex.avatar.compressor.editor.texture
         private bool _showTextureFiltersSection;
         private bool _showLilToonOptimizationsSection = true;
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
             _frozenSection = new FrozenTexturesSection();
             _previewSection = new PreviewSection();
         }

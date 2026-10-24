@@ -41,7 +41,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
             if (config.DetectUnusedTextures)
                 unusedSlotOptimizer = new LilToonUnusedSlotOptimizer();
             if (config.BakeLilToonTextures)
-                lilToonBaker = new LilToonTextureBaker();
+                lilToonBaker = new LilToonTextureBaker(config.ReuseBakedMainTextureForOutline);
 
             if (unusedSlotOptimizer?.IsAvailable == true || lilToonBaker?.IsAvailable == true)
                 animationUsageMap = AnimationUsageMap.Build(ctx);

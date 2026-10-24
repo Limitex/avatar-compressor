@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using dev.limitex.avatar.compressor.editor.ui;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,13 +29,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
         {
             // Change checks keep EditorPrefs writes off the repaint path.
             EditorGUI.BeginChangeCheck();
-            var analysisBackend = AvatarCompressorLocalization.EnumPopup(
-                "TextureCompressor",
+            var analysisBackend = LocalizedEnumPopup.Draw(
                 AvatarCompressorLocalization.Content(
                     "TextureCompressor:prop:analysisBackend",
                     "TextureCompressor:prop:analysisBackend:tooltip"
                 ),
-                TextureCompressorPreferences.AnalysisBackend
+                TextureCompressorPreferences.AnalysisBackend,
+                TextureCompressorEnumLabels.Text
             );
             if (EditorGUI.EndChangeCheck())
                 TextureCompressorPreferences.AnalysisBackend = analysisBackend;
@@ -53,13 +54,13 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             EditorGUILayout.Space(4);
 
             EditorGUI.BeginChangeCheck();
-            var resizeBackend = AvatarCompressorLocalization.EnumPopup(
-                "TextureCompressor",
+            var resizeBackend = LocalizedEnumPopup.Draw(
                 AvatarCompressorLocalization.Content(
                     "TextureCompressor:prop:resizeBackend",
                     "TextureCompressor:prop:resizeBackend:tooltip"
                 ),
-                TextureCompressorPreferences.ResizeBackend
+                TextureCompressorPreferences.ResizeBackend,
+                TextureCompressorEnumLabels.Text
             );
             if (EditorGUI.EndChangeCheck())
                 TextureCompressorPreferences.ResizeBackend = resizeBackend;

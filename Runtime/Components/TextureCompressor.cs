@@ -8,18 +8,12 @@ namespace dev.limitex.avatar.compressor
     [AddComponentMenu("Avatar Compressor/LAC Texture Compressor")]
     internal sealed class TextureCompressor : MonoBehaviour, IEditorOnly
     {
-        [Header("Preset")]
-        [Tooltip("Quick preset selection for common use cases")]
         public CompressorPreset Preset = CompressorPreset.Balanced;
 
-        [Tooltip("Custom preset asset for saving and loading custom settings")]
         public CustomTextureCompressorPreset CustomPresetAsset;
 
-        [Header("Analysis Strategy")]
-        [Tooltip("Complexity analysis method")]
         public AnalysisStrategyType Strategy = AnalysisStrategyType.Combined;
 
-        [Header("Combined Strategy Weights")]
         [Range(0f, 1f)]
         public float FastWeight = 0.3f;
 
@@ -29,106 +23,52 @@ namespace dev.limitex.avatar.compressor
         [Range(0f, 1f)]
         public float PerceptualWeight = 0.2f;
 
-        [Header("Complexity Thresholds")]
-        [Tooltip("Textures with complexity above this will use minimal compression")]
         [Range(0f, 1f)]
         public float HighComplexityThreshold = 0.7f;
 
-        [Tooltip("Textures with complexity below this will use maximum compression")]
         [Range(0f, 1f)]
         public float LowComplexityThreshold = 0.2f;
 
-        [Header("Resolution Settings")]
-        [Tooltip("Minimum resolution divisor (1 = no reduction)")]
         [Range(1, 4)]
         public int MinDivisor = 1;
 
-        [Tooltip("Maximum resolution divisor")]
         [Range(2, 16)]
         public int MaxDivisor = 8;
 
-        [Tooltip("Maximum output resolution")]
         public int MaxResolution = 2048;
 
-        [Tooltip("Minimum output resolution")]
         public int MinResolution = 64;
 
-        [Tooltip("Force output to power of 2 dimensions")]
         public bool ForcePowerOfTwo = true;
 
-        [Header("Texture Filters")]
-        [Tooltip("Process main textures (_MainTex, _BaseMap, etc.)")]
         public bool ProcessMainTextures = true;
 
-        [Tooltip("Process normal maps")]
         public bool ProcessNormalMaps = true;
 
-        [Tooltip("Process emission textures")]
         public bool ProcessEmissionMaps = true;
 
-        [Tooltip("Process other textures (metallic, roughness, etc.)")]
         public bool ProcessOtherTextures = true;
 
-        [Tooltip(
-            "Skip uncompressed textures assigned to unknown shader properties. "
-                + "Uncompressed textures on unrecognized properties may contain non-visual data "
-                + "(e.g., masks, LUTs) that compression could corrupt."
-        )]
         public bool SkipUnknownUncompressedTextures = true;
 
-        [Header("Unused Texture Detection")]
-        [Tooltip(
-            "Clear texture slots whose lilToon feature toggle (e.g. _UseEmission) is off and "
-                + "not animated, dropping any texture that becomes unreferenced from the upload. "
-                + "Feature toggles driven by animation are always treated as used, so "
-                + "menu-toggled features are never broken. Frozen textures and textures "
-                + "referenced by animation curves are never removed. Acts per material: "
-                + "exclusion filters control compression only and do not keep an unused slot's "
-                + "texture in the upload. Only runs during the NDMF build and is not reflected "
-                + "in the inspector preview."
-        )]
         public bool DetectUnusedTextures = true;
 
-        [Header("lilToon Texture Baking")]
-        [Tooltip(
-            "Bake lilToon texture adjustments during the NDMF build: main-color adjustments "
-                + "(hue/saturation/gradation and active 2nd/3rd layers) and the alpha mask into "
-                + "the main texture, and outline tone correction into the outline texture — so "
-                + "the adjusted textures ship instead of the adjustment textures and per-pixel "
-                + "shader work. Any bake whose input property is driven by animation is skipped "
-                + "entirely, and colors (_Color, _OutlineColor) are never baked, so color-change "
-                + "animations keep working. Frozen textures and textures referenced by animation "
-                + "curves are never baked or consumed, and excluded textures are never baked. "
-                + "Requires lilToon; does nothing when it is not installed."
-        )]
         public bool BakeLilToonTextures = true;
 
-        [Header("Size Filters")]
-        [Tooltip("Only process textures larger than this size")]
+        public bool ReuseBakedMainTextureForOutline = false;
+
         public int MinSourceSize = 256;
 
-        [Tooltip("Skip textures smaller than or equal to this size")]
         public int SkipIfSmallerThan = 128;
 
-        [Header("Excluded Textures")]
-        [Tooltip("Specific textures to exclude from compression")]
         public List<Texture2D> ExcludedTextures = new List<Texture2D>();
 
-        [Header("Path Exclusions")]
-        [Tooltip("Texture paths starting with these prefixes will be excluded from compression")]
         public List<string> ExcludedPaths = new List<string>(ExcludedPathPresets.GetDefaultPaths());
 
-        [Header("Compression Format")]
-        [Tooltip(
-            "Target platform for compression format selection (Auto detects from build target)"
-        )]
         public CompressionPlatform TargetPlatform = CompressionPlatform.Auto;
 
-        [Tooltip("Use BC7/ASTC_4x4 format for high complexity textures (highest quality)")]
         public bool UseHighQualityFormatForHighComplexity = true;
 
-        [Header("Frozen Textures")]
-        [Tooltip("Textures with manually specified compression settings")]
         public List<FrozenTextureSettings> FrozenTextures = new List<FrozenTextureSettings>();
 
         /// <summary>

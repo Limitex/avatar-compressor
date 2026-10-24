@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor.ui;
-using nadena.dev.ndmf.localization;
 using NUnit.Framework;
 
 namespace dev.limitex.avatar.compressor.tests
@@ -9,20 +8,11 @@ namespace dev.limitex.avatar.compressor.tests
     internal class SearchBoxControlTests
     {
         private SearchBoxControl _searchBox;
-        private string _originalLanguage;
 
         [SetUp]
         public void SetUp()
         {
-            _originalLanguage = LanguagePrefs.Language;
-            LanguagePrefs.Language = "en-US";
             _searchBox = new SearchBoxControl();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            LanguagePrefs.Language = _originalLanguage;
         }
 
         #region Constructor Tests
@@ -313,26 +303,26 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [Test]
-        public void CountMatches_CacheInvalidatedByLanguageChange()
+        public void CountMatches_EqualContextReusesCache_ChangedContextRecounts()
         {
             var search = new SearchBoxControl("test");
-            var items = new List<string> { "first", "second" };
+            var items = new[] { "first", "second" };
+            bool include = false;
             int callCount = 0;
             System.Func<string, bool> predicate = _ =>
             {
                 callCount++;
-                return true;
+                return include;
             };
 
-            int englishCount = search.CountMatches(items, predicate);
-            int firstCallCount = callCount;
+            Assert.That(search.CountMatches(items, predicate, ("filter", 0)), Is.Zero);
+            int callsAfterFirstSearch = callCount;
 
-            LanguagePrefs.Language = "ja-JP";
-            int japaneseCount = search.CountMatches(items, predicate);
+            include = true;
+            Assert.That(search.CountMatches(items, predicate, ("filter", 0)), Is.Zero);
+            Assert.That(callCount, Is.EqualTo(callsAfterFirstSearch));
 
-            Assert.That(englishCount, Is.EqualTo(2));
-            Assert.That(japaneseCount, Is.EqualTo(2));
-            Assert.That(callCount, Is.GreaterThan(firstCallCount));
+            Assert.That(search.CountMatches(items, predicate, ("filter", 1)), Is.EqualTo(2));
         }
 
         [Test]

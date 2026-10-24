@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using dev.limitex.avatar.compressor.editor;
-using nadena.dev.ndmf.localization;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -38,7 +37,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
         private object _cachedSourceRef;
         private int _cachedSourceCount;
         private object _cachedPredicate;
-        private string _cachedLanguage;
+        private object _cachedContext;
 
         /// <summary>
         /// Creates a new SearchBoxControl with optional initial state.
@@ -76,7 +75,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
                 var fuzzy = EditorGUILayout.ToggleLeft(
                     AvatarCompressorLocalization.Tr("Common:prop:fuzzySearch"),
                     UseFuzzySearch,
-                    GUILayout.Width(70)
+                    GUILayout.Width(80)
                 );
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -107,18 +106,20 @@ namespace dev.limitex.avatar.compressor.editor.ui
         /// <summary>
         /// Returns the number of items matching the current search, with caching.
         /// When not searching, returns <c>items.Count</c> without invoking the predicate.
-        /// The cache is keyed on (SearchText, UseFuzzySearch, collection reference, items.Count,
-        /// predicate, active language)
-        /// and is automatically invalidated when any of these change.
         /// </summary>
         /// <param name="items">Source collection.</param>
         /// <param name="predicate">Per-item match function (only called on cache miss).</param>
-        public int CountMatches<T>(IReadOnlyCollection<T> items, Func<T, bool> predicate)
+        /// <param name="context">
+        /// Immutable key for external predicate state; equal values reuse the cached count.
+        /// </param>
+        public int CountMatches<T>(
+            IReadOnlyCollection<T> items,
+            Func<T, bool> predicate,
+            object context = null
+        )
         {
             if (!IsSearching)
                 return items.Count;
-
-            string activeLanguage = LanguagePrefs.Language;
 
             if (
                 SearchText == _cachedCountSearchText
@@ -126,7 +127,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
                 && ReferenceEquals(items, _cachedSourceRef)
                 && items.Count == _cachedSourceCount
                 && Equals(predicate, _cachedPredicate)
-                && activeLanguage == _cachedLanguage
+                && Equals(context, _cachedContext)
             )
             {
                 return _cachedCount;
@@ -145,7 +146,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
             _cachedSourceRef = items;
             _cachedSourceCount = items.Count;
             _cachedPredicate = predicate;
-            _cachedLanguage = activeLanguage;
+            _cachedContext = context;
             return count;
         }
 
@@ -159,7 +160,7 @@ namespace dev.limitex.avatar.compressor.editor.ui
             _cachedCountSearchText = null;
             _cachedSourceRef = null;
             _cachedPredicate = null;
-            _cachedLanguage = null;
+            _cachedContext = null;
         }
 
         /// <summary>
@@ -208,9 +209,6 @@ namespace dev.limitex.avatar.compressor.editor.ui
             return MatchesCore(text1) || MatchesCore(text2) || MatchesCore(text3);
         }
 
-        /// <summary>
-        /// Checks if any of the four provided strings matches the current search.
-        /// </summary>
         public bool MatchesSearchAny(string text1, string text2, string text3, string text4)
         {
             if (!IsSearching)

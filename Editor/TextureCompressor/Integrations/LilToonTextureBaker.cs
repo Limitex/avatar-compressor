@@ -133,12 +133,14 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         };
 
         private readonly Shader _bakerShader;
+        private readonly bool _reuseBakedMainTextureForOutline;
 
         private readonly Dictionary<(Texture2D Source, string Key), Texture2D> _bakeCache =
             new Dictionary<(Texture2D, string), Texture2D>();
 
-        public LilToonTextureBaker()
+        public LilToonTextureBaker(bool reuseBakedMainTextureForOutline = false)
         {
+            _reuseBakedMainTextureForOutline = reuseBakedMainTextureForOutline;
             var version = GetLilToonVersion();
 
             // Without a GPU (-batchmode -nographics) Blit/ReadPixels return undefined data, so
@@ -219,8 +221,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (!IsLilToonShader(material.shader))
                 return default;
 
-            // Order matters: the alpha-mask bake reads _MainTex, which the main bake may have
-            // just replaced.
+            var originalMainTexture = GetTexture(material, MainTexProperty) as Texture2D;
+            var originalOutlineTexture = GetTexture(material, OutlineTexProperty) as Texture2D;
+
+            // Resolve the main and alpha bakes before reusing their final output for outlines.
+            // The opt-in changes outline appearance, but keeps its own tone correction at runtime.
             var outcomes = new[]
             {
                 BakeMainTexture(
@@ -230,12 +235,22 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                     isProtectedTexture
                 ),
                 BakeAlphaMask(material, animatedProperties, canReplaceTexture, isProtectedTexture),
-                BakeOutlineTexture(
+                _reuseBakedMainTextureForOutline
+                && TryReuseBakedMainTextureForOutline(
                     material,
+                    originalMainTexture,
+                    originalOutlineTexture,
                     animatedProperties,
                     canReplaceTexture,
                     isProtectedTexture
-                ),
+                )
+                    ? BakeOutcome.Baked
+                    : BakeOutlineTexture(
+                        material,
+                        animatedProperties,
+                        canReplaceTexture,
+                        isProtectedTexture
+                    ),
             };
 
             int bakedSlots = 0;
@@ -249,6 +264,107 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             }
 
             return new LilToonBakeResult(bakedSlots, skippedByAnimation);
+        }
+
+        /// <summary>
+        /// Reuses the final main bake only for slots that shared a source before baking.
+        /// Other consumers of the source, such as backlighting, are deliberately left alone.
+        /// </summary>
+        internal static bool TryReuseBakedMainTextureForOutline(
+            Material material,
+            Texture2D originalMainTexture,
+            Texture2D originalOutlineTexture,
+            IReadOnlyCollection<string> animatedProperties,
+            Func<Texture2D, string, bool> canReplaceTexture,
+            Func<Texture2D, bool> isProtectedTexture
+        )
+        {
+            if (
+                material == null
+                || originalMainTexture == null
+                || originalOutlineTexture != originalMainTexture
+                || animatedProperties == null
+                || !material.HasProperty(MainTexProperty)
+                || !material.HasProperty(OutlineTexProperty)
+                || material.GetTexture(OutlineTexProperty) != originalOutlineTexture
+                || !(material.GetTexture(MainTexProperty) is Texture2D bakedMain)
+                || bakedMain == originalMainTexture
+            )
+                return false;
+
+            if (
+                HasAnimatedOutlineBakeInput(animatedProperties)
+                || animatedProperties.Contains(MainTexProperty)
+                || animatedProperties.Contains(MainTexStProperty)
+                || animatedProperties.Contains(MainScrollRotateProperty)
+                || animatedProperties.Contains("_OutlineTex_ST")
+                || animatedProperties.Contains("_OutlineTex_ScrollRotate")
+                || material.GetTextureScale(MainTexProperty)
+                    != material.GetTextureScale(OutlineTexProperty)
+                || material.GetTextureOffset(MainTexProperty)
+                    != material.GetTextureOffset(OutlineTexProperty)
+                || (isProtectedTexture != null && isProtectedTexture(originalMainTexture))
+                || (
+                    canReplaceTexture != null
+                    && !canReplaceTexture(originalMainTexture, OutlineTexProperty)
+                )
+            )
+                return false;
+
+            material.SetTexture(OutlineTexProperty, bakedMain);
+            UpdateMainTextureAliases(
+                material,
+                originalMainTexture,
+                bakedMain,
+                animatedProperties,
+                canReplaceTexture
+            );
+            return true;
+        }
+
+        // lilToon's inspector mirrors _MainTex into these compatibility properties. Keep
+        // declared lilToon aliases in sync so the collector compresses the shared bake once.
+        // Shader switching can also leave undeclared aliases; remove those stale dependencies.
+        private static void UpdateMainTextureAliases(
+            Material material,
+            Texture2D source,
+            Texture2D bakedMain,
+            IReadOnlyCollection<string> animatedProperties,
+            Func<Texture2D, string, bool> canReplaceTexture
+        )
+        {
+            using var serialized = new UnityEditor.SerializedObject(material);
+            var textures = serialized.FindProperty("m_SavedProperties.m_TexEnvs");
+            if (textures == null || !textures.isArray)
+                return;
+
+            for (int i = textures.arraySize - 1; i >= 0; i--)
+            {
+                var entry = textures.GetArrayElementAtIndex(i);
+                string name = entry.FindPropertyRelative("first").stringValue;
+                if (
+                    (name != "_BaseMap" && name != "_BaseColorMap")
+                    || animatedProperties.Contains(name)
+                    || animatedProperties.Contains(name + "_ST")
+                    || entry.FindPropertyRelative("second.m_Texture").objectReferenceValue != source
+                )
+                    continue;
+
+                if (material.HasProperty(name))
+                {
+                    if (
+                        IsLilToonShader(material.shader)
+                        && (canReplaceTexture == null || canReplaceTexture(source, name))
+                    )
+                        entry.FindPropertyRelative("second.m_Texture").objectReferenceValue =
+                            bakedMain;
+                }
+                else
+                {
+                    textures.DeleteArrayElementAtIndex(i);
+                }
+            }
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private BakeOutcome BakeMainTexture(

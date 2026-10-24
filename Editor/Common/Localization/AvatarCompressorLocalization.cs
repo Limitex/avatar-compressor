@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using nadena.dev.ndmf.localization;
 using nadena.dev.ndmf.ui;
@@ -9,18 +10,27 @@ using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor
 {
-    /// <summary>
-    /// Shared access to the NDMF localization system for Avatar Compressor editor UI.
-    /// </summary>
     internal static class AvatarCompressorLocalization
     {
-        private const string LocalizationFolder =
+        internal const string LocalizationFolder =
             "Packages/dev.limitex.avatar-compressor/Editor/Common/Localization";
 
-        internal static readonly Localizer Localizer = new Localizer(
-            "en-US",
-            LoadLocalizationAssets
-        );
+        internal static int CatalogRevision { get; private set; }
+
+        internal static event Action Changed;
+
+        private static readonly object LanguageChangeHandle = new object();
+        private static bool _notificationScheduled;
+
+        internal static readonly Localizer Localizer = new Localizer("en-US", LoadCatalog);
+
+        static AvatarCompressorLocalization()
+        {
+            LanguagePrefs.RegisterLanguageChangeCallback(
+                LanguageChangeHandle,
+                _ => ScheduleNotification()
+            );
+        }
 
         internal static string Tr(string key)
         {
@@ -29,7 +39,14 @@ namespace dev.limitex.avatar.compressor.editor
 
         internal static string Tr(string key, params object[] args)
         {
-            return string.Format(CultureInfo.CurrentCulture, Tr(key), args);
+            try
+            {
+                return string.Format(CultureInfo.CurrentCulture, Tr(key), args);
+            }
+            catch (FormatException)
+            {
+                return $"<{key}>";
+            }
         }
 
         internal static GUIContent Content(string labelKey, string tooltipKey = null)
@@ -37,78 +54,183 @@ namespace dev.limitex.avatar.compressor.editor
             return new GUIContent(Tr(labelKey), tooltipKey == null ? null : Tr(tooltipKey));
         }
 
-        internal static string EnumValue<T>(string scope, T value)
-            where T : struct, Enum
+        /// <summary>
+        /// Returns translations across bundled locales, independent of the selected language.
+        /// </summary>
+        internal static IEnumerable<string> Translations(string key)
         {
-            string name = (typeof(T).Name + value).Replace("_", string.Empty);
-            string keyName = char.ToLowerInvariant(name[0]) + name.Substring(1);
-            return Tr($"{scope}:enum:{keyName}");
+            return LoadLocalizations()
+                .Select(entry => entry.Lookup(key))
+                .Where(text => text != null);
         }
 
-        internal static T EnumPopup<T>(string scope, GUIContent label, T value)
-            where T : struct, Enum
-        {
-            var values = (T[])Enum.GetValues(typeof(T));
-            var displayNames = values.Select(value => EnumValue(scope, value)).ToArray();
-            int currentIndex = Array.IndexOf(values, value);
-            int newIndex = EditorGUILayout.Popup(label, currentIndex, displayNames);
-            return newIndex >= 0 && newIndex < values.Length ? values[newIndex] : value;
-        }
+        internal static string CurrentLanguage => LanguagePrefs.Language;
 
-        internal static void DrawEnumProperty<T>(
-            string scope,
-            SerializedProperty property,
-            GUIContent label
-        )
-            where T : struct, Enum
-        {
-            var position = EditorGUILayout.GetControlRect();
-            label = EditorGUI.BeginProperty(position, label, property);
-
-            bool previousShowMixedValue = EditorGUI.showMixedValue;
-            EditorGUI.showMixedValue = property.hasMultipleDifferentValues;
-            EditorGUI.BeginChangeCheck();
-
-            var currentValue = (T)Enum.ToObject(typeof(T), property.intValue);
-            var newValue = EnumPopup(scope, position, label, currentValue);
-            if (EditorGUI.EndChangeCheck())
-            {
-                property.intValue = Convert.ToInt32(newValue);
-            }
-
-            EditorGUI.showMixedValue = previousShowMixedValue;
-            EditorGUI.EndProperty();
-        }
-
-        private static T EnumPopup<T>(string scope, Rect position, GUIContent label, T value)
-            where T : struct, Enum
-        {
-            var values = (T[])Enum.GetValues(typeof(T));
-            var displayNames = values
-                .Select(value => new GUIContent(EnumValue(scope, value)))
-                .ToArray();
-            int currentIndex = Array.IndexOf(values, value);
-            int newIndex = EditorGUI.Popup(position, label, currentIndex, displayNames);
-            return newIndex >= 0 && newIndex < values.Length ? values[newIndex] : value;
-        }
+        internal const string LanguagePickerControlName = "AvatarCompressor.LanguagePicker";
 
         internal static void DrawLanguagePicker()
         {
-            // Accessing Localizer first ensures all LAC locales are registered globally.
-            _ = Localizer;
+            GUI.SetNextControlName(LanguagePickerControlName);
             LanguageSwitcher.DrawImmediate();
         }
 
-        internal static List<LocalizationAsset> LoadLocalizationAssets()
+        // Preference keyword lookups must not invalidate search caches.
+        private static List<(string Language, Func<string, string> Lookup)> LoadCatalog()
         {
-            return AssetDatabase
-                .FindAssets("t:LocalizationAsset", new[] { LocalizationFolder })
-                .Select(AssetDatabase.GUIDToAssetPath)
-                .Where(path => path.EndsWith(".po", StringComparison.OrdinalIgnoreCase))
-                .OrderBy(path => path, StringComparer.Ordinal)
-                .Select(AssetDatabase.LoadAssetAtPath<LocalizationAsset>)
-                .Where(asset => asset != null)
-                .ToList();
+            var localizations = LoadLocalizations();
+            unchecked
+            {
+                CatalogRevision++;
+            }
+            // Defer notification until NDMF has installed the new catalog.
+            ScheduleNotification();
+            return localizations;
+        }
+
+        private static void ScheduleNotification()
+        {
+            if (_notificationScheduled)
+                return;
+
+            _notificationScheduled = true;
+            EditorApplication.delayCall += NotifyChanged;
+        }
+
+        private static void NotifyChanged()
+        {
+            _notificationScheduled = false;
+            Changed?.Invoke();
+        }
+
+        internal static List<(string Language, Func<string, string> Lookup)> LoadLocalizations()
+        {
+            if (!AssetDatabase.IsValidFolder(LocalizationFolder))
+            {
+                Debug.LogWarning(
+                    "[AvatarCompressor] Localization folder not found; UI will show raw keys."
+                );
+                return new List<(string, Func<string, string>)>();
+            }
+
+            return LoadLocalizations(
+                AssetDatabase
+                    .FindAssets("t:LocalizationAsset", new[] { LocalizationFolder })
+                    .Select(AssetDatabase.GUIDToAssetPath)
+                    .Where(path => path.EndsWith(".po", StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(path => path, StringComparer.Ordinal)
+            );
+        }
+
+        // Crowdin rewrites Language headers; NDMF locale codes come from file names.
+        internal static List<(string Language, Func<string, string> Lookup)> LoadLocalizations(
+            IEnumerable<string> paths
+        )
+        {
+            var localizations = new List<(string, Func<string, string>)>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (string path in paths)
+            {
+                string language = Path.GetFileNameWithoutExtension(path);
+                var lookup = CreateLookup(AssetDatabase.LoadAssetAtPath<LocalizationAsset>(path));
+                string problem =
+                    !IsCultureName(language) ? "the file name is not a culture name"
+                    : !seen.Add(language) ? "another file already provides this locale"
+                    : lookup == null ? "the asset could not be loaded"
+                    : null;
+
+                if (problem != null)
+                {
+                    Debug.LogWarning(
+                        $"[AvatarCompressor] Skipping localization file '{path}': {problem}."
+                    );
+                    continue;
+                }
+
+                localizations.Add((language, lookup));
+            }
+
+            return localizations;
+        }
+
+        // NDMF needs null to fall back for empty or missing translations.
+        internal static Func<string, string> CreateLookup(LocalizationAsset asset)
+        {
+            if (asset == null)
+                return null;
+
+            return key =>
+            {
+                // Deleting a .po can destroy the asset without reloading the domain.
+                if (asset == null)
+                    return null;
+
+                string localized = asset.GetLocalizedString(key);
+                return string.IsNullOrEmpty(localized) || localized == key ? null : localized;
+            };
+        }
+
+        private sealed class LocalizationPostprocessor : AssetPostprocessor
+        {
+            private static bool _reloadScheduled;
+
+            private static void OnPostprocessAllAssets(
+                string[] importedAssets,
+                string[] deletedAssets,
+                string[] movedAssets,
+                string[] movedFromAssetPaths
+            )
+            {
+                bool catalogChanged = importedAssets
+                    .Concat(deletedAssets)
+                    .Concat(movedAssets)
+                    .Concat(movedFromAssetPaths)
+                    .Any(path =>
+                        path.StartsWith(LocalizationFolder + "/", StringComparison.Ordinal)
+                        && path.EndsWith(".po", StringComparison.OrdinalIgnoreCase)
+                    );
+                if (catalogChanged)
+                {
+                    // Existing assets can update in place before the catalog is rebuilt.
+                    unchecked
+                    {
+                        CatalogRevision++;
+                    }
+
+                    if (!_reloadScheduled)
+                    {
+                        _reloadScheduled = true;
+                        EditorApplication.delayCall += ReloadCatalog;
+                    }
+                }
+            }
+
+            private static void ReloadCatalog()
+            {
+                try
+                {
+                    // NDMF calls AssetDatabase.Refresh; wait until importing has finished.
+                    // Keep the guard set during Refresh so its notifications are coalesced.
+                    nadena.dev.ndmf.localization.Localizer.ReloadLocalizations();
+                }
+                finally
+                {
+                    _reloadScheduled = false;
+                }
+            }
+        }
+
+        private static bool IsCultureName(string name)
+        {
+            try
+            {
+                CultureInfo.GetCultureInfo(name);
+                return true;
+            }
+            catch (CultureNotFoundException)
+            {
+                return false;
+            }
         }
     }
 }

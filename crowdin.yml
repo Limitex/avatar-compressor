@@ -1,0 +1,21 @@
+project_id_env: CROWDIN_PROJECT_ID
+api_token_env: CROWDIN_PERSONAL_TOKEN
+preserve_hierarchy: true
+# Keep regional variants out of NDMF's same-language fallback chain.
+export_languages: [ja, ko, zh-CN, zh-TW]
+
+files:
+  - source: /Editor/Common/Localization/en-US.po
+    dest: /en-US.po
+    translation: /Editor/Common/Localization/%locale%.po
+    # Empty translations allow NDMF fallback.
+    skip_untranslated_strings: true
+    skip_untranslated_files: false
+    export_only_approved: false
+    # Preserve translations when correcting source typos.
+    update_option: update_as_unapproved
+    # NDMF uses script-based names for Chinese locales.
+    languages_mapping:
+      locale:
+        zh-CN: zh-Hans
+        zh-TW: zh-Hant

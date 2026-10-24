@@ -1,21 +1,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor
 {
     /// <summary>
-    /// Shared editor preferences for Avatar Compressor.
-    /// Hosts the General and Language sections and draws sections contributed by
-    /// features through IPreferencesSection.
-    /// Accessible via Edit > Preferences > Avatar Compressor.
+    /// Hosts shared preferences and sections contributed through IPreferencesSection.
     /// </summary>
     internal static class AvatarCompressorPreferences
     {
         public const string PrefsPrefix = "dev.limitex.avatar-compressor.";
         private const string BasePath = "Preferences/Avatar Compressor";
         private const string EnableLoggingKey = PrefsPrefix + "enableLogging";
+        private const string ShowLanguagePickerInInspectorKey =
+            PrefsPrefix + "showLanguagePickerInInspector";
 
         /// <summary>
         /// When true, debug log output is enabled during build and preview.
@@ -24,6 +24,12 @@ namespace dev.limitex.avatar.compressor.editor
         {
             get => EditorPrefs.GetBool(EnableLoggingKey, true);
             set => EditorPrefs.SetBool(EnableLoggingKey, value);
+        }
+
+        public static bool ShowLanguagePickerInInspector
+        {
+            get => EditorPrefs.GetBool(ShowLanguagePickerInInspectorKey, true);
+            set => EditorPrefs.SetBool(ShowLanguagePickerInInspectorKey, value);
         }
 
         /// <summary>
@@ -63,29 +69,23 @@ namespace dev.limitex.avatar.compressor.editor
         }
 
         [SettingsProvider]
-        private static SettingsProvider CreateProvider()
+        internal static SettingsProvider CreateProvider()
         {
             var sections = CreateSections(TypeCache.GetTypesDerivedFrom<IPreferencesSection>());
 
-            var keywords = new HashSet<string>
-            {
-                "Avatar",
-                "Compressor",
-                "LAC",
-                "Log",
-                "Debug",
-                "Language",
-                "语言",
-                "語言",
-                "言語",
-                "언어",
-            };
+            var keywords = new HashSet<string> { "Avatar", "Compressor", "LAC", "Log", "Debug" };
+            keywords.UnionWith(AvatarCompressorLocalization.Translations("Common:label:language"));
+            keywords.UnionWith(
+                AvatarCompressorLocalization.Translations(
+                    "Common:prop:showLanguagePickerInInspector"
+                )
+            );
             foreach (var section in sections)
             {
                 keywords.UnionWith(section.Keywords);
             }
 
-            return new SettingsProvider(BasePath, SettingsScope.User)
+            var provider = new SettingsProvider(BasePath, SettingsScope.User)
             {
                 label = "Avatar Compressor",
                 guiHandler = _ =>
@@ -111,6 +111,21 @@ namespace dev.limitex.avatar.compressor.editor
                     );
                     AvatarCompressorLocalization.DrawLanguagePicker();
 
+                    EditorGUI.BeginChangeCheck();
+                    GUI.SetNextControlName(nameof(ShowLanguagePickerInInspector));
+                    var showLanguagePickerInInspector = EditorGUILayout.ToggleLeft(
+                        AvatarCompressorLocalization.Content(
+                            "Common:prop:showLanguagePickerInInspector",
+                            "Common:prop:showLanguagePickerInInspector:tooltip"
+                        ),
+                        ShowLanguagePickerInInspector
+                    );
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        ShowLanguagePickerInInspector = showLanguagePickerInInspector;
+                        InternalEditorUtility.RepaintAllViews();
+                    }
+
                     foreach (var section in sections)
                     {
                         EditorGUILayout.Space(10);
@@ -122,6 +137,11 @@ namespace dev.limitex.avatar.compressor.editor
                 },
                 keywords = keywords,
             };
+            provider.activateHandler = (_, __) =>
+                AvatarCompressorLocalization.Changed += provider.Repaint;
+            provider.deactivateHandler = () =>
+                AvatarCompressorLocalization.Changed -= provider.Repaint;
+            return provider;
         }
     }
 }

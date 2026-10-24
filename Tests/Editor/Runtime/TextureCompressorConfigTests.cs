@@ -26,6 +26,30 @@ namespace dev.limitex.avatar.compressor.tests
             }
         }
 
+        #region Outline Reuse Configuration Tests
+
+        [Test]
+        public void DefaultValues_ReuseBakedMainTextureForOutlineIsDisabled()
+        {
+            Assert.That(_config.ReuseBakedMainTextureForOutline, Is.False);
+        }
+
+        [Test]
+        public void Serialization_BakingDisabled_PreservesOutlineReusePreference()
+        {
+            _config.ReuseBakedMainTextureForOutline = true;
+            _config.BakeLilToonTextures = false;
+
+            var serialized = JsonUtility.ToJson(_config);
+            _config.ReuseBakedMainTextureForOutline = false;
+            JsonUtility.FromJsonOverwrite(serialized, _config);
+
+            Assert.That(_config.BakeLilToonTextures, Is.False);
+            Assert.That(_config.ReuseBakedMainTextureForOutline, Is.True);
+        }
+
+        #endregion
+
         #region ApplyPreset Tests
 
         [Test]

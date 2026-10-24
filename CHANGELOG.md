@@ -9,7 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added an opt-in child setting under **Bake lilToon Textures** to reuse the final baked main texture for outlines that originally shared its source. Outline tone correction is preserved at runtime; dedicated outline textures, protected or animated bindings, and other consumers such as backlighting are preserved. Affected build-time material clones also synchronize lilToon's `_BaseMap` and `_BaseColorMap` aliases and remove undeclared stale aliases.
 - Added NDMF-based editor localization for English, Simplified Chinese, Traditional Chinese, Japanese, and Korean, with shared language switching in inspectors and Preferences.
+- Added a Preferences option to show or hide Editor Languages in compressor and custom preset inspectors (shown by default).
+- **Crowdin translation sync** - Upload English source changes from `main` and create or update translation pull requests weekly or on demand
+  - Pull requests limited to `Editor/Common/Localization/` do not require a changelog entry
+- **Live translation updates** - Apply language changes and translation catalog updates to open compressor inspectors, custom preset inspectors, and Preferences
+  - Preview search results and counts follow the current translations, and texture type labels size to fit translated text
+
+### Fixed
+
+- Fix GameCI project setup, Unity license activation, and test reporting.
 
 ## [v0.9.0] - 2026-07-17
 

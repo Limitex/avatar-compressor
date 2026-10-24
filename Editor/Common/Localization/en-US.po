@@ -1,5 +1,8 @@
 msgid ""
 msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Language: en-US\n"
 "X-Crowdin-SourceKey: msgstr\n"
 
@@ -8,9 +11,6 @@ msgstr "Cancel"
 
 msgid "Common:label:close"
 msgstr "Close"
-
-msgid "Common:label:notAvailable"
-msgstr "N/A"
 
 msgid "Common:message:avatarRootWarning"
 msgstr "This component should be placed on the avatar root GameObject. While it will still work, placing it on the avatar root is recommended."
@@ -26,6 +26,12 @@ msgstr "Enable Logging"
 
 msgid "Common:prop:enableLogging:tooltip"
 msgstr "Output debug logs during build and preview"
+
+msgid "Common:prop:showLanguagePickerInInspector"
+msgstr "Show Editor Languages in Inspector"
+
+msgid "Common:prop:showLanguagePickerInInspector:tooltip"
+msgstr "Show the Editor Languages picker in compressor component and custom preset inspectors. Language can always be changed in Preferences."
 
 msgid "TextureCompressor:label:preferences"
 msgstr "Texture Compressor"
@@ -313,7 +319,7 @@ msgid "TextureCompressor:prop:minSourceSize"
 msgstr "Min Source Size"
 
 msgid "TextureCompressor:prop:minSourceSize:tooltip"
-msgstr "Only process textures larger than this size"
+msgstr "Process textures whose longest side is at least this size"
 
 msgid "TextureCompressor:prop:skipIfSmaller"
 msgstr "Skip If Smaller Than"
@@ -344,6 +350,12 @@ msgstr "Bake color adjustments into textures"
 
 msgid "TextureCompressor:prop:bakeLiltoon:tooltip"
 msgstr "Bakes hue/saturation/gradation, active 2nd/3rd layers and the alpha mask into the main texture, and tone correction into the outline texture, at build time. Bakes with animated inputs are skipped; frozen and animation-referenced textures are never baked or consumed; excluded textures are never baked; colors remain runtime tints. Requires lilToon."
+
+msgid "TextureCompressor:prop:reuseBakedMainForOutline"
+msgstr "Reuse baked main texture for outlines"
+
+msgid "TextureCompressor:prop:reuseBakedMainForOutline:tooltip"
+msgstr "Reuses the final baked main texture for outlines only when both originally shared the same texture. This can change outline colors and transparency. Separate outline textures and protected textures are left unchanged."
 
 msgid "TextureCompressor:prop:removeUnused"
 msgstr "Remove unused texture slots"
@@ -670,4 +682,4 @@ msgid "TextureCompressor:enum:skipReasonExcludedTexture"
 msgstr "Excluded texture"
 
 msgid "TextureCompressor:enum:skipReasonUnknownUncompressedProperty"
-msgstr "Uncompressed on unknown property (see Data Protection)"
+msgstr "Uncompressed on unknown property"

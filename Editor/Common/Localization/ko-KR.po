@@ -1,5 +1,8 @@
 msgid ""
 msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Language: ko-KR\n"
 
 msgid "Common:label:cancel"
@@ -7,9 +10,6 @@ msgstr "취소"
 
 msgid "Common:label:close"
 msgstr "닫기"
-
-msgid "Common:label:notAvailable"
-msgstr "N/A"
 
 msgid "Common:message:avatarRootWarning"
 msgstr "다른 오브젝트에서도 작동하지만, 아바타의 루트에 추가하는 것을 권장합니다."
@@ -312,7 +312,7 @@ msgid "TextureCompressor:prop:minSourceSize"
 msgstr "최소 원본 크기"
 
 msgid "TextureCompressor:prop:minSourceSize:tooltip"
-msgstr "원본 텍스처의 가로·세로 중 긴 쪽이 이 값보다 작으면 건너뜁니다"
+msgstr "가장 긴 변의 길이가 이 크기 이상인 텍스처를 처리합니다"
 
 msgid "TextureCompressor:prop:skipIfSmaller"
 msgstr "이 크기 이하면 건너뛰기"
@@ -343,6 +343,12 @@ msgstr "색상 조정을 텍스처에 베이크"
 
 msgid "TextureCompressor:prop:bakeLiltoon:tooltip"
 msgstr "빌드할 때 메인 텍스처에 색조·채도·그라데이션 조정, 활성화된 두 번째·세 번째 레이어, 알파 마스크를 합쳐 굽습니다(베이크). 외곽선 텍스처에는 톤 보정을 반영합니다. 입력값이 애니메이션으로 바뀌면 해당 작업을 건너뜁니다. 설정이 고정되었거나 애니메이션에서 참조하는 텍스처는 베이크 대상과 입력에서 모두 제외합니다. 제외 필터에 해당하는 항목도 베이크하지 않습니다. 색상 값은 기존처럼 실행 중에 적용됩니다. lilToon이 필요합니다."
+
+msgid "TextureCompressor:prop:reuseBakedMainForOutline"
+msgstr "베이크된 메인 텍스처를 윤곽선에 재사용"
+
+msgid "TextureCompressor:prop:reuseBakedMainForOutline:tooltip"
+msgstr "메인과 윤곽선이 원래 같은 텍스처를 사용한 경우에만 최종 베이크된 메인 텍스처를 윤곽선에 재사용합니다. 윤곽선의 색상과 투명도가 달라질 수 있습니다. 별도의 윤곽선 텍스처와 보호된 텍스처는 변경하지 않습니다."
 
 msgid "TextureCompressor:prop:removeUnused"
 msgstr "사용하지 않는 텍스처 정리"
@@ -669,4 +675,4 @@ msgid "TextureCompressor:enum:skipReasonExcludedTexture"
 msgstr "제외 목록에 등록된 텍스처"
 
 msgid "TextureCompressor:enum:skipReasonUnknownUncompressedProperty"
-msgstr "알 수 없는 속성의 비압축 텍스처(텍스처 필터 설정 참조)"
+msgstr "알 수 없는 속성의 비압축 텍스처"

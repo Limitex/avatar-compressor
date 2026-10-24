@@ -53,6 +53,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
                 config.BakeLilToonTextures
             );
 
+            bool reuseOutline;
+            using (new EditorGUI.DisabledScope(!bake))
+            using (new EditorGUI.IndentLevelScope())
+            {
+                reuseOutline = EditorGUILayout.ToggleLeft(
+                    AvatarCompressorLocalization.Content(
+                        "TextureCompressor:prop:reuseBakedMainForOutline",
+                        "TextureCompressor:prop:reuseBakedMainForOutline:tooltip"
+                    ),
+                    config.ReuseBakedMainTextureForOutline
+                );
+            }
+
             bool detect = EditorGUILayout.ToggleLeft(
                 new GUIContent(
                     AvatarCompressorLocalization.Tr("TextureCompressor:prop:removeUnused"),
@@ -65,6 +78,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.ui
             {
                 Undo.RecordObject(config, "Change lilToon Optimizations");
                 config.BakeLilToonTextures = bake;
+                config.ReuseBakedMainTextureForOutline = reuseOutline;
                 config.DetectUnusedTextures = detect;
                 EditorUtility.SetDirty(config);
             }

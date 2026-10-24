@@ -1,130 +1,73 @@
+using dev.limitex.avatar.compressor.editor.texture.ui;
+using dev.limitex.avatar.compressor.editor.ui;
 using UnityEditor;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
 {
-    /// <summary>
-    /// Localized inspector for custom texture compressor preset assets.
-    /// </summary>
     [CustomEditor(typeof(CustomTextureCompressorPreset))]
     [CanEditMultipleObjects]
     internal sealed class CustomTextureCompressorPresetEditor : Editor
     {
+        private void OnEnable()
+        {
+            AvatarCompressorLocalization.Changed += Repaint;
+        }
+
+        private void OnDisable()
+        {
+            AvatarCompressorLocalization.Changed -= Repaint;
+        }
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
-            AvatarCompressorLocalization.DrawLanguagePicker();
-            EditorGUILayout.Space(8);
+            if (AvatarCompressorPreferences.ShowLanguagePickerInInspector)
+            {
+                AvatarCompressorLocalization.DrawLanguagePicker();
+                EditorGUILayout.Space(8);
+            }
 
             DrawHeader("TextureCompressor:label:presetSettings");
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.Lock),
-                "TextureCompressor:prop:presetLock",
-                "TextureCompressor:prop:presetLock:tooltip"
-            );
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.Description),
-                "TextureCompressor:prop:presetDescription",
-                "TextureCompressor:prop:presetDescription:tooltip"
-            );
+            DrawProperty(nameof(CustomTextureCompressorPreset.Lock));
+            DrawProperty(nameof(CustomTextureCompressorPreset.Description));
 
             EditorGUILayout.Space(8);
             DrawHeader("TextureCompressor:label:presetMenu");
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.MenuPath),
-                "TextureCompressor:prop:presetMenuPath",
-                "TextureCompressor:prop:presetMenuPath:tooltip"
-            );
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.MenuOrder),
-                "TextureCompressor:prop:presetMenuOrder",
-                "TextureCompressor:prop:presetMenuOrder:tooltip"
-            );
+            DrawProperty(nameof(CustomTextureCompressorPreset.MenuPath));
+            DrawProperty(nameof(CustomTextureCompressorPreset.MenuOrder));
 
             EditorGUILayout.Space(8);
             DrawHeader("TextureCompressor:label:analysisStrategy");
-            DrawEnumProperty<AnalysisStrategyType>(
-                nameof(CustomTextureCompressorPreset.Strategy),
-                "TextureCompressor:prop:strategy",
-                "TextureCompressor:prop:strategy:tooltip"
-            );
+            DrawEnumProperty<AnalysisStrategyType>(nameof(CustomTextureCompressorPreset.Strategy));
 
             DrawHeader("TextureCompressor:label:combinedWeights");
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.FastWeight),
-                "TextureCompressor:prop:fastWeight"
-            );
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.HighAccuracyWeight),
-                "TextureCompressor:prop:highAccuracyWeight"
-            );
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.PerceptualWeight),
-                "TextureCompressor:prop:perceptualWeight"
-            );
+            DrawProperty(nameof(CustomTextureCompressorPreset.FastWeight));
+            DrawProperty(nameof(CustomTextureCompressorPreset.HighAccuracyWeight));
+            DrawProperty(nameof(CustomTextureCompressorPreset.PerceptualWeight));
 
             DrawHeader("TextureCompressor:label:complexityThresholds");
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.HighComplexityThreshold),
-                "TextureCompressor:prop:highThreshold",
-                "TextureCompressor:prop:highThreshold:tooltip"
-            );
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.LowComplexityThreshold),
-                "TextureCompressor:prop:lowThreshold",
-                "TextureCompressor:prop:lowThreshold:tooltip"
-            );
+            DrawProperty(nameof(CustomTextureCompressorPreset.HighComplexityThreshold));
+            DrawProperty(nameof(CustomTextureCompressorPreset.LowComplexityThreshold));
 
             DrawHeader("TextureCompressor:label:resolution");
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.MinDivisor),
-                "TextureCompressor:prop:minDivisor",
-                "TextureCompressor:prop:minDivisor:tooltip"
-            );
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.MaxDivisor),
-                "TextureCompressor:prop:maxDivisor",
-                "TextureCompressor:prop:maxDivisor:tooltip"
-            );
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.MaxResolution),
-                "TextureCompressor:prop:maxResolution",
-                "TextureCompressor:prop:maxResolution:tooltip"
-            );
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.MinResolution),
-                "TextureCompressor:prop:minResolution",
-                "TextureCompressor:prop:minResolution:tooltip"
-            );
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.ForcePowerOfTwo),
-                "TextureCompressor:prop:forcePowerOfTwo",
-                "TextureCompressor:prop:forcePowerOfTwo:tooltip"
-            );
+            DrawProperty(nameof(CustomTextureCompressorPreset.MinDivisor));
+            DrawProperty(nameof(CustomTextureCompressorPreset.MaxDivisor));
+            DrawProperty(nameof(CustomTextureCompressorPreset.MaxResolution));
+            DrawProperty(nameof(CustomTextureCompressorPreset.MinResolution));
+            DrawProperty(nameof(CustomTextureCompressorPreset.ForcePowerOfTwo));
 
             DrawHeader("TextureCompressor:label:sizeFilters");
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.MinSourceSize),
-                "TextureCompressor:prop:minSourceSize",
-                "TextureCompressor:prop:minSourceSize:tooltip"
-            );
-            DrawProperty(
-                nameof(CustomTextureCompressorPreset.SkipIfSmallerThan),
-                "TextureCompressor:prop:skipIfSmaller",
-                "TextureCompressor:prop:skipIfSmaller:tooltip"
-            );
+            DrawProperty(nameof(CustomTextureCompressorPreset.MinSourceSize));
+            DrawProperty(nameof(CustomTextureCompressorPreset.SkipIfSmallerThan));
 
             DrawHeader("TextureCompressor:label:compressionFormat");
             DrawEnumProperty<CompressionPlatform>(
-                nameof(CustomTextureCompressorPreset.TargetPlatform),
-                "TextureCompressor:prop:targetPlatform",
-                "TextureCompressor:prop:targetPlatform:tooltip"
+                nameof(CustomTextureCompressorPreset.TargetPlatform)
             );
             DrawProperty(
-                nameof(CustomTextureCompressorPreset.UseHighQualityFormatForHighComplexity),
-                "TextureCompressor:prop:highQualityComplex",
-                "TextureCompressor:prop:highQualityComplex:tooltip"
+                nameof(CustomTextureCompressorPreset.UseHighQualityFormatForHighComplexity)
             );
 
             serializedObject.ApplyModifiedProperties();
@@ -139,27 +82,24 @@ namespace dev.limitex.avatar.compressor.editor.texture
             );
         }
 
-        private void DrawProperty(string propertyName, string labelKey, string tooltipKey = null)
+        private void DrawProperty(string propertyName)
         {
+            GUI.SetNextControlName(propertyName);
             EditorGUILayout.PropertyField(
                 serializedObject.FindProperty(propertyName),
-                AvatarCompressorLocalization.Content(labelKey, tooltipKey),
+                TextureCompressorPropertyLabels.Content(propertyName),
                 true
             );
         }
 
-        private void DrawEnumProperty<T>(
-            string propertyName,
-            string labelKey,
-            string tooltipKey = null
-        )
+        private void DrawEnumProperty<T>(string propertyName)
             where T : struct, System.Enum
         {
             var property = serializedObject.FindProperty(propertyName);
-            AvatarCompressorLocalization.DrawEnumProperty<T>(
-                "TextureCompressor",
+            LocalizedEnumPopup.DrawProperty<T>(
                 property,
-                AvatarCompressorLocalization.Content(labelKey, tooltipKey)
+                TextureCompressorPropertyLabels.Content(propertyName),
+                TextureCompressorEnumLabels.Text
             );
         }
     }
