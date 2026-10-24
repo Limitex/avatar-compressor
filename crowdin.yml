@@ -6,6 +6,7 @@ export_languages: [ja, ko, zh-CN, zh-TW]
 
 files:
   - source: /Editor/Common/Localization/en-US.po
+    dest: /en-US.po
     translation: /Editor/Common/Localization/%locale%.po
     # Empty translations allow NDMF fallback.
     skip_untranslated_strings: true
