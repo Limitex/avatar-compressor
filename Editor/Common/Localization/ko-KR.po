@@ -3,7 +3,17 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ko-KR\n"
+"Language: ko\n"
+"X-Crowdin-SourceKey: msgstr\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: avatar-compressor\n"
+"X-Crowdin-Project-ID: 937013\n"
+"X-Crowdin-Language: ko\n"
+"X-Crowdin-File: en-US.po\n"
+"X-Crowdin-File-ID: 2\n"
+"Project-Id-Version: avatar-compressor\n"
+"Language-Team: Korean\n"
+"PO-Revision-Date: 2026-10-26 08:15\n"
 
 msgid "Common:label:cancel"
 msgstr "취소"
@@ -25,6 +35,12 @@ msgstr "디버그 로그 출력"
 
 msgid "Common:prop:enableLogging:tooltip"
 msgstr "빌드 및 미리보기 중 디버그 로그를 출력합니다"
+
+msgid "Common:prop:showLanguagePickerInInspector"
+msgstr ""
+
+msgid "Common:prop:showLanguagePickerInInspector:tooltip"
+msgstr ""
 
 msgid "TextureCompressor:label:preferences"
 msgstr "텍스처 압축기"
@@ -75,31 +91,36 @@ msgid "TextureCompressor:label:preset"
 msgstr "압축 프리셋"
 
 msgid "TextureCompressor:label:presetHighQuality:tooltip"
-msgstr "최고 품질 유지\n압축 최소화"
+msgstr "최고 품질 유지\n"
+"압축 최소화"
 
 msgid "TextureCompressor:message:presetHighQualityDescription"
 msgstr "고품질 모드: 단색처럼 매우 단순한 텍스처만 약하게 압축해 품질을 최대한 유지합니다. 전시용 아바타나 VRAM 사용량이 부담되지 않는 경우에 적합합니다."
 
 msgid "TextureCompressor:label:presetQuality:tooltip"
-msgstr "품질 우선\n약하게 압축"
+msgstr "품질 우선\n"
+"약하게 압축"
 
 msgid "TextureCompressor:message:presetQualityDescription"
 msgstr "품질 우선 모드: 단색이나 단순한 그라데이션처럼 복잡도가 낮은 텍스처만 압축해 세부 표현을 최대한 유지합니다. 시각적 품질이 중요한 아바타에 적합합니다."
 
 msgid "TextureCompressor:label:presetBalanced:tooltip"
-msgstr "품질과 용량을\n균형 있게"
+msgstr "품질과 용량을\n"
+"균형 있게"
 
 msgid "TextureCompressor:message:presetBalancedDescription"
 msgstr "균형 모드: 텍스처 품질을 유지하면서 VRAM 사용량을 줄입니다. 세밀한 텍스처는 유지하고 단순한 텍스처 위주로 압축합니다. 대부분의 경우에 권장합니다."
 
 msgid "TextureCompressor:label:presetAggressive:tooltip"
-msgstr "용량 우선\n일부 품질 저하"
+msgstr "용량 우선\n"
+"일부 품질 저하"
 
 msgid "TextureCompressor:message:presetAggressiveDescription"
 msgstr "압축 우선 모드: 품질보다 용량 절약에 중점을 두어 대부분의 텍스처를 압축합니다. Quest용 아바타나 VRAM 여유가 부족한 경우에 적합합니다."
 
 msgid "TextureCompressor:label:presetMaximum:tooltip"
-msgstr "용량 최소화\n눈에 띄는 품질 저하"
+msgstr "용량 최소화\n"
+"눈에 띄는 품질 저하"
 
 msgid "TextureCompressor:message:presetMaximumDescription"
 msgstr "최대 압축 모드: 모든 텍스처를 최대한 압축합니다. 품질이 크게 저하될 수 있으므로 용량 절약이 가장 중요할 때만 사용하세요."
@@ -165,7 +186,8 @@ msgid "TextureCompressor:button:unlinkCustomPreset:tooltip"
 msgstr "프리셋 연결 해제(현재 설정 유지)"
 
 msgid "TextureCompressor:message:customComponentOnly"
-msgstr "현재 설정은 이 컴포넌트에만 저장됩니다.\n다른 아바타에서도 사용하려면 프리셋으로 저장하세요."
+msgstr "현재 설정은 이 컴포넌트에만 저장됩니다.\n"
+"다른 아바타에서도 사용하려면 프리셋으로 저장하세요."
 
 msgid "TextureCompressor:message:customModified"
 msgstr "● 프리셋과 다름"
@@ -195,7 +217,9 @@ msgid "TextureCompressor:dialog:unlinkPresetReasonLocked"
 msgstr "이 프리셋은 잠겨 있어 직접 편집할 수 없습니다."
 
 msgid "TextureCompressor:dialog:unlinkPresetMessage"
-msgstr "{0}\n\n프리셋 연결을 해제하고 설정을 직접 수정하시겠습니까?\n(현재 설정은 그대로 유지됩니다)"
+msgstr "{0}\n\n"
+"프리셋 연결을 해제하고 설정을 직접 수정하시겠습니까?\n"
+"(현재 설정은 그대로 유지됩니다)"
 
 msgid "TextureCompressor:dialog:unlinkPresetConfirm"
 msgstr "연결 해제 후 편집"
@@ -303,7 +327,9 @@ msgid "TextureCompressor:prop:forcePowerOfTwo"
 msgstr "2의 거듭제곱에 맞춤"
 
 msgid "TextureCompressor:prop:forcePowerOfTwo:tooltip"
-msgstr "활성화하면 가로·세로를 가장 가까운 2의 거듭제곱(256, 512, 1024 등)에 맞춥니다.\n비활성화하면 4의 배수로 올림합니다.\n어느 경우든 DXT/BC 압축을 지원하도록 출력 크기는 4의 배수로 유지됩니다."
+msgstr "활성화하면 가로·세로를 가장 가까운 2의 거듭제곱(256, 512, 1024 등)에 맞춥니다.\n"
+"비활성화하면 4의 배수로 올림합니다.\n"
+"어느 경우든 DXT/BC 압축을 지원하도록 출력 크기는 4의 배수로 유지됩니다."
 
 msgid "TextureCompressor:message:multipleOfFourHelp"
 msgstr "DXT/BC 압축 형식에 맞게 출력 텍스처의 가로·세로 크기를 항상 4의 배수로 조정합니다. 예: 150×150 → 152×152."
@@ -609,25 +635,25 @@ msgid "TextureCompressor:enum:frozenTextureFormatAuto"
 msgstr "자동"
 
 msgid "TextureCompressor:enum:frozenTextureFormatDXT1"
-msgstr "DXT1"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatDXT5"
-msgstr "DXT5"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatBC5"
-msgstr "BC5"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatBC7"
-msgstr "BC7"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatASTC4x4"
-msgstr "ASTC 4x4"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatASTC6x6"
-msgstr "ASTC 6x6"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatASTC8x8"
-msgstr "ASTC 8x8"
+msgstr ""
 
 msgid "TextureCompressor:enum:analysisBackendPreferenceAuto"
 msgstr "자동"
@@ -676,3 +702,4 @@ msgstr "제외 목록에 등록된 텍스처"
 
 msgid "TextureCompressor:enum:skipReasonUnknownUncompressedProperty"
 msgstr "알 수 없는 속성의 비압축 텍스처"
+

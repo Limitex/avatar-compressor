@@ -3,7 +3,17 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: zh-Hans\n"
+"Language: zh\n"
+"X-Crowdin-SourceKey: msgstr\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: avatar-compressor\n"
+"X-Crowdin-Project-ID: 937013\n"
+"X-Crowdin-Language: zh-CN\n"
+"X-Crowdin-File: en-US.po\n"
+"X-Crowdin-File-ID: 2\n"
+"Project-Id-Version: avatar-compressor\n"
+"Language-Team: Chinese Simplified\n"
+"PO-Revision-Date: 2026-10-26 08:15\n"
 
 msgid "Common:label:cancel"
 msgstr "取消"
@@ -25,6 +35,12 @@ msgstr "启用日志"
 
 msgid "Common:prop:enableLogging:tooltip"
 msgstr "在构建和预览期间输出调试日志"
+
+msgid "Common:prop:showLanguagePickerInInspector"
+msgstr ""
+
+msgid "Common:prop:showLanguagePickerInInspector:tooltip"
+msgstr ""
 
 msgid "TextureCompressor:label:preferences"
 msgstr "纹理压缩器"
@@ -75,37 +91,43 @@ msgid "TextureCompressor:label:preset"
 msgstr "压缩预设"
 
 msgid "TextureCompressor:label:presetHighQuality:tooltip"
-msgstr "最高质量\n最低压缩"
+msgstr "最高质量\n"
+"最低压缩"
 
 msgid "TextureCompressor:message:presetHighQualityDescription"
 msgstr "高质量模式：以最少压缩最大限度保留质量。仅会轻微压缩非常简单的纹理（如纯色）。适合展示用 Avatar，或不必担心 VRAM 的场景。"
 
 msgid "TextureCompressor:label:presetQuality:tooltip"
-msgstr "良好质量\n轻度压缩"
+msgstr "良好质量\n"
+"轻度压缩"
 
 msgid "TextureCompressor:message:presetQualityDescription"
 msgstr "质量优先模式：尽可能保留纹理细节。仅压缩低复杂度纹理（如纯色、简单渐变）。适合视觉质量优先的 Avatar。"
 
 msgid "TextureCompressor:label:presetBalanced:tooltip"
-msgstr "兼顾质量\n与文件大小"
+msgstr "兼顾质量\n"
+"与文件大小"
 
 msgid "TextureCompressor:message:presetBalancedDescription"
 msgstr "均衡模式：兼顾质量和 VRAM 节省。保留细节丰富的纹理，同时压缩较简单的纹理。推荐大多数场景使用。"
 
 msgid "TextureCompressor:label:presetAggressive:tooltip"
-msgstr "更小文件\n部分质量损失"
+msgstr "更小文件\n"
+"部分质量损失"
 
 msgid "TextureCompressor:message:presetAggressiveDescription"
 msgstr "强力压缩模式：文件大小优先于质量。大多数纹理都会受到一定程度的压缩。适合 Quest Avatar 或 VRAM 有限的场景。"
 
 msgid "TextureCompressor:label:presetMaximum:tooltip"
-msgstr "最小文件\n明显质量损失"
+msgstr "最小文件\n"
+"明显质量损失"
 
 msgid "TextureCompressor:message:presetMaximumDescription"
 msgstr "最大压缩模式：尽可能压缩所有纹理，可能造成明显质量损失。仅在文件大小至关重要时使用。"
 
 msgid "TextureCompressor:label:presetCustom:tooltip"
-msgstr "手动\n配置"
+msgstr "手动\n"
+"配置"
 
 msgid "TextureCompressor:message:presetCustomDescription"
 msgstr "自定义模式：完全控制所有压缩设置，可手动配置各项参数以精细调整结果。"
@@ -165,7 +187,8 @@ msgid "TextureCompressor:button:unlinkCustomPreset:tooltip"
 msgstr "取消关联预设（保留当前设置）"
 
 msgid "TextureCompressor:message:customComponentOnly"
-msgstr "设置仅保存在此组件中。\n创建预设可供多个 Avatar 重复使用。"
+msgstr "设置仅保存在此组件中。\n"
+"创建预设可供多个 Avatar 重复使用。"
 
 msgid "TextureCompressor:message:customModified"
 msgstr "● 已修改"
@@ -195,7 +218,9 @@ msgid "TextureCompressor:dialog:unlinkPresetReasonLocked"
 msgstr "此预设已锁定，无法直接编辑。"
 
 msgid "TextureCompressor:dialog:unlinkPresetMessage"
-msgstr "{0}\n\n是否取消关联并手动编辑设置？\n（当前设置会被保留）"
+msgstr "{0}\n\n"
+"是否取消关联并手动编辑设置？\n"
+"（当前设置会被保留）"
 
 msgid "TextureCompressor:dialog:unlinkPresetConfirm"
 msgstr "取消关联并编辑"
@@ -303,7 +328,9 @@ msgid "TextureCompressor:prop:forcePowerOfTwo"
 msgstr "强制为 2 的幂"
 
 msgid "TextureCompressor:prop:forcePowerOfTwo:tooltip"
-msgstr "启用时，尺寸会舍入到最接近的 2 的幂。\n禁用时，尺寸会舍入到最接近的 4 的倍数。\n为兼容 DXT/BC，所有输出尺寸始终是 4 的倍数。"
+msgstr "启用时，尺寸会舍入到最接近的 2 的幂。\n"
+"禁用时，尺寸会舍入到最接近的 4 的倍数。\n"
+"为兼容 DXT/BC，所有输出尺寸始终是 4 的倍数。"
 
 msgid "TextureCompressor:message:multipleOfFourHelp"
 msgstr "为兼容 DXT/BC 压缩，输出尺寸始终是 4 的倍数。例如：150x150 会变为 152x152。"
@@ -609,25 +636,25 @@ msgid "TextureCompressor:enum:frozenTextureFormatAuto"
 msgstr "自动"
 
 msgid "TextureCompressor:enum:frozenTextureFormatDXT1"
-msgstr "DXT1"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatDXT5"
-msgstr "DXT5"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatBC5"
-msgstr "BC5"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatBC7"
-msgstr "BC7"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatASTC4x4"
-msgstr "ASTC 4x4"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatASTC6x6"
-msgstr "ASTC 6x6"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatASTC8x8"
-msgstr "ASTC 8x8"
+msgstr ""
 
 msgid "TextureCompressor:enum:analysisBackendPreferenceAuto"
 msgstr "自动"
@@ -676,3 +703,4 @@ msgstr "纹理已排除"
 
 msgid "TextureCompressor:enum:skipReasonUnknownUncompressedProperty"
 msgstr "未知属性上的未压缩纹理"
+

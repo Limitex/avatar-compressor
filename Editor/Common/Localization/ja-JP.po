@@ -3,7 +3,17 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ja-JP\n"
+"Language: ja\n"
+"X-Crowdin-SourceKey: msgstr\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: avatar-compressor\n"
+"X-Crowdin-Project-ID: 937013\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: en-US.po\n"
+"X-Crowdin-File-ID: 2\n"
+"Project-Id-Version: avatar-compressor\n"
+"Language-Team: Japanese\n"
+"PO-Revision-Date: 2026-10-26 08:15\n"
 
 msgid "Common:label:cancel"
 msgstr "キャンセル"
@@ -25,6 +35,12 @@ msgstr "ログを有効化"
 
 msgid "Common:prop:enableLogging:tooltip"
 msgstr "ビルド中およびプレビュー中にデバッグログを出力します"
+
+msgid "Common:prop:showLanguagePickerInInspector"
+msgstr ""
+
+msgid "Common:prop:showLanguagePickerInInspector:tooltip"
+msgstr ""
 
 msgid "TextureCompressor:label:preferences"
 msgstr "テクスチャ圧縮"
@@ -75,37 +91,43 @@ msgid "TextureCompressor:label:preset"
 msgstr "圧縮プリセット"
 
 msgid "TextureCompressor:label:presetHighQuality:tooltip"
-msgstr "最高品質\n最小限の圧縮"
+msgstr "最高品質\n"
+"最小限の圧縮"
 
 msgid "TextureCompressor:message:presetHighQualityDescription"
 msgstr "高品質モード：圧縮を最小限にし、品質を最大限に維持します。単色など非常に単純なテクスチャだけを軽く圧縮します。展示用 Avatar や VRAM を重視しない場合に適しています。"
 
 msgid "TextureCompressor:label:presetQuality:tooltip"
-msgstr "良好な品質\n軽い圧縮"
+msgstr "良好な品質\n"
+"軽い圧縮"
 
 msgid "TextureCompressor:message:presetQualityDescription"
 msgstr "品質優先モード：テクスチャの細部をできる限り維持します。単色や単純なグラデーションなど低複雑度のテクスチャだけを圧縮します。見た目の品質を優先する Avatar に適しています。"
 
 msgid "TextureCompressor:label:presetBalanced:tooltip"
-msgstr "品質とサイズの\nバランス"
+msgstr "品質とサイズの\n"
+"バランス"
 
 msgid "TextureCompressor:message:presetBalancedDescription"
 msgstr "バランスモード：品質と VRAM 削減を両立します。詳細なテクスチャを維持し、単純なテクスチャを圧縮します。多くの用途に推奨します。"
 
 msgid "TextureCompressor:label:presetAggressive:tooltip"
-msgstr "小さいファイル\n多少の品質低下"
+msgstr "小さいファイル\n"
+"多少の品質低下"
 
 msgid "TextureCompressor:message:presetAggressiveDescription"
 msgstr "強圧縮モード：品質よりファイルサイズを優先します。ほとんどのテクスチャがある程度圧縮されます。Quest Avatar や VRAM が限られる場合に適しています。"
 
 msgid "TextureCompressor:label:presetMaximum:tooltip"
-msgstr "最小サイズ\n目立つ品質低下"
+msgstr "最小サイズ\n"
+"目立つ品質低下"
 
 msgid "TextureCompressor:message:presetMaximumDescription"
 msgstr "最大圧縮モード：すべてのテクスチャを可能な限り圧縮します。品質が大きく低下する場合があります。ファイルサイズが最重要の場合のみ使用してください。"
 
 msgid "TextureCompressor:label:presetCustom:tooltip"
-msgstr "手動\n設定"
+msgstr "手動\n"
+"設定"
 
 msgid "TextureCompressor:message:presetCustomDescription"
 msgstr "カスタムモード：すべての圧縮設定を完全に制御し、各パラメーターを手動で細かく調整できます。"
@@ -165,7 +187,8 @@ msgid "TextureCompressor:button:unlinkCustomPreset:tooltip"
 msgstr "プリセットのリンクを解除（現在の設定は維持）"
 
 msgid "TextureCompressor:message:customComponentOnly"
-msgstr "設定はこのコンポーネントだけに保存されています。\n複数の Avatar で再利用するにはプリセットを作成してください。"
+msgstr "設定はこのコンポーネントだけに保存されています。\n"
+"複数の Avatar で再利用するにはプリセットを作成してください。"
 
 msgid "TextureCompressor:message:customModified"
 msgstr "● 変更あり"
@@ -195,7 +218,9 @@ msgid "TextureCompressor:dialog:unlinkPresetReasonLocked"
 msgstr "このプリセットはロックされているため直接編集できません。"
 
 msgid "TextureCompressor:dialog:unlinkPresetMessage"
-msgstr "{0}\n\nリンクを解除して設定を手動編集しますか？\n（現在の設定は維持されます）"
+msgstr "{0}\n\n"
+"リンクを解除して設定を手動編集しますか？\n"
+"（現在の設定は維持されます）"
 
 msgid "TextureCompressor:dialog:unlinkPresetConfirm"
 msgstr "リンク解除して編集"
@@ -303,7 +328,9 @@ msgid "TextureCompressor:prop:forcePowerOfTwo"
 msgstr "2 の累乗に固定"
 
 msgid "TextureCompressor:prop:forcePowerOfTwo:tooltip"
-msgstr "有効時は最も近い 2 の累乗に丸めます。\n無効時は最も近い 4 の倍数に丸めます。\nDXT/BC 互換性のため、出力寸法は常に 4 の倍数です。"
+msgstr "有効時は最も近い 2 の累乗に丸めます。\n"
+"無効時は最も近い 4 の倍数に丸めます。\n"
+"DXT/BC 互換性のため、出力寸法は常に 4 の倍数です。"
 
 msgid "TextureCompressor:message:multipleOfFourHelp"
 msgstr "DXT/BC 圧縮との互換性のため、出力寸法は常に 4 の倍数です。例：150x150 は 152x152 になります。"
@@ -609,25 +636,25 @@ msgid "TextureCompressor:enum:frozenTextureFormatAuto"
 msgstr "自動"
 
 msgid "TextureCompressor:enum:frozenTextureFormatDXT1"
-msgstr "DXT1"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatDXT5"
-msgstr "DXT5"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatBC5"
-msgstr "BC5"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatBC7"
-msgstr "BC7"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatASTC4x4"
-msgstr "ASTC 4x4"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatASTC6x6"
-msgstr "ASTC 6x6"
+msgstr ""
 
 msgid "TextureCompressor:enum:frozenTextureFormatASTC8x8"
-msgstr "ASTC 8x8"
+msgstr ""
 
 msgid "TextureCompressor:enum:analysisBackendPreferenceAuto"
 msgstr "自動"
@@ -676,3 +703,4 @@ msgstr "除外テクスチャ"
 
 msgid "TextureCompressor:enum:skipReasonUnknownUncompressedProperty"
 msgstr "不明なプロパティの非圧縮テクスチャ"
+
