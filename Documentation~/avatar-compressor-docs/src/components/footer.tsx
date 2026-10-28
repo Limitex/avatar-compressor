@@ -88,6 +88,16 @@ export function Footer({ lang }: { lang: Locale }) {
                   Booth
                 </a>
               </li>
+              <li>
+                <a
+                  href="https://translate.lac.limitex.dev"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={linkClass}
+                >
+                  Translate
+                </a>
+              </li>
             </ul>
           </div>
         </div>
