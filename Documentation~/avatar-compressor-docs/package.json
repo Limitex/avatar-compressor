@@ -2,6 +2,7 @@
   "name": "avatar-compressor-docs",
   "version": "0.0.0",
   "private": true,
+  "packageManager": "pnpm@11.25.0",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
@@ -11,12 +12,12 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@next/third-parties": "^16.2.6",
+    "@next/third-parties": "^16.4.2",
     "fumadocs-core": "16.8.10",
     "fumadocs-mdx": "15.0.4",
     "fumadocs-ui": "16.8.10",
     "lucide-react": "^0.577.0",
-    "next": "16.2.6",
+    "next": "16.4.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-markdown": "^10.1.0"
@@ -28,17 +29,10 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.4",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "16.4.2",
     "postcss": "^8.5.14",
     "serve": "^14.2.6",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "sharp",
-      "unrs-resolver"
-    ]
   }
 }
