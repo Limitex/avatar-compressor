@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Normal maps imported with the Normal map texture type are no longer misdetected as RGB layout when compressing readable DXT5/BC7 sources (#124).
 - Fix GameCI project setup, Unity license activation, and test reporting.
 
 ## [v0.9.0] - 2026-07-17

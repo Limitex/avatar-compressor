@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 namespace dev.limitex.avatar.compressor.editor.texture
@@ -66,7 +67,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         /// <summary>
         /// Resolves source normal-map layout from format and, for DXT5/BC7,
-        /// pixel heuristics when the source layout is ambiguous.
+        /// the texture importer type before using pixel heuristics for ambiguous sources.
         /// </summary>
         /// <param name="originalTexture">The original texture (must be readable for heuristic detection)</param>
         /// <param name="format">The original texture format</param>
@@ -82,15 +83,31 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 case TextureFormat.DXT5:
                 case TextureFormat.DXT5Crunched:
                 case TextureFormat.BC7:
-                    // Heuristic detection requires reading pixel data directly.
-                    // Non-readable textures cannot be sampled, so fall back to AG
-                    // which Unity's normal map import always produces for DXT5/BC7.
+                    // Unity's normal map import produces AG for DXT5/BC7, even when readable.
+                    // Use pixel heuristics only when the importer does not establish the layout.
+                    if (IsImportedAsNormalMap(originalTexture))
+                        return NormalMapPreprocessor.SourceLayout.AG;
+
+                    // Non-readable textures cannot be sampled, so fall back to AG.
                     if (originalTexture != null && originalTexture.isReadable)
                         return DetectDXTnmLike(originalTexture);
                     return NormalMapPreprocessor.SourceLayout.AG;
                 default:
                     return NormalMapPreprocessor.SourceLayout.RGB;
             }
+        }
+
+        private static bool IsImportedAsNormalMap(Texture2D texture)
+        {
+            if (texture == null)
+                return false;
+
+            string path = AssetDatabase.GetAssetPath(texture);
+            if (string.IsNullOrEmpty(path))
+                return false;
+
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            return importer != null && importer.textureType == TextureImporterType.NormalMap;
         }
 
         /// <summary>
