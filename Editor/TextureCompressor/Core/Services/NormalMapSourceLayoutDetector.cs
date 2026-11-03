@@ -83,10 +83,15 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 case TextureFormat.DXT5:
                 case TextureFormat.DXT5Crunched:
                 case TextureFormat.BC7:
-                    // Unity's normal map import produces AG for DXT5/BC7, even when readable.
-                    // Use pixel heuristics only when the importer does not establish the layout.
+                    // Unity's normal map import produces AG for DXT5/BC7, even when readable,
+                    // so the heuristic may only override it with a clear RG result, never RGB.
                     if (IsImportedAsNormalMap(originalTexture))
+                    {
+                        if (originalTexture.isReadable
+                            && DetectDXTnmLike(originalTexture) == NormalMapPreprocessor.SourceLayout.RG)
+                            return NormalMapPreprocessor.SourceLayout.RG;
                         return NormalMapPreprocessor.SourceLayout.AG;
+                    }
 
                     // Non-readable textures cannot be sampled, so fall back to AG.
                     if (originalTexture != null && originalTexture.isReadable)
