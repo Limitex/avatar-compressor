@@ -87,8 +87,11 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     // so the heuristic may only override it with a clear RG result, never RGB.
                     if (IsImportedAsNormalMap(originalTexture))
                     {
-                        if (originalTexture.isReadable
-                            && DetectDXTnmLike(originalTexture) == NormalMapPreprocessor.SourceLayout.RG)
+                        if (
+                            originalTexture.isReadable
+                            && DetectDXTnmLike(originalTexture)
+                                == NormalMapPreprocessor.SourceLayout.RG
+                        )
                             return NormalMapPreprocessor.SourceLayout.RG;
                         return NormalMapPreprocessor.SourceLayout.AG;
                     }
