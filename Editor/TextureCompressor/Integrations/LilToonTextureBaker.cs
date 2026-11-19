@@ -30,10 +30,11 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
     /// <para>
     /// Two deliberate deviations from lilToon's inspector bakes. First, the main color
     /// (<c>_Color</c>) is never baked and is left as a runtime tint — because color-change
-    /// animations are common and a baked color would freeze them. Second, source textures are
-    /// sampled directly from the material on the GPU instead of re-loading the raw image files
-    /// the way <c>lilTextureUtils.LoadTexture</c> does: the build must not mutate or destroy
-    /// loaded assets.
+    /// animations are common and a baked color would freeze them. The alpha-mask bake resets
+    /// <c>_Color.a</c> to 1 in Replace mode because Replace never used it. Second, source
+    /// textures are sampled directly from the material on the GPU instead of re-loading the
+    /// raw image files the way <c>lilTextureUtils.LoadTexture</c> does: the build must not
+    /// mutate or destroy loaded assets.
     /// </para>
     /// </remarks>
     internal sealed class LilToonTextureBaker : ILilToonBaker
@@ -58,6 +59,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         private const string AlphaMaskScaleProperty = "_AlphaMaskScale";
         private const string AlphaMaskValueProperty = "_AlphaMaskValue";
         private const string AlphaMaskBakerKeyword = "_ALPHAMASK";
+        private const float AlphaMaskModeReplace = 1f;
+        private const float AlphaMaskModeMultiply = 2f;
+        private const float AlphaMaskModeAdd = 3f;
+        private const float AlphaMaskModeSubtract = 4f;
 
         private const string OutlineTexProperty = "_OutlineTex";
         private const string OutlineTexHsvgProperty = "_OutlineTexHSVG";
@@ -814,6 +819,19 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (HasAnimatedAlphaMaskBakeInput(animatedProperties))
                 return BakeOutcome.SkippedByAnimation;
 
+            if (
+                AlphaMaskBakeDependsOnMainColorAlpha(material)
+                && animatedProperties.Contains(MainColorProperty)
+            )
+                return BakeOutcome.SkippedByAnimation;
+
+            float mode = GetFloat(material, AlphaMaskModeProperty, 0f);
+            if (
+                (mode == AlphaMaskModeAdd || mode == AlphaMaskModeSubtract)
+                && GetColor(material, MainColorProperty, Color.white).a != 1f
+            )
+                return BakeOutcome.NotApplicable;
+
             var baked = BakeTexture(
                 mainTexture,
                 BuildAlphaMaskBakeKey(material),
@@ -822,10 +840,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                     baker.EnableKeyword(AlphaMaskBakerKeyword);
                     baker.SetColor(MainColorProperty, Color.white);
                     baker.SetVector(MainTexHsvgProperty, DefaultHsvg);
-                    baker.SetFloat(
-                        AlphaMaskModeProperty,
-                        GetFloat(material, AlphaMaskModeProperty, 0f)
-                    );
+                    baker.SetFloat(AlphaMaskModeProperty, mode);
                     baker.SetFloat(
                         AlphaMaskScaleProperty,
                         GetFloat(material, AlphaMaskScaleProperty, 1f)
@@ -845,6 +860,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             material.SetFloat(AlphaMaskModeProperty, 0f);
             material.SetTexture(AlphaMaskProperty, null);
             material.SetFloat(AlphaMaskValueProperty, 0f);
+            if (mode == AlphaMaskModeReplace && material.HasProperty(MainColorProperty))
+            {
+                var color = GetColor(material, MainColorProperty, Color.white);
+                color.a = 1f;
+                material.SetColor(MainColorProperty, color);
+            }
             return BakeOutcome.Baked;
         }
 
@@ -878,6 +899,12 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         )
         {
             return AnyAnimated(animatedProperties, AlphaMaskBakeInputProperties);
+        }
+
+        public static bool AlphaMaskBakeDependsOnMainColorAlpha(Material material)
+        {
+            return material != null
+                && GetFloat(material, AlphaMaskModeProperty, 0f) != AlphaMaskModeMultiply;
         }
 
         private static string BuildAlphaMaskBakeKey(Material material)

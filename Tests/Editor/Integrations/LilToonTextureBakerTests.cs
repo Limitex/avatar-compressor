@@ -964,6 +964,38 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region AlphaMaskBakeDependsOnMainColorAlpha
+
+        [Test]
+        public void AlphaMaskBakeDependsOnMainColorAlpha_Replace_ReturnsTrue()
+        {
+            _material.SetFloat("_AlphaMaskMode", 1f);
+            Assert.IsTrue(LilToonTextureBaker.AlphaMaskBakeDependsOnMainColorAlpha(_material));
+        }
+
+        [Test]
+        public void AlphaMaskBakeDependsOnMainColorAlpha_Multiply_ReturnsFalse()
+        {
+            _material.SetFloat("_AlphaMaskMode", 2f);
+            Assert.IsFalse(LilToonTextureBaker.AlphaMaskBakeDependsOnMainColorAlpha(_material));
+        }
+
+        [Test]
+        public void AlphaMaskBakeDependsOnMainColorAlpha_Add_ReturnsTrue()
+        {
+            _material.SetFloat("_AlphaMaskMode", 3f);
+            Assert.IsTrue(LilToonTextureBaker.AlphaMaskBakeDependsOnMainColorAlpha(_material));
+        }
+
+        [Test]
+        public void AlphaMaskBakeDependsOnMainColorAlpha_Subtract_ReturnsTrue()
+        {
+            _material.SetFloat("_AlphaMaskMode", 4f);
+            Assert.IsTrue(LilToonTextureBaker.AlphaMaskBakeDependsOnMainColorAlpha(_material));
+        }
+
+        #endregion
+
         #region HasBakeableOutline
 
         [Test]
