@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix lilToon texture baking changing how some materials look; the bake now skips what it cannot reproduce:
   - Fur and gem materials, since their fur and gem passes do not apply the color adjustments or alpha mask
   - The alpha mask on outline materials, since the outline uses it too in Cutout and Transparent modes
+  - The alpha mask on materials whose enabled 2nd/3rd layer has a Transparent Mode other than None, including when that mode, or the toggle of such a layer, is animated
 
 ## [v0.9.0] - 2026-07-17
 

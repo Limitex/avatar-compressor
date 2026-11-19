@@ -959,6 +959,129 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Layer alpha modes before the alpha mask
+
+        [TestCase("2nd")]
+        [TestCase("3rd")]
+        public void HasLayerAlphaModeBeforeAlphaMask_EnabledLayerWithAlphaMode_ReturnsTrue(
+            string layer
+        )
+        {
+            _material.SetFloat($"_UseMain{layer}Tex", 1f);
+            _material.SetFloat($"_Main{layer}TexAlphaMode", 1f);
+
+            Assert.IsTrue(LilToonTextureBaker.HasLayerAlphaModeBeforeAlphaMask(_material));
+        }
+
+        [Test]
+        public void HasLayerAlphaModeBeforeAlphaMask_DisabledLayerWithAlphaMode_ReturnsFalse()
+        {
+            _material.SetFloat("_Main2ndTexAlphaMode", 1f);
+
+            Assert.IsFalse(LilToonTextureBaker.HasLayerAlphaModeBeforeAlphaMask(_material));
+        }
+
+        [Test]
+        public void HasLayerAlphaModeBeforeAlphaMask_EnabledLayerWithAlphaModeNone_ReturnsFalse()
+        {
+            _material.SetFloat("_UseMain2ndTex", 1f);
+
+            Assert.IsFalse(LilToonTextureBaker.HasLayerAlphaModeBeforeAlphaMask(_material));
+        }
+
+        [TestCase("2nd")]
+        [TestCase("3rd")]
+        public void HasAnimatedLayerAlphaMode_AnimatedAlphaMode_ReturnsTrue(string layer)
+        {
+            var props = new HashSet<string> { $"_Main{layer}TexAlphaMode" };
+
+            Assert.IsTrue(LilToonTextureBaker.HasAnimatedLayerAlphaMode(_material, props));
+        }
+
+        [Test]
+        public void HasAnimatedLayerAlphaMode_UnrelatedAnimationWithAlphaMode_ReturnsFalse()
+        {
+            _material.SetFloat("_Main2ndTexAlphaMode", 1f);
+            var props = new HashSet<string> { "_Color" };
+
+            Assert.IsFalse(LilToonTextureBaker.HasAnimatedLayerAlphaMode(_material, props));
+        }
+
+        [Test]
+        public void HasAnimatedLayerAlphaMode_AnimatedToggleWithAlphaModeNone_ReturnsFalse()
+        {
+            var props = new HashSet<string> { "_UseMain2ndTex" };
+
+            Assert.IsFalse(LilToonTextureBaker.HasAnimatedLayerAlphaMode(_material, props));
+        }
+
+        [Test]
+        public void Bake_LayerAlphaModeBeforeAlphaMask_KeepsAlphaMask()
+        {
+            var material = CreateLilToonMaterialOrIgnore("Hidden/lilToonTransparent");
+            var baker = new LilToonTextureBaker();
+            try
+            {
+                if (!baker.IsAvailable)
+                    Assert.Ignore(
+                        "lilToon baker requires a supported version and graphics device."
+                    );
+
+                material.SetTexture("_MainTex", _texture);
+                material.SetFloat("_AlphaMaskMode", 1f);
+                material.SetTexture("_AlphaMask", _texture);
+                material.SetFloat("_UseMain2ndTex", 1f);
+                material.SetTexture("_Main2ndTex", _texture);
+                material.SetFloat("_Main2ndTexAlphaMode", 1f);
+
+                var result = baker.Bake(material, Array.Empty<string>(), null, null);
+
+                Assert.AreEqual(0, result.BakedSlots);
+                Assert.AreSame(_texture, material.GetTexture("_MainTex"));
+                Assert.AreEqual(1f, material.GetFloat("_AlphaMaskMode"));
+                Assert.AreSame(_texture, material.GetTexture("_AlphaMask"));
+            }
+            finally
+            {
+                baker.DestroyOrphanedBakes(Array.Empty<Material>());
+                UnityEngine.Object.DestroyImmediate(material);
+            }
+        }
+
+        [Test]
+        public void Bake_AnimatedToggleOfLayerWithAlphaMode_SkipsAlphaMaskByAnimation()
+        {
+            var material = CreateLilToonMaterialOrIgnore("Hidden/lilToonTransparent");
+            var baker = new LilToonTextureBaker();
+            try
+            {
+                if (!baker.IsAvailable)
+                    Assert.Ignore(
+                        "lilToon baker requires a supported version and graphics device."
+                    );
+
+                material.SetTexture("_MainTex", _texture);
+                material.SetFloat("_AlphaMaskMode", 1f);
+                material.SetTexture("_AlphaMask", _texture);
+                material.SetTexture("_Main2ndTex", _texture);
+                material.SetFloat("_Main2ndTexAlphaMode", 1f);
+                var animated = new HashSet<string> { "_UseMain2ndTex" };
+
+                var result = baker.Bake(material, animated, null, null);
+
+                Assert.AreEqual(0, result.BakedSlots);
+                Assert.AreEqual(1, result.SkippedByAnimation);
+                Assert.AreEqual(1f, material.GetFloat("_AlphaMaskMode"));
+            }
+            finally
+            {
+                baker.DestroyOrphanedBakes(Array.Empty<Material>());
+                UnityEngine.Object.DestroyImmediate(material);
+            }
+        }
+
+        #endregion
+
         #region HasAnimatedAlphaMaskBakeInput
 
         [Test]

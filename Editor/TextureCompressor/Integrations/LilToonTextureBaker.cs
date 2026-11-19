@@ -823,6 +823,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (IsBlockedInputSlot(material, AlphaMaskProperty, isProtectedTexture))
                 return BakeOutcome.NotApplicable;
 
+            if (HasLayerAlphaModeBeforeAlphaMask(material))
+                return BakeOutcome.NotApplicable;
+
             if (HasAnimatedAlphaMaskBakeInput(animatedProperties))
                 return BakeOutcome.SkippedByAnimation;
 
@@ -830,6 +833,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 AlphaMaskBakeDependsOnMainColorAlpha(material)
                 && animatedProperties.Contains(MainColorProperty)
             )
+                return BakeOutcome.SkippedByAnimation;
+
+            if (HasAnimatedLayerAlphaMode(material, animatedProperties))
                 return BakeOutcome.SkippedByAnimation;
 
             float mode = GetFloat(material, AlphaMaskModeProperty, 0f);
@@ -909,6 +915,43 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         )
         {
             return AnyAnimated(animatedProperties, AlphaMaskBakeInputProperties);
+        }
+
+        /// <summary>
+        /// lilToon applies layer alpha modes before the alpha mask; folding the mask into
+        /// <c>_MainTex</c> would reverse that order.
+        /// </summary>
+        public static bool HasLayerAlphaModeBeforeAlphaMask(Material material)
+        {
+            return HasLayerAlphaMode(material, Layer2nd) || HasLayerAlphaMode(material, Layer3rd);
+        }
+
+        public static bool HasAnimatedLayerAlphaMode(
+            Material material,
+            IReadOnlyCollection<string> animatedProperties
+        )
+        {
+            return IsLayerAlphaModeAnimated(material, animatedProperties, Layer2nd)
+                || IsLayerAlphaModeAnimated(material, animatedProperties, Layer3rd);
+        }
+
+        private static bool HasLayerAlphaMode(Material material, string layer)
+        {
+            return IsOverlayLayerEnabled(material, layer)
+                && GetFloat(material, LayerAlphaModeProperty(layer), 0f) != 0f;
+        }
+
+        private static bool IsLayerAlphaModeAnimated(
+            Material material,
+            IReadOnlyCollection<string> animatedProperties,
+            string layer
+        )
+        {
+            if (animatedProperties.Contains(LayerAlphaModeProperty(layer)))
+                return true;
+
+            return animatedProperties.Contains(UseLayerProperty(layer))
+                && GetFloat(material, LayerAlphaModeProperty(layer), 0f) != 0f;
         }
 
         public static bool AlphaMaskBakeDependsOnMainColorAlpha(Material material)
