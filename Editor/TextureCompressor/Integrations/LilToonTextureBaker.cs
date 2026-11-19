@@ -64,6 +64,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         private const float AlphaMaskModeAdd = 3f;
         private const float AlphaMaskModeSubtract = 4f;
 
+        private const string FurVectorProperty = "_FurVector";
+        private const string GemChromaticAberrationProperty = "_GemChromaticAberration";
+
         private const string OutlineTexProperty = "_OutlineTex";
         private const string OutlineTexHsvgProperty = "_OutlineTexHSVG";
 
@@ -441,6 +444,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         public static bool HasBakeableColorAdjustments(Material material)
         {
             if (material == null || !material.HasProperty(MainTexHsvgProperty))
+                return false;
+
+            if (IsFurOrGemVariant(material))
                 return false;
 
             return HasNonLayerAdjustments(material)
@@ -882,6 +888,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             )
                 return false;
 
+            if (IsFurOrGemVariant(material))
+                return false;
+
             if (material.GetFloat(AlphaMaskModeProperty) == 0f)
                 return false;
 
@@ -1197,6 +1206,17 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         private static Texture GetTexture(Material material, string name)
         {
             return material.HasProperty(name) ? material.GetTexture(name) : null;
+        }
+
+        /// <summary>
+        /// The fur and gem passes read <c>_MainTex</c> without the main pass's color adjustments,
+        /// layers or alpha mask. Among rendering lilToon shaders, only these variants declare
+        /// these properties.
+        /// </summary>
+        private static bool IsFurOrGemVariant(Material material)
+        {
+            return material.HasProperty(FurVectorProperty)
+                || material.HasProperty(GemChromaticAberrationProperty);
         }
 
         private static bool IsLilToonShader(Shader shader)

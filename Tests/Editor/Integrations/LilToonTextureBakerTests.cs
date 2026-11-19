@@ -903,6 +903,62 @@ namespace dev.limitex.avatar.compressor.tests
 
         #endregion
 
+        #region Fur and gem variants
+
+        private static Material CreateLilToonMaterialOrIgnore(string shaderName)
+        {
+            if (Shader.Find("lilToon") == null)
+                Assert.Ignore("lilToon is not installed.");
+            var shader = Shader.Find(shaderName);
+            Assert.That(
+                shader,
+                Is.Not.Null,
+                $"lilToon no longer provides '{shaderName}'; re-check LilToonTextureBaker's "
+                    + "shader-variant handling against this lilToon version."
+            );
+            return new Material(shader);
+        }
+
+        [TestCase("Hidden/lilToonFur")]
+        [TestCase("Hidden/lilToonGem")]
+        public void Bake_FurOrGemVariant_LeavesMainTextureAlphaMaskAndColorUntouched(
+            string shaderName
+        )
+        {
+            var material = CreateLilToonMaterialOrIgnore(shaderName);
+            var baker = new LilToonTextureBaker();
+            try
+            {
+                if (!baker.IsAvailable)
+                    Assert.Ignore(
+                        "lilToon baker requires a supported version and graphics device."
+                    );
+
+                var hsvg = new Vector4(0.1f, 1f, 1f, 1f);
+                material.SetTexture("_MainTex", _texture);
+                material.SetVector("_MainTexHSVG", hsvg);
+                material.SetFloat("_AlphaMaskMode", 1f);
+                material.SetTexture("_AlphaMask", _texture);
+                material.SetColor("_Color", new Color(1f, 1f, 1f, 0f));
+
+                var result = baker.Bake(material, Array.Empty<string>(), null, null);
+
+                Assert.AreEqual(0, result.BakedSlots);
+                Assert.AreSame(_texture, material.GetTexture("_MainTex"));
+                Assert.AreEqual(hsvg, material.GetVector("_MainTexHSVG"));
+                Assert.AreEqual(1f, material.GetFloat("_AlphaMaskMode"));
+                Assert.AreSame(_texture, material.GetTexture("_AlphaMask"));
+                Assert.AreEqual(0f, material.GetColor("_Color").a);
+            }
+            finally
+            {
+                baker.DestroyOrphanedBakes(Array.Empty<Material>());
+                UnityEngine.Object.DestroyImmediate(material);
+            }
+        }
+
+        #endregion
+
         #region HasAnimatedAlphaMaskBakeInput
 
         [Test]
