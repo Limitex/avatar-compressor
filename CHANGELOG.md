@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix GameCI project setup, Unity license activation, and test reporting.
+- Fix the lilToon alpha mask bake making meshes invisible when `_Color` alpha is below 1: Replace mode now resets `_Color` alpha to 1 after baking, and Add/Subtract modes (or a non-Multiply mode with animated `_Color`) are no longer baked when `_Color` alpha would change the result.
 
 ## [v0.9.0] - 2026-07-17
 
