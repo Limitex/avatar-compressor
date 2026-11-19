@@ -66,6 +66,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
 
         private const string FurVectorProperty = "_FurVector";
         private const string GemChromaticAberrationProperty = "_GemChromaticAberration";
+        private const string OutlinePassName = "FORWARD_OUTLINE";
 
         private const string OutlineTexProperty = "_OutlineTex";
         private const string OutlineTexHsvgProperty = "_OutlineTexHSVG";
@@ -888,7 +889,7 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             )
                 return false;
 
-            if (IsFurOrGemVariant(material))
+            if (IsFurOrGemVariant(material) || HasOutlinePass(material))
                 return false;
 
             if (material.GetFloat(AlphaMaskModeProperty) == 0f)
@@ -1217,6 +1218,15 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         {
             return material.HasProperty(FurVectorProperty)
                 || material.HasProperty(GemChromaticAberrationProperty);
+        }
+
+        /// <summary>
+        /// Outside Opaque mode the outline pass applies the alpha mask too. Opaque outline
+        /// variants are skipped as well, leaving their unused mask texture in the build.
+        /// </summary>
+        private static bool HasOutlinePass(Material material)
+        {
+            return material.FindPass(OutlinePassName) >= 0;
         }
 
         private static bool IsLilToonShader(Shader shader)

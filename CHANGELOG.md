@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix the lilToon alpha mask bake making meshes invisible when `_Color` alpha is below 1: Replace mode now resets `_Color` alpha to 1 after baking, and Add/Subtract modes (or a non-Multiply mode with animated `_Color`) are no longer baked when `_Color` alpha would change the result.
 - Fix lilToon texture baking changing how some materials look; the bake now skips what it cannot reproduce:
   - Fur and gem materials, since their fur and gem passes do not apply the color adjustments or alpha mask
+  - The alpha mask on outline materials, since the outline uses it too in Cutout and Transparent modes
 
 ## [v0.9.0] - 2026-07-17
 

@@ -175,9 +175,10 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         [TestCase(false, false)]
+        [TestCase(false, true)]
         [TestCase(true, false)]
         [TestCase(true, true)]
-        public void Bake_OptionUsesFinalMainIncludingAlphaBake(bool reuse, bool alphaMask)
+        public void Bake_OptionUsesFinalMainAndKeepsOutlineAlphaMask(bool reuse, bool alphaMask)
         {
             var shader = Shader.Find("Hidden/lilToonTransparentOutline");
             if (shader == null)
@@ -249,12 +250,49 @@ namespace dev.limitex.avatar.compressor.tests
                 Assert.AreSame(_source, original.GetTexture("_BaseMap"));
                 Assert.AreEqual(outlineTone, material.GetVector("_OutlineTexHSVG"));
                 if (alphaMask)
-                    Assert.AreEqual(0f, material.GetFloat("_AlphaMaskMode"));
+                {
+                    Assert.AreEqual(1f, material.GetFloat("_AlphaMaskMode"));
+                    Assert.AreSame(_source, material.GetTexture("_AlphaMask"));
+                }
             }
             finally
             {
                 UnityEngine.Object.DestroyImmediate(material);
                 UnityEngine.Object.DestroyImmediate(original);
+                baker.DestroyOrphanedBakes(Array.Empty<Material>());
+            }
+        }
+
+        [Test]
+        public void Bake_NonOutlineVariant_ReusesFinalMainIncludingAlphaBake()
+        {
+            var shader = Shader.Find("Hidden/lilToonTransparent");
+            if (shader == null)
+                Assert.Ignore("lilToon is not installed.");
+            var baker = new LilToonTextureBaker(true);
+            if (!baker.IsAvailable)
+                Assert.Ignore("lilToon baker requires a supported version and graphics device.");
+
+            var material = new Material(shader);
+            try
+            {
+                material.SetTexture("_MainTex", _source);
+                material.SetTexture("_OutlineTex", _source);
+                material.SetFloat("_AlphaMaskMode", 1f);
+                material.SetTexture("_AlphaMask", _source);
+                material.SetColor("_Color", new Color(1f, 1f, 1f, 0.5f));
+
+                baker.Bake(material, Array.Empty<string>(), null, null);
+
+                Assert.AreNotSame(_source, material.GetTexture("_MainTex"));
+                Assert.AreSame(material.GetTexture("_MainTex"), material.GetTexture("_OutlineTex"));
+                Assert.AreEqual(0f, material.GetFloat("_AlphaMaskMode"));
+                Assert.IsNull(material.GetTexture("_AlphaMask"));
+                Assert.AreEqual(1f, material.GetColor("_Color").a);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(material);
                 baker.DestroyOrphanedBakes(Array.Empty<Material>());
             }
         }
