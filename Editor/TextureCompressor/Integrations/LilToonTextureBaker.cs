@@ -64,6 +64,10 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         private const float AlphaMaskModeAdd = 3f;
         private const float AlphaMaskModeSubtract = 4f;
 
+        private const string FurVectorProperty = "_FurVector";
+        private const string GemChromaticAberrationProperty = "_GemChromaticAberration";
+        private const string OutlinePassName = "FORWARD_OUTLINE";
+
         private const string OutlineTexProperty = "_OutlineTex";
         private const string OutlineTexHsvgProperty = "_OutlineTexHSVG";
 
@@ -443,6 +447,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (material == null || !material.HasProperty(MainTexHsvgProperty))
                 return false;
 
+            if (IsFurOrGemVariant(material))
+                return false;
+
             return HasNonLayerAdjustments(material)
                 || IsOverlayLayerEnabled(material, Layer2nd)
                 || IsOverlayLayerEnabled(material, Layer3rd);
@@ -816,6 +823,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             if (IsBlockedInputSlot(material, AlphaMaskProperty, isProtectedTexture))
                 return BakeOutcome.NotApplicable;
 
+            if (HasLayerAlphaModeBeforeAlphaMask(material))
+                return BakeOutcome.NotApplicable;
+
             if (HasAnimatedAlphaMaskBakeInput(animatedProperties))
                 return BakeOutcome.SkippedByAnimation;
 
@@ -823,6 +833,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
                 AlphaMaskBakeDependsOnMainColorAlpha(material)
                 && animatedProperties.Contains(MainColorProperty)
             )
+                return BakeOutcome.SkippedByAnimation;
+
+            if (HasAnimatedLayerAlphaMode(material, animatedProperties))
                 return BakeOutcome.SkippedByAnimation;
 
             float mode = GetFloat(material, AlphaMaskModeProperty, 0f);
@@ -882,6 +895,9 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
             )
                 return false;
 
+            if (IsFurOrGemVariant(material) || HasOutlinePass(material))
+                return false;
+
             if (material.GetFloat(AlphaMaskModeProperty) == 0f)
                 return false;
 
@@ -899,6 +915,43 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         )
         {
             return AnyAnimated(animatedProperties, AlphaMaskBakeInputProperties);
+        }
+
+        /// <summary>
+        /// lilToon applies layer alpha modes before the alpha mask; folding the mask into
+        /// <c>_MainTex</c> would reverse that order.
+        /// </summary>
+        public static bool HasLayerAlphaModeBeforeAlphaMask(Material material)
+        {
+            return HasLayerAlphaMode(material, Layer2nd) || HasLayerAlphaMode(material, Layer3rd);
+        }
+
+        public static bool HasAnimatedLayerAlphaMode(
+            Material material,
+            IReadOnlyCollection<string> animatedProperties
+        )
+        {
+            return IsLayerAlphaModeAnimated(material, animatedProperties, Layer2nd)
+                || IsLayerAlphaModeAnimated(material, animatedProperties, Layer3rd);
+        }
+
+        private static bool HasLayerAlphaMode(Material material, string layer)
+        {
+            return IsOverlayLayerEnabled(material, layer)
+                && GetFloat(material, LayerAlphaModeProperty(layer), 0f) != 0f;
+        }
+
+        private static bool IsLayerAlphaModeAnimated(
+            Material material,
+            IReadOnlyCollection<string> animatedProperties,
+            string layer
+        )
+        {
+            if (animatedProperties.Contains(LayerAlphaModeProperty(layer)))
+                return true;
+
+            return animatedProperties.Contains(UseLayerProperty(layer))
+                && GetFloat(material, LayerAlphaModeProperty(layer), 0f) != 0f;
         }
 
         public static bool AlphaMaskBakeDependsOnMainColorAlpha(Material material)
@@ -1197,6 +1250,26 @@ namespace dev.limitex.avatar.compressor.editor.texture.integrations
         private static Texture GetTexture(Material material, string name)
         {
             return material.HasProperty(name) ? material.GetTexture(name) : null;
+        }
+
+        /// <summary>
+        /// The fur and gem passes read <c>_MainTex</c> without the main pass's color adjustments,
+        /// layers or alpha mask. Among rendering lilToon shaders, only these variants declare
+        /// these properties.
+        /// </summary>
+        private static bool IsFurOrGemVariant(Material material)
+        {
+            return material.HasProperty(FurVectorProperty)
+                || material.HasProperty(GemChromaticAberrationProperty);
+        }
+
+        /// <summary>
+        /// Outside Opaque mode the outline pass applies the alpha mask too. Opaque outline
+        /// variants are skipped as well, leaving their unused mask texture in the build.
+        /// </summary>
+        private static bool HasOutlinePass(Material material)
+        {
+            return material.FindPass(OutlinePassName) >= 0;
         }
 
         private static bool IsLilToonShader(Shader shader)
