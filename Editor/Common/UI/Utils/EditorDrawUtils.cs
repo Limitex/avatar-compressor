@@ -40,6 +40,32 @@ namespace dev.limitex.avatar.compressor.editor.ui
             EditorGUI.DrawRect(filledRect, fillColor);
         }
 
+        private static Color LinkColor =>
+            EditorGUIUtility.isProSkin ? new Color(0.4f, 0.6f, 1.0f) : new Color(0.2f, 0.4f, 0.8f);
+
+        private static Color LinkHoverColor =>
+            EditorGUIUtility.isProSkin ? new Color(0.6f, 0.8f, 1.0f) : new Color(0.3f, 0.5f, 0.9f);
+
+        /// <summary>
+        /// Draws theme-aware clickable link text with a link cursor.
+        /// </summary>
+        /// <param name="highlightOnHover">
+        /// False where the window gets no MouseMove (Preferences): the tint would linger.
+        /// </param>
+        /// <returns>True if clicked.</returns>
+        public static bool DrawLink(Rect rect, GUIContent content, bool highlightOnHover = true)
+        {
+            var savedColor = GUI.color;
+            GUI.color =
+                highlightOnHover && rect.Contains(Event.current.mousePosition)
+                    ? LinkHoverColor
+                    : LinkColor;
+            bool clicked = GUI.Button(rect, content, EditorStylesCache.LinkStyle);
+            GUI.color = savedColor;
+            EditorGUIUtility.AddCursorRect(rect, MouseCursor.Link);
+            return clicked;
+        }
+
         /// <summary>
         /// Draws a horizontal line separator.
         /// </summary>

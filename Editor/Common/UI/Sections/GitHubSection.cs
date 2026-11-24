@@ -8,8 +8,8 @@ namespace dev.limitex.avatar.compressor.editor.ui
     /// </summary>
     internal static class GitHubSection
     {
-        private const string GitHubUrl = "https://github.com/Limitex/avatar-compressor";
-        private const string LinkText = "Limitex/avatar-compressor";
+        internal const string Repository = "Limitex/avatar-compressor";
+        internal const string GitHubUrl = "https://github.com/" + Repository;
 
         /// <summary>
         /// Draws the GitHub section with link.
@@ -32,28 +32,14 @@ namespace dev.limitex.avatar.compressor.editor.ui
             GUILayout.FlexibleSpace();
 
             var linkContent = new GUIContent(
-                LinkText,
+                Repository,
                 AvatarCompressorLocalization.Tr("Common:button:openGitHub:tooltip")
             );
             var linkRect = GUILayoutUtility.GetRect(linkContent, EditorStylesCache.LinkStyle);
-            var isHovering = linkRect.Contains(Event.current.mousePosition);
-
-            // Theme-aware link colors
-            Color normalColor = EditorGUIUtility.isProSkin
-                ? new Color(0.4f, 0.6f, 1.0f)
-                : new Color(0.2f, 0.4f, 0.8f);
-            Color hoverColor = EditorGUIUtility.isProSkin
-                ? new Color(0.6f, 0.8f, 1.0f)
-                : new Color(0.3f, 0.5f, 0.9f);
-
-            var linkSavedColor = GUI.color;
-            GUI.color = isHovering ? hoverColor : normalColor;
-            if (GUI.Button(linkRect, linkContent, EditorStylesCache.LinkStyle))
+            if (EditorDrawUtils.DrawLink(linkRect, linkContent))
             {
                 Application.OpenURL(GitHubUrl);
             }
-            GUI.color = linkSavedColor;
-            EditorGUIUtility.AddCursorRect(linkRect, MouseCursor.Link);
 
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();

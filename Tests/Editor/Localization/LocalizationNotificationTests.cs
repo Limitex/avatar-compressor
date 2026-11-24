@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using dev.limitex.avatar.compressor.editor;
 using dev.limitex.avatar.compressor.editor.texture;
+using dev.limitex.avatar.compressor.editor.ui;
 using nadena.dev.ndmf.localization;
 using NUnit.Framework;
 using UnityEditor;
@@ -114,13 +115,25 @@ namespace dev.limitex.avatar.compressor.tests
                 Assert.IsInstanceOf<CustomTextureCompressorPresetEditor>(presetEditor);
                 Action componentRepaint = componentEditor.Repaint;
                 Action presetRepaint = presetEditor.Repaint;
-                Assert.AreEqual(1, SubscriptionCount(componentRepaint));
-                Assert.AreEqual(1, SubscriptionCount(presetRepaint));
+                Assert.AreEqual(
+                    1,
+                    SubscriptionCount(typeof(AvatarCompressorLocalization), componentRepaint)
+                );
+                Assert.AreEqual(
+                    1,
+                    SubscriptionCount(typeof(AvatarCompressorLocalization), presetRepaint)
+                );
 
                 UnityEngine.Object.DestroyImmediate(componentEditor);
                 UnityEngine.Object.DestroyImmediate(presetEditor);
-                Assert.AreEqual(0, SubscriptionCount(componentRepaint));
-                Assert.AreEqual(0, SubscriptionCount(presetRepaint));
+                Assert.AreEqual(
+                    0,
+                    SubscriptionCount(typeof(AvatarCompressorLocalization), componentRepaint)
+                );
+                Assert.AreEqual(
+                    0,
+                    SubscriptionCount(typeof(AvatarCompressorLocalization), presetRepaint)
+                );
             }
             finally
             {
@@ -133,19 +146,20 @@ namespace dev.limitex.avatar.compressor.tests
             }
         }
 
-        [Test]
-        public void Preferences_RegisterUnityRepaintOnlyWhileActive()
+        [TestCase(typeof(AvatarCompressorLocalization))]
+        [TestCase(typeof(GitHubContributors))]
+        public void Preferences_RegisterUnityRepaintOnlyWhileActive(Type eventOwner)
         {
             var provider = AvatarCompressorPreferences.CreateProvider();
             try
             {
-                Assert.AreEqual(0, SubscriptionCount(provider.Repaint));
+                Assert.AreEqual(0, SubscriptionCount(eventOwner, provider.Repaint));
                 for (int i = 0; i < 2; i++)
                 {
                     provider.OnActivate("", new VisualElement());
-                    Assert.AreEqual(1, SubscriptionCount(provider.Repaint));
+                    Assert.AreEqual(1, SubscriptionCount(eventOwner, provider.Repaint));
                     provider.OnDeactivate();
-                    Assert.AreEqual(0, SubscriptionCount(provider.Repaint));
+                    Assert.AreEqual(0, SubscriptionCount(eventOwner, provider.Repaint));
                 }
             }
             finally
@@ -154,11 +168,10 @@ namespace dev.limitex.avatar.compressor.tests
             }
         }
 
-        private static int SubscriptionCount(Action callback)
+        private static int SubscriptionCount(Type eventOwner, Action callback)
         {
-            // Count direct Repaint subscriptions on the localization event.
-            var field = typeof(AvatarCompressorLocalization).GetField(
-                nameof(AvatarCompressorLocalization.Changed),
+            var field = eventOwner.GetField(
+                "Changed",
                 BindingFlags.Static | BindingFlags.NonPublic
             );
             Assert.IsNotNull(field);

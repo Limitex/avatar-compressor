@@ -78,6 +78,18 @@ msgstr "Bugs? Ideas? Let us know! Stars appreciated."
 msgid "Common:button:openGitHub:tooltip"
 msgstr "Open GitHub repository"
 
+msgid "Common:label:contributors"
+msgstr "Contributors"
+
+msgid "Common:message:contributorsLoading"
+msgstr "Loading contributors from GitHub..."
+
+msgid "Common:message:contributorsUnavailable"
+msgstr "Could not load contributors from GitHub."
+
+msgid "Common:button:viewContributors"
+msgstr "View all contributors"
+
 msgid "TextureCompressor:label:preset"
 msgstr "Compression Preset"
 

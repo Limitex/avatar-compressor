@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using dev.limitex.avatar.compressor.editor.ui;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -72,9 +73,21 @@ namespace dev.limitex.avatar.compressor.editor
         internal static SettingsProvider CreateProvider()
         {
             var sections = CreateSections(TypeCache.GetTypesDerivedFrom<IPreferencesSection>());
+            var contributorsSection = new ContributorsSection();
 
-            var keywords = new HashSet<string> { "Avatar", "Compressor", "LAC", "Log", "Debug" };
+            var keywords = new HashSet<string>
+            {
+                "Avatar",
+                "Compressor",
+                "LAC",
+                "Log",
+                "Debug",
+                "GitHub",
+            };
             keywords.UnionWith(AvatarCompressorLocalization.Translations("Common:label:language"));
+            keywords.UnionWith(
+                AvatarCompressorLocalization.Translations("Common:label:contributors")
+            );
             keywords.UnionWith(
                 AvatarCompressorLocalization.Translations(
                     "Common:prop:showLanguagePickerInInspector"
@@ -133,14 +146,29 @@ namespace dev.limitex.avatar.compressor.editor
                         section.Draw();
                     }
 
+                    // Not an IPreferencesSection: title sorting would move it per locale.
+                    EditorGUILayout.Space(10);
+                    EditorGUILayout.LabelField(
+                        AvatarCompressorLocalization.Tr("Common:label:contributors"),
+                        EditorStyles.boldLabel
+                    );
+                    contributorsSection.Draw();
+
                     EditorGUILayout.EndVertical();
                 },
                 keywords = keywords,
             };
             provider.activateHandler = (_, __) =>
+            {
                 AvatarCompressorLocalization.Changed += provider.Repaint;
+                GitHubContributors.Changed += provider.Repaint;
+                GitHubContributors.EnsureLoaded();
+            };
             provider.deactivateHandler = () =>
+            {
                 AvatarCompressorLocalization.Changed -= provider.Repaint;
+                GitHubContributors.Changed -= provider.Repaint;
+            };
             return provider;
         }
     }
