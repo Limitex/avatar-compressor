@@ -28,9 +28,13 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
         /// <summary>
         /// Byte threshold for R/B channels to be considered "near 1.0".
-        /// DXTnm format pads R and B to ~255 as constants.
         /// </summary>
         private const byte NearOneByteThreshold = 250;
+
+        /// <summary>
+        /// DXT5/BC7 compression moves B up to 6 away from G (measured on Unity 2022.3 imports).
+        /// </summary>
+        private const int DXTnmBlueCopyTolerance = 8;
 
         /// <summary>
         /// Minimum |Z| value to classify a pixel as definitively positive or negative Z.
@@ -117,7 +121,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 int validRgCount = 0;
                 int validAgCount = 0;
-                int rbNearOneCount = 0;
+                int dxtnmRbMatchCount = 0;
                 int rgbSignedConsistentCount = 0;
                 int rgbAbsConsistentCount = 0;
                 int alphaNonOpaqueCount = 0;
@@ -159,9 +163,16 @@ namespace dev.limitex.avatar.compressor.editor.texture
                         validAgCount++;
                     }
 
-                    if (p.r >= NearOneByteThreshold && p.b >= NearOneByteThreshold)
+                    // B is padded to 1 (e.g. this preprocessor's AG output) or copies G (Unity's import).
+                    if (
+                        p.r >= NearOneByteThreshold
+                        && (
+                            p.b >= NearOneByteThreshold
+                            || Mathf.Abs(p.b - p.g) <= DXTnmBlueCopyTolerance
+                        )
+                    )
                     {
-                        rbNearOneCount++;
+                        dxtnmRbMatchCount++;
                     }
 
                     float zFromRgSq = 1f - xFromR * xFromR - yFromG * yFromG;
@@ -195,7 +206,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 float validRgRatio = (float)validRgCount / total;
                 float validAgRatio = (float)validAgCount / total;
-                float rbNearOneRatio = (float)rbNearOneCount / total;
+                float dxtnmRbMatchRatio = (float)dxtnmRbMatchCount / total;
                 float rgbSignedConsistencyRatio = (float)rgbSignedConsistentCount / total;
                 float rgbAbsConsistencyRatio = (float)rgbAbsConsistentCount / total;
                 float alphaNonOpaqueRatio = (float)alphaNonOpaqueCount / total;
@@ -217,7 +228,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                     && rgbAbsConsistencyRatio >= 0.9f // ≥90% Z consistent with XY
                     && (rgAdvantage <= 0.05f || (alphaInflatesRgAdvantage && bChannelHasVariance));
                 bool strongRgbEvidence =
-                    rbNearOneRatio < 0.9f // R/B are NOT DXTnm constants
+                    dxtnmRbMatchRatio < 0.9f // R/B do NOT match the DXTnm layout
                     && rgbSignedConsistencyRatio >= 0.85f; // ≥85% Z matches reconstruction
 
                 // Decision tree (evaluated in priority order)
@@ -228,8 +239,8 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 //   ≥0.70 = moderate-weak evidence (with corroborating signals)
                 //   ≥0.05 = minimal presence (enough to be non-negligible)
 
-                // Strong DXTnm AG signature: R/B are near 1 while XY validity matches AG.
-                if (rbNearOneRatio >= 0.9f && validAgRatio >= 0.75f)
+                // Strong DXTnm AG signature: R/B match the DXTnm layout while XY validity matches AG.
+                if (dxtnmRbMatchRatio >= 0.9f && validAgRatio >= 0.75f)
                 {
                     return NormalMapPreprocessor.SourceLayout.AG;
                 }
@@ -242,7 +253,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 // RGB object-space data can contain both positive and negative signed Z in B.
                 if (
-                    rbNearOneRatio < 0.9f
+                    dxtnmRbMatchRatio < 0.9f
                     && mixedSignedZ
                     && rgbAbsConsistencyRatio >= 0.7f
                     && (rgAdvantage <= 0.05f || alphaInflatesRgAdvantage)
@@ -253,7 +264,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
 
                 // Some object-space RGB normals can be single-sign negative-Z (all back-facing)
                 // while alpha remains fully opaque.
-                if (rbNearOneRatio < 0.9f && strongSingleNegativeSignedZ)
+                if (dxtnmRbMatchRatio < 0.9f && strongSingleNegativeSignedZ)
                 {
                     return NormalMapPreprocessor.SourceLayout.RGB;
                 }
@@ -279,7 +290,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 // If explicit signed Z in B is plausible and alpha contains meaningful non-opaque values,
                 // prioritize RGB to preserve semantic alpha.
                 if (
-                    rbNearOneRatio < 0.9f
+                    dxtnmRbMatchRatio < 0.9f
                     && rgbSignedConsistencyRatio >= 0.7f
                     && alphaNonOpaqueRatio >= 0.05f
                 )
@@ -288,7 +299,7 @@ namespace dev.limitex.avatar.compressor.editor.texture
                 }
 
                 // RGB stores an explicit Z in B that should roughly match reconstructed Z from RG.
-                if (rbNearOneRatio < 0.9f && rgbSignedConsistencyRatio >= 0.7f)
+                if (dxtnmRbMatchRatio < 0.9f && rgbSignedConsistencyRatio >= 0.7f)
                 {
                     return NormalMapPreprocessor.SourceLayout.RGB;
                 }

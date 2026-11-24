@@ -90,6 +90,18 @@ namespace dev.limitex.avatar.compressor.tests
             Assert.AreEqual(NormalMapPreprocessor.SourceLayout.AG, result);
         }
 
+        [Test]
+        public void Resolve_ReadableUnityImportedDXTnmWithGentleNormals_ReturnsAG()
+        {
+            // With gentle normals the RGB rules also match this layout (#124).
+            var texture = NormalMapTestTextureFactory.CreateUnityImportedGentleBumpsAG(64);
+            _createdObjects.Add(texture);
+
+            var result = NormalMapSourceLayoutDetector.Resolve(texture, TextureFormat.DXT5);
+
+            Assert.AreEqual(NormalMapPreprocessor.SourceLayout.AG, result);
+        }
+
         #endregion
 
         #region DetectDXTnmLike - AG Layout Detection
@@ -226,7 +238,7 @@ namespace dev.limitex.avatar.compressor.tests
         {
             // AG layout with non-standard R/B values (not near 255).
             // This exercises Branch 2 (validAgRatio >= 0.9 && rgAdvantage <= -0.1)
-            // because Branch 1 (rbNearOneRatio >= 0.9) is not satisfied.
+            // because Branch 1 (R/B match the DXTnm layout) is not satisfied.
             var texture = NormalMapTestTextureFactory.CreateSphereAGWithCustomRB(32, 100, 100);
             _createdObjects.Add(texture);
 
