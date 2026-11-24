@@ -231,6 +231,33 @@ namespace dev.limitex.avatar.compressor.tests
         }
 
         /// <summary>
+        /// Creates gentle bumps (tilt under ~8 degrees) in Unity's imported DXTnm layout
+        /// (1, y, y, x), with B drifting up to 6 from G as block compression leaves it.
+        /// </summary>
+        public static Texture2D CreateUnityImportedGentleBumpsAG(int size, bool linear = true)
+        {
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false, linear);
+            var pixels = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float nx = 0.1f * Mathf.Sin(2f * Mathf.PI * 3f * x / size);
+                    float ny = 0.1f * Mathf.Sin(2f * Mathf.PI * 3f * y / size);
+                    var n = new Vector3(nx, ny, 1f).normalized;
+                    byte encodedX = (byte)Mathf.Clamp((n.x * 0.5f + 0.5f) * 255f, 0f, 255f);
+                    byte encodedY = (byte)Mathf.Clamp((n.y * 0.5f + 0.5f) * 255f, 0f, 255f);
+                    int drift = ((x + y) % 7 - 3) * 2;
+                    byte encodedB = (byte)Mathf.Clamp(encodedY + drift, 0, 255);
+                    pixels[y * size + x] = new Color32(255, encodedY, encodedB, encodedX);
+                }
+            }
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            return texture;
+        }
+
+        /// <summary>
         /// Creates a sphere normal map in AG channel layout with custom R and B constant values.
         /// Unlike standard DXTnm (R=255, B=255), this allows testing non-standard R/B values
         /// to exercise detection Branch 2 (AG without R/B constants).
