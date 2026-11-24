@@ -355,7 +355,7 @@ msgid "TextureCompressor:prop:reuseBakedMainForOutline"
 msgstr "Reuse baked main texture for outlines"
 
 msgid "TextureCompressor:prop:reuseBakedMainForOutline:tooltip"
-msgstr "Reuses the final baked main texture for outlines only when both originally shared the same texture. This can change outline colors and transparency. Separate outline textures and protected textures are left unchanged."
+msgstr "Reuses the final baked main texture for outlines only when both originally shared the same texture. This can change outline colors. Separate outline textures and protected textures are left unchanged."
 
 msgid "TextureCompressor:prop:removeUnused"
 msgstr "Remove unused texture slots"

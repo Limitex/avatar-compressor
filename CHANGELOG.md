@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix GameCI project setup, Unity license activation, and test reporting.
 - Fix the lilToon alpha mask bake making meshes invisible when `_Color` alpha is below 1: Replace mode now resets `_Color` alpha to 1 after baking, and Add/Subtract modes (or a non-Multiply mode with animated `_Color`) are no longer baked when `_Color` alpha would change the result.
 - Fix DXT5/BC7 normal maps with Read/Write enabled being flattened after compression, which broke lighting such as rim light and reflections: layout detection now recognizes Unity's imported normal map layout, including on copies that other build tools substitute for the original texture.
+- Fix lilToon texture baking changing how some materials look; the bake now skips what it cannot reproduce:
+  - Fur and gem materials, since their fur and gem passes do not apply the color adjustments or alpha mask
+  - The alpha mask on outline materials, since the outline uses it too in Cutout and Transparent modes
+  - The alpha mask on materials whose enabled 2nd/3rd layer has a Transparent Mode other than None, including when that mode, or the toggle of such a layer, is animated
 
 ## [v0.9.0] - 2026-07-17
 
